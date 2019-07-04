@@ -3,7 +3,7 @@ from PyQt5.QtGui import QColor
 
 class Orange(QColor):
     def __init__(self):
-        super().__init__(245, 200, 66)
+        super().__init__(255, 149, 0)
 
 
 class Purple(QColor):
@@ -39,3 +39,8 @@ class DarkGreen(QColor):
 class Grey(QColor):
     def __init__(self):
         super().__init__(154, 156, 154)
+
+
+class Yellow(QColor):
+    def __init__(self):
+        super().__init__(255, 208, 18)
