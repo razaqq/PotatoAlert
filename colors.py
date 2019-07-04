@@ -38,7 +38,7 @@ class DarkGreen(QColor):
 
 class Grey(QColor):
     def __init__(self):
-        super().__init__(154, 156, 154)
+        super().__init__(224, 222, 218)
 
 
 class Yellow(QColor):
