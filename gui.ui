@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1500</width>
+    <height>520</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1500</width>
+    <height>520</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1500</width>
+    <height>520</height>
+   </size>
+  </property>
+  <property name="mouseTracking">
+   <bool>false</bool>
+  </property>
+  <property name="tabletTracking">
+   <bool>false</bool>
+  </property>
+  <property name="windowTitle">
+   <string notr="true">PotatoAlert</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>potato.png</normaloff>potato.png</iconset>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTableWidget" name="left_table">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>735</width>
+      <height>430</height>
+     </rect>
+    </property>
+    <property name="editTriggers">
+     <set>QAbstractItemView::NoEditTriggers</set>
+    </property>
+    <property name="selectionMode">
+     <enum>QAbstractItemView::NoSelection</enum>
+    </property>
+    <property name="rowCount">
+     <number>12</number>
+    </property>
+    <property name="columnCount">
+     <number>7</number>
+    </property>
+    <attribute name="horizontalHeaderVisible">
+     <bool>true</bool>
+    </attribute>
+    <attribute name="horizontalHeaderMinimumSectionSize">
+     <number>49</number>
+    </attribute>
+    <attribute name="horizontalHeaderDefaultSectionSize">
+     <number>104</number>
+    </attribute>
+    <attribute name="horizontalHeaderHighlightSections">
+     <bool>true</bool>
+    </attribute>
+    <attribute name="verticalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <column>
+     <property name="text">
+      <string>Player</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Ship</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Matches</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Winrate</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Avg Dmg</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Winrate Ship</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Matches Ship</string>
+     </property>
+    </column>
+    <item row="0" column="5">
+     <property name="text">
+      <string/>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="left_label">
+    <property name="geometry">
+     <rect>
+      <x>275</x>
+      <y>0</y>
+      <width>200</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Your Team</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignHCenter|Qt::AlignTop</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="right_label">
+    <property name="geometry">
+     <rect>
+      <x>1020</x>
+      <y>0</y>
+      <width>200</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Enemy Team</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignHCenter|Qt::AlignTop</set>
+    </property>
+   </widget>
+   <widget class="QTableWidget" name="right_able">
+    <property name="geometry">
+     <rect>
+      <x>755</x>
+      <y>30</y>
+      <width>735</width>
+      <height>430</height>
+     </rect>
+    </property>
+    <property name="editTriggers">
+     <set>QAbstractItemView::NoEditTriggers</set>
+    </property>
+    <property name="selectionMode">
+     <enum>QAbstractItemView::NoSelection</enum>
+    </property>
+    <property name="rowCount">
+     <number>12</number>
+    </property>
+    <property name="columnCount">
+     <number>7</number>
+    </property>
+    <attribute name="horizontalHeaderVisible">
+     <bool>true</bool>
+    </attribute>
+    <attribute name="horizontalHeaderMinimumSectionSize">
+     <number>49</number>
+    </attribute>
+    <attribute name="horizontalHeaderDefaultSectionSize">
+     <number>104</number>
+    </attribute>
+    <attribute name="horizontalHeaderHighlightSections">
+     <bool>true</bool>
+    </attribute>
+    <attribute name="verticalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <row/>
+    <column>
+     <property name="text">
+      <string>Player</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Ship</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Matches</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Winrate</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Avg Dmg</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Winrate Ship</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Matches Ship</string>
+     </property>
+    </column>
+    <item row="0" column="5">
+     <property name="text">
+      <string/>
+     </property>
+    </item>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1500</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Menu</string>
+    </property>
+    <addaction name="actionPreferences"/>
+   </widget>
+   <addaction name="menuSettings"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

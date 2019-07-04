@@ -1,27 +1,15 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import json
 import asyncio
 from requests import get
 from configparser import ConfigParser
 from dataclasses import dataclass
-from PyQt5.QtWidgets import QApplication, QLabel, QDialog, QTableWidget, QWidget, QVBoxLayout, QPushButton
-
-
-class Gui:
-    def create(self):
-        app = QApplication([])
-        app.setStyle('Fusion')
-        window = QWidget()
-        window.setWindowTitle('PotatoAlert')
-        window.setFixedSize(1000, 500)
-        layout = QVBoxLayout()
-        layout.addWidget(QPushButton('Top'))
-        layout.addWidget(QPushButton('Bottom'))
-        window.setLayout(layout)
-        window.show()
-        app.exec_()
+from gui import create_gui
+from asyncqt import QEventLoop
+from apierrors import InvalidApplicationIdError
 
 
 @dataclass()
@@ -33,11 +21,12 @@ class Player:
     account_id: int = -1
     hidden_profile: bool = False
     stats: dict = None
-    clan: dict = None
+    clan: str = None
 
 
 class PotatoAlert:
-    def __init__(self):
+    def __init__(self, ui):
+        self.ui = ui
         self.config = Config()
         self.arena_info_file = os.path.join(self.config.replays_folder, 'tempArenaInfo.json')
         self.client_version = ''
@@ -59,18 +48,23 @@ class PotatoAlert:
                     self.read_arena_info()
 
                     for player in self.current_players:
-                        player.account_id = self.api.get_account_id_by_name(player.name)
-                        res = self.api.get_player_stats(player.account_id)
+                        try:
+                            player.account_id = self.api.get_account_info(player.name)['data'][0]['account_id']
+                            res = next(iter(self.api.get_player_stats(player.account_id)['data'].values()))
 
-                        clan_id = self.api.get_clan_id_for_player(player.account_id)
-                        if clan_id:
-                            player.clan = self.api.get_clan_details(clan_id)
+                            clan_id = next(iter(self.api.get_clan_info_player(player.account_id)['data'].values()))['clan_id']
+                            if clan_id:
+                                player.clan = self.api.get_clan_details(clan_id)['data'][str(clan_id)]['tag']
 
-                        hidden_profile = res['hidden_profile']
-                        if hidden_profile:
-                            continue
+                            player.hidden_profile = res['hidden_profile']
+                            if player.hidden_profile:
+                                continue
 
-                        player.stats = res['statistics']['pvp']
+                            player.stats = res['statistics']['pvp']
+                        except InvalidApplicationIdError:
+                            print('Invalid Application ID')
+                            exit(1)
+                    self.ui.fill_tables(self.current_players)
             await asyncio.sleep(10)
 
     def read_arena_info(self):
@@ -98,17 +92,21 @@ class ApiWrapper:
             url = self.endpoint.format(method_block, method_name)
             params['application_id'] = self.api_key
             res = get(url, params=params)
-            return res.json()
+            res = res.json()
+            if res['status'] == 'error':
+                if res['error']['code'] == 407 and res['error']['message'] == 'INVALID_APPLICATION_ID':
+                    raise InvalidApplicationIdError
+            return res
         except ConnectionError:
             print('connection error')
 
-    def get_account_id_by_name(self, name) -> int:
+    def get_account_info(self, name) -> dict:
         param = {
             'search': name,
             'type': 'exact',
             'fields': 'account_id'
         }
-        return self.get_result('account', 'list', param)['data'][0]['account_id']
+        return self.get_result('account', 'list', param)
 
     def statistics_of_players_ships(self, account_id: int, *,
                                     access_token: str = None,
@@ -138,13 +136,13 @@ class ApiWrapper:
                       'statistics.pvp.wins,statistics.pvp.damage_dealt,statistics.pvp.frags,statistics.pvp.draws,'
                       'statistics.pvp.xp',
         }
-        return next(iter(self.get_result('account', 'info', param)['data'].values()))
+        return self.get_result('account', 'info', param)
 
-    def get_clan_id_for_player(self, account_id: int) -> int:
+    def get_clan_info_player(self, account_id: int) -> dict:
         param = {
             'account_id': account_id
         }
-        return next(iter(self.get_result('clans', 'accountinfo', param)['data'].values()))['clan_id']
+        return self.get_result('clans', 'accountinfo', param)
 
     def get_clan_details(self, clan_id: int) -> dict:
         param = {
@@ -157,7 +155,7 @@ class ApiWrapper:
 class Config(ConfigParser):
     def __init__(self):
         super().__init__()
-        self.config_path = os.path.join(os.getenv('APPDATA'), 'PotatoAlert') if os.name == 'nt' else '~/.config/PotatoAlert'
+        self.config_path = self.find_config()
         self.read_config()
 
     def __getattr__(self, item):
@@ -165,6 +163,16 @@ class Config(ConfigParser):
             return self['DEFAULT'][item]
         except KeyError as e:
             print(f'Keyerror: {e}')
+
+    @staticmethod
+    def find_config():
+        if os.name == 'nt':
+            return os.path.join(os.getenv('APPDATA'), 'PotatoAlert')
+        if os.name == 'posix':
+            return os.path.join(os.path.expanduser('~'), '.config/PotatoAlert')
+        else:
+            print('I have no idea which os you are on, please fix your shit')
+            exit(1)
 
     def read_config(self):
         if not os.path.exists(self.config_path):
@@ -187,14 +195,21 @@ class Config(ConfigParser):
 
 
 if __name__ == '__main__':
-    # loop = asyncio.get_event_loop()
-    # p = PotatoAlert()
-    # loop.run_until_complete(p.run())
+    app, ui = create_gui()
+    loop = QEventLoop(app)
+    asyncio.set_event_loop(loop)
+    ui.show()
+    loop.run_until_complete(asyncio.sleep(1))
+
+    p = PotatoAlert(ui)
+    loop.create_task(p.run())
+    with loop:
+        sys.exit(loop.run_forever())
+
+
+    # loop.run_until_complete(p.init_gui())
     # c = Config()
     # a = ApiWrapper(c.api_key, c.region)
     # print(a.statistics_of_players_ships(529548579))
     # print(a.get_player_stats(529548579))
     # print(a.get_account_id_by_name('nGu_RaZaq'))
-
-    g = Gui()
-    g.create()
