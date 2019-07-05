@@ -1,5 +1,27 @@
 #!/usr/bin/env python3
 
+"""
+Copyright (c) 2019 razaqq
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 import os
 import sys
 import json
@@ -18,9 +40,11 @@ class Player:
     relation: int
     id: int
     name: str
+    ship: str = None
     account_id: int = -1
     hidden_profile: bool = False
     stats: dict = None
+    ship_stats: dict = None
     clan: str = None
 
 
@@ -38,34 +62,42 @@ class PotatoAlert:
 
     async def run(self):
         while True:
-            if not os.path.exists(self.arena_info_file):
-                print('waiting for game start...')
-            else:
+            if os.path.exists(self.arena_info_file):
                 last_started = float(os.stat(os.path.join(self.config.replays_folder, 'tempArenaInfo.json')).st_mtime)
                 if last_started > self.last_started:
                     self.last_started = last_started
-                    print('new game started...')
+                    # print('new game started...')
+                    self.ui.set_status_bar('New game started, getting stats...')
+                    await asyncio.sleep(0.05)
                     self.read_arena_info()
 
                     for player in self.current_players:
                         try:
                             player.account_id = self.api.get_account_info(player.name)['data'][0]['account_id']
-                            res = next(iter(self.api.get_player_stats(player.account_id)['data'].values()))
+                            player_s = self.api.get_player_stats(player.account_id)['data'][str(player.account_id)]
 
-                            clan_id = next(iter(self.api.get_clan_info_player(player.account_id)['data'].values()))['clan_id']
+                            player.ship = self.api.get_ship_infos(player.ship_id)['data'][str(player.ship_id)]
+                            player.ship['type'] = 3 if player.ship['type'] == 'AirCarrier' else 2 \
+                                if player.ship['type'] == 'Battleship' else 1 if player.ship['type'] == 'Cruiser' else 0
+
+                            clan_id = self.api.get_player_clan(player.account_id
+                                                               )['data'][str(player.account_id)]['clan_id']
                             if clan_id:
                                 player.clan = self.api.get_clan_details(clan_id)['data'][str(clan_id)]['tag']
 
-                            player.hidden_profile = res['hidden_profile']
+                            player.hidden_profile = player_s['hidden_profile']
                             if player.hidden_profile:
                                 continue
 
-                            player.stats = res['statistics']['pvp']
+                            player.stats = player_s['statistics']['pvp']
+                            player.ship_stats = self.api.get_ship_stats(player.account_id, player.ship_id
+                                                                        )['data'][str(player.account_id)][0]['pvp']
                         except InvalidApplicationIdError:
-                            print('Invalid Application ID')
-                            exit(1)
+                            self.ui.set_status_bar('Invalid Application ID, please check your settings!')
+                            # exit(1)
                     self.ui.fill_tables(self.current_players)
-            await asyncio.sleep(10)
+                    self.ui.set_status_bar('Done.')
+            await asyncio.sleep(5)
 
     def read_arena_info(self):
         arena_info = os.path.join(self.config.replays_folder, 'tempArenaInfo.json')
@@ -108,23 +140,10 @@ class ApiWrapper:
         }
         return self.get_result('account', 'list', param)
 
-    def statistics_of_players_ships(self, account_id: int, *,
-                                    access_token: str = None,
-                                    extra: str = None,
-                                    fields: str = None,
-                                    in_garage: bool = None,
-                                    language: str = None,
-                                    ship_id: int = 0) -> dict:
-
-        if in_garage is not None:
-            in_garage = '1' if in_garage else '0'
+    def get_ship_stats(self, account_id: int, ship_id: int = 0) -> dict:
         param = {
             'account_id': account_id,
-            'access_token': access_token,
-            'extra': extra,
-            'fields': fields,
-            'in_garage': in_garage,
-            'language': language,
+            'fields': 'pvp.battles,pvp.wins,pvp.damage_dealt',
             'ship_id': ship_id
         }
         return self.get_result('ships', 'stats', param)
@@ -138,7 +157,7 @@ class ApiWrapper:
         }
         return self.get_result('account', 'info', param)
 
-    def get_clan_info_player(self, account_id: int) -> dict:
+    def get_player_clan(self, account_id: int) -> dict:
         param = {
             'account_id': account_id
         }
@@ -150,6 +169,13 @@ class ApiWrapper:
             'fields': 'tag,members_count'
         }
         return self.get_result('clans', 'info', param)
+
+    def get_ship_infos(self, ship_id: int) -> dict:
+        param = {
+            'ship_id': ship_id,
+            'fields': 'name,tier,type'
+        }
+        return self.get_result('encyclopedia', 'ships', param)
 
 
 class Config(ConfigParser):
@@ -183,7 +209,7 @@ class Config(ConfigParser):
             self.read_file(configfile)
 
     def create_default(self):
-        self['DEFAULT']['replays_folder'] = 'C:\\Program Files (x86)\\World_of_Warships_Eu\\replays'
+        self['DEFAULT']['replays_folder'] = ''
         self['DEFAULT']['region'] = 'eu'
         self['DEFAULT']['api_key'] = '123'
         self.save()
@@ -202,14 +228,13 @@ if __name__ == '__main__':
     loop.run_until_complete(asyncio.sleep(1))
 
     p = PotatoAlert(ui)
-    loop.create_task(p.run())
+    # loop.create_task(p.run())
     with loop:
         sys.exit(loop.run_forever())
-
 
     # loop.run_until_complete(p.init_gui())
     # c = Config()
     # a = ApiWrapper(c.api_key, c.region)
-    # print(a.statistics_of_players_ships(529548579))
+    # print(a.get_ship_stats(501108325, 4277090288))
     # print(a.get_player_stats(529548579))
     # print(a.get_account_id_by_name('nGu_RaZaq'))
