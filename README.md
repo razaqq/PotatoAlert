@@ -16,4 +16,8 @@ Dependencies:
 - requests
 
 ## Compile yourseelf
-TODO
+1. Get all the dependencies listed above except PyQt5
+2. Get PyQt5 version 5.12.1, I was getting lib issues with any newer version.
+3. Get pywin32 and pypiwin32
+4. Get PyInstaller
+5. Open build.py and edit the lines at the top accordingly. Then run it.
