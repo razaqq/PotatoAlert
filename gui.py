@@ -345,6 +345,12 @@ class MainWindow(QMainWindow):
                 table.setItem(y, 6, item)
 
                 # table.resizeColumnsToContents()
+        for y in range(tables[1], 12):
+            for x in range(7):
+                self.left_table.setItem(y, x, QTableWidgetItem(''))
+        for y in range(tables[2], 12):
+            for x in range(7):
+                self.right_table.setItem(y, x, QTableWidgetItem(''))
 
 
 def resource_path(relative_path):
