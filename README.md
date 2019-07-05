@@ -21,4 +21,5 @@ Dependencies:
 3. Get pywin32 and pypiwin32
 4. Get https://pypi.org/project/auto-py-to-exe/
 5. add --paths "PYTHON/Lib/site - packages/PyQt5/Qt/bin" manual entry, replace PYTHON with the path to your python install
-6. compile
+6. add /assets as additional files
+7. compile

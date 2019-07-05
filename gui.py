@@ -25,7 +25,7 @@ from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableW
      QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices
 from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl
-from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White, Black
+from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
 from pyqtconfig import ConfigManager
 from version import __version__
 
@@ -276,6 +276,6 @@ def create_gui():
     import sys
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    # toggle_stylesheet('assets/dark.qss')
+    toggle_stylesheet('assets/dark.qss')
     ui = MainWindow()
     return app, ui
