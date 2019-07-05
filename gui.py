@@ -22,10 +22,10 @@ SOFTWARE.
 
 
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
-     QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QMenu, QDialogButtonBox, QDialog, QComboBox
+     QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices
-from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl, QMetaObject, QSettings
-from colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, Grey, White
+from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl
+from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
 from pyqtconfig import ConfigManager
 from version import __version__
 
@@ -275,6 +275,6 @@ def create_gui():
     import sys
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    # toggle_stylesheet('dark.qss')
+    # toggle_stylesheet('assets/dark.qss')
     ui = MainWindow()
     return app, ui
