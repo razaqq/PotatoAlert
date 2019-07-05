@@ -23,10 +23,9 @@ SOFTWARE.
 
 import os
 import sys
-import qdarkstyle
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
-     QToolButton
+     QToolButton, QFileDialog
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices
 from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl, QMetaObject
 from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
@@ -189,13 +188,18 @@ class MainWindow(QMainWindow):
         l3.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
         l3.setText("Replays Folder:")
 
-        t = QToolButton(d)
-        t.setGeometry(QRect(365, 70, 25, 20))
-        t.setText("...")
-
         replays = QLineEdit(d)
         replays.setGeometry(QRect(120, 70, 235, 20))
         replays.setText(self.config['DEFAULT']['replays_folder'])
+
+        def dir_brower():
+            fd = QFileDialog()
+            fd.resize(500, 500)
+            replays.setText(str(fd.getExistingDirectory(self, "Select Directory")))
+        t = QToolButton(d)
+        t.setGeometry(QRect(365, 70, 25, 20))
+        t.setText("...")
+        t.clicked.connect(dir_brower)
 
         def update_config():
             self.config['DEFAULT']['replays_folder'] = replays.text()

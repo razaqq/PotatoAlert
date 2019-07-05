@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import os
 import sys
 import json
@@ -73,7 +74,6 @@ class PotatoAlert:
                     os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')).st_mtime)
                 if last_started != self.last_started:
                     self.last_started = last_started
-                    # print('new game started...')
                     self.ui.set_status_bar('New game started, getting stats...')
                     await asyncio.sleep(0.05)
                     self.read_arena_info()
@@ -84,7 +84,6 @@ class PotatoAlert:
                             player_s = self.api.get_player_stats(player.account_id)['data'][str(player.account_id)]
 
                             player.ship = self.api.get_ship_infos(player.ship_id)['data'][str(player.ship_id)]
-                            # print(player.ship)
                             player.ship['type'] = 3 if player.ship['type'] == 'AirCarrier' else 2 \
                                 if player.ship['type'] == 'Battleship' else 1 if player.ship['type'] == 'Cruiser' else 0
 
@@ -198,10 +197,3 @@ if __name__ == '__main__':
     loop.create_task(p.run())
     with loop:
         sys.exit(loop.run_forever())
-
-    # loop.run_until_complete(p.init_gui())
-    # c = Config()
-    # a = ApiWrapper(c.api_key, c.region)
-    # print(a.get_ship_stats(501108325, 4277090288))
-    # print(a.get_player_stats(529548579))
-    # print(a.get_account_id_by_name('nGu_RaZaq'))
