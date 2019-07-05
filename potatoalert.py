@@ -97,6 +97,7 @@ class PotatoAlert:
                             # exit(1)
                     self.ui.fill_tables(self.current_players)
                     self.ui.set_status_bar('Done.')
+            self.ui.set_status_bar('Waiting for match start...')
             await asyncio.sleep(5)
 
     def read_arena_info(self):

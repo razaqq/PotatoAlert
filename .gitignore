@@ -1,3 +1,5 @@
 venv/
 .idea/
 .git/
+build/
+__pycache__
