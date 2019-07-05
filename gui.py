@@ -23,6 +23,7 @@ SOFTWARE.
 
 import os
 import sys
+import qdarkstyle
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
      QToolButton
@@ -85,13 +86,13 @@ class MainWindow(QMainWindow):
         self.flags = Qt.WindowFlags()
         super().__init__(flags=self.flags)
         self.central_widget = None
+        self.config = Config()
         self.init()
         self.set_size()
         self.left_table = Table(self.central_widget, 10, 30)
         self.right_table = Table(self.central_widget, 755, 30)
         self.create_table_labels()
         self.create_menubar()
-        self.config = Config()
 
     def init(self):
         self.setObjectName("MainWindow")
@@ -106,6 +107,7 @@ class MainWindow(QMainWindow):
 
         self.central_widget = QWidget(self, flags=self.flags)
         self.setCentralWidget(self.central_widget)
+        toggle_stylesheet(int(self.config['DEFAULT']['theme']))
         # QMetaObject.connectSlotsByName(self)
 
     def set_status_bar(self, text):
@@ -160,8 +162,10 @@ class MainWindow(QMainWindow):
 
         c = QComboBox(d)
         themes = {'default': 0,
-                  'dark': 1,
-                  'light': 2}
+                  'light': 1,
+                  'dark': 2,
+                  'dark2': 3,
+                  'dark3': 4}
         c.addItems(themes.keys())
         c.setGeometry(QRect(120, 40, 69, 20))
         c.setCurrentIndex(int(self.config['DEFAULT']['theme']))
@@ -289,7 +293,7 @@ class MainWindow(QMainWindow):
 
                 item = QTableWidgetItem(str(battles_ship))
                 item.setFont(QFont("Segoe UI", 12, QFont.Bold))
-                if self.config['DEFAULT']['theme'] == 1:
+                if self.config['DEFAULT']['theme'] in [2, 3, 4]:
                     item.setForeground(White())
                 item.setTextAlignment(Qt.AlignCenter)
                 table.setItem(y, 5, item)
@@ -313,8 +317,11 @@ def resource_path(relative_path):
 def toggle_stylesheet(index):
     styles = {
         0: '',
-        1: resource_path('./assets/dark.qss'),
-        2: resource_path('./assets/light.qss')
+        1: resource_path('./assets/light.qss'),
+        2: resource_path('./assets/dark.qss'),
+        3: resource_path('./assets/dark2.qss'),
+        4: resource_path('./assets/dark3.qss')
+
     }
 
     app = QApplication.instance()
@@ -336,6 +343,6 @@ def create_gui():
     import sys
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    # toggle_stylesheet(resource_path('./assets/dark.qss'))
+    # toggle_stylesheet(5)
     ui = MainWindow()
     return app, ui

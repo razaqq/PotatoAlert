@@ -2,8 +2,9 @@
 
 ## Screenshots
 
-![default](screens/default.png?raw=true)
 ![default](screens/dark.png?raw=true)
+![default](screens/default.png?raw=true)
+![default](screens/dark2.png?raw=true)
 
 ## Use pre-compiled build
 You can find pre-compiled builds for Windows and Linux [here](https://github.com/razaqq/PotatoAlert/releases).
