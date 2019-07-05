@@ -2,5 +2,6 @@ venv/
 .idea/
 .git/
 build/
+dist/
 __pycache__
 build.py
