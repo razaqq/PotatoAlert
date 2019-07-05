@@ -150,12 +150,12 @@ class MainWindow(QMainWindow):
 
     def create_settings_menu(self):
         d = QDialog()
-        d.setFixedSize(400, 142)
+        d.setFixedSize(450, 182)  # 400 142
         d.setWindowTitle("Settings")
         d.setWindowIcon(QIcon(resource_path('./assets/settings.ico')))
 
         bb = QDialogButtonBox(d)
-        bb.setGeometry(QRect(10, 100, 380, 32))
+        bb.setGeometry(QRect(10, 140, 430, 32))
         bb.setOrientation(Qt.Horizontal)
         bb.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
 
@@ -170,7 +170,7 @@ class MainWindow(QMainWindow):
         c.setCurrentIndex(int(self.config['DEFAULT']['theme']))
 
         api_key = QLineEdit(d)
-        api_key.setGeometry(QRect(120, 10, 270, 20))
+        api_key.setGeometry(QRect(120, 10, 320, 20))
         api_key.setText(self.config['DEFAULT']['api_key'])
 
         l1 = QLabel(d)
@@ -189,7 +189,7 @@ class MainWindow(QMainWindow):
         l3.setText("Replays Folder:")
 
         replays = QLineEdit(d)
-        replays.setGeometry(QRect(120, 70, 235, 20))
+        replays.setGeometry(QRect(120, 70, 285, 20))
         replays.setText(self.config['DEFAULT']['replays_folder'])
 
         def dir_brower():
@@ -197,14 +197,29 @@ class MainWindow(QMainWindow):
             fd.resize(500, 500)
             replays.setText(str(fd.getExistingDirectory(self, "Select Directory")))
         t = QToolButton(d)
-        t.setGeometry(QRect(365, 70, 25, 20))
+        t.setGeometry(QRect(415, 70, 25, 20))
         t.setText("...")
         t.clicked.connect(dir_brower)
+
+        l4 = QLabel(d)
+        l4.setGeometry(QRect(10, 100, 100, 20))
+        l4.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
+        l4.setText("Region:")
+
+        r = QComboBox(d)
+        regions = {'eu': 0,
+                   'ru': 1,
+                   'na': 2,
+                   'asia': 3}
+        r.addItems(regions.keys())
+        r.setGeometry(QRect(120, 100, 69, 20))
+        r.setCurrentIndex(int(regions[self.config['DEFAULT']['region']]))
 
         def update_config():
             self.config['DEFAULT']['replays_folder'] = replays.text()
             self.config['DEFAULT']['api_key'] = api_key.text()
             self.config['DEFAULT']['theme'] = str(c.currentIndex())
+            self.config['DEFAULT']['region'] = [region for region, index in regions.items() if index == r.currentIndex()][0]
             toggle_stylesheet(c.currentIndex())
 
         bb.accepted.connect(d.accept)
@@ -226,7 +241,21 @@ class MainWindow(QMainWindow):
                 'Powered by: PyQt5, asyncqt and requests\n' \
                 'License: MIT'
         QMessageBox.about(self, "About", about)
-        # QLabel('test123')
+
+    def notify_update(self, new_version):
+        text = 'There is a new version available! <br>' \
+               f'Your Version: {__version__} <br>' \
+               f'New Version: {new_version} <br>' \
+               'Get it <a href="http://github.com/razaqq/PotatoAlert" style="color: rgb(0,255,0)">HERE</a>'
+        q = QMessageBox()
+        q.setTextFormat(Qt.RichText)
+        q.setText(text)
+        q.setWindowTitle('Update available')
+        icon = QIcon()
+        icon.addPixmap(QPixmap(resource_path('./assets/potato.png')), QIcon.Normal, QIcon.Off)
+        q.setWindowIcon(icon)
+        q.exec_()
+        # q.about(self, "Update available", text)
 
     def fill_tables(self, players):
         tables = {1: 0, 2: 0}

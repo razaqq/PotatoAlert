@@ -27,12 +27,13 @@ import os
 import sys
 import json
 import asyncio
-from requests import get
+from requests import get, exceptions
 from config import Config
 from dataclasses import dataclass
 from gui import create_gui
 from asyncqt import QEventLoop
 from apierrors import InvalidApplicationIdError
+from version import __version__
 
 
 @dataclass()
@@ -61,6 +62,16 @@ class PotatoAlert:
         self.last_started = 0.0
         self.last_config_edit = float(os.stat(os.path.join(self.config.config_path, 'config.ini')).st_mtime)
         self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
+        self.check_version()
+
+    def check_version(self):
+        try:
+            url = 'https://raw.githubusercontent.com/razaqq/PotatoAlert/master/version.py'
+            new_version = str(get(url).content.decode().split("'")[1])
+            if __version__ != new_version:
+                self.ui.notify_update(new_version)
+        except exceptions.ConnectionError:
+            pass
 
     async def run(self):
         while True:
@@ -124,7 +135,8 @@ class PotatoAlert:
 class ApiWrapper:
     def __init__(self, api_key, region):
         self.api_key = api_key
-        self.endpoint = f'https://api.worldofwarships.{region}/wows/{{}}/{{}}/?'
+        http_ending = region if region != 'na' else 'com'
+        self.endpoint = f'https://api.worldofwarships.{http_ending}/wows/{{}}/{{}}/?'
 
     def get_result(self, method_block: str, method_name: str, params: dict) -> dict:
         try:
@@ -137,8 +149,8 @@ class ApiWrapper:
                 if res['error']['code'] == 407 and res['error']['message'] == 'INVALID_APPLICATION_ID':
                     raise InvalidApplicationIdError
             return res
-        except ConnectionError:
-            print('connection error')
+        except exceptions.RequestException:
+            print('Connection Error')
 
     def get_account_info(self, name) -> dict:
         param = {
@@ -194,6 +206,6 @@ if __name__ == '__main__':
     loop.run_until_complete(asyncio.sleep(1))
 
     p = PotatoAlert(ui)
-    loop.create_task(p.run())
+    # loop.create_task(p.run())
     with loop:
         sys.exit(loop.run_forever())
