@@ -15,9 +15,10 @@ Dependencies:
 - PyQtWebEngine
 - requests
 
-## Compile yourseelf
+## Compile yourself
 1. Get all the dependencies listed above except PyQt5
 2. Get PyQt5 version 5.12.1, I was getting lib issues with any newer version.
 3. Get pywin32 and pypiwin32
-4. Get PyInstaller
-5. Open build.py and edit the lines at the top accordingly. Then run it.
+4. Get https://pypi.org/project/auto-py-to-exe/
+5. add --paths "<pythoninstall>/Lib/site - packages/PyQt5/Qt/bin" manual entry
+6. compile
