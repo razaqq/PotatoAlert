@@ -106,7 +106,7 @@ class MainWindow(QMainWindow):
         self.set_size()
         self.setWindowTitle("PotatoAlert")
         icon = QIcon()
-        icon.addPixmap(QPixmap("potato.png"), QIcon.Normal, QIcon.Off)
+        icon.addPixmap(QPixmap("assets/potato.png"), QIcon.Normal, QIcon.Off)
         self.setWindowIcon(icon)
         self.setAutoFillBackground(False)
 
