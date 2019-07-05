@@ -27,7 +27,7 @@ import sys
 import json
 import asyncio
 from requests import get
-from configparser import ConfigParser
+from config import Config
 from dataclasses import dataclass
 from gui import create_gui
 from asyncqt import QEventLoop
@@ -52,19 +52,26 @@ class PotatoAlert:
     def __init__(self, ui):
         self.ui = ui
         self.config = Config()
-        self.arena_info_file = os.path.join(self.config.replays_folder, 'tempArenaInfo.json')
+        self.arena_info_file = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
         self.client_version = ''
         self.steam_version = False
         self.region = ''
         self.current_players = []
         self.last_started = 0.0
-        self.api = ApiWrapper(self.config.api_key, self.config.region)
+        self.last_config_edit = float(os.stat(os.path.join(self.config.config_path, 'config.ini')).st_mtime)
+        self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
 
     async def run(self):
         while True:
+            last_config_edit = float(os.stat(os.path.join(self.config.config_path, 'config.ini')).st_mtime)
+            if last_config_edit > self.last_config_edit:  # TODO FIX THIS MESS
+                self.config = Config()
+                self.arena_info_file = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
+                self.last_config_edit = last_config_edit
             if os.path.exists(self.arena_info_file):
-                last_started = float(os.stat(os.path.join(self.config.replays_folder, 'tempArenaInfo.json')).st_mtime)
-                if last_started > self.last_started:
+                last_started = float(os.stat(
+                    os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')).st_mtime)
+                if last_started != self.last_started:
                     self.last_started = last_started
                     # print('new game started...')
                     self.ui.set_status_bar('New game started, getting stats...')
@@ -77,6 +84,7 @@ class PotatoAlert:
                             player_s = self.api.get_player_stats(player.account_id)['data'][str(player.account_id)]
 
                             player.ship = self.api.get_ship_infos(player.ship_id)['data'][str(player.ship_id)]
+                            # print(player.ship)
                             player.ship['type'] = 3 if player.ship['type'] == 'AirCarrier' else 2 \
                                 if player.ship['type'] == 'Battleship' else 1 if player.ship['type'] == 'Cruiser' else 0
 
@@ -101,7 +109,7 @@ class PotatoAlert:
             await asyncio.sleep(5)
 
     def read_arena_info(self):
-        arena_info = os.path.join(self.config.replays_folder, 'tempArenaInfo.json')
+        arena_info = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
         if not os.path.exists(arena_info):
             return
         with open(arena_info, 'r') as f:
@@ -177,48 +185,6 @@ class ApiWrapper:
             'fields': 'name,tier,type'
         }
         return self.get_result('encyclopedia', 'ships', param)
-
-
-class Config(ConfigParser):
-    def __init__(self):
-        super().__init__()
-        self.config_path = self.find_config()
-        self.read_config()
-
-    def __getattr__(self, item):
-        try:
-            return self['DEFAULT'][item]
-        except KeyError as e:
-            print(f'Keyerror: {e}')
-
-    @staticmethod
-    def find_config():
-        if os.name == 'nt':
-            return os.path.join(os.getenv('APPDATA'), 'PotatoAlert')
-        if os.name == 'posix':
-            return os.path.join(os.path.expanduser('~'), '.config/PotatoAlert')
-        else:
-            print('I have no idea which os you are on, please fix your shit')
-            exit(1)
-
-    def read_config(self):
-        if not os.path.exists(self.config_path):
-            os.makedirs(self.config_path)
-        if not os.path.exists(os.path.join(self.config_path, 'config.ini')):
-            self.create_default()
-        with open(os.path.join(self.config_path, 'config.ini'), 'r') as configfile:
-            self.read_file(configfile)
-
-    def create_default(self):
-        self['DEFAULT']['replays_folder'] = ''
-        self['DEFAULT']['region'] = 'eu'
-        self['DEFAULT']['api_key'] = '123'
-        self.save()
-        self.read_config()
-
-    def save(self):
-        with open(os.path.join(self.config_path, 'config.ini'), 'w') as configfile:
-            self.write(configfile)
 
 
 if __name__ == '__main__':

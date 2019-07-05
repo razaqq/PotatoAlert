@@ -21,12 +21,15 @@ SOFTWARE.
 """
 
 
+import os
+import sys
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
-     QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox
+     QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
+     QToolButton
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices
-from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl
+from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl, QMetaObject
 from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
-from pyqtconfig import ConfigManager
+from config import Config
 from version import __version__
 
 
@@ -70,9 +73,6 @@ class Table(QTableWidget):
         # self.setItem(0, 5, item)
 
         self.horizontalHeader().setVisible(True)
-        # self.horizontalHeader().setDefaultSectionSize(104)
-        # self.horizontalHeader().setHighlightSections(True)
-        # self.horizontalHeader().setMinimumSectionSize(49)
         self.verticalHeader().setVisible(False)
 
         self.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
@@ -91,13 +91,7 @@ class MainWindow(QMainWindow):
         self.right_table = Table(self.central_widget, 755, 30)
         self.create_table_labels()
         self.create_menubar()
-        self.config = ConfigManager()
-        self.config.set_defaults({
-            'replays_folder': 'C:/',
-            'api_key': '123',
-            'region': 'eu',
-            'theme': 0,
-        })
+        self.config = Config()
 
     def init(self):
         self.setObjectName("MainWindow")
@@ -106,7 +100,7 @@ class MainWindow(QMainWindow):
         self.set_size()
         self.setWindowTitle("PotatoAlert")
         icon = QIcon()
-        icon.addPixmap(QPixmap("assets/potato.png"), QIcon.Normal, QIcon.Off)
+        icon.addPixmap(QPixmap(resource_path('./assets/potato.png')), QIcon.Normal, QIcon.Off)
         self.setWindowIcon(icon)
         self.setAutoFillBackground(False)
 
@@ -154,12 +148,64 @@ class MainWindow(QMainWindow):
         about_button.triggered.connect(self.open_about)
 
     def create_settings_menu(self):
-        comboBox = QComboBox()
+        d = QDialog()
+        d.setFixedSize(400, 142)
+        d.setWindowTitle("Settings")
+        d.setWindowIcon(QIcon(resource_path('./assets/settings.ico')))
+
+        bb = QDialogButtonBox(d)
+        bb.setGeometry(QRect(10, 100, 380, 32))
+        bb.setOrientation(Qt.Horizontal)
+        bb.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
+
+        c = QComboBox(d)
         themes = {'default': 0,
                   'dark': 1,
                   'light': 2}
-        comboBox.addItems(themes.keys())
-        self.config.add_handler('combo', comboBox, mapper=themes)
+        c.addItems(themes.keys())
+        c.setGeometry(QRect(120, 40, 69, 20))
+        c.setCurrentIndex(int(self.config['DEFAULT']['theme']))
+
+        api_key = QLineEdit(d)
+        api_key.setGeometry(QRect(120, 10, 270, 20))
+        api_key.setText(self.config['DEFAULT']['api_key'])
+
+        l1 = QLabel(d)
+        l1.setGeometry(QRect(10, 10, 100, 20))
+        l1.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
+        l1.setText("Wargaming API Key:")
+
+        l2 = QLabel(d)
+        l2.setGeometry(QRect(10, 40, 100, 20))
+        l2.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
+        l2.setText("Theme:")
+
+        l3 = QLabel(d)
+        l3.setGeometry(QRect(10, 70, 100, 20))
+        l3.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
+        l3.setText("Replays Folder:")
+
+        t = QToolButton(d)
+        t.setGeometry(QRect(365, 70, 25, 20))
+        t.setText("...")
+
+        replays = QLineEdit(d)
+        replays.setGeometry(QRect(120, 70, 235, 20))
+        replays.setText(self.config['DEFAULT']['replays_folder'])
+
+        def update_config():
+            self.config['DEFAULT']['replays_folder'] = replays.text()
+            self.config['DEFAULT']['api_key'] = api_key.text()
+            self.config['DEFAULT']['theme'] = str(c.currentIndex())
+            toggle_stylesheet(c.currentIndex())
+
+        bb.accepted.connect(d.accept)
+        bb.accepted.connect(update_config)
+        bb.accepted.connect(self.config.save)
+        bb.rejected.connect(d.reject)
+        QMetaObject.connectSlotsByName(d)
+
+        d.exec_()
 
     @staticmethod
     def open_github():
@@ -243,7 +289,7 @@ class MainWindow(QMainWindow):
 
                 item = QTableWidgetItem(str(battles_ship))
                 item.setFont(QFont("Segoe UI", 12, QFont.Bold))
-                if self.config.get('theme') == 1:
+                if self.config['DEFAULT']['theme'] == 1:
                     item.setForeground(White())
                 item.setTextAlignment(Qt.AlignCenter)
                 table.setItem(y, 5, item)
@@ -258,10 +304,24 @@ class MainWindow(QMainWindow):
                 table.setItem(y, 6, item)
 
 
-def toggle_stylesheet(path=''):
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath('.'), relative_path)
+
+
+def toggle_stylesheet(index):
+    styles = {
+        0: '',
+        1: resource_path('./assets/dark.qss'),
+        2: resource_path('./assets/light.qss')
+    }
+
     app = QApplication.instance()
     if app is None:
         raise RuntimeError("No Qt Application found.")
+
+    path = styles[index]
 
     if path:
         file = QFile(path)
@@ -276,6 +336,6 @@ def create_gui():
     import sys
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    toggle_stylesheet('assets/dark.qss')
+    # toggle_stylesheet(resource_path('./assets/dark.qss'))
     ui = MainWindow()
     return app, ui
