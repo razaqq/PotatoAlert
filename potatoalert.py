@@ -94,30 +94,55 @@ class PotatoAlert:
                         try:
                             player.account_id = self.api.get_account_info(player.name)['data'][0]['account_id']
                             player_s = self.api.get_player_stats(player.account_id)['data'][str(player.account_id)]
+                            player.hidden_profile = player_s['hidden_profile']
 
+                            # Get ship infos and replace type and nation with int for easier sorting
                             player.ship = self.api.get_ship_infos(player.ship_id)['data'][str(player.ship_id)]
-                            player.ship['type'] = 3 if player.ship['type'] == 'AirCarrier' else 2 \
-                                if player.ship['type'] == 'Battleship' else 1 if player.ship['type'] == 'Cruiser' else 0
+                            if player.ship:  # sometimes we get None
+                                ships = {
+                                    'AirCarrier': 4,
+                                    'Battleship': 3,
+                                    'Cruiser': 2,
+                                    'Destroyer': 1
+                                }
+                                player.ship['type'] = ships[player.ship['type']]
 
+                                nations = {
+                                    'usa': 10,
+                                    'uk': 9,
+                                    'commonwealth': 8,
+                                    'france': 7,
+                                    'germany': 6,
+                                    'italy': 5,
+                                    'japan': 4,
+                                    'pan-asia': 3,
+                                    'poland': 2,
+                                    'russia': 1
+                                }
+                                player.ship['nation'] = nations.get(player.ship['nation'], 0)
+
+                                # get detailed stats about ship if profile is not private
+                                if not player.hidden_profile:
+                                    player.ship_stats = self.api.get_ship_stats(
+                                        player.account_id, player.ship_id)['data'][str(player.account_id)][0]['pvp']
+
+                            # Check if player is in clan, if so get tag
                             clan_id = self.api.get_player_clan(player.account_id
                                                                )['data'][str(player.account_id)]['clan_id']
                             if clan_id:
                                 player.clan = self.api.get_clan_details(clan_id)['data'][str(clan_id)]['tag']
 
-                            player.hidden_profile = player_s['hidden_profile']
-                            if player.hidden_profile:
-                                continue
-
-                            player.stats = player_s['statistics']['pvp']
-                            player.ship_stats = self.api.get_ship_stats(player.account_id, player.ship_id
-                                                                        )['data'][str(player.account_id)][0]['pvp']
+                            # get general stats if profile is not private
+                            if not player.hidden_profile:
+                                player.stats = player_s['statistics']['pvp']
                         except InvalidApplicationIdError:
                             self.ui.set_status_bar('Invalid Application ID, please check your settings!')
-                            # exit(1)
                     self.ui.fill_tables(self.current_players)
                     self.ui.set_status_bar('Done.')
             self.ui.set_status_bar('Waiting for match start...')
             await asyncio.sleep(5)
+
+
 
     def read_arena_info(self):
         arena_info = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
@@ -194,7 +219,7 @@ class ApiWrapper:
     def get_ship_infos(self, ship_id: int) -> dict:
         param = {
             'ship_id': ship_id,
-            'fields': 'name,tier,type'
+            'fields': 'name,tier,type,nation'
         }
         return self.get_result('encyclopedia', 'ships', param)
 
