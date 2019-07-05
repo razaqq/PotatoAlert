@@ -71,8 +71,3 @@ class Yellow(QColor):
 class White(QColor):
     def __init__(self):
         super().__init__(255, 255, 255)
-
-
-class Black(QColor):
-    def __init__(self):
-        super().__init__(0, 0, 0)

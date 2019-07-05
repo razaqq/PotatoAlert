@@ -25,7 +25,7 @@ from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableW
      QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices
 from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl
-from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
+from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White, Black
 from pyqtconfig import ConfigManager
 from version import __version__
 
@@ -243,7 +243,8 @@ class MainWindow(QMainWindow):
 
                 item = QTableWidgetItem(str(battles_ship))
                 item.setFont(QFont("Segoe UI", 12, QFont.Bold))
-                item.setForeground(White())
+                if self.config.get('theme') == 1:
+                    item.setForeground(White())
                 item.setTextAlignment(Qt.AlignCenter)
                 table.setItem(y, 5, item)
 
