@@ -25,7 +25,7 @@ import os
 import sys
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
-     QToolButton, QFileDialog
+     QToolButton, QFileDialog, QAbstractScrollArea
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices
 from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl, QMetaObject
 from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
@@ -75,9 +75,12 @@ class Table(QTableWidget):
         self.horizontalHeader().setVisible(True)
         self.verticalHeader().setVisible(False)
 
-        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
-        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        # self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        # self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        # self.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        # self.resizeColumnsToContents()
 
 
 class MainWindow(QMainWindow):
@@ -120,7 +123,7 @@ class MainWindow(QMainWindow):
         size.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
         self.setSizePolicy(size)
         self.setMinimumSize(QSize(1500, 520))
-        self.setMaximumSize(QSize(1500, 520))
+        self.setMaximumSize(QSize(3840, 2160))  # 1500 x 520
 
     def create_tables(self):
         self.left_table = Table(self.central_widget, 10, 30)
@@ -340,6 +343,8 @@ class MainWindow(QMainWindow):
                 item.setForeground(c)
                 item.setTextAlignment(Qt.AlignCenter)
                 table.setItem(y, 6, item)
+
+                # table.resizeColumnsToContents()
 
 
 def resource_path(relative_path):
