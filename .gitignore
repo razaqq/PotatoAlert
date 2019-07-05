@@ -3,3 +3,4 @@ venv/
 .git/
 build/
 __pycache__
+build.py
