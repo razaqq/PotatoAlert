@@ -91,8 +91,8 @@ class MainWindow(QMainWindow):
         self.right_table = Table(self.central_widget, 755, 30)
         self.create_table_labels()
         self.create_menubar()
-        config = ConfigManager()
-        config.set_defaults({
+        self.config = ConfigManager()
+        self.config.set_defaults({
             'replays_folder': 'C:/',
             'api_key': '123',
             'region': 'eu',
