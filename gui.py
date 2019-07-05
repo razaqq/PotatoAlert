@@ -242,7 +242,8 @@ class MainWindow(QMainWindow):
                 'License: MIT'
         QMessageBox.about(self, "About", about)
 
-    def notify_update(self, new_version):
+    @staticmethod
+    def notify_update(new_version):
         text = 'There is a new version available! <br>' \
                f'Your Version: {__version__} <br>' \
                f'New Version: {new_version} <br>' \
