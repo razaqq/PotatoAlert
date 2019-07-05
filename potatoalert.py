@@ -79,6 +79,7 @@ class PotatoAlert:
             if last_config_edit > self.last_config_edit:  # TODO FIX THIS MESS
                 self.config = Config()
                 self.arena_info_file = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
+                self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
                 self.last_config_edit = last_config_edit
             if os.path.exists(self.arena_info_file):
                 last_started = float(os.stat(
