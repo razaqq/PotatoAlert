@@ -11,11 +11,12 @@ if __name__ == '__main__':
     main = os.path.join(root, 'potatoalert.py')
     assets = os.path.join(root, 'assets')
     icon = os.path.join(assets, 'potato.ico')
+    assets_sep = ':' if os.name == 'posix' else ';'
 
     debug_flags = '-F -y'
     build_flags = '-F -y -w'
 
-    build = f'{sys.executable} -m PyInstaller {build_flags} -i "{icon}" --add-data "{assets}";"assets/" ' \
+    build = f'{sys.executable} -m PyInstaller {build_flags} -i "{icon}" --add-data "{assets}"{assets_sep}"assets/" ' \
             f'--paths "{ADDITIONAL_LIB_PATHS}" --paths "{QT5_LIBS_PATH}" "{main}"'
 
     subprocess.call(
