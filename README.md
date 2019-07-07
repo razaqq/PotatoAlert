@@ -29,7 +29,17 @@ Dependencies:
 1. Get all the dependencies listed above except PyQt5
 2. Get PyQt5 version 5.12.1, I was getting lib issues with any newer version.
 3. Get pywin32 and pypiwin32
-4. Get https://pypi.org/project/auto-py-to-exe/
-5. add --paths "PYTHON/Lib/site - packages/PyQt5/Qt/bin" manual entry, replace PYTHON with the path to your python install
-6. add /assets as additional files
-7. compile
+
+Now you have two options: Use a GUI to compile or not.
+
+No gui:
+1. Open build.py and edit lib paths
+2. Run it to compile
+
+Gui:
+1. Get https://pypi.org/project/auto-py-to-exe/
+2. add --paths "PYTHON/Lib/site - packages/PyQt5/Qt/bin" manual entry, replace PYTHON with the path to your python install
+3. add /assets as additional files
+4. Compile
+
+In both cases you will find your binary in dist/
