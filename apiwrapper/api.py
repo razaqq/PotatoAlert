@@ -23,7 +23,7 @@ class ApiWrapper:
         except RequestException:
             print('Connection Error')
 
-    def get_account_info(self, name) -> dict:
+    def search_account(self, name) -> dict:
         param = {
             'search': name,
             'type': 'exact',
@@ -39,7 +39,7 @@ class ApiWrapper:
         }
         return self.get_result('ships', 'stats', param)
 
-    def get_player_stats(self, account_id: int) -> dict:
+    def get_account_info(self, account_id: int) -> dict:
         param = {
             'account_id': account_id,
             'fields': 'hidden_profile,statistics.pvp.battles,statistics.pvp.losses,statistics.pvp.survived_battles,'
@@ -54,7 +54,7 @@ class ApiWrapper:
         }
         return self.get_result('clans', 'accountinfo', param)
 
-    def get_clan_details(self, clan_id: int) -> dict:
+    def get_clan_info(self, clan_id: int) -> dict:
         param = {
             'clan_id': clan_id,
             'fields': 'tag,members_count'
