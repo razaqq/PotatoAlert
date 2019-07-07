@@ -95,6 +95,7 @@ class MainWindow(QMainWindow):
         self.right_table = Table(self.central_widget, 755, 30)
         self.create_table_labels()
         self.create_menubar()
+        self.config_reload_needed = False
 
     def init(self):
         self.setObjectName("MainWindow")
@@ -225,9 +226,13 @@ class MainWindow(QMainWindow):
             self.config['DEFAULT']['region'] = [region for region, index in regions.items() if index == r.currentIndex()][0]
             toggle_stylesheet(c.currentIndex())
 
+        def flag_config_reload_needed():
+            self.config_reload_needed = True
+
         bb.accepted.connect(d.accept)
         bb.accepted.connect(update_config)
         bb.accepted.connect(self.config.save)
+        bb.accepted.connect(flag_config_reload_needed)
         bb.rejected.connect(d.reject)
         QMetaObject.connectSlotsByName(d)
 
@@ -265,46 +270,32 @@ class MainWindow(QMainWindow):
         tables = {1: 0, 2: 0}
         table = None
         y = 0
-        # carrier, battleship, cruiser, destroyer
-
-        players = sorted(players, key=lambda x: (x.ship['type'], x.ship['tier'], x.ship['nation']), reverse=True)
-        for i in range(len(players)):
-            player = players[i]
-            if player.relation == 0 or player.relation == 1:
+        for player in players:
+            if player.team == 0 or player.team == 1:
                 table = self.left_table
                 y = tables[1]
                 tables[1] += 1
-            if player.relation == 2:
+            if player.team == 2:
                 table = self.right_table
                 y = tables[2]
                 tables[2] += 1
 
-            item = QTableWidgetItem(f'[{player.clan}] {player.name}' if player.clan else player.name)
+            item = QTableWidgetItem(player.player_name)
             item.setFont(QFont("Segoe UI", 10))
             table.setItem(y, 0, item)
 
-            if player.ship:
-                ship_name = 'P. E. Friedrich' if player.ship['name'] == 'Prinz Eitel Friedrich' else \
-                    'F. der Große' if player.ship['name'] == 'Friedrich der Große' else \
-                    'Admiral Graf Spee' if player.ship['name'] == 'A. Graf Spee' else \
-                    'Okt. Revolutsiya' if player.ship['name'] == 'Oktyabrskaya Revolutsiya' else \
-                    'HSF A. Graf Spee' if player.ship['name'] == 'HSF Admiral Graf Spee' else \
-                    'J. de la Gravière' if player.ship['name'] == 'Jurien de la Gravière' else player.ship['name']
-                item = QTableWidgetItem(ship_name)
-                item.setFont(QFont("Segoe UI", 10, QFont.Bold))
-                table.setItem(y, 1, item)
-            else:
-                table.setItem(y, 1, QTableWidgetItem('Error'))
+            item = QTableWidgetItem(player.ship_name)
+            item.setFont(QFont("Segoe UI", 10, QFont.Bold))
+            table.setItem(y, 1, item)
 
             if not player.hidden_profile:
-                # overall stats
-                battles = player.stats['battles']
-                wr = round(player.stats['wins'] / battles * 100, 1)
-                avg_dmg = int(player.stats['damage_dealt'] / battles)
+                matches = player.matches
+                wr = player.winrate
+                avg_dmg = player.avg_dmg
 
-                c = Purple() if battles > 20000 else Cyan() if battles > 14000 else LGreen() if battles > 9000 else \
-                    Yellow() if battles > 5000 else Orange() if battles > 2000 else Red()
-                item = QTableWidgetItem(str(battles))
+                c = Purple() if matches > 20000 else Cyan() if matches > 14000 else LGreen() if matches > 9000 else \
+                    Yellow() if matches > 5000 else Orange() if matches > 2000 else Red()
+                item = QTableWidgetItem(str(matches))
                 item.setFont(QFont("Segoe UI", 12, QFont.Bold))
                 item.setForeground(c)
                 item.setTextAlignment(Qt.AlignCenter)
@@ -327,18 +318,15 @@ class MainWindow(QMainWindow):
                 table.setItem(y, 4, item)
 
                 # ship specific stats
-                if player.ship:
-                    battles_ship = player.ship_stats['battles']
-                    wr_ship = round(player.ship_stats['wins'] / battles_ship * 100, 1)
-                    avg_dmg_ship = int(player.ship_stats['damage_dealt'] / battles_ship)
-
-                    item = QTableWidgetItem(str(battles_ship))
+                if player.ship_name != 'Error':
+                    item = QTableWidgetItem(player.matches_ship)
                     item.setFont(QFont("Segoe UI", 12, QFont.Bold))
                     if self.config['DEFAULT']['theme'] in [2, 3, 4]:
                         item.setForeground(White())
                     item.setTextAlignment(Qt.AlignCenter)
                     table.setItem(y, 5, item)
 
+                    wr_ship = player.winrate_ship
                     c = Purple() if wr_ship > 65 else Pink() if wr_ship > 60 else Cyan() if wr_ship > 56 else \
                         DGreen() if wr_ship > 54 else LGreen() if wr_ship > 52 else Yellow() if wr_ship > 49 else \
                         Orange() if wr_ship > 47 else Red()

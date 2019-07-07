@@ -27,27 +27,32 @@ import os
 import sys
 import json
 import asyncio
-from requests import get, exceptions
+from typing import List
+from requests import get
+from requests.exceptions import ConnectionError
 from config import Config
 from dataclasses import dataclass
 from gui import create_gui
 from asyncqt import QEventLoop
-from apierrors import InvalidApplicationIdError
+from apiwrapper.api import ApiWrapper
+from apiwrapper.errors import InvalidApplicationIdError
 from version import __version__
 
 
 @dataclass()
 class Player:
-    ship_id: str
-    relation: int
-    id: int
-    name: str
-    ship: str = None
-    account_id: int = -1
-    hidden_profile: bool = False
-    stats: dict = None
-    ship_stats: dict = None
-    clan: str = None
+    player_name: str
+    ship_name: str
+    team: int
+    hidden_profile: bool
+    matches: str
+    winrate: str
+    avg_dmg: str
+    matches_ship: str
+    winrate_ship: str
+    class_ship: int  # for sorting we keep track of these too
+    tier_ship: int
+    nation_ship: int
 
 
 class PotatoAlert:
@@ -58,7 +63,6 @@ class PotatoAlert:
         self.client_version = ''
         self.steam_version = False
         self.region = ''
-        self.current_players = []
         self.last_started = 0.0
         self.last_config_edit = float(os.stat(os.path.join(self.config.config_path, 'config.ini')).st_mtime)
         self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
@@ -70,168 +74,124 @@ class PotatoAlert:
             new_version = str(get(url).content.decode().split("'")[1])
             if __version__ != new_version:
                 self.ui.notify_update(new_version)
-        except exceptions.ConnectionError:
+        except ConnectionError:
             pass
 
+    def reload_config(self):
+        self.config = Config()
+        self.arena_info_file = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
+        self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
+        self.ui.config_reload_needed = False
+
     async def run(self):
+        self.ui.set_status_bar('Waiting for match start...')
         while True:
-            last_config_edit = float(os.stat(os.path.join(self.config.config_path, 'config.ini')).st_mtime)
-            if last_config_edit > self.last_config_edit:  # TODO FIX THIS MESS
-                self.config = Config()
-                self.arena_info_file = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
-                self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
-                self.last_config_edit = last_config_edit
+            if self.ui.config_reload_needed:
+                self.reload_config()
             if os.path.exists(self.arena_info_file):
                 last_started = float(os.stat(
                     os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')).st_mtime)
                 if last_started != self.last_started:
-                    self.last_started = last_started
                     self.ui.set_status_bar('New game started, getting stats...')
                     await asyncio.sleep(0.05)
-                    self.read_arena_info()
-
-                    for player in self.current_players:
-                        try:
-                            player.account_id = self.api.get_account_info(player.name)['data'][0]['account_id']
-                            player_s = self.api.get_player_stats(player.account_id)['data'][str(player.account_id)]
-                            player.hidden_profile = player_s['hidden_profile']
-
-                            # Get ship infos and replace type and nation with int for easier sorting
-                            player.ship = self.api.get_ship_infos(player.ship_id)['data'][str(player.ship_id)]
-                            if player.ship:  # sometimes we get None
-                                ships = {
-                                    'AirCarrier': 4,
-                                    'Battleship': 3,
-                                    'Cruiser': 2,
-                                    'Destroyer': 1
-                                }
-                                player.ship['type'] = ships[player.ship['type']]
-
-                                nations = {
-                                    'usa': 10,
-                                    'uk': 9,
-                                    'commonwealth': 8,
-                                    'france': 7,
-                                    'germany': 6,
-                                    'italy': 5,
-                                    'japan': 4,
-                                    'pan-asia': 3,
-                                    'poland': 2,
-                                    'russia': 1
-                                }
-                                player.ship['nation'] = nations.get(player.ship['nation'], 0)
-
-                                # get detailed stats about ship if profile is not private
-                                if not player.hidden_profile:
-                                    player.ship_stats = self.api.get_ship_stats(
-                                        player.account_id, player.ship_id)['data'][str(player.account_id)][0]['pvp']
-
-                            # Check if player is in clan, if so get tag
-                            clan_id = self.api.get_player_clan(player.account_id
-                                                               )['data'][str(player.account_id)]['clan_id']
-                            if clan_id:
-                                player.clan = self.api.get_clan_details(clan_id)['data'][str(clan_id)]['tag']
-
-                            # get general stats if profile is not private
-                            if not player.hidden_profile:
-                                player.stats = player_s['statistics']['pvp']
-                        except InvalidApplicationIdError:
-                            self.ui.set_status_bar('Invalid Application ID, please check your settings!')
-                    self.ui.fill_tables(self.current_players)
-                    self.ui.set_status_bar('Done.')
-            self.ui.set_status_bar('Waiting for match start...')
+                    try:
+                        players = self.get_players(self.read_arena_info())
+                        self.ui.fill_tables(players)
+                        self.ui.set_status_bar('Done.')
+                        self.last_started = last_started
+                    except InvalidApplicationIdError:
+                        self.ui.set_status_bar('The API Key you provided is invalid!')
+                    except ConnectionError:
+                        self.ui.set_status_bar('Check your internet connection!')
             await asyncio.sleep(5)
 
+    def get_players(self, data: List[dict]) -> List[Player]:
+        players = []
+        for p in data:
+            player_name = p['name']
+            ship_name = 'Error'
+            matches, winrate, avg_dmg, winrate_ship, matches_ship = [0] * 5
+            class_ship, nation_ship, tier_ship = [0] * 3
 
+            account_id = self.api.search_account(p['name'])['data'][0]['account_id']
+            team = p['relation']
+            account_info = self.api.get_account_info(account_id)['data'][str(account_id)]
+            hidden_profile = account_info['hidden_profile']
 
-    def read_arena_info(self):
+            ship = self.api.get_ship_infos(p['shipId'])['data'][str(p['shipId'])]
+
+            clan_id = self.api.get_player_clan(account_id)['data'][str(account_id)]['clan_id']
+            if clan_id:
+                clan_tag = self.api.get_clan_info(clan_id)['data'][str(clan_id)]['tag']
+                player_name = f"[{clan_tag}] {p['name']}"
+
+            # get general stats if profile is not private
+            if not hidden_profile:
+                stats = account_info['statistics']['pvp']
+                matches = stats['battles']
+                winrate = round(stats['wins'] / matches * 100, 1)
+                avg_dmg = round(stats['damage_dealt'] / matches, 0)
+
+            if ship:
+                ship_short_names = {
+                    'Prinz Eitel Friedrich': 'P. E. Friedrich',
+                    'Friedrich der Große': 'F. der Große',
+                    'Admiral Graf Spee': 'A. Graf Spee',
+                    'Oktyabrskaya Revolutsiya': 'Okt. Revolutsiya',
+                    'HSF Admiral Graf Spee': 'HSF A. Graf Spee',
+                    'Jurien de la Gravière': 'J. de la Gravière'
+                }
+                ship_name = ship_short_names.get(ship['name'], ship['name'])
+
+                ship_sorting = {
+                    'AirCarrier': 4,
+                    'Battleship': 3,
+                    'Cruiser': 2,
+                    'Destroyer': 1
+                }
+                ship['type'] = ship_sorting[ship['type']]
+
+                nation_sorting = {
+                    'usa': 10,
+                    'uk': 9,
+                    'commonwealth': 8,
+                    'france': 7,
+                    'germany': 6,
+                    'italy': 5,
+                    'japan': 4,
+                    'pan-asia': 3,
+                    'poland': 2,
+                    'russia': 1
+                }
+                ship['nation'] = nation_sorting.get(ship['nation'], 0)
+
+                if not hidden_profile:
+                    ship_stats = self.api.get_ship_stats(account_id, p['shipId'])['data'][str(account_id)][0]['pvp']
+                    matches_ship = ship_stats['battles']
+                    winrate_ship = round(ship_stats['wins'] / matches_ship * 100, 1)
+
+            players.append(Player(player_name, ship_name, team, hidden_profile, matches, winrate, avg_dmg, matches_ship,
+                                  winrate_ship, class_ship, tier_ship, nation_ship))
+
+        return sorted(players, key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
+
+    def read_arena_info(self) -> List[dict]:
         arena_info = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
         if not os.path.exists(arena_info):
-            return
+            return []
         with open(arena_info, 'r') as f:
             data = json.load(f)
-            self.client_version = data['clientVersionFromExe']
-
-            players = []
-            for p in data['vehicles']:
-                players.append(Player(p['shipId'], p['relation'], p['id'], p['name']))
-            self.current_players = players
-
-
-class ApiWrapper:
-    def __init__(self, api_key, region):
-        self.api_key = api_key
-        http_ending = region if region != 'na' else 'com'
-        self.endpoint = f'https://api.worldofwarships.{http_ending}/wows/{{}}/{{}}/?'
-
-    def get_result(self, method_block: str, method_name: str, params: dict) -> dict:
-        try:
-            params = {k: v for k, v in params.items() if v or isinstance(v, int)}
-            url = self.endpoint.format(method_block, method_name)
-            params['application_id'] = self.api_key
-            res = get(url, params=params)
-            res = res.json()
-            if res['status'] == 'error':
-                if res['error']['code'] == 407 and res['error']['message'] == 'INVALID_APPLICATION_ID':
-                    raise InvalidApplicationIdError
-            return res
-        except exceptions.RequestException:
-            print('Connection Error')
-
-    def get_account_info(self, name) -> dict:
-        param = {
-            'search': name,
-            'type': 'exact',
-            'fields': 'account_id'
-        }
-        return self.get_result('account', 'list', param)
-
-    def get_ship_stats(self, account_id: int, ship_id: int = 0) -> dict:
-        param = {
-            'account_id': account_id,
-            'fields': 'pvp.battles,pvp.wins,pvp.damage_dealt',
-            'ship_id': ship_id
-        }
-        return self.get_result('ships', 'stats', param)
-
-    def get_player_stats(self, account_id: int) -> dict:
-        param = {
-            'account_id': account_id,
-            'fields': 'hidden_profile,statistics.pvp.battles,statistics.pvp.losses,statistics.pvp.survived_battles,'
-                      'statistics.pvp.wins,statistics.pvp.damage_dealt,statistics.pvp.frags,statistics.pvp.draws,'
-                      'statistics.pvp.xp',
-        }
-        return self.get_result('account', 'info', param)
-
-    def get_player_clan(self, account_id: int) -> dict:
-        param = {
-            'account_id': account_id
-        }
-        return self.get_result('clans', 'accountinfo', param)
-
-    def get_clan_details(self, clan_id: int) -> dict:
-        param = {
-            'clan_id': clan_id,
-            'fields': 'tag,members_count'
-        }
-        return self.get_result('clans', 'info', param)
-
-    def get_ship_infos(self, ship_id: int) -> dict:
-        param = {
-            'ship_id': ship_id,
-            'fields': 'name,tier,type,nation'
-        }
-        return self.get_result('encyclopedia', 'ships', param)
+            return [d for d in data['vehicles']]
 
 
 if __name__ == '__main__':
-    app, ui = create_gui()
+    app, gui = create_gui()
     loop = QEventLoop(app)
     asyncio.set_event_loop(loop)
-    ui.show()
+    gui.show()
     loop.run_until_complete(asyncio.sleep(1))
 
-    p = PotatoAlert(ui)
-    loop.create_task(p.run())
+    pa = PotatoAlert(gui)
+    loop.create_task(pa.run())
     with loop:
         sys.exit(loop.run_forever())
