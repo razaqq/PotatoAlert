@@ -23,7 +23,7 @@ Dependencies:
 - asyncqt
 - pyqtconfig (https://github.com/mjirik/pyqtconfig)
 - PyQtWebEngine
-- requests
+- aiohttp
 
 ## Compile yourself
 1. Get all the dependencies listed above except PyQt5
