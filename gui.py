@@ -246,7 +246,7 @@ class MainWindow(QMainWindow):
     def open_about(self):
         about = 'Author: http://github.com/razaqq\n' \
                 f'Version: {__version__}\n' \
-                'Powered by: PyQt5, asyncqt and requests\n' \
+                'Powered by: PyQt5, asyncqt and aiohttp\n' \
                 'License: MIT'
         QMessageBox.about(self, "About", about)
 
