@@ -32,14 +32,15 @@ Dependencies:
 
 Now you have two options: Use a GUI to compile or not.
 
-No gui:
-1. Open build.py and edit lib paths
-2. Run it to compile
+No GUI:
+1. Get PyInstaller
+2. Open build.py and edit lib paths
+3. Run it to compile
 
-Gui:
+With GUI:
 1. Get https://pypi.org/project/auto-py-to-exe/
-2. add --paths "PYTHON/Lib/site - packages/PyQt5/Qt/bin" manual entry, replace PYTHON with the path to your python install
-3. add /assets as additional files
+2. Add --paths "PYTHON/Lib/site - packages/PyQt5/Qt/bin" manual entry, replace PYTHON with the path to your python install
+3. Add /assets as additional files
 4. Compile
 
 In both cases you will find your binary in dist/
