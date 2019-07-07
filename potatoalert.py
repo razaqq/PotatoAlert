@@ -29,7 +29,7 @@ import json
 import asyncio
 from typing import List
 from requests import get
-from requests.exceptions import ConnectionError
+from aiohttp.client_exceptions import ClientResponseError, ClientError
 from config import Config
 from dataclasses import dataclass
 from gui import create_gui
@@ -95,7 +95,7 @@ class PotatoAlert:
                     self.ui.set_status_bar('New game started, getting stats...')
                     await asyncio.sleep(0.05)
                     try:
-                        players = self.get_players(self.read_arena_info())
+                        players = await self.get_players(self.read_arena_info())
                         self.ui.fill_tables(players)
                         self.ui.set_status_bar('Done.')
                         self.last_started = last_started
@@ -103,9 +103,13 @@ class PotatoAlert:
                         self.ui.set_status_bar('The API Key you provided is invalid!')
                     except ConnectionError:
                         self.ui.set_status_bar('Check your internet connection!')
+                    except ClientResponseError:  # no idea what to do with these
+                        print('Response Error')
+                    except ClientError:
+                        print('Client Error')
             await asyncio.sleep(5)
 
-    def get_players(self, data: List[dict]) -> List[Player]:
+    async def get_players(self, data: List[dict]) -> List[Player]:
         players = []
         for p in data:
             player_name = p['name']
@@ -113,16 +117,22 @@ class PotatoAlert:
             matches, winrate, avg_dmg, winrate_ship, matches_ship = [0] * 5
             class_ship, nation_ship, tier_ship = [0] * 3
 
-            account_id = self.api.search_account(p['name'])['data'][0]['account_id']
+            account_search = await self.api.search_account(p['name'])
+            account_id = account_search['data'][0]['account_id']
+
             team = p['relation']
-            account_info = self.api.get_account_info(account_id)['data'][str(account_id)]
+            account_info = await self.api.get_account_info(account_id)
+            account_info = account_info['data'][str(account_id)]
             hidden_profile = account_info['hidden_profile']
 
-            ship = self.api.get_ship_infos(p['shipId'])['data'][str(p['shipId'])]
+            ship_infos = await self.api.get_ship_infos(p['shipId'])
+            ship = ship_infos['data'][str(p['shipId'])]
 
-            clan_id = self.api.get_player_clan(account_id)['data'][str(account_id)]['clan_id']
+            clan = await self.api.get_player_clan(account_id)
+            clan_id = clan['data'][str(account_id)]['clan_id']
             if clan_id:
-                clan_tag = self.api.get_clan_info(clan_id)['data'][str(clan_id)]['tag']
+                clan_info = await self.api.get_clan_info(clan_id)
+                clan_tag = clan_info['data'][str(clan_id)]['tag']
                 player_name = f"[{clan_tag}] {p['name']}"
 
             # get general stats if profile is not private
@@ -149,7 +159,7 @@ class PotatoAlert:
                     'Cruiser': 2,
                     'Destroyer': 1
                 }
-                ship['type'] = ship_sorting[ship['type']]
+                class_ship = ship_sorting[ship['type']]
 
                 nation_sorting = {
                     'usa': 10,
@@ -163,10 +173,13 @@ class PotatoAlert:
                     'poland': 2,
                     'russia': 1
                 }
-                ship['nation'] = nation_sorting.get(ship['nation'], 0)
+                nation_ship = nation_sorting.get(ship['nation'], 0)
+
+                tier_ship = ship['tier']
 
                 if not hidden_profile:
-                    ship_stats = self.api.get_ship_stats(account_id, p['shipId'])['data'][str(account_id)][0]['pvp']
+                    ship_stats = await self.api.get_ship_stats(account_id, p['shipId'])
+                    ship_stats = ship_stats['data'][str(account_id)][0]['pvp']
                     matches_ship = ship_stats['battles']
                     winrate_ship = round(ship_stats['wins'] / matches_ship * 100, 1)
 
