@@ -77,6 +77,10 @@ class PotatoAlert:
         except ConnectionError:
             pass
 
+    def check_api_key(self):
+        # TODO
+        pass
+
     def reload_config(self):
         self.config = Config()
         self.arena_info_file = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
@@ -140,7 +144,7 @@ class PotatoAlert:
                 stats = account_info['statistics']['pvp']
                 matches = stats['battles']
                 winrate = round(stats['wins'] / matches * 100, 1)
-                avg_dmg = round(stats['damage_dealt'] / matches, 0)
+                avg_dmg = int(round(stats['damage_dealt'] / matches, -2))
 
             if ship:
                 ship_short_names = {
