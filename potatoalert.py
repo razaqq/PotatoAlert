@@ -28,7 +28,7 @@ import sys
 import json
 import asyncio
 from typing import List
-from requests import get
+from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientResponseError, ClientError
 from config import Config
 from dataclasses import dataclass
@@ -66,12 +66,16 @@ class PotatoAlert:
         self.last_started = 0.0
         self.last_config_edit = float(os.stat(os.path.join(self.config.config_path, 'config.ini')).st_mtime)
         self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
-        self.check_version()
+        asyncio.get_event_loop().run_until_complete(self.check_version())
 
-    def check_version(self):
+    async def check_version(self):
         try:
             url = 'https://raw.githubusercontent.com/razaqq/PotatoAlert/master/version.py'
-            new_version = str(get(url).content.decode().split("'")[1])
+            # new_version = str(get(url).content.decode().split("'")[1])
+            async with ClientSession() as s:
+                async with s.get(url) as resp:
+                    new_version = await resp.text()
+                    new_version = new_version.split("'")[1]
             if __version__ != new_version:
                 self.ui.notify_update(new_version)
         except ConnectionError:
