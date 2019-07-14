@@ -133,8 +133,9 @@ class PotatoAlert:
             ship = ship_infos['data'][str(p['shipId'])]
 
             clan = await self.api.get_player_clan(account_id)
-            clan_id = clan['data'][str(account_id)]['clan_id']
-            if clan_id:
+            clan_data = clan['data'][str(account_id)]
+            if clan_data and 'clan_id' in clan_data and clan_data['clan_id']:
+                clan_id = clan_data['clan_id']
                 clan_info = await self.api.get_clan_info(clan_id)
                 clan_tag = clan_info['data'][str(clan_id)]['tag']
                 player_name = f"[{clan_tag}] {p['name']}"
