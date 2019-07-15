@@ -154,8 +154,9 @@ class PotatoAlert:
             if not hidden_profile:
                 stats = account_info['statistics']['pvp']
                 matches = stats['battles']
-                winrate = round(stats['wins'] / matches * 100, 1)
-                avg_dmg = int(round(stats['damage_dealt'] / matches, -2))
+                if matches:  # check that player has at least one match
+                    winrate = round(stats['wins'] / matches * 100, 1)
+                    avg_dmg = int(round(stats['damage_dealt'] / matches, -2))
 
             if ship:
                 ship_short_names = {
@@ -196,7 +197,9 @@ class PotatoAlert:
                     ship_stats = await self.api.get_ship_stats(account_id, p['shipId'])
                     ship_stats = ship_stats['data'][str(account_id)][0]['pvp']
                     matches_ship = ship_stats['battles']
-                    winrate_ship = round(ship_stats['wins'] / matches_ship * 100, 1)
+                    print(matches_ship)
+                    if matches_ship:  # check that player has at least one match in ship
+                        winrate_ship = round(ship_stats['wins'] / matches_ship * 100, 1)
 
             players.append(Player(player_name, ship_name, team, hidden_profile, matches, winrate, avg_dmg, matches_ship,
                                   winrate_ship, class_ship, tier_ship, nation_ship))
