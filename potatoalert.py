@@ -67,12 +67,12 @@ class PotatoAlert:
         self.last_started = 0.0
         self.last_config_edit = float(os.stat(os.path.join(self.config.config_path, 'config.ini')).st_mtime)
         self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
+        self.invalid_api_key = asyncio.get_event_loop().run_until_complete(self.check_api_key())
         asyncio.get_event_loop().run_until_complete(self.check_version())
 
     async def check_version(self):
         try:
             url = 'https://raw.githubusercontent.com/razaqq/PotatoAlert/master/version.py'
-            # new_version = str(get(url).content.decode().split("'")[1])
             async with ClientSession() as s:
                 async with s.get(url) as resp:
                     new_version = await resp.text()
@@ -82,22 +82,28 @@ class PotatoAlert:
         except ConnectionError:
             pass
 
-    def check_api_key(self):
-        # TODO
-        pass
+    async def check_api_key(self):
+        try:
+            await self.api.get_account_info(0)
+            return False
+        except InvalidApplicationIdError:
+            logging.error('The API key you provided is invalid, please go to the settings and check it!')
+            return True
 
-    def reload_config(self):
+    async def reload_config(self):
         self.config = Config()
         self.arena_info_file = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
         self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
         self.ui.config_reload_needed = False
+        self.invalid_api_key = await self.check_api_key()
 
     async def run(self):
-        logging.info('Waiting for match start...')
+        if not self.invalid_api_key:
+            logging.info('Waiting for match start...')
         while True:
             if self.ui.config_reload_needed:
-                self.reload_config()
-            if os.path.exists(self.arena_info_file):
+                asyncio.get_event_loop().create_task(self.reload_config())
+            if not self.invalid_api_key and os.path.exists(self.arena_info_file):
                 last_started = float(os.stat(
                     os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')).st_mtime)
                 if last_started != self.last_started:
