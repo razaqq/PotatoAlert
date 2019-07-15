@@ -197,7 +197,6 @@ class PotatoAlert:
                     ship_stats = await self.api.get_ship_stats(account_id, p['shipId'])
                     ship_stats = ship_stats['data'][str(account_id)][0]['pvp']
                     matches_ship = ship_stats['battles']
-                    print(matches_ship)
                     if matches_ship:  # check that player has at least one match in ship
                         winrate_ship = round(ship_stats['wins'] / matches_ship * 100, 1)
 
