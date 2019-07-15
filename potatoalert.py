@@ -202,7 +202,7 @@ class PotatoAlert:
                         # print(ship_stats)
                         if ship_stats and 'battles' in ship_stats:
                             battles_ship = ship_stats['battles']
-                            if battles_ship and 'wins' in ship_stats:  # check that player has at least one match in ship
+                            if battles_ship and 'wins' in ship_stats:  # check that at least one match in ship
                                 winrate_ship = round(ship_stats['wins'] / battles_ship * 100, 1)
 
             players.append(Player(player_name, ship_name, team, hidden_profile, battles, winrate, avg_dmg, battles_ship,
