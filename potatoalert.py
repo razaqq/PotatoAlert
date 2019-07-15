@@ -128,7 +128,7 @@ class PotatoAlert:
         for p in data:
             player_name = p['name']
             ship_name = 'Error'
-            matches, winrate, avg_dmg, winrate_ship, matches_ship = [0] * 5
+            battles, winrate, avg_dmg, winrate_ship, battles_ship = [0] * 5
             class_ship, nation_ship, tier_ship = [0] * 3
 
             account_search = await self.api.search_account(p['name'])
@@ -153,10 +153,11 @@ class PotatoAlert:
             # get general stats if profile is not private
             if not hidden_profile:
                 stats = account_info['statistics']['pvp']
-                matches = stats['battles']
-                if matches:  # check that player has at least one match
-                    winrate = round(stats['wins'] / matches * 100, 1)
-                    avg_dmg = int(round(stats['damage_dealt'] / matches, -2))
+                if stats and 'battles' in stats:
+                    battles = stats['battles']
+                    if battles and 'wins' in stats and 'damage_dealt' in stats:  # at least one match
+                        winrate = round(stats['wins'] / battles * 100, 1)
+                        avg_dmg = int(round(stats['damage_dealt'] / battles, -2))
 
             if ship:
                 ship_short_names = {
@@ -196,11 +197,12 @@ class PotatoAlert:
                 if not hidden_profile:
                     ship_stats = await self.api.get_ship_stats(account_id, p['shipId'])
                     ship_stats = ship_stats['data'][str(account_id)][0]['pvp']
-                    matches_ship = ship_stats['battles']
-                    if matches_ship:  # check that player has at least one match in ship
-                        winrate_ship = round(ship_stats['wins'] / matches_ship * 100, 1)
+                    if ship_stats and 'battles' in ship_stats:
+                        battles_ship = ship_stats['battles']
+                        if battles_ship and 'wins' in ship_stats:  # check that player has at least one match in ship
+                            winrate_ship = round(ship_stats['wins'] / battles_ship * 100, 1)
 
-            players.append(Player(player_name, ship_name, team, hidden_profile, matches, winrate, avg_dmg, matches_ship,
+            players.append(Player(player_name, ship_name, team, hidden_profile, battles, winrate, avg_dmg, battles_ship,
                                   winrate_ship, class_ship, tier_ship, nation_ship))
 
         return sorted(players, key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
