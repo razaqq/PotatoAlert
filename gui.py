@@ -23,13 +23,15 @@ SOFTWARE.
 
 import os
 import sys
+import logging
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
-     QToolButton, QFileDialog, QAbstractScrollArea
+     QToolButton, QFileDialog
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices
 from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl, QMetaObject
 from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
 from config import Config
+from logger import Logger
 from version import __version__
 
 
@@ -93,6 +95,7 @@ class MainWindow(QMainWindow):
         self.set_size()
         self.left_table = Table(self.central_widget, 10, 30)
         self.right_table = Table(self.central_widget, 755, 30)
+        self.log_window = self.create_log_window()
         self.create_table_labels()
         self.create_menubar()
         self.config_reload_needed = False
@@ -113,17 +116,14 @@ class MainWindow(QMainWindow):
         toggle_stylesheet(int(self.config['DEFAULT']['theme']))
         # QMetaObject.connectSlotsByName(self)
 
-    def set_status_bar(self, text):
-        self.statusBar().showMessage(text)
-
     def set_size(self):
-        self.resize(1500, 520)
+        self.resize(1500, 560)  # 520
         size = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         size.setHorizontalStretch(0)
         size.setVerticalStretch(0)
         size.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
         self.setSizePolicy(size)
-        self.setMinimumSize(QSize(1500, 520))
+        self.setMinimumSize(QSize(1500, 560))  # 520
         self.setMaximumSize(QSize(3840, 2160))  # 1500 x 520
 
     def create_tables(self):
@@ -151,6 +151,14 @@ class MainWindow(QMainWindow):
         about_button = QAction('About', self)
         help_menu.addAction(about_button)
         about_button.triggered.connect(self.open_about)
+
+    def create_log_window(self):
+        w = QWidget(self.central_widget)
+        w.setGeometry(10, 470, 730, 80)  # 430 + 30
+        l = Logger(w)
+        logging.getLogger().addHandler(l)
+        logging.getLogger().setLevel(logging.INFO)
+        return w
 
     def create_settings_menu(self):
         d = QDialog()
