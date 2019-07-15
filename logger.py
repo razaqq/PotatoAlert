@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from logging import Handler, Formatter, DEBUG
+from logging import Handler, Formatter, DEBUG, INFO, WARN, ERROR
 from PyQt5.QtWidgets import QPlainTextEdit
 
 
@@ -31,7 +31,14 @@ class Logger(Handler):
         self.widget.setReadOnly(True)
         self.widget.resize(parent.size())
         self.setFormatter(Formatter('%(asctime)s - %(levelname)-5s:  %(message)s', datefmt='%H:%M:%S'))
+        self.colors = {
+            'DEBUG': '#00ffec',
+            'INFO': '#ffffff',
+            'WARNING': '#ffe700',
+            'ERROR': '#ff0000'
+        }
 
     def emit(self, record):
         msg = self.format(record)
-        self.widget.appendPlainText(msg)
+        html = f"<span style=\" font-size:8pt; font-weight:400; color:{self.colors[record.levelname]};\" >{msg}</span>"
+        self.widget.appendHtml(html)
