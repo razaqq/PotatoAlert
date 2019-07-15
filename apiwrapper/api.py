@@ -38,8 +38,7 @@ class ApiWrapper:
         async with ClientSession() as s:
             async with s.get(url, params=params) as resp:
                 res = await resp.json()
-        # res = get(url, params=params)
-        # res = res.json()
+
         if res['status'] == 'error':
             if res['error']['code'] == 407 and res['error']['message'] == 'INVALID_APPLICATION_ID':
                 raise InvalidApplicationIdError
