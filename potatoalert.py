@@ -27,6 +27,7 @@ import os
 import sys
 import json
 import asyncio
+import logging
 from typing import List
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientResponseError, ClientError
@@ -92,7 +93,7 @@ class PotatoAlert:
         self.ui.config_reload_needed = False
 
     async def run(self):
-        self.ui.set_status_bar('Waiting for match start...')
+        logging.info('Waiting for match start...')
         while True:
             if self.ui.config_reload_needed:
                 self.reload_config()
@@ -100,21 +101,21 @@ class PotatoAlert:
                 last_started = float(os.stat(
                     os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')).st_mtime)
                 if last_started != self.last_started:
-                    self.ui.set_status_bar('New game started, getting stats...')
+                    logging.info('New game started, getting stats...')
                     await asyncio.sleep(0.05)
                     try:
                         players = await self.get_players(self.read_arena_info())
                         self.ui.fill_tables(players)
-                        self.ui.set_status_bar('Done.')
+                        logging.info('Done.')
                         self.last_started = last_started
                     except InvalidApplicationIdError:
-                        self.ui.set_status_bar('The API Key you provided is invalid!')
+                        logging.error('The API Key you provided is invalid!')
                     except ConnectionError:
-                        self.ui.set_status_bar('Check your internet connection!')
-                    except ClientResponseError:  # no idea what to do with these
-                        print('Response Error')
-                    except ClientError:
-                        print('Client Error')
+                        logging.error('Check your internet connection!')
+                    except ClientResponseError as e:  # no idea what to do with these
+                        logging.error(e)
+                    except ClientError as e:
+                        logging.error(e)
             await asyncio.sleep(5)
 
     async def get_players(self, data: List[dict]) -> List[Player]:
