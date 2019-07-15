@@ -117,13 +117,13 @@ class MainWindow(QMainWindow):
         # QMetaObject.connectSlotsByName(self)
 
     def set_size(self):
-        self.resize(1500, 560)  # 520
+        self.resize(1500, 580)  # 520
         size = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         size.setHorizontalStretch(0)
         size.setVerticalStretch(0)
         size.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
         self.setSizePolicy(size)
-        self.setMinimumSize(QSize(1500, 560))  # 520
+        self.setMinimumSize(QSize(1500, 580))  # 520
         self.setMaximumSize(QSize(3840, 2160))  # 1500 x 520
 
     def create_tables(self):
