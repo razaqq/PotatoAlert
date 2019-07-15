@@ -65,7 +65,6 @@ class PotatoAlert:
         self.steam_version = False
         self.region = ''
         self.last_started = 0.0
-        self.last_config_edit = float(os.stat(os.path.join(self.config.config_path, 'config.ini')).st_mtime)
         self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
         self.invalid_api_key = asyncio.get_event_loop().run_until_complete(self.check_api_key())
         asyncio.get_event_loop().run_until_complete(self.check_version())
