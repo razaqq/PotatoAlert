@@ -52,11 +52,13 @@ QWidget
     outline: 0;
 }
 
+/*
 QWidget:item:hover
 {
     background-color: #78879b;
     color: black;
 }
+*/
 
 QWidget:item:selected
 {

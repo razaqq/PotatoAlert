@@ -57,11 +57,13 @@ QWidget
     outline: 0;
 }
 
+/*
 QWidget:item:hover
 {
     background-color: #3daee9;
     color: #eff0f1;
 }
+*/
 
 QWidget:item:selected
 {
@@ -1253,7 +1255,9 @@ QTreeView::item
     padding: 0.3ex;
 }
 
+/*
 QTableView::item:!selected:hover,
+*/
 QListView::item:!selected:hover,
 QTreeView::item:!selected:hover
 {
