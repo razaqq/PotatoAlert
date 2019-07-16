@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from logging import Handler, Formatter, DEBUG, INFO, WARN, ERROR
+from logging import Handler, Formatter, DEBUG
 from PyQt5.QtWidgets import QPlainTextEdit
 
 
