@@ -56,6 +56,10 @@ class Table(QTableWidget):
         self.setGeometry(QRect(x, y, 730, 430))
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setSelectionMode(QAbstractItemView.NoSelection)
+        self.setFocusPolicy(Qt.NoFocus)
+        self.setAlternatingRowColors(True)
+        self.setMouseTracking(False)
+
         self.setRowCount(12)
         self.setColumnCount(7)
         __sortingEnabled = self.isSortingEnabled()
@@ -70,19 +74,18 @@ class Table(QTableWidget):
             item.setFont(QFont('Segoe UI', 11))
             self.setHorizontalHeaderItem(i, item)
 
-        # TODO ???
-        # item = QtWidgets.QTableWidgetItem()
-        # self.setItem(0, 5, item)
+        for x in range(self.columnCount()):
+            for y in range(self.rowCount()):
+                item = QTableWidgetItem()
+                # item.setBackground()
+                # item.setMouseTracking(False)
+                self.setItem(x, y, item)
 
         self.horizontalHeader().setVisible(True)
         self.verticalHeader().setVisible(False)
 
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        # self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
-        # self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
-        # self.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-        # self.resizeColumnsToContents()
 
 
 class MainWindow(QMainWindow):
@@ -95,13 +98,12 @@ class MainWindow(QMainWindow):
         self.set_size()
         self.left_table = Table(self.central_widget, 10, 30)
         self.right_table = Table(self.central_widget, 755, 30)
-        self.log_window = self.create_log_window()
+        self.log_window, self.logger = self.create_log_window()
         self.create_table_labels()
         self.create_menubar()
         self.config_reload_needed = False
 
     def init(self):
-        self.setObjectName("MainWindow")
         self.setMouseTracking(False)
         self.setTabletTracking(False)
         self.set_size()
@@ -110,7 +112,6 @@ class MainWindow(QMainWindow):
         icon.addPixmap(QPixmap(resource_path('./assets/potato.png')), QIcon.Normal, QIcon.Off)
         self.setWindowIcon(icon)
         self.setAutoFillBackground(False)
-
         self.central_widget = QWidget(self, flags=self.flags)
         self.setCentralWidget(self.central_widget)
         toggle_stylesheet(int(self.config['DEFAULT']['theme']))
@@ -153,12 +154,22 @@ class MainWindow(QMainWindow):
         about_button.triggered.connect(self.open_about)
 
     def create_log_window(self):
+        if hasattr(self, 'log_window'):
+            text = self.logger.widget.toHtml()
+            self.logger.widget.hide()
+            l = Logger(self.log_window)
+            l.re_add_text(text)
+            logging.getLogger().addHandler(l)
+            logging.getLogger().setLevel(logging.INFO)
+            l.widget.show()
+            return self.log_window, l
         w = QWidget(self.central_widget)
         w.setGeometry(10, 470, 730, 80)  # 430 + 30
         l = Logger(w)
         logging.getLogger().addHandler(l)
         logging.getLogger().setLevel(logging.INFO)
-        return w
+        w.show()
+        return w, l
 
     def create_settings_menu(self):
         d = QDialog()
@@ -241,6 +252,7 @@ class MainWindow(QMainWindow):
         bb.accepted.connect(update_config)
         bb.accepted.connect(self.config.save)
         bb.accepted.connect(flag_config_reload_needed)
+        bb.accepted.connect(self.create_log_window)
         bb.rejected.connect(d.reject)
         QMetaObject.connectSlotsByName(d)
 
