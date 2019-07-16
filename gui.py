@@ -26,13 +26,24 @@ import sys
 import logging
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
-     QToolButton, QFileDialog
-from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices
-from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl, QMetaObject
+     QToolButton, QFileDialog, QStyledItemDelegate, QItemDelegate, QStyleOptionViewItem
+from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QBrush, QPainter
+from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl, QMetaObject, QModelIndex
 from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
 from config import Config
 from logger import Logger
 from version import __version__
+
+
+class MyDelegate(QItemDelegate):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+    def paint(self, painter, option, index):
+        super().paint(painter, option, index)
+        if True:
+            painter.setPen(index.data(1))
+            painter.drawRect(option.rect)
 
 
 class Label(QLabel):
@@ -59,12 +70,10 @@ class Table(QTableWidget):
         self.setFocusPolicy(Qt.NoFocus)
         self.setAlternatingRowColors(True)
         self.setMouseTracking(False)
-
         self.setRowCount(12)
         self.setColumnCount(7)
-        __sortingEnabled = self.isSortingEnabled()
         self.setSortingEnabled(False)
-        self.setSortingEnabled(__sortingEnabled)
+        # self.setItemDelegate(MyDelegate(self))
 
     def init_headers(self):
         labels = ['Player', 'Ship', 'Matches', 'Winrate', 'Avg Dmg', 'Matches Ship', 'Winrate Ship']
@@ -74,12 +83,13 @@ class Table(QTableWidget):
             item.setFont(QFont('Segoe UI', 11))
             self.setHorizontalHeaderItem(i, item)
 
-        for x in range(self.columnCount()):
-            for y in range(self.rowCount()):
-                item = QTableWidgetItem()
-                # item.setBackground()
-                # item.setMouseTracking(False)
-                self.setItem(x, y, item)
+        #for x in range(self.columnCount()):
+        #    for y in range(self.rowCount()):
+        #        item = QTableWidgetItem()
+        #        item.setData(1, Purple())
+        #        # item.setBackground(LGreen())
+        #        item.setText('hi hello')
+        #        self.setItem(y, x, item)
 
         self.horizontalHeader().setVisible(True)
         self.verticalHeader().setVisible(False)
