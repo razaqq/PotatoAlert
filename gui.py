@@ -26,7 +26,7 @@ import sys
 import logging
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
-     QToolButton, QFileDialog, QStyledItemDelegate, QItemDelegate, QStyleOptionViewItem
+     QToolButton, QFileDialog, QStyledItemDelegate, QItemDelegate, QHBoxLayout
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QBrush, QPainter
 from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl, QMetaObject, QModelIndex
 from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
@@ -93,7 +93,6 @@ class Table(QTableWidget):
 
         self.horizontalHeader().setVisible(True)
         self.verticalHeader().setVisible(False)
-
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
@@ -125,6 +124,8 @@ class MainWindow(QMainWindow):
         self.central_widget = QWidget(self, flags=self.flags)
         self.setCentralWidget(self.central_widget)
         toggle_stylesheet(int(self.config['DEFAULT']['theme']))
+        self.layout = QHBoxLayout()
+        self.central_widget.setLayout(self.layout)
         # QMetaObject.connectSlotsByName(self)
 
     def set_size(self):
@@ -139,7 +140,9 @@ class MainWindow(QMainWindow):
 
     def create_tables(self):
         self.left_table = Table(self.central_widget, 10, 30)
+        self.layout.addWidget(self.left_table)
         self.right_table = Table(self.central_widget, 755, 30)
+        self.layout.addWidget(self.right_table)
 
     def create_table_labels(self):
         left_label = Label(self.central_widget, 275, 0, 'Your Team')
