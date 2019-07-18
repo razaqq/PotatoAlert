@@ -21,6 +21,7 @@ For that you will need a few modules:
 Dependencies:
 - PyQt5
 - asyncqt
+- qtpy
 - pyqtconfig (https://github.com/mjirik/pyqtconfig)
 - PyQtWebEngine
 - aiohttp

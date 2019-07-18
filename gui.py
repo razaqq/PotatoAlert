@@ -24,9 +24,11 @@ SOFTWARE.
 import os
 import sys
 import logging
+import qtmodern.windows
+import qtmodern.styles
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
-     QToolButton, QFileDialog, QStyledItemDelegate, QItemDelegate, QHBoxLayout, QVBoxLayout
+     QToolButton, QFileDialog, QStyledItemDelegate, QItemDelegate, QHBoxLayout, QVBoxLayout, QSizeGrip, QStatusBar
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QBrush, QPainter
 from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl, QMetaObject, QModelIndex
 from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
@@ -49,7 +51,6 @@ class MyDelegate(QItemDelegate):
 class Label(QLabel):
     def __init__(self, parent=None, text=''):
         super().__init__(parent)
-        # self.setGeometry(QRect(x, y, 200, 30))
         font = QFont()
         font.setPointSize(15)
         self.setFont(font)
@@ -64,7 +65,6 @@ class Table(QTableWidget):
         self.init_headers()
 
     def init(self):
-        # self.setGeometry(QRect(x, y, 730, 430))
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.setFocusPolicy(Qt.NoFocus)
@@ -119,10 +119,9 @@ class MainWindow(QMainWindow):
         icon = QIcon()
         icon.addPixmap(QPixmap(resource_path('./assets/potato.png')), QIcon.Normal, QIcon.Off)
         self.setWindowIcon(icon)
-        self.setAutoFillBackground(False)
+        self.setStatusBar(QStatusBar())
         self.central_widget = QWidget(self, flags=self.flags)
         self.setCentralWidget(self.central_widget)
-        toggle_stylesheet(int(self.config['DEFAULT']['theme']))
         self.central_widget.setLayout(self.layout)
 
     def set_size(self):
@@ -174,14 +173,7 @@ class MainWindow(QMainWindow):
 
     def create_log_window(self):
         log_window = QWidget()
-        logger = Logger(log_window, self.config)
-        if hasattr(self, 'log_window'):
-            logger.re_add_text(self.logger.widget.toHtml())
-            self.logger.widget.hide()
-            self.log_window.hide()
-            self.layout.removeWidget(self.log_window)
-            del self.log_window, self.logger.widget, self.logger
-
+        logger = Logger(log_window)
         log_layout = QHBoxLayout()
         log_window.setFixedHeight(80)
         logging.getLogger().addHandler(logger)
@@ -194,24 +186,14 @@ class MainWindow(QMainWindow):
 
     def create_settings_menu(self):
         d = QDialog()
-        d.setFixedSize(450, 182)  # 400 142
+        d.setFixedSize(450, 152)  # 400 142
         d.setWindowTitle("Settings")
         d.setWindowIcon(QIcon(resource_path('./assets/settings.ico')))
 
         bb = QDialogButtonBox(d)
-        bb.setGeometry(QRect(10, 140, 430, 32))
+        bb.setGeometry(QRect(10, 110, 430, 32))
         bb.setOrientation(Qt.Horizontal)
         bb.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
-
-        c = QComboBox(d)
-        themes = {'default': 0,
-                  'light': 1,
-                  'dark': 2,
-                  'dark2': 3,
-                  'dark3': 4}
-        c.addItems(themes.keys())
-        c.setGeometry(QRect(120, 40, 69, 20))
-        c.setCurrentIndex(int(self.config['DEFAULT']['theme']))
 
         api_key = QLineEdit(d)
         api_key.setGeometry(QRect(120, 10, 320, 20))
@@ -222,18 +204,13 @@ class MainWindow(QMainWindow):
         l1.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
         l1.setText("Wargaming API Key:")
 
-        l2 = QLabel(d)
-        l2.setGeometry(QRect(10, 40, 100, 20))
-        l2.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
-        l2.setText("Theme:")
-
         l3 = QLabel(d)
-        l3.setGeometry(QRect(10, 70, 100, 20))
+        l3.setGeometry(QRect(10, 40, 100, 20))
         l3.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
         l3.setText("Replays Folder:")
 
         replays = QLineEdit(d)
-        replays.setGeometry(QRect(120, 70, 285, 20))
+        replays.setGeometry(QRect(120, 40, 285, 20))
         replays.setText(self.config['DEFAULT']['replays_folder'])
 
         def dir_brower():
@@ -241,12 +218,12 @@ class MainWindow(QMainWindow):
             fd.resize(500, 500)
             replays.setText(str(fd.getExistingDirectory(self, "Select Directory")))
         t = QToolButton(d)
-        t.setGeometry(QRect(415, 70, 25, 20))
+        t.setGeometry(QRect(415, 40, 25, 20))
         t.setText("...")
         t.clicked.connect(dir_brower)
 
         l4 = QLabel(d)
-        l4.setGeometry(QRect(10, 100, 100, 20))
+        l4.setGeometry(QRect(10, 70, 100, 20))
         l4.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
         l4.setText("Region:")
 
@@ -256,15 +233,13 @@ class MainWindow(QMainWindow):
                    'na': 2,
                    'asia': 3}
         r.addItems(regions.keys())
-        r.setGeometry(QRect(120, 100, 69, 20))
+        r.setGeometry(QRect(120, 70, 69, 20))
         r.setCurrentIndex(int(regions[self.config['DEFAULT']['region']]))
 
         def update_config():
             self.config['DEFAULT']['replays_folder'] = replays.text()
             self.config['DEFAULT']['api_key'] = api_key.text()
-            self.config['DEFAULT']['theme'] = str(c.currentIndex())
             self.config['DEFAULT']['region'] = [region for region, index in regions.items() if index == r.currentIndex()][0]
-            toggle_stylesheet(c.currentIndex())
 
         def flag_config_reload_needed():
             self.config_reload_needed = True
@@ -273,7 +248,6 @@ class MainWindow(QMainWindow):
         bb.accepted.connect(update_config)
         bb.accepted.connect(self.config.save)
         bb.accepted.connect(flag_config_reload_needed)
-        bb.accepted.connect(self.create_log_window)
         bb.rejected.connect(d.reject)
         QMetaObject.connectSlotsByName(d)
 
@@ -287,7 +261,7 @@ class MainWindow(QMainWindow):
     def open_about(self):
         about = 'Author: http://github.com/razaqq\n' \
                 f'Version: {__version__}\n' \
-                'Powered by: PyQt5, asyncqt and aiohttp\n' \
+                'Powered by: PyQt5, asyncqt, qtmodern and aiohttp\n' \
                 'License: MIT'
         QMessageBox.about(self, "About", about)
 
@@ -395,35 +369,12 @@ def resource_path(relative_path):
     return os.path.join(os.path.abspath('.'), relative_path)
 
 
-def toggle_stylesheet(index):
-    styles = {
-        0: '',
-        1: resource_path('./assets/light.qss'),
-        2: resource_path('./assets/dark.qss'),
-        3: resource_path('./assets/dark2.qss'),
-        4: resource_path('./assets/dark3.qss')
-
-    }
-
-    app = QApplication.instance()
-    if app is None:
-        raise RuntimeError("No Qt Application found.")
-
-    path = styles[index]
-
-    if path:
-        file = QFile(path)
-        file.open(QFile.ReadOnly | QFile.Text)
-        stream = QTextStream(file)
-        app.setStyleSheet(stream.readAll())
-    else:
-        app.setStyleSheet(path)
-
-
 def create_gui():
     import sys
     app = QApplication(sys.argv)
-    app.setStyle('Fusion')
-    # toggle_stylesheet(5)
     ui = MainWindow()
+    qtmodern.styles.dark(app, resource_path('./assets/style.qss'))
+    mw = qtmodern.windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
+    mw.show()
+    app.setStyle('Fusion')
     return app, ui
