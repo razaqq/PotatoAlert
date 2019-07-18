@@ -144,6 +144,8 @@ class MainWindow(QMainWindow):
     def create_table_labels(self):
         label_widget = QWidget()
         label_layout = QHBoxLayout()
+        label_layout.setContentsMargins(0, 0, 0, 0)
+        label_layout.setSpacing(0)
         label_layout.addStretch()
         l1 = Label(text='Your Team')
         l1.setFont(QFont('Segoe UI', 16, QFont.Bold))
