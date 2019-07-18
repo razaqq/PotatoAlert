@@ -21,7 +21,7 @@ SOFTWARE.
 """
 
 from logging import Handler, Formatter, DEBUG
-from PyQt5.QtWidgets import QPlainTextEdit, QTextEdit
+from PyQt5.QtWidgets import QTextEdit
 from PyQt5.QtCore import Qt
 
 

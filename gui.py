@@ -25,7 +25,7 @@ import os
 import sys
 import logging
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
-     QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
+     QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
      QToolButton, QFileDialog, QStyledItemDelegate, QItemDelegate, QHBoxLayout, QVBoxLayout
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QBrush, QPainter
 from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl, QMetaObject, QModelIndex
