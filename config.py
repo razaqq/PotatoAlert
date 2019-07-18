@@ -52,7 +52,6 @@ class Config(ConfigParser):
         self['DEFAULT']['replays_folder'] = ''
         self['DEFAULT']['region'] = 'eu'
         self['DEFAULT']['api_key'] = '123'
-        self['DEFAULT']['theme'] = '0'
         self.save()
         self.read_config()
 
