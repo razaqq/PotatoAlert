@@ -30,7 +30,7 @@ from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableW
      QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
      QToolButton, QFileDialog, QStyledItemDelegate, QItemDelegate, QHBoxLayout, QVBoxLayout, QSizeGrip, QStatusBar
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QBrush, QPainter
-from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl, QMetaObject, QModelIndex
+from PyQt5.QtCore import QRect, Qt, QUrl, QMetaObject, QModelIndex
 from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
 from config import Config
 from logger import Logger
@@ -83,14 +83,6 @@ class Table(QTableWidget):
             item.setFont(QFont('Segoe UI', 11))
             self.setHorizontalHeaderItem(i, item)
 
-        #for x in range(self.columnCount()):
-        #    for y in range(self.rowCount()):
-        #        item = QTableWidgetItem()
-        #        item.setData(1, Purple())
-        #        # item.setBackground(LGreen())
-        #        item.setText('hi hello')
-        #        self.setItem(y, x, item)
-
         self.horizontalHeader().setVisible(True)
         self.verticalHeader().setVisible(False)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -127,12 +119,13 @@ class MainWindow(QMainWindow):
         self.central_widget.setLayout(self.layout)
 
     def set_size(self):
-        self.resize(1500, 580)  # 520
+        self.resize(1500, 550)  # 580
         # self.setMinimumSize(QSize(1500, 580))  # 520
 
     def create_tables(self):
         table_widget = QWidget()
         table_layout = QHBoxLayout()
+        table_layout.setContentsMargins(10, 0, 10, 0)
         t1 = Table()
         t2 = Table()
         table_layout.addWidget(t1)
@@ -179,6 +172,7 @@ class MainWindow(QMainWindow):
         log_window = QWidget()
         logger = Logger(log_window)
         log_layout = QHBoxLayout()
+        log_layout.setContentsMargins(10, 10, 10, 0)
         log_window.setFixedHeight(80)
         logging.getLogger().addHandler(logger)
         logging.getLogger().setLevel(logging.INFO)
