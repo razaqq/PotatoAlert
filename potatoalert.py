@@ -199,7 +199,6 @@ class PotatoAlert:
                     data = ship_stats['data'][str(account_id)]
                     if data:
                         ship_stats = data[0]['pvp']
-                        # print(ship_stats)
                         if ship_stats and 'battles' in ship_stats:
                             battles_ship = ship_stats['battles']
                             if battles_ship and 'wins' in ship_stats:  # check that at least one match in ship

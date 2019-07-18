@@ -55,8 +55,8 @@ class ApiWrapper:
     async def get_ship_stats(self, account_id: int, ship_id: int = 0) -> dict:
         param = {
             'account_id': account_id,
-            'fields': 'pvp.battles,pvp.wins,pvp.damage_dealt',
-            'ship_id': ship_id
+            'fields': 'pvp.battles,pvp.wins,pvp.damage_dealt,ship_id,pvp.frags',
+            'ship_id': ship_id if ship_id else ''
         }
         return await self.get_result('ships', 'stats', param)
 
