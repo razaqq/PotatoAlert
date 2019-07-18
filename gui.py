@@ -26,7 +26,7 @@ import sys
 import logging
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QSizePolicy, QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
-     QToolButton, QFileDialog, QStyledItemDelegate, QItemDelegate, QHBoxLayout
+     QToolButton, QFileDialog, QStyledItemDelegate, QItemDelegate, QHBoxLayout, QVBoxLayout
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QBrush, QPainter
 from PyQt5.QtCore import QRect, Qt, QSize, QFile, QTextStream, QUrl, QMetaObject, QModelIndex
 from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
@@ -47,9 +47,9 @@ class MyDelegate(QItemDelegate):
 
 
 class Label(QLabel):
-    def __init__(self, central_widget, x, y, text):
-        super().__init__(central_widget)
-        self.setGeometry(QRect(x, y, 200, 30))
+    def __init__(self, parent=None, text=''):
+        super().__init__(parent)
+        # self.setGeometry(QRect(x, y, 200, 30))
         font = QFont()
         font.setPointSize(15)
         self.setFont(font)
@@ -58,13 +58,13 @@ class Label(QLabel):
 
 
 class Table(QTableWidget):
-    def __init__(self, central_widget, x, y):
-        super().__init__(central_widget)
-        self.init(x, y)
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.init()
         self.init_headers()
 
-    def init(self, x, y):
-        self.setGeometry(QRect(x, y, 730, 430))
+    def init(self):
+        # self.setGeometry(QRect(x, y, 730, 430))
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.setFocusPolicy(Qt.NoFocus)
@@ -103,12 +103,11 @@ class MainWindow(QMainWindow):
         super().__init__(flags=self.flags)
         self.central_widget = None
         self.config = Config()
+        self.layout = QVBoxLayout()
         self.init()
-        self.set_size()
-        self.left_table = Table(self.central_widget, 10, 30)
-        self.right_table = Table(self.central_widget, 755, 30)
-        self.log_window, self.logger = self.create_log_window()
         self.create_table_labels()
+        self.left_table, self.right_table = self.create_tables()
+        self.log_window, self.logger = self.create_log_window()
         self.create_menubar()
         self.config_reload_needed = False
 
@@ -124,31 +123,38 @@ class MainWindow(QMainWindow):
         self.central_widget = QWidget(self, flags=self.flags)
         self.setCentralWidget(self.central_widget)
         toggle_stylesheet(int(self.config['DEFAULT']['theme']))
-        self.layout = QHBoxLayout()
         self.central_widget.setLayout(self.layout)
-        # QMetaObject.connectSlotsByName(self)
 
     def set_size(self):
         self.resize(1500, 580)  # 520
-        size = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        size.setHorizontalStretch(0)
-        size.setVerticalStretch(0)
-        size.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
-        self.setSizePolicy(size)
-        self.setMinimumSize(QSize(1500, 580))  # 520
-        self.setMaximumSize(QSize(3840, 2160))  # 1500 x 520
+        # self.setMinimumSize(QSize(1500, 580))  # 520
 
     def create_tables(self):
-        self.left_table = Table(self.central_widget, 10, 30)
-        self.layout.addWidget(self.left_table)
-        self.right_table = Table(self.central_widget, 755, 30)
-        self.layout.addWidget(self.right_table)
+        table_widget = QWidget()
+        table_layout = QHBoxLayout()
+        t1 = Table()
+        t2 = Table()
+        table_layout.addWidget(t1)
+        table_layout.addWidget(t2)
+        table_widget.setLayout(table_layout)
+        self.layout.addWidget(table_widget)
+        return t1, t2
 
     def create_table_labels(self):
-        left_label = Label(self.central_widget, 275, 0, 'Your Team')
-        left_label.setFont(QFont('Segoe UI', 16, QFont.Bold))
-        right_label = Label(self.central_widget, 1020, 0, 'Enemy Team')
-        right_label.setFont(QFont('Segoe UI', 16, QFont.Bold))
+        label_widget = QWidget()
+        label_layout = QHBoxLayout()
+        label_layout.addStretch()
+        l1 = Label(text='Your Team')
+        l1.setFont(QFont('Segoe UI', 16, QFont.Bold))
+        label_layout.addWidget(l1)
+        label_layout.addStretch()
+        label_layout.addStretch()
+        l2 = Label(text='Enemy Team')
+        l2.setFont(QFont('Segoe UI', 16, QFont.Bold))
+        label_layout.addWidget(l2)
+        label_layout.addStretch()
+        label_widget.setLayout(label_layout)
+        self.layout.addWidget(label_widget)
 
     def create_menubar(self):
         menu = self.menuBar()
@@ -167,22 +173,24 @@ class MainWindow(QMainWindow):
         about_button.triggered.connect(self.open_about)
 
     def create_log_window(self):
+        log_window = QWidget()
+        logger = Logger(log_window, self.config)
         if hasattr(self, 'log_window'):
-            text = self.logger.widget.toHtml()
+            logger.re_add_text(self.logger.widget.toHtml())
             self.logger.widget.hide()
-            l = Logger(self.log_window)
-            l.re_add_text(text)
-            logging.getLogger().addHandler(l)
-            logging.getLogger().setLevel(logging.INFO)
-            l.widget.show()
-            return self.log_window, l
-        w = QWidget(self.central_widget)
-        w.setGeometry(10, 470, 730, 80)  # 430 + 30
-        l = Logger(w)
-        logging.getLogger().addHandler(l)
+            self.log_window.hide()
+            self.layout.removeWidget(self.log_window)
+            del self.log_window, self.logger.widget, self.logger
+
+        log_layout = QHBoxLayout()
+        log_window.setFixedHeight(80)
+        logging.getLogger().addHandler(logger)
         logging.getLogger().setLevel(logging.INFO)
-        w.show()
-        return w, l
+        log_layout.addWidget(logger.widget)
+        log_layout.addStretch()
+        log_window.setLayout(log_layout)
+        self.layout.addWidget(log_window)
+        return log_window, logger
 
     def create_settings_menu(self):
         d = QDialog()

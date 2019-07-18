@@ -26,7 +26,7 @@ from PyQt5.QtCore import Qt
 
 
 class Logger(Handler):
-    def __init__(self, parent):
+    def __init__(self, parent, config):
         super().__init__(level=DEBUG)
         self.widget = QTextEdit(parent)
         self.widget.setReadOnly(True)
@@ -36,7 +36,7 @@ class Logger(Handler):
         self.setFormatter(Formatter('%(asctime)s - %(levelname)-5s:  %(message)s', datefmt='%H:%M:%S'))
         self.colors = {
             'DEBUG': '#00ffec',
-            'INFO': '#ffffff' if int(parent.parent().parent().config['DEFAULT']['theme']) not in [0, 1] else '#000000',
+            'INFO': '#ffffff' if int(config['DEFAULT']['theme']) not in [0, 1] else '#000000',
             'WARNING': '#ffe700',
             'ERROR': '#ff0000'
         }
