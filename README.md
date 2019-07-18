@@ -2,9 +2,7 @@
 
 ## Screenshots
 
-![default](screens/dark.png?raw=true)
-![default](screens/default.png?raw=true)
-![default](screens/dark2.png?raw=true)
+![default](screens/v2.png?raw=true)
 
 ## Use pre-compiled build
 You can find pre-compiled builds for Windows and Linux [here](https://github.com/razaqq/PotatoAlert/releases).
@@ -22,7 +20,6 @@ Dependencies:
 - PyQt5
 - asyncqt
 - qtpy
-- pyqtconfig (https://github.com/mjirik/pyqtconfig)
 - PyQtWebEngine
 - aiohttp
 
