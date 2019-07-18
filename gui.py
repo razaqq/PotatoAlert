@@ -104,6 +104,8 @@ class MainWindow(QMainWindow):
         self.central_widget = None
         self.config = Config()
         self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
         self.init()
         self.create_table_labels()
         self.left_table, self.right_table = self.create_tables()
