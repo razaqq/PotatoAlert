@@ -333,8 +333,6 @@ class MainWindow(QMainWindow):
                 if player.ship_name != 'Error':
                     item = QTableWidgetItem(str(player.matches_ship))
                     item.setFont(QFont("Segoe UI", 12, QFont.Bold))
-                    if self.config['DEFAULT']['theme'] in [2, 3, 4]:
-                        item.setForeground(White())
                     item.setTextAlignment(Qt.AlignCenter)
                     table.setItem(y, 5, item)
 
