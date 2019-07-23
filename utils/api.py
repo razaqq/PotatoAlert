@@ -21,7 +21,7 @@ SOFTWARE.
 """
 
 from aiohttp import ClientSession
-from utils.errors import InvalidApplicationIdError
+from utils.api_errors import InvalidApplicationIdError
 
 
 class ApiWrapper:
