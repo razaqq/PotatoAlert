@@ -36,7 +36,7 @@ from dataclasses import dataclass
 from gui import create_gui
 from asyncqt import QEventLoop
 from apiwrapper.api import ApiWrapper
-from apiwrapper.errors import InvalidApplicationIdError
+from utils.errors import InvalidApplicationIdError
 from version import __version__
 
 
