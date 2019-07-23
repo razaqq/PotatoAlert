@@ -24,8 +24,7 @@ SOFTWARE.
 import os
 import sys
 import logging
-import qtmodern.windows
-import qtmodern.styles
+from assets.qtmodern import styles, windows
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
      QToolButton, QFileDialog, QItemDelegate, QHBoxLayout, QVBoxLayout, QStatusBar
@@ -371,8 +370,8 @@ def create_gui():
     import sys
     app = QApplication(sys.argv)
     ui = MainWindow()
-    qtmodern.styles.dark(app, resource_path('./assets/style.qss'))
-    mw = qtmodern.windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
+    styles.dark(app, resource_path('./assets/style.qss'))
+    mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
     mw.show()
     app.setStyle('Fusion')
     return app, ui
