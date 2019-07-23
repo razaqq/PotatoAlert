@@ -37,20 +37,16 @@ from gui import create_gui
 from asyncqt import QEventLoop
 from utils.api import ApiWrapper
 from utils.api_errors import InvalidApplicationIdError
+from utils.stat_colors import color_avg_dmg, color_battles, color_winrate
 from version import __version__
 
 
 @dataclass()
 class Player:
-    player_name: str
-    ship_name: str
-    team: int
     hidden_profile: bool
-    matches: str
-    winrate: str
-    avg_dmg: str
-    matches_ship: str
-    winrate_ship: str
+    team: int
+    row: list
+    colors: list
     class_ship: int  # for sorting we keep track of these too
     tier_ship: int
     nation_ship: int
@@ -204,8 +200,16 @@ class PotatoAlert:
                             if battles_ship and 'wins' in ship_stats:  # check that at least one match in ship
                                 winrate_ship = round(ship_stats['wins'] / battles_ship * 100, 1)
 
-            players.append(Player(player_name, ship_name, team, hidden_profile, battles, winrate, avg_dmg, battles_ship,
-                                  winrate_ship, class_ship, tier_ship, nation_ship))
+            row = [player_name, ship_name]
+            colors = [None, None]
+            if not hidden_profile:
+                row.extend([str(battles), str(winrate), str(avg_dmg)])
+                colors.extend([color_battles(battles), color_winrate(winrate), color_avg_dmg(avg_dmg)])
+                if ship_name != 'Error':
+                    row.extend([str(battles_ship), str(winrate_ship)])
+                    colors.extend([None, color_winrate(winrate_ship)])
+            p = Player(hidden_profile, team, row, colors, class_ship, tier_ship, nation_ship)
+            players.append(p)
 
         return sorted(players, key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
 

@@ -30,7 +30,6 @@ from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableW
      QToolButton, QFileDialog, QItemDelegate, QHBoxLayout, QVBoxLayout, QStatusBar
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices
 from PyQt5.QtCore import QRect, Qt, QUrl, QMetaObject
-from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
 from utils.config import Config
 from utils.logger import Logger
 from version import __version__
@@ -292,64 +291,18 @@ class MainWindow(QMainWindow):
                 y = tables[2]
                 tables[2] += 1
 
-            item = QTableWidgetItem(player.player_name)
-            item.setFont(QFont("Segoe UI", 10))
-            table.setItem(y, 0, item)
-
-            item = QTableWidgetItem(player.ship_name)
-            item.setFont(QFont("Segoe UI", 10, QFont.Bold))
-            table.setItem(y, 1, item)
-
-            if not player.hidden_profile:
-                matches = player.matches
-                wr = player.winrate
-                avg_dmg = player.avg_dmg
-
-                c = Purple() if matches > 20000 else Cyan() if matches > 14000 else LGreen() if matches > 9000 else \
-                    Yellow() if matches > 5000 else Orange() if matches > 2000 else Red()
-                item = QTableWidgetItem(str(matches))
-                item.setFont(QFont("Segoe UI", 12, QFont.Bold))
-                item.setForeground(c)
-                item.setTextAlignment(Qt.AlignCenter)
-                table.setItem(y, 2, item)
-
-                c = Purple() if wr > 65 else Pink() if wr > 60 else Cyan() if wr > 56 else DGreen() if wr > 54 else \
-                    LGreen() if wr > 52 else Yellow() if wr > 49 else Orange() if wr > 47 else Red()
-                item = QTableWidgetItem(str(wr))
-                item.setFont(QFont("Segoe UI", 12, QFont.Bold))
-                item.setForeground(c)
-                item.setTextAlignment(Qt.AlignCenter)
-                table.setItem(y, 3, item)
-
-                c = Pink() if avg_dmg > 48500 else Cyan() if avg_dmg > 38000 else LGreen() if avg_dmg > 33000 else \
-                    Yellow() if avg_dmg > 22000 else Orange() if avg_dmg > 16000 else Red()
-                item = QTableWidgetItem(str(avg_dmg))
-                item.setForeground(c)
-                item.setTextAlignment(Qt.AlignCenter)
-                item.setFont(QFont("Segoe UI", 12, QFont.Bold))
-                table.setItem(y, 4, item)
-
-                # ship specific stats
-                if player.ship_name != 'Error':
-                    item = QTableWidgetItem(str(player.matches_ship))
-                    item.setFont(QFont("Segoe UI", 12, QFont.Bold))
+            for x in range(len(player.row)):
+                size = 10 if x < 2 else 12
+                font = QFont("Segoe UI", size, QFont.Bold) if x else QFont("Segoe UI", size)
+                item = QTableWidgetItem(player.row[x])
+                item.setFont(font)
+                if player.colors[x]:
+                    item.setForeground(player.colors[x])
+                if x > 1:
                     item.setTextAlignment(Qt.AlignCenter)
-                    table.setItem(y, 5, item)
+                table.setItem(y, x, item)
+                x += 1
 
-                    wr_ship = player.winrate_ship
-                    c = Purple() if wr_ship > 65 else Pink() if wr_ship > 60 else Cyan() if wr_ship > 56 else \
-                        DGreen() if wr_ship > 54 else LGreen() if wr_ship > 52 else Yellow() if wr_ship > 49 else \
-                        Orange() if wr_ship > 47 else Red()
-                    item = QTableWidgetItem(str(wr_ship))
-                    item.setFont(QFont("Segoe UI", 12, QFont.Bold))
-                    item.setForeground(c)
-                    item.setTextAlignment(Qt.AlignCenter)
-                    table.setItem(y, 6, item)
-                else:
-                    table.setItem(y, 5, QTableWidgetItem('Error'))
-                    table.setItem(y, 6, QTableWidgetItem('Error'))
-
-                # table.resizeColumnsToContents()
         for y in range(tables[1], 12):
             for x in range(7):
                 self.left_table.setItem(y, x, QTableWidgetItem(''))
