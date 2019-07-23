@@ -31,7 +31,7 @@ import logging
 from typing import List
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientResponseError, ClientError
-from config import Config
+from utils.config import Config
 from dataclasses import dataclass
 from gui import create_gui
 from asyncqt import QEventLoop

@@ -28,12 +28,12 @@ import qtmodern.windows
 import qtmodern.styles
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
-     QToolButton, QFileDialog, QStyledItemDelegate, QItemDelegate, QHBoxLayout, QVBoxLayout, QSizeGrip, QStatusBar
-from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QBrush, QPainter
-from PyQt5.QtCore import QRect, Qt, QUrl, QMetaObject, QModelIndex
+     QToolButton, QFileDialog, QItemDelegate, QHBoxLayout, QVBoxLayout, QStatusBar
+from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices
+from PyQt5.QtCore import QRect, Qt, QUrl, QMetaObject
 from assets.colors import Orange, Purple, Cyan, Pink, LGreen, DGreen, Yellow, Red, White
-from config import Config
-from logger import Logger
+from utils.config import Config
+from utils.logger import Logger
 from version import __version__
 
 
