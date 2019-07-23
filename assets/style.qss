@@ -149,3 +149,7 @@ QTableWidget {
   background-color: #505050;
   alternate-background-color: palette(midlight);
 }
+
+QTextEdit {
+  background-color: #505050;
+}
