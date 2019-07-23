@@ -2,7 +2,7 @@
 
 ## Screenshots
 
-![default](screens/v2.png?raw=true)
+![default](https://i.imgur.com/2LIpdrV.png)
 
 ## Use pre-compiled build
 You can find pre-compiled builds for Windows and Linux [here](https://github.com/razaqq/PotatoAlert/releases).
