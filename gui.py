@@ -324,5 +324,5 @@ def create_gui():
     styles.dark(app, resource_path('./assets/style.qss'))
     mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
     mw.show()
-    app.setStyle('Fusion')
+    # app.setStyle('Fusion')
     return app, ui
