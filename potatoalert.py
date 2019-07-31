@@ -132,8 +132,11 @@ class PotatoAlert:
 
             team = p['relation']
             account_info = await self.api.get_account_info(account_id)
-            account_info = account_info['data'][str(account_id)]
-            hidden_profile = account_info['hidden_profile']
+            if 'data' in account_info:
+                account_info = account_info['data'][str(account_id)]
+                hidden_profile = account_info['hidden_profile']
+            else:
+                hidden_profile = True
 
             ship_infos = await self.api.get_ship_infos(p['shipId'])
             ship = ship_infos['data'][str(p['shipId'])]
