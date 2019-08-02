@@ -123,86 +123,96 @@ class PotatoAlert:
         players = []
         for p in data:
             player_name = p['name']
+            team = p['relation']
             ship_name = 'Error'
             battles, winrate, avg_dmg, winrate_ship, battles_ship = [0] * 5
             class_ship, nation_ship, tier_ship = [0] * 3
 
-            account_search = await self.api.search_account(p['name'])
-            account_id = account_search['data'][0]['account_id']
+            try:  # try to get account id by searching by name, enter empty player if we get a KeyError
+                account_search = await self.api.search_account(p['name'])
+                account_id = account_search['data'][0]['account_id']
+            except KeyError:
+                p = Player(True, team, [player_name, ship_name], [None, None], class_ship, tier_ship, nation_ship)
+                players.append(p)
+                continue
 
-            team = p['relation']
-            account_info = await self.api.get_account_info(account_id)
-            if 'data' in account_info:
+            try:  # get general account info and overall stats
+                account_info = await self.api.get_account_info(account_id)
                 account_info = account_info['data'][str(account_id)]
                 hidden_profile = account_info['hidden_profile']
-            else:
+                if not hidden_profile:
+                    stats = account_info['statistics']['pvp']
+                    if stats and 'battles' in stats:
+                        battles = stats['battles']
+                        if battles:  # at least one match, otherwise we divide by 0
+                            winrate = round(stats['wins'] / battles * 100, 1)
+                            avg_dmg = int(round(stats['damage_dealt'] / battles, -2))
+            except KeyError:
                 hidden_profile = True
 
-            ship_infos = await self.api.get_ship_infos(p['shipId'])
-            ship = ship_infos['data'][str(p['shipId'])]
+            try:  # get clan info and append clan tag to player name
+                clan = await self.api.get_player_clan(account_id)
+                clan_data = clan['data'][str(account_id)]
+                if clan_data and clan_data['clan_id']:
+                    clan_id = clan_data['clan_id']
+                    clan_info = await self.api.get_clan_info(clan_id)
+                    clan_tag = clan_info['data'][str(clan_id)]['tag']
+                    player_name = f"[{clan_tag}] {p['name']}"
+            except KeyError:
+                pass
 
-            clan = await self.api.get_player_clan(account_id)
-            clan_data = clan['data'][str(account_id)]
-            if clan_data and 'clan_id' in clan_data and clan_data['clan_id']:
-                clan_id = clan_data['clan_id']
-                clan_info = await self.api.get_clan_info(clan_id)
-                clan_tag = clan_info['data'][str(clan_id)]['tag']
-                player_name = f"[{clan_tag}] {p['name']}"
+            try:
+                ship_infos = await self.api.get_ship_infos(p['shipId'])
+                ship = ship_infos['data'][str(p['shipId'])]
 
-            # get general stats if profile is not private
-            if not hidden_profile:
-                stats = account_info['statistics']['pvp']
-                if stats and 'battles' in stats:
-                    battles = stats['battles']
-                    if battles and 'wins' in stats and 'damage_dealt' in stats:  # at least one match
-                        winrate = round(stats['wins'] / battles * 100, 1)
-                        avg_dmg = int(round(stats['damage_dealt'] / battles, -2))
+                if ship:
+                    ship_short_names = {
+                        'Prinz Eitel Friedrich': 'P. E. Friedrich',
+                        'Friedrich der Große': 'F. der Große',
+                        'Admiral Graf Spee': 'A. Graf Spee',
+                        'Oktyabrskaya Revolutsiya': 'Okt. Revolutsiya',
+                        'HSF Admiral Graf Spee': 'HSF A. Graf Spee',
+                        'Jurien de la Gravière': 'J. de la Gravière'
+                    }
+                    ship_name = ship_short_names.get(ship['name'], ship['name'])
 
-            if ship:
-                ship_short_names = {
-                    'Prinz Eitel Friedrich': 'P. E. Friedrich',
-                    'Friedrich der Große': 'F. der Große',
-                    'Admiral Graf Spee': 'A. Graf Spee',
-                    'Oktyabrskaya Revolutsiya': 'Okt. Revolutsiya',
-                    'HSF Admiral Graf Spee': 'HSF A. Graf Spee',
-                    'Jurien de la Gravière': 'J. de la Gravière'
-                }
-                ship_name = ship_short_names.get(ship['name'], ship['name'])
+                    ship_sorting = {
+                        'AirCarrier': 4,
+                        'Battleship': 3,
+                        'Cruiser': 2,
+                        'Destroyer': 1
+                    }
+                    class_ship = ship_sorting[ship['type']]
 
-                ship_sorting = {
-                    'AirCarrier': 4,
-                    'Battleship': 3,
-                    'Cruiser': 2,
-                    'Destroyer': 1
-                }
-                class_ship = ship_sorting[ship['type']]
+                    nation_sorting = {
+                        'usa': 10,
+                        'uk': 9,
+                        'commonwealth': 8,
+                        'france': 7,
+                        'germany': 6,
+                        'italy': 5,
+                        'japan': 4,
+                        'pan-asia': 3,
+                        'poland': 2,
+                        'russia': 1
+                    }
+                    nation_ship = nation_sorting.get(ship['nation'], 0)
 
-                nation_sorting = {
-                    'usa': 10,
-                    'uk': 9,
-                    'commonwealth': 8,
-                    'france': 7,
-                    'germany': 6,
-                    'italy': 5,
-                    'japan': 4,
-                    'pan-asia': 3,
-                    'poland': 2,
-                    'russia': 1
-                }
-                nation_ship = nation_sorting.get(ship['nation'], 0)
+                    tier_ship = ship['tier']
 
-                tier_ship = ship['tier']
+                    if not hidden_profile:
+                        ship_stats = await self.api.get_ship_stats(account_id, p['shipId'])
+                        data = ship_stats['data'][str(account_id)]
+                        if data:
+                            ship_stats = data[0]['pvp']
+                            if ship_stats and 'battles' in ship_stats:
+                                battles_ship = ship_stats['battles']
+                                if battles_ship and 'wins' in ship_stats:  # check that at least one match in ship
+                                    winrate_ship = round(ship_stats['wins'] / battles_ship * 100, 1)
+            except KeyError:
+                pass
 
-                if not hidden_profile:
-                    ship_stats = await self.api.get_ship_stats(account_id, p['shipId'])
-                    data = ship_stats['data'][str(account_id)]
-                    if data:
-                        ship_stats = data[0]['pvp']
-                        if ship_stats and 'battles' in ship_stats:
-                            battles_ship = ship_stats['battles']
-                            if battles_ship and 'wins' in ship_stats:  # check that at least one match in ship
-                                winrate_ship = round(ship_stats['wins'] / battles_ship * 100, 1)
-
+            # Put all stats in a dataclass
             row = [player_name, ship_name]
             colors = [None, None]
             if not hidden_profile:
