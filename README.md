@@ -4,6 +4,11 @@
 
 ![default](https://i.imgur.com/2LIpdrV.png)
 
+## Warning
+This tool is by no means meant for stat shaming or being toxic towards other players in general.
+Please behave yourself in chat.
+If you think you cannot follow this simple rule, then you hereby don't have my permission to use this tool.
+
 ## Use pre-compiled build
 You can find pre-compiled builds for Windows and Linux [here](https://github.com/razaqq/PotatoAlert/releases).
 
