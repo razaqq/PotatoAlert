@@ -278,6 +278,11 @@ class MainWindow(QMainWindow):
         # q.about(self, "Update available", text)
 
     def fill_tables(self, players):
+        for y in range(12):  # clear the tables before inserting
+            for x in range(7):
+                self.left_table.setItem(y, x, QTableWidgetItem(''))
+                self.right_table.setItem(y, x, QTableWidgetItem(''))
+
         tables = {1: 0, 2: 0}
         table = None
         y = 0
@@ -302,13 +307,6 @@ class MainWindow(QMainWindow):
                     item.setTextAlignment(Qt.AlignCenter)
                 table.setItem(y, x, item)
                 x += 1
-
-        for y in range(tables[1], 12):
-            for x in range(7):
-                self.left_table.setItem(y, x, QTableWidgetItem(''))
-        for y in range(tables[2], 12):
-            for x in range(7):
-                self.right_table.setItem(y, x, QTableWidgetItem(''))
 
 
 def resource_path(relative_path):
