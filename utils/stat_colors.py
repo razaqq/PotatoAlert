@@ -20,7 +20,7 @@ def color_avg_dmg(avg_dmg):
 
 
 def color_personal_rating(pr):
-    c = Purple(100) if pr > 2450 else Pink(100) if pr > 2100 else Cyan(100) if pr > 1750 else \
-        DGreen(100) if pr > 1550 else LGreen(100) if pr > 1350 else Yellow(100) if pr > 1100 else \
-        Orange(100) if pr > 750 else Red(100)
+    c = Purple(50) if pr > 2450 else Pink(50) if pr > 2100 else Cyan(75) if pr > 1750 else \
+        DGreen(50) if pr > 1550 else LGreen(50) if pr > 1350 else Yellow(50) if pr > 1100 else \
+        Orange(50) if pr > 750 else Red(50)
     return c

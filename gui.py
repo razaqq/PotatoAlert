@@ -66,7 +66,7 @@ class Table(QTableWidget):
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.setFocusPolicy(Qt.NoFocus)
-        self.setAlternatingRowColors(True)
+        self.setAlternatingRowColors(False)
         self.setMouseTracking(False)
         self.setRowCount(12)
         self.setColumnCount(7)
@@ -301,6 +301,8 @@ class MainWindow(QMainWindow):
                 font = QFont("Segoe UI", size, QFont.Bold) if x else QFont("Segoe UI", size)
                 item = QTableWidgetItem(player.row[x])
                 item.setFont(font)
+                if player.background:
+                    item.setBackground(player.background)
                 if player.colors[x]:
                     item.setForeground(player.colors[x])
                 if x > 1:

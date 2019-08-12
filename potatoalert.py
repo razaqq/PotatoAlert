@@ -37,7 +37,7 @@ from gui import create_gui
 from asyncqt import QEventLoop
 from utils.api import ApiWrapper
 from utils.api_errors import InvalidApplicationIdError
-from utils.stat_colors import color_avg_dmg, color_battles, color_winrate
+from utils.stat_colors import color_avg_dmg, color_battles, color_winrate, color_personal_rating
 from version import __version__
 
 
@@ -50,6 +50,7 @@ class Player:
     class_ship: int  # for sorting we keep track of these too
     tier_ship: int
     nation_ship: int
+    background: any = None
 
 
 class PotatoAlert:
@@ -125,6 +126,7 @@ class PotatoAlert:
             player_name = p['name']
             team = p['relation']
             ship_name = 'Error'
+            background = None
             battles, winrate, avg_dmg, winrate_ship, battles_ship = [0] * 5
             class_ship, nation_ship, tier_ship = [0] * 3
 
@@ -132,7 +134,7 @@ class PotatoAlert:
                 account_search = await self.api.search_account(p['name'])
                 account_id = account_search['data'][0]['account_id']
             except (KeyError, IndexError):
-                p = Player(True, team, [player_name, ship_name], [None, None], class_ship, tier_ship, nation_ship)
+                p = Player(True, team, [player_name, ship_name], [None, None], class_ship, tier_ship, nation_ship, None)
                 players.append(p)
                 continue
 
@@ -212,6 +214,12 @@ class PotatoAlert:
             except KeyError:
                 pass
 
+            # Get personal rating for background
+            if not hidden_profile:
+                pr = await self.get_overall_personal_rating(account_id)
+                if pr:
+                    background = color_personal_rating(pr)
+
             # Put all stats in a dataclass
             row = [player_name, ship_name]
             colors = [None, None]
@@ -221,10 +229,46 @@ class PotatoAlert:
                 if ship_name != 'Error':
                     row.extend([str(battles_ship), str(winrate_ship)])
                     colors.extend([None, color_winrate(winrate_ship)])
-            p = Player(hidden_profile, team, row, colors, class_ship, tier_ship, nation_ship)
+            p = Player(hidden_profile, team, row, colors, class_ship, tier_ship, nation_ship, background)
             players.append(p)
 
         return sorted(players, key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
+
+    async def get_overall_personal_rating(self, account_id: int = 0):
+        try:
+            async with ClientSession() as s:
+                async with s.get('https://api.wows-numbers.com/personal/rating/expected/json/') as resp:
+                    expected = await resp.json()
+            total_pr = []
+            stats = await self.api.get_ship_stats(account_id)
+            total_battles = 0
+            if stats:
+                ship_stats = stats['data'][str(account_id)]
+                if ship_stats:
+                    for ship in ship_stats:
+                        ship_id = str(ship['ship_id'])
+                        battles = ship['pvp']['battles']
+                        if ship_id in expected['data']:
+                            s = expected['data'][ship_id]
+                            expected_dmg = s['average_damage_dealt'] * battles
+                            expected_wins = s['win_rate'] * battles
+                            expected_frags = s['average_frags'] * battles
+                            if not expected_frags or not expected_dmg or not expected_wins:
+                                continue
+                        else:
+                            continue
+                        r_dmg = ship['pvp']['damage_dealt'] / expected_dmg
+                        r_wins = ship['pvp']['wins'] * 100 / expected_wins
+                        r_frags = ship['pvp']['frags'] / expected_frags
+                        n_dmg = max(0, (r_dmg - 0.4) / (1 - 0.4))
+                        n_frags = max(0, (r_frags - 0.1) / (1 - 0.1))
+                        n_wins = max(0, (r_wins - 0.7) / (1 - 0.7))
+                        pr = 700 * n_dmg + 300 * n_frags + 150 * n_wins
+                        total_pr.append(pr * ship['pvp']['battles'])
+                        total_battles += ship['pvp']['battles']
+            return sum(total_pr) / total_battles
+        except (KeyError, IndexError, ZeroDivisionError):
+            return False
 
     def read_arena_info(self) -> List[dict]:
         arena_info = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
