@@ -250,6 +250,8 @@ class PotatoAlert:
                         battles = ship['pvp']['battles']
                         if ship_id in expected['data']:
                             s = expected['data'][ship_id]
+                            if not s:
+                                continue
                             expected_dmg = s['average_damage_dealt'] * battles
                             expected_wins = s['win_rate'] * battles
                             expected_frags = s['average_frags'] * battles
