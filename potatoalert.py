@@ -131,7 +131,7 @@ class PotatoAlert:
             try:  # try to get account id by searching by name, enter empty player if we get a KeyError
                 account_search = await self.api.search_account(p['name'])
                 account_id = account_search['data'][0]['account_id']
-            except KeyError:
+            except (KeyError, IndexError):
                 p = Player(True, team, [player_name, ship_name], [None, None], class_ship, tier_ship, nation_ship)
                 players.append(p)
                 continue
