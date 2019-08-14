@@ -27,23 +27,12 @@ import logging
 from assets.qtmodern import styles, windows
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
-     QToolButton, QFileDialog, QItemDelegate, QHBoxLayout, QVBoxLayout, QStatusBar
+     QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices
 from PyQt5.QtCore import QRect, Qt, QUrl, QMetaObject
 from utils.config import Config
 from utils.logger import Logger
 from version import __version__
-
-
-class MyDelegate(QItemDelegate):
-    def __init__(self, parent):
-        super().__init__(parent)
-
-    def paint(self, painter, option, index):
-        super().paint(painter, option, index)
-        if True:
-            painter.setPen(index.data(1))
-            painter.drawRect(option.rect)
 
 
 class Label(QLabel):
@@ -102,6 +91,7 @@ class MainWindow(QMainWindow):
         self.log_window, self.logger = self.create_log_window()
         self.create_menubar()
         self.config_reload_needed = False
+        self.mw = None
 
     def init(self):
         self.setMouseTracking(False)
@@ -117,8 +107,8 @@ class MainWindow(QMainWindow):
         self.central_widget.setLayout(self.layout)
 
     def set_size(self):
-        self.resize(1500, 550)  # 580
-        # self.setMinimumSize(QSize(1500, 580))  # 520
+        self.move(self.config.getint('DEFAULT', 'windowx'), self.config.getint('DEFAULT', 'windowy'))
+        self.resize(self.config.getint('DEFAULT', 'windoww'), self.config.getint('DEFAULT', 'windowh'))
 
     def create_tables(self):
         table_widget = QWidget(flags=self.flags)
@@ -191,7 +181,7 @@ class MainWindow(QMainWindow):
         return log_window, logger
 
     def create_settings_menu(self):
-        d = QDialog()
+        d = QDialog(flags=self.flags)
         d.setFixedSize(450, 152)  # 400 142
         d.setWindowTitle("Settings")
         d.setWindowIcon(QIcon(resource_path('./assets/settings.ico')))
@@ -306,6 +296,14 @@ class MainWindow(QMainWindow):
                 table.setItem(y, x, item)
                 x += 1
 
+    def closeEvent(self, event):
+        self.config['DEFAULT']['windowx'] = str(self.mw.geometry().x())
+        self.config['DEFAULT']['windowy'] = str(self.mw.geometry().y())
+        self.config['DEFAULT']['windowh'] = str(self.mw.geometry().height())
+        self.config['DEFAULT']['windoww'] = str(self.mw.geometry().width())
+        self.config.save()
+        super().closeEvent(event)
+
 
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -318,7 +316,7 @@ def create_gui():
     app = QApplication(sys.argv)
     ui = MainWindow()
     styles.dark(app, resource_path('./assets/style.qss'))
-    mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
-    mw.show()
+    ui.mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
+    ui.mw.show()
     # app.setStyle('Fusion')
     return app, ui
