@@ -44,16 +44,40 @@ class Config(ConfigParser):
         if not os.path.exists(self.config_path):
             os.makedirs(self.config_path)
         if not os.path.exists(os.path.join(self.config_path, 'config.ini')):
-            self.create_default()
+            self.fix()
         with open(os.path.join(self.config_path, 'config.ini'), 'r') as configfile:
             self.read_file(configfile)
+            self.fix()
 
-    def create_default(self):
-        self['DEFAULT']['replays_folder'] = ''
-        self['DEFAULT']['region'] = 'eu'
-        self['DEFAULT']['api_key'] = '123'
+    def fix(self):
+        ok = True
+        if 'DEFAULT' not in self:
+            ok = False
+            self.add_section('DEFAULT')
+        if 'replays_folder' not in self['DEFAULT']:
+            ok = False
+            self['DEFAULT']['replays_folder'] = ''
+        if 'region' not in self['DEFAULT']:
+            ok = False
+            self['DEFAULT']['region'] = 'eu'
+        if 'api_key' not in self['DEFAULT']:
+            ok = False
+            self['DEFAULT']['api_key'] = '123'
+        if 'WindowX' not in self['DEFAULT']:
+            ok = False
+            self['DEFAULT']['WindowX'] = '0'
+        if 'WindowY' not in self['DEFAULT']:
+            ok = False
+            self['DEFAULT']['WindowY'] = '0'
+        if 'WindowW' not in self['DEFAULT']:
+            ok = False
+            self['DEFAULT']['WindowW'] = '1500'
+        if 'WindowH' not in self['DEFAULT']:
+            ok = False
+            self['DEFAULT']['WindowH'] = '550'
         self.save()
-        self.read_config()
+        if not ok:
+            self.read_config()
 
     def save(self):
         with open(os.path.join(self.config_path, 'config.ini'), 'w') as configfile:
