@@ -121,34 +121,34 @@ class MainWindow(QMainWindow):
         # self.setMinimumSize(QSize(1500, 580))  # 520
 
     def create_tables(self):
-        table_widget = QWidget()
+        table_widget = QWidget(flags=self.flags)
         table_layout = QHBoxLayout()
         table_layout.setContentsMargins(10, 0, 10, 0)
         t1 = Table()
         t2 = Table()
-        table_layout.addWidget(t1)
-        table_layout.addWidget(t2)
+        table_layout.addWidget(t1, alignment=Qt.Alignment(0))
+        table_layout.addWidget(t2, alignment=Qt.Alignment(0))
         table_widget.setLayout(table_layout)
-        self.layout.addWidget(table_widget)
+        self.layout.addWidget(table_widget, alignment=Qt.Alignment(0))
         return t1, t2
 
     def create_table_labels(self):
-        label_widget = QWidget()
+        label_widget = QWidget(flags=self.flags)
         label_layout = QHBoxLayout()
         label_layout.setContentsMargins(0, 0, 0, 0)
         label_layout.setSpacing(0)
         label_layout.addStretch()
         l1 = Label(text='Your Team')
         l1.setFont(QFont('Segoe UI', 16, QFont.Bold))
-        label_layout.addWidget(l1)
+        label_layout.addWidget(l1, alignment=Qt.Alignment(0))
         label_layout.addStretch()
         label_layout.addStretch()
         l2 = Label(text='Enemy Team')
         l2.setFont(QFont('Segoe UI', 16, QFont.Bold))
-        label_layout.addWidget(l2)
+        label_layout.addWidget(l2, alignment=Qt.Alignment(0))
         label_layout.addStretch()
         label_widget.setLayout(label_layout)
-        self.layout.addWidget(label_widget)
+        self.layout.addWidget(label_widget, alignment=Qt.Alignment(0))
 
     def create_menubar(self):
         def open_github():
@@ -177,17 +177,17 @@ class MainWindow(QMainWindow):
         about_button.triggered.connect(open_about)
 
     def create_log_window(self):
-        log_window = QWidget()
+        log_window = QWidget(flags=self.flags)
         logger = Logger(log_window)
         log_layout = QHBoxLayout()
         log_layout.setContentsMargins(10, 10, 10, 0)
         log_window.setFixedHeight(80)
         logging.getLogger().addHandler(logger)
         logging.getLogger().setLevel(logging.INFO)
-        log_layout.addWidget(logger.widget)
+        log_layout.addWidget(logger.widget, alignment=Qt.Alignment(0))
         log_layout.addStretch()
         log_window.setLayout(log_layout)
-        self.layout.addWidget(log_window)
+        self.layout.addWidget(log_window, alignment=Qt.Alignment(0))
         return log_window, logger
 
     def create_settings_menu(self):
@@ -256,7 +256,6 @@ class MainWindow(QMainWindow):
         bb.accepted.connect(flag_config_reload_needed)
         bb.rejected.connect(d.reject)
         QMetaObject.connectSlotsByName(d)
-
         d.exec_()
 
     @staticmethod
@@ -273,7 +272,6 @@ class MainWindow(QMainWindow):
         icon.addPixmap(QPixmap(resource_path('./assets/potato.png')), QIcon.Normal, QIcon.Off)
         q.setWindowIcon(icon)
         q.exec_()
-        # q.about(self, "Update available", text)
 
     def fill_tables(self, players):
         for y in range(12):  # clear the tables before inserting
