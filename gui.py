@@ -151,6 +151,16 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(label_widget)
 
     def create_menubar(self):
+        def open_github():
+            url = QUrl('https://github.com/razaqq/PotatoAlert')
+            QDesktopServices.openUrl(url)
+
+        def open_about():
+            about = 'Author: http://github.com/razaqq\n' \
+                    f'Version: {__version__}\n' \
+                    'Powered by: PyQt5, asyncqt, qtmodern and aiohttp\n' \
+                    'License: MIT'
+            QMessageBox.about(self, "About", about)
         menu = self.menuBar()
 
         settings_menu = menu.addMenu('Edit')
@@ -161,10 +171,10 @@ class MainWindow(QMainWindow):
         help_menu = menu.addMenu('Help')
         github_button = QAction('View Source on Github', self)
         help_menu.addAction(github_button)
-        github_button.triggered.connect(self.open_github)
+        github_button.triggered.connect(open_github)
         about_button = QAction('About', self)
         help_menu.addAction(about_button)
-        about_button.triggered.connect(self.open_about)
+        about_button.triggered.connect(open_about)
 
     def create_log_window(self):
         log_window = QWidget()
@@ -248,18 +258,6 @@ class MainWindow(QMainWindow):
         QMetaObject.connectSlotsByName(d)
 
         d.exec_()
-
-    @staticmethod
-    def open_github():
-        url = QUrl('https://github.com/razaqq/PotatoAlert')
-        QDesktopServices.openUrl(url)
-
-    def open_about(self):
-        about = 'Author: http://github.com/razaqq\n' \
-                f'Version: {__version__}\n' \
-                'Powered by: PyQt5, asyncqt, qtmodern and aiohttp\n' \
-                'License: MIT'
-        QMessageBox.about(self, "About", about)
 
     @staticmethod
     def notify_update(new_version):
