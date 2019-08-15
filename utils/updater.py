@@ -49,7 +49,7 @@ async def update():
         async with ClientSession() as s:
             async with s.get(url) as resp:
                 if resp.status == 200:
-                    size = int(resp.headers.get('content-length', 0)) or None
+                    size = int(resp.headers.get('content-length', '0')) or None
                     downloaded = 0
 
                     f = await aiofiles.open(os.path.join(current_path, file_name), mode='wb')
