@@ -33,11 +33,12 @@ from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientResponseError, ClientError
 from utils.config import Config
 from dataclasses import dataclass
-from gui import create_gui
+import gui
 from asyncqt import QEventLoop
 from utils.api import ApiWrapper
 from utils.api_errors import InvalidApplicationIdError
 from utils.stat_colors import color_avg_dmg, color_battles, color_winrate, color_personal_rating
+from utils import updater
 from version import __version__
 
 
@@ -64,19 +65,6 @@ class PotatoAlert:
         self.last_started = 0.0
         self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
         self.invalid_api_key = asyncio.get_event_loop().run_until_complete(self.check_api_key())
-        asyncio.get_event_loop().run_until_complete(self.check_version())
-
-    async def check_version(self):
-        try:
-            url = 'https://raw.githubusercontent.com/razaqq/PotatoAlert/master/version.py'
-            async with ClientSession() as s:
-                async with s.get(url) as resp:
-                    new_version = await resp.text()
-                    new_version = new_version.split("'")[1]
-            if __version__ != new_version:
-                self.ui.notify_update(new_version)
-        except ConnectionError:
-            pass
 
     async def check_api_key(self):
         try:
@@ -282,11 +270,18 @@ class PotatoAlert:
 
 
 if __name__ == '__main__':
-    app, gui = create_gui()
+    loop = asyncio.get_event_loop()
+    update = loop.run_until_complete(updater.check_update())
+    if update:
+        app, gui = updater.create_gui()
+    else:
+        app, gui = gui.create_gui()
     loop = QEventLoop(app)
     asyncio.set_event_loop(loop)
-    gui.show()
-    loop.run_until_complete(asyncio.sleep(1))
+    loop.run_until_complete(asyncio.sleep(0.1))
+    if update:
+        loop.run_until_complete(gui.update_progress(updater.update))
+        sys.exit(0)
 
     pa = PotatoAlert(gui)
     loop.create_task(pa.run())

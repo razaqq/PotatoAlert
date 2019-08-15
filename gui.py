@@ -38,9 +38,7 @@ from version import __version__
 class Label(QLabel):
     def __init__(self, parent=None, text=''):
         super().__init__(parent)
-        font = QFont()
-        font.setPointSize(15)
-        self.setFont(font)
+        self.setFont(QFont('Segoe UI', 16, QFont.Bold))
         self.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         self.setText(text)
 
@@ -129,12 +127,10 @@ class MainWindow(QMainWindow):
         label_layout.setSpacing(0)
         label_layout.addStretch()
         l1 = Label(text='Your Team')
-        l1.setFont(QFont('Segoe UI', 16, QFont.Bold))
         label_layout.addWidget(l1, alignment=Qt.Alignment(0))
         label_layout.addStretch()
         label_layout.addStretch()
         l2 = Label(text='Enemy Team')
-        l2.setFont(QFont('Segoe UI', 16, QFont.Bold))
         label_layout.addWidget(l2, alignment=Qt.Alignment(0))
         label_layout.addStretch()
         label_widget.setLayout(label_layout)
