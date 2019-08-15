@@ -12,7 +12,7 @@ from version import __version__
 file_name = os.path.basename(sys.executable)
 current_path = os.path.dirname(sys.executable)
 
-# Check if old version around, delete
+# Check if old version around and delete it
 if os.path.exists(os.path.join(current_path, f'{file_name}_old')):
     os.remove(os.path.join(current_path, f'{file_name}_old'))
 
@@ -61,14 +61,13 @@ async def update():
     except ConnectionError:
         os.rename(os.path.join(current_path, f'{file_name}_old'), os.path.join(current_path, file_name))
     finally:
-        os.execl(os.path.join(current_path, file_name), os.path.join(current_path, file_name))  # TODO check this
+        os.execl(os.path.join(current_path, file_name), os.path.join(current_path, file_name))
 
 
 class UpdateWindow(QMainWindow):
     def __init__(self):
         self.flags = Qt.WindowFlags()
         super().__init__(flags=self.flags)
-        # self.setGeometry(100, 100, 300, 100)
         self.central_widget = QWidget(self, flags=self.flags)
         self.setCentralWidget(self.central_widget)
         self.layout = QVBoxLayout()
@@ -78,7 +77,7 @@ class UpdateWindow(QMainWindow):
 
     def init(self):
         c = Config()
-        self.setWindowTitle("PotatoAlert Updater")
+        self.setWindowTitle('PotatoAlert Updater')
         icon = QIcon()
         icon.addPixmap(QPixmap(resource_path('./assets/potato.png')), QIcon.Normal, QIcon.Off)
         self.setWindowIcon(icon)
