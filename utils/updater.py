@@ -1,8 +1,10 @@
 import os
 import sys
+import time
 from aiohttp import ClientSession
 import aiofiles
-from PyQt5.QtWidgets import QMainWindow, QProgressBar, QWidget, QVBoxLayout, QStatusBar, QLabel, QApplication
+from PyQt5.QtWidgets import QMainWindow, QProgressBar, QWidget, QVBoxLayout, QStatusBar, QLabel, QApplication,\
+                            QHBoxLayout, QTextEdit, QGraphicsTextItem
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon, QPixmap
 from assets.qtmodern import styles, windows
@@ -53,10 +55,15 @@ async def update():
                     downloaded = 0
 
                     f = await aiofiles.open(os.path.join(current_path, file_name), mode='wb')
+                    start_time = time.time()
                     async for chunk in resp.content.iter_chunked(512):
                         await f.write(chunk)
                         downloaded += len(chunk)
-                        yield downloaded / size * 100
+                        percent = downloaded / size * 100
+                        done = round(downloaded / 1E6, 1)
+                        total = round(size / 1E6, 1)
+                        rate = round(downloaded / 1E6 / (time.time() - start_time), 2)
+                        yield percent, done, total, rate
                     await f.close()
     except ConnectionError:
         os.rename(os.path.join(current_path, f'{file_name}_old'), os.path.join(current_path, file_name))
@@ -72,7 +79,9 @@ class UpdateWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.layout = QVBoxLayout()
         self.central_widget.setLayout(self.layout)
-        self.progress = QProgressBar(self)
+        self.progress_bar = QProgressBar(self)
+        self.speed = QLabel()
+        self.progress_mb = QLabel()
         self.init()
 
     def init(self):
@@ -84,17 +93,30 @@ class UpdateWindow(QMainWindow):
         self.setStatusBar(QStatusBar())
         self.resize(300, 100)
         self.move(c.getint('DEFAULT', 'windowx'), c.getint('DEFAULT', 'windowy'))
-        self.progress.setValue(0)
-        self.progress.setBaseSize(150, 20)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setBaseSize(150, 20)
         upd = QLabel('Updating, please wait...')
         upd.setFont(QFont('Segoe UI', 12, QFont.Bold))
         upd.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         self.layout.addWidget(upd, alignment=Qt.Alignment(0))
-        self.layout.addWidget(self.progress, alignment=Qt.Alignment(0))
+        self.layout.addWidget(self.progress_bar, alignment=Qt.Alignment(0))
+        pgr_widget = QWidget(flags=self.flags)
+        pgr_layout = QHBoxLayout()
+        pgr_layout.addStretch()
+        pgr_layout.addWidget(self.progress_mb, alignment=Qt.Alignment(0))
+        pgr_layout.addStretch()
+        pgr_layout.addWidget(self.speed, alignment=Qt.Alignment(0))
+        pgr_layout.addStretch()
+        pgr_widget.setLayout(pgr_layout)
+        pgr_layout.setSpacing(0)
+        pgr_layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.addWidget(pgr_widget, alignment=Qt.Alignment(0))
 
     async def update_progress(self, func=None):
-        async for prog in func():
-            self.progress.setValue(prog)
+        async for percent, mb_done, mb_total, rate in func():
+            self.progress_bar.setValue(percent)
+            self.progress_mb.setText(f'{mb_done}/{mb_total} MB')
+            self.speed.setText(f'{rate} MB/s')
 
 
 def create_gui():
