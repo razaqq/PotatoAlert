@@ -31,7 +31,7 @@ Dependencies:
 ## Compile yourself
 1. Get all the dependencies listed above except PyQt5
 2. Get PyQt5 version 5.12.1, I was getting lib issues with any newer version.
-3. Get pywin32 and pypiwin32
+3. Get pywin32, pypiwin32 and aiofiles
 
 Now you have two options: Use a GUI to compile or not.
 
