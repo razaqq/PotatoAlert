@@ -46,10 +46,10 @@ class ModernWindow(QWidget):
             parent (QWidget, optional): Parent widget.
     """
 
-    def __init__(self, w, frameless_qss, parent=None):
+    def __init__(self, w, frameless_qss, parent=None, hide_window_buttons=False):
         QWidget.__init__(self, parent)
 
-        self.setupUi(frameless_qss)
+        self.setupUi(frameless_qss, hide_window_buttons)
         self.setupEvents(w)
 
         contentLayout = QHBoxLayout()
@@ -61,7 +61,7 @@ class ModernWindow(QWidget):
         self.setWindowTitle(w.windowTitle())
         self.setGeometry(w.geometry())
 
-    def setupUi(self, frameless_qss):
+    def setupUi(self, frameless_qss, hide_window_buttons):
         # create title bar, content
         self.vboxWindow = QVBoxLayout(self)
         self.vboxWindow.setContentsMargins(0, 0, 0, 0)
@@ -88,26 +88,27 @@ class ModernWindow(QWidget):
 
         spButtons = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        self.btnMinimize = QToolButton(self.titleBar)
-        self.btnMinimize.setObjectName('btnMinimize')
-        self.btnMinimize.setSizePolicy(spButtons)
-        self.hboxTitle.addWidget(self.btnMinimize)
+        if not hide_window_buttons:
+            self.btnMinimize = QToolButton(self.titleBar)
+            self.btnMinimize.setObjectName('btnMinimize')
+            self.btnMinimize.setSizePolicy(spButtons)
+            self.hboxTitle.addWidget(self.btnMinimize)
 
-        self.btnRestore = QToolButton(self.titleBar)
-        self.btnRestore.setObjectName('btnRestore')
-        self.btnRestore.setSizePolicy(spButtons)
-        self.btnRestore.setVisible(False)
-        self.hboxTitle.addWidget(self.btnRestore)
+            self.btnRestore = QToolButton(self.titleBar)
+            self.btnRestore.setObjectName('btnRestore')
+            self.btnRestore.setSizePolicy(spButtons)
+            self.btnRestore.setVisible(False)
+            self.hboxTitle.addWidget(self.btnRestore)
 
-        self.btnMaximize = QToolButton(self.titleBar)
-        self.btnMaximize.setObjectName('btnMaximize')
-        self.btnMaximize.setSizePolicy(spButtons)
-        self.hboxTitle.addWidget(self.btnMaximize)
+            self.btnMaximize = QToolButton(self.titleBar)
+            self.btnMaximize.setObjectName('btnMaximize')
+            self.btnMaximize.setSizePolicy(spButtons)
+            self.hboxTitle.addWidget(self.btnMaximize)
 
-        self.btnClose = QToolButton(self.titleBar)
-        self.btnClose.setObjectName('btnClose')
-        self.btnClose.setSizePolicy(spButtons)
-        self.hboxTitle.addWidget(self.btnClose)
+            self.btnClose = QToolButton(self.titleBar)
+            self.btnClose.setObjectName('btnClose')
+            self.btnClose.setSizePolicy(spButtons)
+            self.hboxTitle.addWidget(self.btnClose)
 
         self.vboxFrame.addWidget(self.titleBar)
 

@@ -102,6 +102,6 @@ def create_gui():
     app = QApplication(sys.argv)
     ui = UpdateWindow()
     styles.dark(app, resource_path('./assets/style.qss'))
-    ui.mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
-    ui.mw.show()
+    mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'), hide_window_buttons=True)
+    mw.show()
     return app, ui
