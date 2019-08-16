@@ -99,7 +99,7 @@ class PotatoAlert:
                         logging.info('Done.')
                         self.last_started = last_started
                     except InvalidApplicationIdError:
-                        logging.error('The API Key you provided is invalid!')
+                        logging.error('The API Key you provided is invalid. Please check the settings!')
                     except ConnectionError:
                         logging.error('Check your internet connection!')
                     except ClientResponseError as e:  # no idea what to do with these
