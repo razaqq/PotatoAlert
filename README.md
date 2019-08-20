@@ -2,7 +2,7 @@
 
 ## Screenshots
 
-![default](https://i.imgur.com/D9O0C3X.png)
+![default](https://i.imgur.com/DEX3wjo.png)
 
 ## Warning
 This tool is by no means meant for stat shaming or being toxic towards other players in general.
