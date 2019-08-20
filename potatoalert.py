@@ -71,7 +71,7 @@ class PotatoAlert:
                             format='%(asctime)s - %(levelname)-5s:  %(message)s',
                             datefmt='%H:%M:%S',
                             filename=os.path.join(self.config.config_path, 'Error.log'),
-                            filemode='w')
+                            filemode='a')
 
     async def check_api_key(self):
         try:
