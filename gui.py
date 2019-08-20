@@ -27,7 +27,7 @@ from assets.qtmodern import styles, windows
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
      QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar
-from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QImage
+from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie
 from PyQt5.QtCore import QRect, Qt, QUrl, QMetaObject, QSize
 from utils.config import Config
 from version import __version__
@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
         self.init()
-        self.status = None
+        self.status_icon, self.status_text = None, None
         self.update_status()
         self.create_table_labels()
         self.left_table, self.right_table = self.create_tables()
@@ -122,25 +122,48 @@ class MainWindow(QMainWindow):
     def create_table_labels(self):
         label_widget = QWidget(flags=self.flags)
         label_layout = QHBoxLayout()
-        label_layout.setContentsMargins(0, 0, 0, 0)
+        label_layout.setContentsMargins(10, 0, 10, 0)
         label_layout.setSpacing(0)
-        d = QWidget(flags=self.flags)
-        d.setFixedWidth(10)
-        label_layout.addWidget(d, alignment=Qt.Alignment(0))
-        label_layout.addWidget(self.status)
-        label_layout.addStretch()
-        l1 = Label(text='Your Team')
-        label_layout.addWidget(l1, alignment=Qt.Alignment(0))
-        label_layout.addStretch()
-        label_layout.addStretch()
-        l2 = Label(text='Enemy Team')
-        label_layout.addWidget(l2, alignment=Qt.Alignment(0))
-        label_layout.addStretch()
-        # add item with fixed with 25px
-        d = QWidget(flags=self.flags)
-        d.setFixedWidth(35)
-        label_layout.addWidget(d, alignment=Qt.Alignment(0))
         label_widget.setLayout(label_layout)
+
+        left_layout = QHBoxLayout()
+
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(0)
+        left_widget = QWidget(flags=self.flags)
+        # left_widget.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: red;')
+        left_widget.setLayout(left_layout)
+
+        status = QWidget(flags=self.flags)
+        status.setFixedWidth(100)
+        status_layout = QHBoxLayout()
+        status_layout.setContentsMargins(0, 0, 0, 0)
+        status_layout.setSpacing(0)
+        status.setLayout(status_layout)
+        status_layout.addWidget(self.status_icon, alignment=Qt.Alignment(0))
+        status_layout.addSpacing(5)
+        status_layout.addWidget(self.status_text, alignment=Qt.Alignment(0))
+        status_layout.addStretch()
+
+        left_layout.addWidget(status, alignment=Qt.Alignment(0))
+        left_layout.addStretch()
+        left_layout.addWidget(Label(text='Your Team'), alignment=Qt.Alignment(0))
+        left_layout.addStretch()
+        dummy = QWidget(flags=self.flags)
+        dummy.setFixedWidth(100)
+        left_layout.addWidget(dummy, alignment=Qt.Alignment(0))
+
+        right_layout = QHBoxLayout()
+        right_layout.setContentsMargins(0, 0, 0, 0)
+        right_layout.setSpacing(0)
+        right_widget = QWidget(flags=self.flags)
+        right_widget.setLayout(right_layout)
+        right_layout.addStretch()
+        right_layout.addWidget(Label(text='Enemy Team'), alignment=Qt.Alignment(0))
+        right_layout.addStretch()
+
+        label_layout.addWidget(left_widget, alignment=Qt.Alignment(0))
+        label_layout.addWidget(right_widget, alignment=Qt.Alignment(0))
         self.layout.addWidget(label_widget, alignment=Qt.Alignment(0))
 
     def create_menubar(self):
@@ -169,24 +192,30 @@ class MainWindow(QMainWindow):
         help_menu.addAction(about_button)
         about_button.triggered.connect(open_about)
 
-    def update_status(self, status=1):
-        if not self.status:
-            self.status = QLabel()
-            self.status.setScaledContents(True)
-            self.status.setFixedHeight(25)
-            self.status.setFixedWidth(25)
+    def update_status(self, status=1, text=''):
+        if not self.status_icon or not self.status_text:
+            self.status_icon = QLabel()
+            self.status_icon.setScaledContents(True)
+            self.status_icon.setFixedHeight(25)
+            self.status_icon.setFixedWidth(25)
+            self.status_text = QLabel('')
+            self.status_text.setAlignment(Qt.AlignCenter)
+            self.status_text.setStyleSheet('font-size: 10px;')
         if status == 1:  # waiting for start/ready
             pix = QPixmap(resource_path('assets/done.png'))
-            self.status.setPixmap(pix)
+            self.status_icon.setPixmap(pix)
+            self.status_text.setText(text)
         elif status == 2:  # loading
             movie = QMovie(resource_path('assets/loading.gif'))
             movie.setSpeed(1000)
             movie.setScaledSize(QSize(25, 25))
             movie.start()
-            self.status.setMovie(movie)
+            self.status_icon.setMovie(movie)
+            self.status_text.setText(text)
         elif status == 3:  # error
             pix = QPixmap(resource_path('assets/error.png'))
-            self.status.setPixmap(pix)
+            self.status_icon.setPixmap(pix)
+            self.status_text.setText(text)
 
     def create_settings_menu(self):
         d = QDialog(flags=self.flags)
