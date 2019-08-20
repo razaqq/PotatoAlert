@@ -30,7 +30,7 @@ import asyncio
 import logging
 from typing import List
 from aiohttp import ClientSession
-from aiohttp.client_exceptions import ClientResponseError, ClientError
+from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError
 from utils.config import Config
 from dataclasses import dataclass
 import gui
@@ -75,11 +75,16 @@ class PotatoAlert:
 
     async def check_api_key(self):
         try:
+            self.ui.update_status(1)
             await self.api.get_account_info(0)
             return False
         except InvalidApplicationIdError:
+            self.ui.update_status(3, 'Invalid API')
             logging.error('The API key you provided is invalid, please go to the settings and check it!')
             return True
+        except ClientConnectionError:
+            logging.exception('Check your internet connection!')
+            self.ui.update_status(3, 'Connection')
 
     async def reload_config(self):
         self.config = Config()
@@ -96,28 +101,25 @@ class PotatoAlert:
                 last_started = float(os.stat(
                     os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')).st_mtime)
                 if last_started != self.last_started:
-                    self.ui.update_status(2)
+                    self.ui.update_status(2, 'Getting stats')
                     await asyncio.sleep(0.05)
                     try:
                         players = await self.get_players(self.read_arena_info())
                         self.ui.fill_tables(players)
-                        self.ui.update_status(1)
+                        self.ui.update_status(1, 'Ready')
                         self.last_started = last_started
-                    except InvalidApplicationIdError:
-                        logging.exception('The API Key you provided is invalid. Please check the settings!')
-                        self.ui.update_status(3)
-                    except ConnectionError:
+                    except ClientConnectionError:
                         logging.exception('Check your internet connection!')
-                        self.ui.update_status(3)
+                        self.ui.update_status(3, 'Connection')
                     except ClientResponseError as e:  # no idea what to do with these
                         logging.exception(e)
-                        self.ui.update_status(3)
+                        self.ui.update_status(3, 'Check Logs')
                     except ClientError as e:
                         logging.exception(e)
-                        self.ui.update_status(3)
+                        self.ui.update_status(3, 'Check Logs')
                     except Exception as e:
                         logging.exception(e)
-                        self.ui.update_status(3)
+                        self.ui.update_status(3, 'Check Logs')
             await asyncio.sleep(5)
 
     async def get_players(self, data: List[dict]) -> List[Player]:
