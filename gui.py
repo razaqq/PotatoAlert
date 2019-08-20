@@ -83,7 +83,7 @@ class MainWindow(QMainWindow):
         self.layout.setSpacing(0)
         self.init()
         self.status_icon, self.status_text = None, None
-        self.update_status()
+        self.update_status(1, 'Ready')
         self.create_table_labels()
         self.left_table, self.right_table = self.create_tables()
         self.create_menubar()
