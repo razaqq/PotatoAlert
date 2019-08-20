@@ -176,16 +176,16 @@ class MainWindow(QMainWindow):
             self.status.setFixedHeight(25)
             self.status.setFixedWidth(25)
         if status == 1:  # waiting for start/ready
-            pix = QPixmap('assets/done.png')
+            pix = QPixmap(resource_path('assets/done.png'))
             self.status.setPixmap(pix)
         elif status == 2:  # loading
-            movie = QMovie("assets/loading.gif")
+            movie = QMovie(resource_path('assets/loading.gif'))
             movie.setSpeed(1000)
             movie.setScaledSize(QSize(25, 25))
             movie.start()
             self.status.setMovie(movie)
         elif status == 3:  # error
-            pix = QPixmap('assets/error.png')
+            pix = QPixmap(resource_path('assets/error.png'))
             self.status.setPixmap(pix)
 
     def create_settings_menu(self):
