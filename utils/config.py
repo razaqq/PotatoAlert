@@ -74,7 +74,7 @@ class Config(ConfigParser):
             self['DEFAULT']['WindowW'] = '1500'
         if 'WindowH' not in self['DEFAULT']:
             ok = False
-            self['DEFAULT']['WindowH'] = '550'
+            self['DEFAULT']['WindowH'] = '450'
         self.save()
         if not ok:
             self.read_config()
