@@ -196,8 +196,8 @@ class MainWindow(QMainWindow):
         if not self.status_icon or not self.status_text:
             self.status_icon = QLabel()
             self.status_icon.setScaledContents(True)
-            self.status_icon.setFixedHeight(25)
-            self.status_icon.setFixedWidth(25)
+            self.status_icon.setFixedHeight(20)
+            self.status_icon.setFixedWidth(20)
             self.status_text = QLabel('')
             self.status_text.setAlignment(Qt.AlignCenter)
             self.status_text.setStyleSheet('font-size: 10px;')
@@ -208,7 +208,7 @@ class MainWindow(QMainWindow):
         elif status == 2:  # loading
             movie = QMovie(resource_path('assets/loading.gif'))
             movie.setSpeed(1000)
-            movie.setScaledSize(QSize(25, 25))
+            movie.setScaledSize(QSize(20, 20))
             movie.start()
             self.status_icon.setMovie(movie)
             self.status_text.setText(text)
