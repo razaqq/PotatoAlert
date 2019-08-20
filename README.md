@@ -9,7 +9,7 @@ This tool is by no means meant for stat shaming or being toxic towards other pla
 Please behave yourself in chat.
 If you think you cannot follow this simple rule, then you hereby don't have my permission to use this tool.
 
-## Use pre-compiled build
+## Use pre-compiled build (recommended)
 You can find pre-compiled builds for Windows and Linux [here](https://github.com/razaqq/PotatoAlert/releases).
 
 1. Just start the binary, there is no install.
