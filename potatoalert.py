@@ -76,8 +76,10 @@ class PotatoAlert:
     async def check_api_key(self):
         try:
             await self.api.get_account_info(0)
+            self.ui.update_status(1)
             return False
         except InvalidApplicationIdError:
+            self.ui.update_status(3)
             logging.error('The API key you provided is invalid, please go to the settings and check it!')
             return True
 
