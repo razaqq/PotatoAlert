@@ -39,7 +39,6 @@ from utils.api import ApiWrapper
 from utils.api_errors import InvalidApplicationIdError
 from utils.stat_colors import color_avg_dmg, color_battles, color_winrate, color_personal_rating
 from utils import updater
-from version import __version__
 
 
 @dataclass()
@@ -63,8 +62,16 @@ class PotatoAlert:
         self.steam_version = False
         self.region = ''
         self.last_started = 0.0
+        self.setup_logger()
         self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
         self.invalid_api_key = asyncio.get_event_loop().run_until_complete(self.check_api_key())
+
+    def setup_logger(self):
+        logging.basicConfig(level=logging.ERROR,
+                            format='%(asctime)s - %(levelname)-5s:  %(message)s',
+                            datefmt='%H:%M:%S',
+                            filename=os.path.join(self.config.config_path, 'Error.log'),
+                            filemode='w')
 
     async def check_api_key(self):
         try:
@@ -82,8 +89,6 @@ class PotatoAlert:
         self.invalid_api_key = await self.check_api_key()
 
     async def run(self):
-        if not self.invalid_api_key:
-            logging.info('Waiting for match start...')
         while True:
             if self.ui.config_reload_needed:
                 asyncio.get_event_loop().create_task(self.reload_config())
@@ -91,21 +96,28 @@ class PotatoAlert:
                 last_started = float(os.stat(
                     os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')).st_mtime)
                 if last_started != self.last_started:
-                    logging.info('New game started, getting stats...')
+                    self.ui.update_status(2)
                     await asyncio.sleep(0.05)
                     try:
                         players = await self.get_players(self.read_arena_info())
                         self.ui.fill_tables(players)
-                        logging.info('Done.')
+                        self.ui.update_status(1)
                         self.last_started = last_started
                     except InvalidApplicationIdError:
-                        logging.error('The API Key you provided is invalid. Please check the settings!')
+                        logging.exception('The API Key you provided is invalid. Please check the settings!')
+                        self.ui.update_status(3)
                     except ConnectionError:
-                        logging.error('Check your internet connection!')
+                        logging.exception('Check your internet connection!')
+                        self.ui.update_status(3)
                     except ClientResponseError as e:  # no idea what to do with these
-                        logging.error(e)
+                        logging.exception(e)
+                        self.ui.update_status(3)
                     except ClientError as e:
-                        logging.error(e)
+                        logging.exception(e)
+                        self.ui.update_status(3)
+                    except Exception as e:
+                        logging.exception(e)
+                        self.ui.update_status(3)
             await asyncio.sleep(5)
 
     async def get_players(self, data: List[dict]) -> List[Player]:
