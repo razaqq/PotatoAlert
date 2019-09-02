@@ -125,6 +125,7 @@ class PotatoAlert:
     async def get_players(self, data: List[dict]) -> List[Player]:
         players = []
         for p in data:
+            tasks = []
             player_name = p['name']
             team = p['relation']
             ship_name = 'Error'
@@ -140,8 +141,20 @@ class PotatoAlert:
                 players.append(p)
                 continue
 
+            tasks.append(asyncio.ensure_future(self.api.get_account_info(account_id)))
+            tasks.append(asyncio.ensure_future(self.api.get_player_clan(account_id)))
+            tasks.append(asyncio.ensure_future(self.api.get_ship_infos(p['shipId'])))
+            tasks.append(asyncio.ensure_future(self.api.get_ship_stats(account_id, p['shipId'])))
+            tasks.append(asyncio.ensure_future(self.get_overall_personal_rating(account_id)))
+            responses = await asyncio.gather(*tasks)
+            account_info = responses[0]
+            clan = responses[1]
+            ship_infos = responses[2]
+            ship_stats = responses[3]
+            pr = responses[4]
+
             try:  # get general account info and overall stats
-                account_info = await self.api.get_account_info(account_id)
+                # account_info = await self.api.get_account_info(account_id)
                 account_info = account_info['data'][str(account_id)]
                 hidden_profile = account_info['hidden_profile']
                 if not hidden_profile:
@@ -155,18 +168,16 @@ class PotatoAlert:
                 hidden_profile = True
 
             try:  # get clan info and append clan tag to player name
-                clan = await self.api.get_player_clan(account_id)
+                # clan = await self.api.get_player_clan(account_id)
                 clan_data = clan['data'][str(account_id)]
-                if clan_data and clan_data['clan_id']:
-                    clan_id = clan_data['clan_id']
-                    clan_info = await self.api.get_clan_info(clan_id)
-                    clan_tag = clan_info['data'][str(clan_id)]['tag']
-                    player_name = f"[{clan_tag}] {p['name']}"
+                if clan_data and clan_data['clan']:
+                    clan_tag = clan_data['clan']['tag']
+                    player_name = f"[{clan_tag}]{p['name']}"
             except KeyError:
                 pass
 
             try:
-                ship_infos = await self.api.get_ship_infos(p['shipId'])
+                # ship_infos = await self.api.get_ship_infos(p['shipId'])
                 ship = ship_infos['data'][str(p['shipId'])]
 
                 if ship:
@@ -205,7 +216,7 @@ class PotatoAlert:
                     tier_ship = ship['tier']
 
                     if not hidden_profile:
-                        ship_stats = await self.api.get_ship_stats(account_id, p['shipId'])
+                        # ship_stats = await self.api.get_ship_stats(account_id, p['shipId'])
                         data = ship_stats['data'][str(account_id)]
                         if data:
                             ship_stats = data[0]['pvp']
@@ -218,7 +229,7 @@ class PotatoAlert:
 
             # Get personal rating for background
             if not hidden_profile:
-                pr = await self.get_overall_personal_rating(account_id)
+                # pr = await self.get_overall_personal_rating(account_id)
                 if pr:
                     background = color_personal_rating(pr)
 
