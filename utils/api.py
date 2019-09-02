@@ -29,15 +29,15 @@ class ApiWrapper:
         self.api_key = api_key
         http_ending = region if region != 'na' else 'com'
         self.endpoint = f'https://api.worldofwarships.{http_ending}/wows/{{}}/{{}}/?'
+        self.session = ClientSession()
 
     async def get_result(self, method_block: str, method_name: str, params: dict) -> dict:
         params = {k: v for k, v in params.items() if v or isinstance(v, int)}
         url = self.endpoint.format(method_block, method_name)
         params['application_id'] = self.api_key
 
-        async with ClientSession() as s:
-            async with s.get(url, params=params) as resp:
-                res = await resp.json()
+        async with self.session.get(url, params=params) as resp:
+            res = await resp.json()
 
         if res['status'] == 'error':
             if res['error']['code'] == 407 and res['error']['message'] == 'INVALID_APPLICATION_ID':
@@ -71,7 +71,8 @@ class ApiWrapper:
 
     async def get_player_clan(self, account_id: int) -> dict:
         param = {
-            'account_id': account_id
+            'account_id': account_id,
+            'extra': 'clan'
         }
         return await self.get_result('clans', 'accountinfo', param)
 
@@ -88,3 +89,8 @@ class ApiWrapper:
             'fields': 'name,tier,type,nation'
         }
         return await self.get_result('encyclopedia', 'ships', param)
+
+    async def get_clan_battle_info(self, clan_id):
+        param = {
+        }
+        return await self.get_result('clans', 'season', param)
