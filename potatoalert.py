@@ -111,13 +111,7 @@ class PotatoAlert:
                     except ClientConnectionError:
                         logging.exception('Check your internet connection!')
                         self.ui.update_status(3, 'Connection')
-                    except ClientResponseError as e:  # no idea what to do with these
-                        logging.exception(e)
-                        self.ui.update_status(3, 'Check Logs')
-                    except ClientError as e:
-                        logging.exception(e)
-                        self.ui.update_status(3, 'Check Logs')
-                    except Exception as e:
+                    except (ClientError, ClientResponseError, Exception) as e:
                         logging.exception(e)
                         self.ui.update_status(3, 'Check Logs')
             await asyncio.sleep(5)
