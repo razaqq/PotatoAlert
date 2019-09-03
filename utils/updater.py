@@ -39,7 +39,7 @@ async def check_update():
             if __version__ < new_version:
                 update_needed = True
             return update_needed
-        except ConnectionError:
+        except (ClientResponseError, ClientError, ClientConnectionError, ConnectionError):
             return False
     else:
         return False  # TODO notify of update if someone is not using frozen build
