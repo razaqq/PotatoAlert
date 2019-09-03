@@ -4,11 +4,12 @@ import time
 from aiohttp import ClientSession
 import aiofiles
 from PyQt5.QtWidgets import QMainWindow, QProgressBar, QWidget, QVBoxLayout, QStatusBar, QLabel, QApplication,\
-                            QHBoxLayout, QTextEdit, QGraphicsTextItem
+                            QHBoxLayout
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon, QPixmap
 from assets.qtmodern import styles, windows
 from utils.config import Config
+from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError
 from version import __version__
 
 file_name = os.path.basename(sys.executable)
@@ -65,7 +66,7 @@ async def update():
                         rate = round(downloaded / 1E6 / (time.time() - start_time), 2)
                         yield percent, done, total, rate
                     await f.close()
-    except ConnectionError:
+    except (ClientResponseError, ClientError, ClientConnectionError, ConnectionError):
         os.rename(os.path.join(current_path, f'{file_name}_old'), os.path.join(current_path, file_name))
     finally:
         os.execl(os.path.join(current_path, file_name), os.path.join(current_path, file_name))
