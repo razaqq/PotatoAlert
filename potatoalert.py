@@ -155,7 +155,8 @@ class PotatoAlert:
                     stats = account_info['statistics']['pvp']
                     if stats and 'battles' in stats:
                         battles = stats['battles']
-                        if battles:  # at least one match, otherwise we divide by 0
+                        if battles and stats['wins'] and stats['damage_dealt']:
+                            # at least one match, otherwise we divide by 0
                             winrate = round(stats['wins'] / battles * 100, 1)
                             avg_dmg = int(round(stats['damage_dealt'] / battles, -2))
             except KeyError:
