@@ -1,6 +1,6 @@
 from qtpy.QtCore import Qt, QMetaObject, Signal, Slot
 from qtpy.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QToolButton,
-                            QLabel, QSizePolicy)
+                            QLabel, QSizePolicy, QDialog)
 
 from ._utils import QT_VERSION
 
@@ -172,3 +172,126 @@ class ModernWindow(QWidget):
             self.on_btnMaximize_clicked()
         else:
             self.on_btnRestore_clicked()
+
+
+class ModernDialog(QDialog):
+    """ Modern dialog.
+
+        Args:
+            w (QWidget): Main widget.
+            parent (QWidget, optional): Parent widget.
+    """
+    def __init__(self, frameless_qss, parent=None, hide_window_buttons=False):
+        QDialog.__init__(self, parent)
+
+        self.setupUi(frameless_qss, hide_window_buttons)
+
+        # contentLayout = QHBoxLayout()
+        # contentLayout.setContentsMargins(0, 0, 0, 0)
+
+        # self.windowContent.setLayout(contentLayout)
+
+    def setupUi(self, frameless_qss, hide_window_buttons):
+        # create title bar, content
+        self.vboxWindow = QVBoxLayout(self)
+        self.vboxWindow.setContentsMargins(0, 0, 0, 0)
+
+        self.windowFrame = QWidget(self)
+        self.windowFrame.setObjectName('windowFrame')
+
+        self.vboxFrame = QVBoxLayout(self.windowFrame)
+        self.vboxFrame.setContentsMargins(0, 0, 0, 0)
+
+        self.titleBar = WindowDragger(self, self.windowFrame)
+        self.titleBar.setObjectName('titleBar')
+        self.titleBar.setSizePolicy(QSizePolicy(QSizePolicy.Preferred,
+                                                QSizePolicy.Fixed))
+
+        self.hboxTitle = QHBoxLayout(self.titleBar)
+        self.hboxTitle.setContentsMargins(0, 0, 0, 0)
+        self.hboxTitle.setSpacing(0)
+
+        self.lblTitle = QLabel('Title')
+        self.lblTitle.setObjectName('lblTitle')
+        self.lblTitle.setAlignment(Qt.AlignCenter)
+        self.hboxTitle.addWidget(self.lblTitle)
+
+        spButtons = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        if not hide_window_buttons:
+            self.btnMinimize = QToolButton(self.titleBar)
+            self.btnMinimize.setObjectName('btnMinimize')
+            self.btnMinimize.setSizePolicy(spButtons)
+            self.hboxTitle.addWidget(self.btnMinimize)
+
+            self.btnRestore = QToolButton(self.titleBar)
+            self.btnRestore.setObjectName('btnRestore')
+            self.btnRestore.setSizePolicy(spButtons)
+            self.btnRestore.setVisible(False)
+            self.hboxTitle.addWidget(self.btnRestore)
+
+            self.btnMaximize = QToolButton(self.titleBar)
+            self.btnMaximize.setObjectName('btnMaximize')
+            self.btnMaximize.setSizePolicy(spButtons)
+            self.hboxTitle.addWidget(self.btnMaximize)
+
+            self.btnClose = QToolButton(self.titleBar)
+            self.btnClose.setObjectName('btnClose')
+            self.btnClose.setSizePolicy(spButtons)
+            self.hboxTitle.addWidget(self.btnClose)
+
+        self.vboxFrame.addWidget(self.titleBar)
+
+        self.windowContent = QWidget(self.windowFrame)
+        self.vboxFrame.addWidget(self.windowContent)
+
+        self.vboxWindow.addWidget(self.windowFrame)
+
+        # set window flags
+        self.setWindowFlags(
+                Qt.Window | Qt.FramelessWindowHint | Qt.WindowSystemMenuHint)
+
+        if QT_VERSION >= (5,):
+            self.setAttribute(Qt.WA_TranslucentBackground)
+
+        # set stylesheet
+        with open(frameless_qss) as stylesheet:
+            self.setStyleSheet(stylesheet.read())
+
+        # automatically connect slots
+        QMetaObject.connectSlotsByName(self)
+
+    def setupEvents(self, w):
+        w.close = self.close
+        self.closeEvent = w.closeEvent
+
+    def setWindowTitle(self, title):
+        """ Set window title.
+
+            Args:
+                title (str): Title.
+        """
+
+        self.lblTitle.setText(title)
+
+    @Slot()
+    def on_btnMinimize_clicked(self):
+        self.setWindowState(Qt.WindowMinimized)
+
+    @Slot()
+    def on_btnRestore_clicked(self):
+        self.btnRestore.setVisible(False)
+        self.btnMaximize.setVisible(True)
+
+        self.setWindowState(Qt.WindowNoState)
+
+    @Slot()
+    def on_btnMaximize_clicked(self):
+        self.btnRestore.setVisible(True)
+        self.btnMaximize.setVisible(False)
+
+        self.setWindowState(Qt.WindowMaximized)
+
+    @Slot()
+    def on_btnClose_clicked(self):
+        self.close()

@@ -218,87 +218,120 @@ class MainWindow(QMainWindow):
             self.status_text.setText(text)
 
     def create_settings_menu(self):
-        d = QDialog(flags=self.flags)
-        d.setFixedSize(450, 152)  # 400 142
-        d.setWindowTitle("Settings")
-        d.setWindowIcon(QIcon(resource_path('./assets/settings.ico')))
+        mw = windows.ModernDialog(resource_path('./assets/frameless.qss'), hide_window_buttons=True, parent=self)
+        # mw = QDialog(flags=self.flags)
+        mw.setWindowTitle('Settings')
+        mw.setMinimumSize(450, 152)
 
-        bb = QDialogButtonBox(d)
-        bb.setGeometry(QRect(10, 110, 430, 32))
-        bb.setOrientation(Qt.Horizontal)
-        bb.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
+        # mw.windowContent.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: red;')
 
-        api_key = QLineEdit(d)
-        api_key.setGeometry(QRect(120, 10, 320, 20))
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+
+        # API KEY
+        row1 = QWidget(flags=self.flags)
+        row1_layout = QHBoxLayout()
+        row1_layout.setContentsMargins(10, 5, 10, 5)
+
+        api_label = QLabel()
+        api_label.setFixedSize(110, 20)
+        api_label.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
+        api_label.setText("Wargaming API Key:")
+        row1_layout.addWidget(api_label, alignment=Qt.Alignment(0))
+
+        api_key = QLineEdit()
+        # api_key.setBaseSize(320, 20)
         api_key.setText(self.config['DEFAULT']['api_key'])
+        row1_layout.addWidget(api_key, alignment=Qt.Alignment(0))
+        row1.setLayout(row1_layout)
+        main_layout.addWidget(row1, alignment=Qt.Alignment(0))
 
-        l1 = QLabel(d)
-        l1.setGeometry(QRect(10, 10, 100, 20))
-        l1.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
-        l1.setText("Wargaming API Key:")
+        # REPLAYS FOLDER
+        row2 = QWidget(flags=self.flags)
+        row2_layout = QHBoxLayout()
+        row2_layout.setContentsMargins(10, 5, 10, 5)
 
-        l3 = QLabel(d)
-        l3.setGeometry(QRect(10, 40, 100, 20))
-        l3.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
-        l3.setText("Replays Folder:")
+        replays_label = QLabel()
+        replays_label.setFixedSize(110, 20)
+        replays_label.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
+        replays_label.setText("Replays Folder:")
+        row2_layout.addWidget(replays_label, alignment=Qt.Alignment(0))
 
-        replays = QLineEdit(d)
-        replays.setGeometry(QRect(120, 40, 285, 20))
+        replays = QLineEdit()
+        # replays.setGeometry(QRect(120, 40, 285, 20))
         replays.setText(self.config['DEFAULT']['replays_folder'])
+        row2_layout.addWidget(replays, alignment=Qt.Alignment(0))
 
         def dir_brower():
             fd = QFileDialog()
             fd.resize(500, 500)
             replays.setText(str(fd.getExistingDirectory(self, "Select Directory")))
-        t = QToolButton(d)
-        t.setGeometry(QRect(415, 40, 25, 20))
-        t.setText("...")
-        t.clicked.connect(dir_brower)
+        tool_but = QToolButton()
+        # t.setGeometry(QRect(415, 40, 25, 20))
+        tool_but.setText("...")
+        tool_but.clicked.connect(dir_brower)
+        row2_layout.addWidget(tool_but, alignment=Qt.Alignment(0))
 
-        l4 = QLabel(d)
-        l4.setGeometry(QRect(10, 70, 100, 20))
-        l4.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
-        l4.setText("Region:")
+        row2.setLayout(row2_layout)
+        main_layout.addWidget(row2, alignment=Qt.Alignment(0))
 
-        r = QComboBox(d)
+        # REGION
+        row3 = QWidget(flags=self.flags)
+        row3_layout = QHBoxLayout()
+        row3_layout.setContentsMargins(10, 5, 10, 5)
+
+        region_label = QLabel()
+        region_label.setFixedSize(110, 20)
+        region_label.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
+        region_label.setText("Region:")
+        row3_layout.addWidget(region_label, alignment=Qt.Alignment(0))
+
+        region_picker = QComboBox()
         regions = {'eu': 0,
                    'ru': 1,
                    'na': 2,
                    'asia': 3}
-        r.addItems(regions.keys())
-        r.setGeometry(QRect(120, 70, 69, 20))
-        r.setCurrentIndex(int(regions[self.config['DEFAULT']['region']]))
+        region_picker.addItems(regions.keys())
+        region_picker.setFixedSize(70, 20)
+        region_picker.setCurrentIndex(int(regions[self.config['DEFAULT']['region']]))
+        row3_layout.addWidget(region_picker, alignment=Qt.Alignment(0))
+        row3_layout.addStretch()
+
+        row3.setLayout(row3_layout)
+        main_layout.addWidget(row3, alignment=Qt.Alignment(0))
+
+        # BUTTONS
+        button_widget = QWidget(flags=self.flags)
+        button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(10, 5, 10, 10)
+
+        button_box = QDialogButtonBox()
+        button_box.setOrientation(Qt.Horizontal)
+        button_box.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
+        button_layout.addStretch()
+        button_layout.addWidget(button_box, alignment=Qt.Alignment(0))
+        button_layout.addStretch()
+        button_widget.setLayout(button_layout)
+        main_layout.addWidget(button_widget, alignment=Qt.Alignment(0))
 
         def update_config():
             self.config['DEFAULT']['replays_folder'] = replays.text()
             self.config['DEFAULT']['api_key'] = api_key.text()
-            self.config['DEFAULT']['region'] = [region for region, index in regions.items() if index == r.currentIndex()][0]
+            self.config['DEFAULT']['region'] = \
+                [region for region, index in regions.items() if index == region_picker.currentIndex()][0]
 
         def flag_config_reload_needed():
             self.config_reload_needed = True
 
-        bb.accepted.connect(d.accept)
-        bb.accepted.connect(update_config)
-        bb.accepted.connect(self.config.save)
-        bb.accepted.connect(flag_config_reload_needed)
-        bb.rejected.connect(d.reject)
-        QMetaObject.connectSlotsByName(d)
-        d.exec_()
+        button_box.accepted.connect(mw.accept)
+        button_box.accepted.connect(update_config)
+        button_box.accepted.connect(self.config.save)
+        button_box.accepted.connect(flag_config_reload_needed)
+        button_box.rejected.connect(mw.reject)
 
-    @staticmethod
-    def notify_update(new_version):
-        text = 'There is a new version available! <br>' \
-               f'Your Version: {__version__} <br>' \
-               f'New Version: {new_version} <br>' \
-               'Get it <a href="http://github.com/razaqq/PotatoAlert" style="color: rgb(0,255,0)">HERE</a>'
-        q = QMessageBox()
-        q.setTextFormat(Qt.RichText)
-        q.setText(text)
-        q.setWindowTitle('Update available')
-        icon = QIcon()
-        icon.addPixmap(QPixmap(resource_path('./assets/potato.png')), QIcon.Normal, QIcon.Off)
-        q.setWindowIcon(icon)
-        q.exec_()
+        mw.windowContent.setLayout(main_layout)
+        mw.exec()
 
     def fill_tables(self, players):
         for y in range(12):  # clear the tables before inserting
