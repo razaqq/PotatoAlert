@@ -219,11 +219,8 @@ class MainWindow(QMainWindow):
 
     def create_settings_menu(self):
         mw = windows.ModernDialog(resource_path('./assets/frameless.qss'), hide_window_buttons=True, parent=self)
-        # mw = QDialog(flags=self.flags)
         mw.setWindowTitle('Settings')
         mw.setMinimumSize(450, 152)
-
-        # mw.windowContent.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: red;')
 
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -241,7 +238,6 @@ class MainWindow(QMainWindow):
         row1_layout.addWidget(api_label, alignment=Qt.Alignment(0))
 
         api_key = QLineEdit()
-        # api_key.setBaseSize(320, 20)
         api_key.setText(self.config['DEFAULT']['api_key'])
         row1_layout.addWidget(api_key, alignment=Qt.Alignment(0))
         row1.setLayout(row1_layout)
@@ -259,7 +255,6 @@ class MainWindow(QMainWindow):
         row2_layout.addWidget(replays_label, alignment=Qt.Alignment(0))
 
         replays = QLineEdit()
-        # replays.setGeometry(QRect(120, 40, 285, 20))
         replays.setText(self.config['DEFAULT']['replays_folder'])
         row2_layout.addWidget(replays, alignment=Qt.Alignment(0))
 
@@ -268,7 +263,6 @@ class MainWindow(QMainWindow):
             fd.resize(500, 500)
             replays.setText(str(fd.getExistingDirectory(self, "Select Directory")))
         tool_but = QToolButton()
-        # t.setGeometry(QRect(415, 40, 25, 20))
         tool_but.setText("...")
         tool_but.clicked.connect(dir_brower)
         row2_layout.addWidget(tool_but, alignment=Qt.Alignment(0))
