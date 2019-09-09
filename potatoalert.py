@@ -140,7 +140,7 @@ class PotatoAlert:
                 async with ClientSession(timeout=ClientTimeout(connect=10)) as s:
                     async with s.get('https://api.wows-numbers.com/personal/rating/expected/json/') as resp:
                         expected = await resp.json()
-            except (ClientConnectionError, ClientError, ClientResponseError, TimeoutError, ServerTimeoutError) as e:
+            except (ClientConnectionError, ClientError, ClientResponseError, TimeoutError, ServerTimeoutError):
                 expected = None
 
             tasks.append(asyncio.ensure_future(self.api.get_account_info(account_id)))
