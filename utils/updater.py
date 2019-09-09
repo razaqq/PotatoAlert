@@ -47,7 +47,10 @@ async def check_update():
 
 async def update():
     try:
-        os.rename(os.path.join(current_path, file_name), os.path.join(current_path, f'{file_name}_old'))
+        try:
+            os.rename(os.path.join(current_path, file_name), os.path.join(current_path, f'{file_name}_old'))
+        except Exception as e:
+            print(e)
         url = "https://github.com/razaqq/PotatoAlert/releases/latest/download/potatoalert_x64.exe"
         async with ClientSession() as s:
             async with s.get(url) as resp:
@@ -63,10 +66,13 @@ async def update():
                         percent = downloaded / size * 100
                         done = round(downloaded / 1E6, 1)
                         total = round(size / 1E6, 1)
-                        rate = round(downloaded / 1E6 / (time.time() - start_time), 2)
+                        try:
+                            rate = round(downloaded / 1E6 / (time.time() - start_time), 2)
+                        except ZeroDivisionError:  # If your internet is too fast, first tick might be zero. 16ms pres.
+                            rate = 0
                         yield percent, done, total, rate
                     await f.close()
-    except (ClientResponseError, ClientError, ClientConnectionError, ConnectionError):
+    except (ClientResponseError, ClientError, ClientConnectionError, ConnectionError) as e:
         os.rename(os.path.join(current_path, f'{file_name}_old'), os.path.join(current_path, file_name))
     finally:
         os.execl(os.path.join(current_path, file_name), os.path.join(current_path, file_name))
