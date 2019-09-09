@@ -135,7 +135,7 @@ class MainWindow(QMainWindow):
         left_widget.setLayout(left_layout)
 
         status = QWidget(flags=self.flags)
-        status.setFixedWidth(100)
+        status.setFixedWidth(130)
         status_layout = QHBoxLayout()
         status_layout.setContentsMargins(0, 0, 0, 0)
         status_layout.setSpacing(0)
@@ -150,7 +150,7 @@ class MainWindow(QMainWindow):
         left_layout.addWidget(Label(text='Your Team'), alignment=Qt.Alignment(0))
         left_layout.addStretch()
         dummy = QWidget(flags=self.flags)
-        dummy.setFixedWidth(100)
+        dummy.setFixedWidth(130)
         left_layout.addWidget(dummy, alignment=Qt.Alignment(0))
 
         right_layout = QHBoxLayout()
