@@ -198,13 +198,13 @@ class PotatoAlert:
                         'usa': 10,
                         'uk': 9,
                         'commonwealth': 8,
-                        'france': 7,
-                        'germany': 6,
-                        'italy': 5,
-                        'japan': 4,
-                        'pan-asia': 3,
-                        'poland': 2,
-                        'russia': 1
+                        'europe': 7,
+                        'france': 6,
+                        'germany': 5,
+                        'italy': 4,
+                        'japan': 3,
+                        'pan-asia': 2,
+                        'ussr': 1
                     }
                     nation_ship = nation_sorting.get(ship['nation'], 0)
 
