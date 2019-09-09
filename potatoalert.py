@@ -29,8 +29,8 @@ import json
 import asyncio
 import logging
 from typing import List
-from aiohttp import ClientSession
-from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError
+from aiohttp import ClientSession, ClientTimeout
+from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.config import Config
 from dataclasses import dataclass
 import gui
@@ -101,7 +101,6 @@ class PotatoAlert:
                 last_started = float(os.stat(
                     os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')).st_mtime)
                 if last_started != self.last_started:
-                    self.ui.update_status(2, 'Getting stats')
                     await asyncio.sleep(0.05)
                     try:
                         players = await self.get_players(self.read_arena_info())
@@ -118,7 +117,9 @@ class PotatoAlert:
 
     async def get_players(self, data: List[dict]) -> List[Player]:
         players = []
+        total = len(data)
         for p in data:
+            self.ui.update_status(2, f'Getting stats ({round(len(players) / total * 100, 1)}%)')
             tasks = []
             player_name = p['name']
             team = p['relation']
@@ -135,11 +136,18 @@ class PotatoAlert:
                 players.append(p)
                 continue
 
+            try:
+                async with ClientSession(timeout=ClientTimeout(connect=10)) as s:
+                    async with s.get('https://api.wows-numbers.com/personal/rating/expected/json/') as resp:
+                        expected = await resp.json()
+            except (ClientConnectionError, ClientError, ClientResponseError, TimeoutError, ServerTimeoutError) as e:
+                expected = None
+
             tasks.append(asyncio.ensure_future(self.api.get_account_info(account_id)))
             tasks.append(asyncio.ensure_future(self.api.get_player_clan(account_id)))
             tasks.append(asyncio.ensure_future(self.api.get_ship_infos(p['shipId'])))
             tasks.append(asyncio.ensure_future(self.api.get_ship_stats(account_id, p['shipId'])))
-            tasks.append(asyncio.ensure_future(self.get_overall_personal_rating(account_id)))
+            tasks.append(asyncio.ensure_future(self.get_overall_personal_rating(account_id, expected)))
             responses = await asyncio.gather(*tasks)
             account_info = responses[0]
             clan = responses[1]
@@ -242,11 +250,10 @@ class PotatoAlert:
 
         return sorted(players, key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
 
-    async def get_overall_personal_rating(self, account_id: int = 0):
+    async def get_overall_personal_rating(self, account_id: int = 0, expected=None):
         try:
-            async with ClientSession() as s:
-                async with s.get('https://api.wows-numbers.com/personal/rating/expected/json/') as resp:
-                    expected = await resp.json()
+            if not expected:
+                return False
             total_pr = []
             stats = await self.api.get_ship_stats(account_id)
             total_battles = 0
@@ -286,6 +293,7 @@ class PotatoAlert:
             return []
         with open(arena_info, 'r') as f:
             data = json.load(f)
+            # game_mode = data['gameMode']
             return [d for d in data['vehicles']]
 
 
