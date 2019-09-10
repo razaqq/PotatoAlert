@@ -25,10 +25,10 @@ import os
 import sys
 from assets.qtmodern import styles, windows
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
-     QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialog, QDialogButtonBox, QLineEdit,\
+     QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialogButtonBox, QLineEdit,\
      QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar
-from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie
-from PyQt5.QtCore import QRect, Qt, QUrl, QMetaObject, QSize
+from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QImage
+from PyQt5.QtCore import Qt, QUrl, QSize
 from utils.config import Config
 from version import __version__
 
@@ -172,11 +172,55 @@ class MainWindow(QMainWindow):
             QDesktopServices.openUrl(url)
 
         def open_about():
+            about = 'Author: \n' \
+                    f'Version: \n' \
+                    'Powered by: \n' \
+                    'License: '
+            about2 = 'http://github.com/razaqq\n' \
+                     f'{__version__}\n' \
+                     'PyQt5, asyncqt, qtmodern and aiohttp\n' \
+                     'MIT'
+            d = windows.ModernDialog(resource_path('./assets/frameless.qss'), parent=self, hide_window_buttons=True)
+            main_layout = QVBoxLayout()
+            d.setWindowTitle('About')
+            # d.windowContent.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: red;')
+            d.setMinimumSize(400, 150)
+
+            about_widget = QWidget()
+            about_layout = QHBoxLayout()
+            pix = QPixmap(resource_path('./assets/potato.png'))
+            pix = pix.scaled(70, 70)
+            img = QLabel()
+            img.setPixmap(pix)
+            about_layout.addWidget(img)
+            font = QFont()
+            font.setPointSize(10)
+            text1 = QLabel(about)
+            text1.setFont(font)
+            about_layout.addWidget(text1)
+            text2 = QLabel(about2)
+            text2.setFont(font)
+            about_layout.addWidget(text2)
+            about_widget.setLayout(about_layout)
+            main_layout.addWidget(about_widget)
+
+            button_box = QDialogButtonBox()
+            button_box.setOrientation(Qt.Horizontal)
+            button_box.setStandardButtons(QDialogButtonBox.Ok)
+            button_box.setCenterButtons(True)
+            button_box.accepted.connect(d.accept)
+            main_layout.addWidget(button_box)
+
+            d.windowContent.setLayout(main_layout)
+            d.exec()
+
+        def open_about_old():
             about = 'Author: http://github.com/razaqq\n' \
                     f'Version: {__version__}\n' \
                     'Powered by: PyQt5, asyncqt, qtmodern and aiohttp\n' \
                     'License: MIT'
-            QMessageBox.about(self, "About", about)
+            q = QMessageBox.about(self, "About", about)
+
         menu = self.menuBar()
 
         settings_menu = menu.addMenu('Edit')
@@ -221,7 +265,7 @@ class MainWindow(QMainWindow):
     def create_settings_menu(self):
         mw = windows.ModernDialog(resource_path('./assets/frameless.qss'), hide_window_buttons=True, parent=self)
         mw.setWindowTitle('Settings')
-        mw.setMinimumSize(450, 152)
+        mw.setMinimumSize(450, 150)
 
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -368,6 +412,14 @@ class MainWindow(QMainWindow):
         self.config['DEFAULT']['windoww'] = str(self.mw.geometry().width())
         self.config.save()
         super().closeEvent(event)
+
+    def notify_update(self):
+        reply = QMessageBox.question(self, 'Update', 'Do you want to update now?')
+
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
 
 
 def resource_path(relative_path):
