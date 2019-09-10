@@ -116,6 +116,13 @@ class PotatoAlert:
             await asyncio.sleep(5)
 
     async def get_players(self, data: List[dict]) -> List[Player]:
+        try:  # Get expected values for pr calculation from wows-numbers
+            async with ClientSession(timeout=ClientTimeout(connect=10)) as s:
+                async with s.get('https://api.wows-numbers.com/personal/rating/expected/json/') as resp:
+                    expected = await resp.json()
+        except (ClientConnectionError, ClientError, ClientResponseError, TimeoutError, ServerTimeoutError):
+            expected = None
+
         players = []
         total = len(data)
         for p in data:
@@ -135,13 +142,6 @@ class PotatoAlert:
                 p = Player(True, team, [player_name, ship_name], [None, None], class_ship, tier_ship, nation_ship, None)
                 players.append(p)
                 continue
-
-            try:
-                async with ClientSession(timeout=ClientTimeout(connect=10)) as s:
-                    async with s.get('https://api.wows-numbers.com/personal/rating/expected/json/') as resp:
-                        expected = await resp.json()
-            except (ClientConnectionError, ClientError, ClientResponseError, TimeoutError, ServerTimeoutError):
-                expected = None
 
             tasks.append(asyncio.ensure_future(self.api.get_account_info(account_id)))
             tasks.append(asyncio.ensure_future(self.api.get_player_clan(account_id)))
