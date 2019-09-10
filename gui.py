@@ -417,9 +417,11 @@ class MainWindow(QMainWindow):
         reply = QMessageBox.question(self, 'Update', 'Do you want to update now?')
 
         if reply == QMessageBox.Yes:
-            event.accept()
+            # event.accept()
+            pass
         else:
-            event.ignore()
+            # event.ignore()
+            pass
 
 
 def resource_path(relative_path):
