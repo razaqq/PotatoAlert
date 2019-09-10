@@ -206,11 +206,12 @@ class MainWindow(QMainWindow):
             self.status_icon.setPixmap(pix)
             self.status_text.setText(text)
         elif status == 2:  # loading
-            movie = QMovie(resource_path('assets/loading.gif'))
-            movie.setSpeed(1000)
-            movie.setScaledSize(QSize(20, 20))
-            movie.start()
-            self.status_icon.setMovie(movie)
+            if not self.status_icon.movie():
+                movie = QMovie(resource_path('assets/loading.gif'))
+                movie.setSpeed(1000)
+                movie.setScaledSize(QSize(20, 20))
+                movie.start()
+                self.status_icon.setMovie(movie)
             self.status_text.setText(text)
         elif status == 3:  # error
             pix = QPixmap(resource_path('assets/error.png'))
