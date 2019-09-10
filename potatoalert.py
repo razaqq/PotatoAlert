@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 import os
 import sys
 import json
@@ -38,6 +37,7 @@ from asyncqt import QEventLoop
 from utils.api import ApiWrapper
 from utils.api_errors import InvalidApplicationIdError
 from utils.stat_colors import color_avg_dmg, color_battles, color_winrate, color_personal_rating
+from utils.ship_utils import shorten_name, get_nation_sort, get_class_sort
 from utils import updater
 
 
@@ -133,13 +133,13 @@ class PotatoAlert:
             ship_name = 'Error'
             background = None
             battles, winrate, avg_dmg, winrate_ship, battles_ship = [0] * 5
-            class_ship, nation_ship, tier_ship = [0] * 3
+            class_sort, nation_sort, tier_sort = [0] * 3
 
             try:  # try to get account id by searching by name, enter empty player if we get a KeyError
                 account_search = await self.api.search_account(p['name'])
                 account_id = account_search['data'][0]['account_id']
             except (KeyError, IndexError):
-                p = Player(True, team, [player_name, ship_name], [None, None], class_ship, tier_ship, nation_ship, None)
+                p = Player(True, team, [player_name, ship_name], [None, None], class_sort, tier_sort, nation_sort, None)
                 players.append(p)
                 continue
 
@@ -184,39 +184,10 @@ class PotatoAlert:
                 ship = ship_infos['data'][str(p['shipId'])]
 
                 if ship:
-                    ship_short_names = {
-                        'Prinz Eitel Friedrich': 'P. E. Friedrich',
-                        'Friedrich der Große': 'F. der Große',
-                        'Admiral Graf Spee': 'A. Graf Spee',
-                        'Oktyabrskaya Revolutsiya': 'Okt. Revolutsiya',
-                        'HSF Admiral Graf Spee': 'HSF A. Graf Spee',
-                        'Jurien de la Gravière': 'J. de la Gravière'
-                    }
-                    ship_name = ship_short_names.get(ship['name'], ship['name'])
-
-                    ship_sorting = {
-                        'AirCarrier': 4,
-                        'Battleship': 3,
-                        'Cruiser': 2,
-                        'Destroyer': 1
-                    }
-                    class_ship = ship_sorting[ship['type']]
-
-                    nation_sorting = {
-                        'usa': 10,
-                        'uk': 9,
-                        'commonwealth': 8,
-                        'europe': 7,
-                        'france': 6,
-                        'germany': 5,
-                        'italy': 4,
-                        'japan': 3,
-                        'pan-asia': 2,
-                        'ussr': 1
-                    }
-                    nation_ship = nation_sorting.get(ship['nation'], 0)
-
-                    tier_ship = ship['tier']
+                    ship_name = shorten_name(ship['name'])
+                    class_sort = get_class_sort(ship['type'])  # these three are for sorting them in the board
+                    nation_sort = get_nation_sort(ship['nation'])
+                    tier_sort = ship['tier']
 
                     if not hidden_profile:
                         # ship_stats = await self.api.get_ship_stats(account_id, p['shipId'])
@@ -245,7 +216,7 @@ class PotatoAlert:
                 if ship_name != 'Error':
                     row.extend([str(battles_ship), str(winrate_ship)])
                     colors.extend([None, color_winrate(winrate_ship)])
-            p = Player(hidden_profile, team, row, colors, class_ship, tier_ship, nation_ship, background)
+            p = Player(hidden_profile, team, row, colors, class_sort, tier_sort, nation_sort, background)
             players.append(p)
 
         return sorted(players, key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
