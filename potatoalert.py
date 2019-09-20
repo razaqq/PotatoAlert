@@ -115,10 +115,7 @@ class PotatoAlert:
                         self.ui.update_status(3, 'Check Logs')
             await asyncio.sleep(5)
 
-    async def get_players(self, player_data: List[dict], game_mode: int, match_group: str) -> List[Player]:
-        # MODES
-        # 7 Random
-        # 11 Ranked
+    async def get_players(self, player_data: List[dict], match_group: str) -> List[Player]:
         try:  # Get expected values for pr calculation from wows-numbers
             async with ClientSession(timeout=ClientTimeout(connect=10)) as s:
                 async with s.get('https://api.wows-numbers.com/personal/rating/expected/json/') as resp:
@@ -138,7 +135,7 @@ class PotatoAlert:
             battles, winrate, avg_dmg, winrate_ship, battles_ship = [0] * 5
             class_sort, nation_sort, tier_sort = [0] * 3
 
-            if match_group == 'cooperative' and team == 2:  # Special way to treat bots
+            if match_group == 'cooperative' and team == 2:  # COOP
                 ship_infos = await self.api.get_ship_infos(p['shipId'])
                 ship = ship_infos['data'][str(p['shipId'])]
                 ship_name = shorten_name(ship['name'])
@@ -148,6 +145,13 @@ class PotatoAlert:
                 p = Player(True, team, [player_name, ship_name], [None, None], class_sort, tier_sort, nation_sort, None)
                 players.append(p)
                 continue
+
+            if (match_group == 'pve' or match_group == 'pve_premade') and team == 2:  # SCENARIO
+                continue
+
+            if match_group == 'clan':
+                # TODO
+                pass
 
             try:  # try to get account id by searching by name, enter empty player if we get a KeyError
                 account_search = await self.api.search_account(p['name'])
@@ -272,13 +276,13 @@ class PotatoAlert:
         except (KeyError, IndexError, ZeroDivisionError):
             return False
 
-    def read_arena_info(self) -> Tuple[List[dict], int, str]:
+    def read_arena_info(self) -> Tuple[List[dict], str]:
         arena_info = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
         if not os.path.exists(arena_info):
             return None
         with open(arena_info, 'r') as f:
             data = json.load(f)
-            return [d for d in data['vehicles']], data['gameMode'], data['matchGroup']
+            return [d for d in data['vehicles']], data['matchGroup']
 
 
 if __name__ == '__main__':
