@@ -27,7 +27,7 @@ import sys
 import json
 import asyncio
 import logging
-from typing import List
+from typing import List, Tuple
 from aiohttp import ClientSession, ClientTimeout
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.config import Config
@@ -103,7 +103,7 @@ class PotatoAlert:
                 if last_started != self.last_started:
                     await asyncio.sleep(0.05)
                     try:
-                        players = await self.get_players(self.read_arena_info())
+                        players = await self.get_players(*self.read_arena_info())
                         self.ui.fill_tables(players)
                         self.ui.update_status(1, 'Ready')
                         self.last_started = last_started
@@ -115,7 +115,10 @@ class PotatoAlert:
                         self.ui.update_status(3, 'Check Logs')
             await asyncio.sleep(5)
 
-    async def get_players(self, data: List[dict]) -> List[Player]:
+    async def get_players(self, player_data: List[dict], game_mode: int, match_group: str) -> List[Player]:
+        # MODES
+        # 7 Random
+        # 11 Ranked
         try:  # Get expected values for pr calculation from wows-numbers
             async with ClientSession(timeout=ClientTimeout(connect=10)) as s:
                 async with s.get('https://api.wows-numbers.com/personal/rating/expected/json/') as resp:
@@ -124,8 +127,8 @@ class PotatoAlert:
             expected = None
 
         players = []
-        total = len(data)
-        for p in data:
+        total = len(player_data)
+        for p in player_data:
             self.ui.update_status(2, f'Getting stats ({round(len(players) / total * 100, 1)}%)')
             tasks = []
             player_name = p['name']
@@ -134,6 +137,17 @@ class PotatoAlert:
             background = None
             battles, winrate, avg_dmg, winrate_ship, battles_ship = [0] * 5
             class_sort, nation_sort, tier_sort = [0] * 3
+
+            if match_group == 'cooperative' and team == 2:  # Special way to treat bots
+                ship_infos = await self.api.get_ship_infos(p['shipId'])
+                ship = ship_infos['data'][str(p['shipId'])]
+                ship_name = shorten_name(ship['name'])
+                class_sort = get_class_sort(ship['type'])  # these three are for sorting them in the board
+                nation_sort = get_nation_sort(ship['nation'])
+                tier_sort = ship['tier']
+                p = Player(True, team, [player_name, ship_name], [None, None], class_sort, tier_sort, nation_sort, None)
+                players.append(p)
+                continue
 
             try:  # try to get account id by searching by name, enter empty player if we get a KeyError
                 account_search = await self.api.search_account(p['name'])
@@ -191,9 +205,9 @@ class PotatoAlert:
 
                     if not hidden_profile:
                         # ship_stats = await self.api.get_ship_stats(account_id, p['shipId'])
-                        data = ship_stats['data'][str(account_id)]
-                        if data:
-                            ship_stats = data[0]['pvp']
+                        player_data = ship_stats['data'][str(account_id)]
+                        if player_data:
+                            ship_stats = player_data[0]['pvp']
                             if ship_stats and 'battles' in ship_stats:
                                 battles_ship = ship_stats['battles']
                                 if battles_ship and 'wins' in ship_stats:  # check that at least one match in ship
@@ -258,14 +272,13 @@ class PotatoAlert:
         except (KeyError, IndexError, ZeroDivisionError):
             return False
 
-    def read_arena_info(self) -> List[dict]:
+    def read_arena_info(self) -> Tuple[List[dict], int, str]:
         arena_info = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
         if not os.path.exists(arena_info):
-            return []
+            return None
         with open(arena_info, 'r') as f:
             data = json.load(f)
-            # game_mode = data['gameMode']
-            return [d for d in data['vehicles']]
+            return [d for d in data['vehicles']], data['gameMode'], data['matchGroup']
 
 
 if __name__ == '__main__':
