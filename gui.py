@@ -214,12 +214,8 @@ class MainWindow(QMainWindow):
             d.windowContent.setLayout(main_layout)
             d.exec()
 
-        def open_about_old():
-            about = 'Author: http://github.com/razaqq\n' \
-                    f'Version: {__version__}\n' \
-                    'Powered by: PyQt5, asyncqt, qtmodern and aiohttp\n' \
-                    'License: MIT'
-            q = QMessageBox.about(self, "About", about)
+        def open_logs():
+            QDesktopServices.openUrl(QUrl.fromLocalFile(self.config.config_path))
 
         menu = self.menuBar()
 
@@ -232,6 +228,9 @@ class MainWindow(QMainWindow):
         github_button = QAction('View Source on Github', self)
         help_menu.addAction(github_button)
         github_button.triggered.connect(open_github)
+        logs_button = QAction('Open Logs', self)
+        help_menu.addAction(logs_button)
+        logs_button.triggered.connect(open_logs)
         about_button = QAction('About', self)
         help_menu.addAction(about_button)
         about_button.triggered.connect(open_about)
