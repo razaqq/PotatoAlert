@@ -82,7 +82,7 @@ async def update():
 
                     f = await aiofiles.open(os.path.join(current_path, file_name), mode='wb')
                     start_time = time.time()
-                    async for chunk in resp.content.iter_chunked(512):
+                    async for chunk in resp.content.iter_any():
                         await f.write(chunk)
                         downloaded += len(chunk)
                         percent = downloaded / size * 100
