@@ -53,6 +53,17 @@ class Player:
     background: any = None
 
 
+@dataclass()
+class ArenaInfo:
+    __slots__ = ['vehicles', 'mapId', 'mapName', 'matchGroup', 'ppt', 'scenario']
+    vehicles: list
+    mapId: int
+    mapName: str
+    matchGroup: str
+    ppt: int
+    scenario: str
+
+
 class PotatoAlert:
     def __init__(self, ui):
         self.ui = ui
@@ -103,8 +114,12 @@ class PotatoAlert:
                 if last_started != self.last_started:
                     await asyncio.sleep(0.05)
                     try:
-                        players = await self.get_players(*self.read_arena_info())
+                        arena_info = self.read_arena_info()
+                        if self.config['DEFAULT'].getboolean('additional_info'):
+                            self.ui.match_info.update_text(arena_info.mapName, arena_info.scenario, arena_info.ppt)
+                        players = await self.get_players(arena_info.vehicles, arena_info.matchGroup)
                         self.ui.fill_tables(players)
+                        self.ui.team_stats.update_text(*self.get_averages(players))
                         self.ui.update_status(1, 'Ready')
                         self.last_started = last_started
                     except ClientConnectionError:
@@ -276,13 +291,35 @@ class PotatoAlert:
         except (KeyError, IndexError, ZeroDivisionError):
             return False
 
-    def read_arena_info(self) -> Tuple[List[dict], str]:
+    @staticmethod
+    def get_averages(players: List[Player]):
+        t1_wr = [float(p.row[3]) for p in players if p.team == 1 or p.team == 0 and not p.hidden_profile]
+        t1_dmg = [int(p.row[4]) for p in players if p.team == 1 or p.team == 0 and not p.hidden_profile]
+        t2_wr = [float(p.row[3]) for p in players if p.team == 2 and not p.hidden_profile]
+        t2_dmg = [int(p.row[4]) for p in players if p.team == 2 and not p.hidden_profile]
+
+        t1_wr_c = color_winrate(sum(t1_wr) / len(t1_wr))
+        t1_dmg_c = color_avg_dmg(sum(t1_dmg) / len(t1_dmg))
+        t2_wr_c = color_winrate(sum(t2_wr) / len(t2_wr))
+        t2_dmg_c = color_avg_dmg(sum(t2_dmg) / len(t2_dmg))
+
+        t1_wr = round(sum(t1_wr) / len(t1_wr), 1)
+        t1_dmg = int(round(sum(t1_dmg) / len(t1_dmg), -2))
+        t2_wr = round(sum(t2_wr) / len(t2_wr), 1)
+        t2_dmg = int(round(sum(t2_dmg) / len(t2_dmg), -2))
+
+        return t1_wr, t1_wr_c, t1_dmg, t1_dmg_c, t2_wr, t2_wr_c, t2_dmg, t2_dmg_c
+
+    def read_arena_info(self) -> ArenaInfo:
         arena_info = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
         if not os.path.exists(arena_info):
             return None
         with open(arena_info, 'r') as f:
             data = json.load(f)
-            return [d for d in data['vehicles']], data['matchGroup']
+            a = ArenaInfo([d for d in data['vehicles']], data['mapId'], data['mapDisplayName'], data['matchGroup'],
+                          data['playersPerTeam'], data['scenario'])
+            return a
+            # return [d for d in data['vehicles']], data['matchGroup']
 
 
 if __name__ == '__main__':

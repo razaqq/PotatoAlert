@@ -26,18 +26,135 @@ import sys
 from assets.qtmodern import styles, windows
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialogButtonBox, QLineEdit,\
-     QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar
-from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QImage
+     QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar, QCheckBox
+from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie
 from PyQt5.QtCore import Qt, QUrl, QSize
 from utils.config import Config
 from version import __version__
 
 
+class MatchInfo:
+    def __init__(self, main_layout):
+        self.flags = Qt.WindowFlags()
+        self.widget = QWidget(flags=self.flags)
+        self.layout = QHBoxLayout()
+        self.layout.setContentsMargins(20, 5, 20, 0)
+        self.layout.setSpacing(20)
+        self.widget.setLayout(self.layout)
+        self.map = Label(text='Map: ', size=10)
+        self.scenario = Label(text='Scenario: ', size=10)
+        self.layout.addWidget(self.map, alignment=Qt.Alignment(0))
+        self.layout.addWidget(self.scenario, alignment=Qt.Alignment(0))
+        self.layout.addStretch()
+        main_layout.addWidget(self.widget)
+
+    def update_text(self, map_name, scenario, players_per_team):
+        self.map.setText(f'Map: {map_name} ({players_per_team}vs{players_per_team})')
+        self.scenario.setText(f'Scenario: {scenario}')
+
+
+class TeamStats:
+    def __init__(self, main_layout):
+        self.flags = Qt.WindowFlags()
+        self.widget = QWidget(flags=self.flags)
+        self.layout = QHBoxLayout()
+        self.layout.setContentsMargins(10, 0, 10, 0)
+        self.layout.setSpacing(0)
+        self.widget.setLayout(self.layout)
+        # self.widget.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: red;')
+
+        self.t1_wr = Label(text='', size=10)
+        self.t1_dmg = Label(text='', size=10)
+        self.t2_wr = Label(text='', size=10)
+        self.t2_dmg = Label(text='', size=10)
+        self.t1_server = Label(text='', size=10)
+        self.t2_server = Label(text='', size=10)
+        self.t1_server_label = Label(text='Server: ', size=10)
+        self.t2_server_label = Label(text='Server: ', size=10)
+
+        a = QWidget(flags=self.flags)
+        b = QWidget(flags=self.flags)
+        c = QWidget(flags=self.flags)
+        d = QWidget(flags=self.flags)
+        e = QWidget(flags=self.flags)
+        f = QWidget(flags=self.flags)
+        la = QHBoxLayout()
+        la.setContentsMargins(10, 0, 10, 0)
+        lb = QHBoxLayout()
+        lb.setContentsMargins(10, 0, 10, 0)
+        lc = QHBoxLayout()
+        lc.setContentsMargins(10, 0, 10, 0)
+        ld = QHBoxLayout()
+        ld.setContentsMargins(10, 0, 10, 0)
+        le = QHBoxLayout()
+        le.setContentsMargins(10, 0, 10, 0)
+        lf = QHBoxLayout()
+        lf.setContentsMargins(10, 0, 10, 0)
+        a.setLayout(la)
+        b.setLayout(lb)
+        c.setLayout(lc)
+        d.setLayout(ld)
+        e.setLayout(le)
+        f.setLayout(lf)
+        self.layout.addWidget(a, alignment=Qt.Alignment(0))
+        self.layout.addWidget(b, alignment=Qt.Alignment(0))
+        self.layout.addWidget(c, alignment=Qt.Alignment(0))
+        self.layout.addStretch()
+        self.layout.addWidget(d, alignment=Qt.Alignment(0))
+        self.layout.addWidget(e, alignment=Qt.Alignment(0))
+        self.layout.addWidget(f, alignment=Qt.Alignment(0))
+        self.layout.addStretch()
+
+        la.addWidget(Label(text='Average Winrate: ', size=10), alignment=Qt.AlignRight)
+        la.addWidget(self.t1_wr, alignment=Qt.AlignLeft)
+        lb.addWidget(Label(text='Average Damage: ', size=10), alignment=Qt.AlignRight)
+        lb.addWidget(self.t1_dmg, alignment=Qt.AlignLeft)
+        lc.addWidget(self.t1_server_label, alignment=Qt.AlignRight)
+        lc.addWidget(self.t1_server, alignment=Qt.AlignLeft)
+        ld.addWidget(Label(text='Average Winrate: ', size=10), alignment=Qt.AlignRight)
+        ld.addWidget(self.t2_wr, alignment=Qt.AlignLeft)
+        le.addWidget(Label(text='Average Damage: ', size=10), alignment=Qt.AlignRight)
+        le.addWidget(self.t2_dmg, alignment=Qt.AlignLeft)
+        lf.addWidget(self.t2_server_label, alignment=Qt.AlignRight)
+        lf.addWidget(self.t2_server, alignment=Qt.AlignLeft)
+
+        main_layout.addWidget(self.widget)
+        self.update_text()
+
+    def update_text(self, t1_wr=0.0, t1_wr_c=None, t1_dmg=0, t1_dmg_c=None, t2_wr=0.0, t2_wr_c=None, t2_dmg=0,
+                    t2_dmg_c=None, t1_server=None, t2_server=None):
+        self.t1_wr.setText(f'{t1_wr}%')
+        self.t1_dmg.setText(f'{t1_dmg}')
+        self.t2_wr.setText(f'{t2_wr}%')
+        self.t2_dmg.setText(f'{t2_dmg}')
+
+        if t1_wr_c and t1_dmg_c and t2_wr_c and t2_dmg_c:
+            self.t1_wr.setStyleSheet(f"color: {t1_wr_c.name()}")
+            self.t1_dmg.setStyleSheet(f"color: {t1_dmg_c.name()}")
+            self.t2_wr.setStyleSheet(f"color: {t2_wr_c.name()}")
+            self.t2_dmg.setStyleSheet(f"color: {t2_dmg_c.name()}")
+
+        if t1_server and t2_server:
+            self.t1_server.show(), self.t2_server.show()
+            self.t1_server_label.show(), self.t2_server_label.show()
+            self.t1_server.setText(f'{t1_server}')
+            self.t2_server.setText(f'{t2_server}')
+        else:
+            self.t1_server.hide(), self.t2_server.hide()
+            self.t1_server_label.hide(), self.t2_server_label.hide()
+
+
 class Label(QLabel):
-    def __init__(self, parent=None, text=''):
+    def __init__(self, parent=None, text='', size=16, align=None, bold=True):
         super().__init__(parent)
-        self.setFont(QFont('Segoe UI', 16, QFont.Bold))
-        self.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        if bold:
+            self.setFont(QFont('Segoe UI', size, QFont.Bold))
+        else:
+            self.setFont(QFont('Segoe UI', size))
+        if align:
+            self.setAlignment(align)
+        else:
+            self.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         self.setText(text)
 
 
@@ -87,6 +204,9 @@ class MainWindow(QMainWindow):
         self.create_table_labels()
         self.left_table, self.right_table = self.create_tables()
         self.create_menubar()
+        self.team_stats = TeamStats(self.layout)
+        if self.config['DEFAULT'].getboolean('additional_info'):
+            self.match_info = MatchInfo(self.layout)
         self.config_reload_needed = False
         self.mw = None
 
@@ -127,7 +247,6 @@ class MainWindow(QMainWindow):
         label_widget.setLayout(label_layout)
 
         left_layout = QHBoxLayout()
-
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(0)
         left_widget = QWidget(flags=self.flags)
@@ -339,6 +458,25 @@ class MainWindow(QMainWindow):
         row3.setLayout(row3_layout)
         main_layout.addWidget(row3, alignment=Qt.Alignment(0))
 
+        # ADDITIONAL INFO
+        row4 = QWidget(flags=self.flags)
+        row4_layout = QHBoxLayout()
+        row4_layout.setContentsMargins(10, 5, 10, 5)
+
+        info_label = QLabel()
+        info_label.setFixedSize(110, 20)
+        info_label.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
+        info_label.setText("Additional Info:")
+        row4_layout.addWidget(info_label, alignment=Qt.Alignment(0))
+
+        info_cb = QCheckBox('(Restart Required)')
+        info_cb.setChecked(self.config['DEFAULT'].getboolean('additional_info'))
+        row4_layout.addWidget(info_cb, alignment=Qt.Alignment(0))
+        row4_layout.addStretch()
+
+        row4.setLayout(row4_layout)
+        main_layout.addWidget(row4, alignment=Qt.Alignment(0))
+
         # BUTTONS
         button_widget = QWidget(flags=self.flags)
         button_layout = QHBoxLayout()
@@ -358,6 +496,7 @@ class MainWindow(QMainWindow):
             self.config['DEFAULT']['api_key'] = api_key.text()
             self.config['DEFAULT']['region'] = \
                 [region for region, index in regions.items() if index == region_picker.currentIndex()][0]
+            self.config['DEFAULT']['additional_info'] = 'true' if info_cb.isChecked() else 'false'
 
         def flag_config_reload_needed():
             self.config_reload_needed = True
