@@ -75,9 +75,9 @@ class Config(ConfigParser):
         if 'WindowH' not in self['DEFAULT']:
             ok = False
             self['DEFAULT']['WindowH'] = '450'
-        if 'additional_infos' not in self['DEFAULT']:
+        if 'additional_info' not in self['DEFAULT']:
             ok = False
-            self['DEFAULT']['additional_infos'] = 'false'
+            self['DEFAULT']['additional_info'] = 'false'
         self.save()
         if not ok:
             self.read_config()
