@@ -295,10 +295,10 @@ class PotatoAlert:
 
     @staticmethod
     def get_averages_and_colors(players: List[Player]):
-        t1_wr = [float(p.row[3]) for p in players if p.team == 1 or p.team == 0 and not p.hidden_profile]
-        t1_dmg = [int(p.row[4]) for p in players if p.team == 1 or p.team == 0 and not p.hidden_profile]
-        t2_wr = [float(p.row[3]) for p in players if p.team == 2 and not p.hidden_profile]
-        t2_dmg = [int(p.row[4]) for p in players if p.team == 2 and not p.hidden_profile]
+        t1_wr = [float(p.row[3]) for p in players if (p.team == 1 or p.team == 0) and not p.hidden_profile]
+        t1_dmg = [int(p.row[4]) for p in players if (p.team == 1 or p.team == 0) and not p.hidden_profile]
+        t2_wr = [float(p.row[3]) for p in players if (p.team == 2 and not p.hidden_profile)]
+        t2_dmg = [int(p.row[4]) for p in players if (p.team == 2 and not p.hidden_profile)]
 
         t1_wr_c = color_winrate(sum(t1_wr) / len(t1_wr)) if t1_wr else Grey()
         t1_dmg_c = color_avg_dmg(sum(t1_dmg) / len(t1_dmg)) if t1_dmg else Grey()
