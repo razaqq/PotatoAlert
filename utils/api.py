@@ -20,7 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from aiohttp import ClientSession
+import asyncio
+from aiohttp import ClientSession, ClientTimeout
 from utils.api_errors import InvalidApplicationIdError
 
 
@@ -29,7 +30,18 @@ class ApiWrapper:
         self.api_key = api_key
         http_ending = region if region != 'na' else 'com'
         self.endpoint = f'https://api.worldofwarships.{http_ending}/wows/{{}}/{{}}/?'
-        self.session = ClientSession()
+        self.session = ClientSession(timeout=ClientTimeout(connect=20))
+
+    def __del__(self):
+        """
+        if not self.session.closed:
+            if self.session._connector_owner:
+                self.session._connector.close()
+            self.session._connector = None
+        """
+        if not self.session.closed:
+            loop = asyncio.get_event_loop()
+            loop.create_task(self.session.close())
 
     async def get_result(self, method_block: str, method_name: str, params: dict) -> dict:
         params = {k: v for k, v in params.items() if v or isinstance(v, int)}
@@ -90,7 +102,36 @@ class ApiWrapper:
         }
         return await self.get_result('encyclopedia', 'ships', param)
 
-    async def get_clan_battle_info(self, clan_id):
-        param = {
-        }
-        return await self.get_result('clans', 'season', param)
+
+class ClanWrapper:
+    @staticmethod
+    async def get_rating(clan_id):
+        url = f"https://clans.worldofwarships.eu/clans/wows/{clan_id}/api/claninfo/"
+        try:
+            async with ClientSession(timeout=ClientTimeout(connect=20)) as s:
+                async with s.get(url) as resp:
+                    res = await resp.json()
+                    leagues = {
+                        0: 'Hurricane',
+                        1: 'Typhoon',
+                        2: 'Storm',
+                        3: 'Gale',
+                        4: 'Squall'
+                    }
+                    # league_name = leagues[res['clanview']['wows_ladder']['league']]
+                    colors = {
+                        0: '#CDA4FF',
+                        1: '#BEE7BD',
+                        2: '#E3D6A0',
+                        3: '#CCE4E4',
+                        4: '#CC9966'
+                    }
+                    color = colors[res['clanview']['wows_ladder']['league']]
+                    # name = res['clanview']['clan']['name']
+                    # tag = res['clanview']['clan']['tag']
+                    # rating_realm = res['clanview']['wows_ladder']['rating_realm']
+                    # realm = res['clanview']['wows_ladder']['realm']
+                    # division = res['clanview']['wows_ladder']['division']
+                return color
+        except (KeyError, TypeError):
+            return 'Error', 'Error', 'Error', '#e0deda'

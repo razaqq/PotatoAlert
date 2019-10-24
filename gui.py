@@ -56,12 +56,26 @@ class MatchInfo:
 class TeamStats:
     def __init__(self, main_layout):
         self.flags = Qt.WindowFlags()
-        self.widget = QWidget(flags=self.flags)
-        self.layout = QHBoxLayout()
-        self.layout.setContentsMargins(10, 0, 10, 0)
-        self.layout.setSpacing(0)
-        self.widget.setLayout(self.layout)
-        # self.widget.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: red;')
+        widget = QWidget(flags=self.flags)
+        layout = QHBoxLayout()
+        layout.setContentsMargins(10, 0, 10, 0)
+        layout.setSpacing(10)
+        widget.setLayout(layout)
+        # widget.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: red;')
+
+        self.left_widget = QWidget(flags=self.flags)
+        self.left_layout = QHBoxLayout()
+        self.left_layout.setContentsMargins(10, 0, 10, 0)
+        self.left_layout.setSpacing(20)
+        self.left_widget.setLayout(self.left_layout)
+        layout.addWidget(self.left_widget, alignment=Qt.Alignment(0))
+
+        self.right_widget = QWidget(flags=self.flags)
+        self.right_layout = QHBoxLayout()
+        self.right_layout.setContentsMargins(10, 0, 10, 0)
+        self.right_layout.setSpacing(20)
+        self.right_widget.setLayout(self.right_layout)
+        layout.addWidget(self.right_widget, alignment=Qt.Alignment(0))
 
         self.t1_wr = Label(text='', size=10)
         self.t1_dmg = Label(text='', size=10)
@@ -72,57 +86,58 @@ class TeamStats:
         self.t1_server_label = Label(text='Server: ', size=10)
         self.t2_server_label = Label(text='Server: ', size=10)
 
-        a = QWidget(flags=self.flags)
-        b = QWidget(flags=self.flags)
-        c = QWidget(flags=self.flags)
-        d = QWidget(flags=self.flags)
-        e = QWidget(flags=self.flags)
-        f = QWidget(flags=self.flags)
-        la = QHBoxLayout()
-        la.setContentsMargins(10, 0, 10, 0)
-        lb = QHBoxLayout()
-        lb.setContentsMargins(10, 0, 10, 0)
-        lc = QHBoxLayout()
-        lc.setContentsMargins(10, 0, 10, 0)
-        ld = QHBoxLayout()
-        ld.setContentsMargins(10, 0, 10, 0)
-        le = QHBoxLayout()
-        le.setContentsMargins(10, 0, 10, 0)
-        lf = QHBoxLayout()
-        lf.setContentsMargins(10, 0, 10, 0)
-        a.setLayout(la)
-        b.setLayout(lb)
-        c.setLayout(lc)
-        d.setLayout(ld)
-        e.setLayout(le)
-        f.setLayout(lf)
-        self.layout.addWidget(a, alignment=Qt.Alignment(0))
-        self.layout.addWidget(b, alignment=Qt.Alignment(0))
-        self.layout.addWidget(c, alignment=Qt.Alignment(0))
-        self.layout.addStretch()
-        self.layout.addWidget(d, alignment=Qt.Alignment(0))
-        self.layout.addWidget(e, alignment=Qt.Alignment(0))
-        self.layout.addWidget(f, alignment=Qt.Alignment(0))
-        self.layout.addStretch()
+        self.t1_clan_tag = Label(text='', size=10)
+        self.t1_clan_name = Label(text='', size=10)
+        self.t2_clan_tag = Label(text='', size=10)
+        self.t2_clan_name = Label(text='', size=10)
 
-        la.addWidget(Label(text='Average Winrate: ', size=10), alignment=Qt.AlignRight)
-        la.addWidget(self.t1_wr, alignment=Qt.AlignLeft)
-        lb.addWidget(Label(text='Average Damage: ', size=10), alignment=Qt.AlignRight)
-        lb.addWidget(self.t1_dmg, alignment=Qt.AlignLeft)
-        lc.addWidget(self.t1_server_label, alignment=Qt.AlignRight)
-        lc.addWidget(self.t1_server, alignment=Qt.AlignLeft)
-        ld.addWidget(Label(text='Average Winrate: ', size=10), alignment=Qt.AlignRight)
-        ld.addWidget(self.t2_wr, alignment=Qt.AlignLeft)
-        le.addWidget(Label(text='Average Damage: ', size=10), alignment=Qt.AlignRight)
-        le.addWidget(self.t2_dmg, alignment=Qt.AlignLeft)
-        lf.addWidget(self.t2_server_label, alignment=Qt.AlignRight)
-        lf.addWidget(self.t2_server, alignment=Qt.AlignLeft)
+        widgets = [QWidget(flags=self.flags) for _ in range(8)]
 
-        main_layout.addWidget(self.widget)
-        self.update_text()
+        layouts = [QHBoxLayout() for _ in range(8)]
+        for layout in layouts:
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(0)
 
-    def update_text(self, t1_wr=0.0, t1_wr_c=None, t1_dmg=0, t1_dmg_c=None, t2_wr=0.0, t2_wr_c=None, t2_dmg=0,
-                    t2_dmg_c=None, t1_server=None, t2_server=None):
+        for i in range(8):
+            widgets[i].setLayout(layouts[i])
+
+            if i == 2 or i == 3:
+                self.left_layout.addStretch()
+
+            if i == 6 or i == 7:
+                self.right_layout.addStretch()
+
+            if i < 4:
+                self.left_layout.addWidget(widgets[i], alignment=Qt.Alignment(0))
+            else:
+                self.right_layout.addWidget(widgets[i], alignment=Qt.Alignment(0))
+
+        # self.left_layout.addStretch()
+        # self.right_layout.addStretch()
+
+        layouts[0].addWidget(Label(text='WR: ', size=10), alignment=Qt.AlignRight)
+        layouts[0].addWidget(self.t1_wr, alignment=Qt.AlignLeft)
+        layouts[1].addWidget(Label(text='DMG: ', size=10), alignment=Qt.AlignRight)
+        layouts[1].addWidget(self.t1_dmg, alignment=Qt.AlignLeft)
+        layouts[3].addWidget(self.t1_server_label, alignment=Qt.AlignRight)
+        layouts[3].addWidget(self.t1_server, alignment=Qt.AlignLeft)
+        layouts[2].addWidget(self.t1_clan_tag, alignment=Qt.AlignRight)
+        layouts[2].addWidget(self.t1_clan_name, alignment=Qt.AlignLeft)
+
+        layouts[4].addWidget(Label(text='WR: ', size=10), alignment=Qt.AlignRight)
+        layouts[4].addWidget(self.t2_wr, alignment=Qt.AlignLeft)
+        layouts[5].addWidget(Label(text='DMG: ', size=10), alignment=Qt.AlignRight)
+        layouts[5].addWidget(self.t2_dmg, alignment=Qt.AlignLeft)
+        layouts[7].addWidget(self.t2_server_label, alignment=Qt.AlignRight)
+        layouts[7].addWidget(self.t2_server, alignment=Qt.AlignLeft)
+        layouts[6].addWidget(self.t2_clan_tag, alignment=Qt.AlignRight)
+        layouts[6].addWidget(self.t2_clan_name, alignment=Qt.AlignLeft)
+
+        main_layout.addWidget(widget)
+        self.update_avg(None, None, None, None)
+        self.update_servers()
+
+    def update_avg(self, t1_wr_c, t1_dmg_c, t2_wr_c, t2_dmg_c, t1_wr=0.0, t1_dmg=0, t2_wr=0.0, t2_dmg=0):
         self.t1_wr.setText(f'{t1_wr}%')
         self.t1_dmg.setText(f'{t1_dmg}')
         self.t2_wr.setText(f'{t2_wr}%')
@@ -134,6 +149,7 @@ class TeamStats:
             self.t2_wr.setStyleSheet(f"color: {t2_wr_c.name()}")
             self.t2_dmg.setStyleSheet(f"color: {t2_dmg_c.name()}")
 
+    def update_servers(self, t1_server=None, t2_server=None):
         if t1_server and t2_server:
             self.t1_server.show(), self.t2_server.show()
             self.t1_server_label.show(), self.t2_server_label.show()
@@ -142,6 +158,18 @@ class TeamStats:
         else:
             self.t1_server.hide(), self.t2_server.hide()
             self.t1_server_label.hide(), self.t2_server_label.hide()
+
+    def update_clans(self, c1=None, c2=None):
+        if c1 and c2:
+            self.t1_clan_name.setText(c1[0])
+            self.t2_clan_name.setText(c2[0])
+            self.t1_clan_tag.setText(f'[{c1[1]}]')
+            self.t2_clan_tag.setText(f'[{c2[1]}]')
+            self.t1_clan_tag.setStyleSheet(f"color: {c1[2]}")
+            self.t2_clan_tag.setStyleSheet(f"color: {c2[2]}")
+        else:
+            self.t1_clan_tag.hide(), self.t2_clan_tag.hide()
+            self.t1_clan_name.hide(), self.t2_clan_name.hide()
 
 
 class Label(QLabel):
@@ -173,7 +201,7 @@ class Table(QTableWidget):
         self.setRowCount(12)
         self.setColumnCount(7)
         self.setSortingEnabled(False)
-        # self.setItemDelegate(MyDelegate(self))
+        self.setContentsMargins(0, 0, 0, 0)
 
     def init_headers(self):
         labels = ['Player', 'Ship', 'Matches', 'Winrate', 'Avg Dmg', 'Matches Ship', 'Winrate Ship']
@@ -231,6 +259,7 @@ class MainWindow(QMainWindow):
         table_widget = QWidget(flags=self.flags)
         table_layout = QHBoxLayout()
         table_layout.setContentsMargins(10, 0, 10, 0)
+        table_layout.setSpacing(10)
         t1 = Table()
         t2 = Table()
         table_layout.addWidget(t1, alignment=Qt.Alignment(0))
@@ -243,7 +272,7 @@ class MainWindow(QMainWindow):
         label_widget = QWidget(flags=self.flags)
         label_layout = QHBoxLayout()
         label_layout.setContentsMargins(10, 0, 10, 0)
-        label_layout.setSpacing(0)
+        label_layout.setSpacing(10)
         label_widget.setLayout(label_layout)
 
         left_layout = QHBoxLayout()
