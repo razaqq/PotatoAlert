@@ -163,8 +163,8 @@ class TeamStats:
         if c1 and c2:
             self.t1_clan_name.setText(c1[0])
             self.t2_clan_name.setText(c2[0])
-            self.t1_clan_tag.setText(f'[{c1[1]}]')
-            self.t2_clan_tag.setText(f'[{c2[1]}]')
+            self.t1_clan_tag.setText(f'[{c1[1]}] ')
+            self.t2_clan_tag.setText(f'[{c2[1]}] ')
             self.t1_clan_tag.setStyleSheet(f"color: {c1[2]}")
             self.t2_clan_tag.setStyleSheet(f"color: {c2[2]}")
         else:
