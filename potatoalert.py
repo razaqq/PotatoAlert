@@ -229,7 +229,7 @@ class PotatoAlert:
 
         # COOP BOTS
         if match_group == 'cooperative' and (team == 2 or (p_name.startswith(':') and p_name.endswith(':'))):
-            ship_infos = await api.get_ship_infos(p['shipId'])
+            ship_infos = await self.api.get_ship_infos(p['shipId'])
             ship = ship_infos['data'][str(p['shipId'])]
             ship_name = shorten_name(ship['name'])
             class_sort = get_class_sort(ship['type'])  # these three are for sorting them in the board
@@ -247,7 +247,7 @@ class PotatoAlert:
             return Player(True, team, [p_name, ship_name], [None, None], class_sort, tier_sort, nation_sort, None)
 
         tasks.append(asyncio.ensure_future(api.get_account_info(account_id)))
-        tasks.append(asyncio.ensure_future(api.get_ship_infos(p['shipId'])))
+        tasks.append(asyncio.ensure_future(self.api.get_ship_infos(p['shipId'])))
         tasks.append(asyncio.ensure_future(api.get_ship_stats(account_id, p['shipId'])))
         tasks.append(asyncio.ensure_future(self.get_overall_personal_rating(account_id, expected, api)))
         if not match_group == 'clan':  # Don't add clan tags in clan wars
