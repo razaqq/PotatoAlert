@@ -27,8 +27,7 @@ import sys
 import json
 import asyncio
 import logging
-import traceback
-from typing import List, Tuple
+from typing import List
 from aiohttp import ClientSession, ClientTimeout
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.config import Config
