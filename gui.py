@@ -25,7 +25,7 @@ import os
 import sys
 from assets.qtmodern import styles, windows
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
-     QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialogButtonBox, QLineEdit,\
+     QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialogButtonBox, QLineEdit, \
      QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar, QCheckBox
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie
 from PyQt5.QtCore import Qt, QUrl, QSize
@@ -204,17 +204,27 @@ class Table(QTableWidget):
         self.setContentsMargins(0, 0, 0, 0)
 
     def init_headers(self):
-        labels = ['Player', 'Ship', 'Matches', 'Winrate', 'Avg Dmg', 'Matches Ship', 'Winrate Ship']
+        labels = ['Player', 'Ship', 'Matches', 'Winrate', 'Avg Dmg', 'Matches Ship', 'WR Ship']
         for i in range(7):
             item = QTableWidgetItem()
             item.setText(labels[i])
             item.setFont(QFont('Segoe UI', 11))
             self.setHorizontalHeaderItem(i, item)
 
+        headers = QHeaderView(Qt.Horizontal, self)
+        self.setHorizontalHeader(headers)
+        headers.setSectionResizeMode(QHeaderView.ResizeToContents)
+        headers.setSectionResizeMode(0, QHeaderView.Stretch)
+
+        # item = Label(text="<span style=\"color:red\">[HYDRO]</span>nGu_RaZaq", size=10)
+        # item.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        # self.setCellWidget(0, 0, item)
+
         self.horizontalHeader().setVisible(True)
         self.verticalHeader().setVisible(False)
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        # self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.resizeColumnsToContents()
 
 
 class MainWindow(QMainWindow):
@@ -568,7 +578,7 @@ class MainWindow(QMainWindow):
                 if player.colors[x]:
                     item.setForeground(player.colors[x])
                 if x > 1:
-                    item.setTextAlignment(Qt.AlignCenter)
+                    item.setTextAlignment(Qt.AlignRight)
                 table.setItem(y, x, item)
                 x += 1
 
