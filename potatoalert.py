@@ -27,7 +27,7 @@ import sys
 import json
 import asyncio
 import logging
-from typing import List
+from typing import List, Union
 from aiohttp import ClientSession, ClientTimeout
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.config import Config
@@ -51,7 +51,9 @@ class Player:
     class_ship: int  # for sorting we keep track of these too
     tier_ship: int
     nation_ship: int
+    clan_tag: str
     background: any = None
+    clan_color: any = None
 
 
 @dataclass()
@@ -199,7 +201,9 @@ class PotatoAlert:
         for p in player_data:
             self.ui.update_status(2, f'Getting stats ({round(len(players) / total * 100, 1)}%)')
             api = self.api if not (team2_api and p['relation'] == 2) else team2_api
-            players.append(await self.get_player(api, p, match_group, expected))
+            player = await self.get_player(api, p, match_group, expected)
+            if player:
+                players.append(player)
 
         if team2_api:
             await team2_api.session.close()
@@ -218,33 +222,34 @@ class PotatoAlert:
         self.ui.team_stats.update_avg(*self.get_averages_and_colors(players))
         return sorted(players, key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
 
-    async def get_player(self, api, p, match_group: str, expected) -> Player:
+    async def get_player(self, api, p, match_group: str, expected) -> Union[Player, None]:
         tasks = []
         p_name = p['name']
         team = p['relation']
         ship_name = 'Error'
+        clan_color, clan_tag = '', ''
         background = None
         battles, winrate, avg_dmg, winrate_ship, battles_ship = [0] * 5
         class_sort, nation_sort, tier_sort = [0] * 3
 
         # COOP BOTS
         if match_group == 'cooperative' and (team == 2 or (p_name.startswith(':') and p_name.endswith(':'))):
-            ship_infos = await self.api.get_ship_infos(p['shipId'])
-            ship = ship_infos['data'][str(p['shipId'])]
+            ship_info = await self.api.get_ship_infos(p['shipId'])
+            ship = ship_info['data'][str(p['shipId'])]
             ship_name = shorten_name(ship['name'])
             class_sort = get_class_sort(ship['type'])  # these three are for sorting them in the board
             nation_sort = get_nation_sort(ship['nation'])
             tier_sort = ship['tier']
-            return Player(True, team, [p_name, ship_name], [None, None], class_sort, tier_sort, nation_sort, None)
+            return Player(True, team, [p_name, ship_name], [None, None], class_sort, tier_sort, nation_sort, clan_tag)
 
         if (match_group == 'pve' or match_group == 'pve_premade') and team == 2:  # SCENARIO
-            return
+            return None
 
         try:  # try to get account id by searching by name, enter empty player if we get a KeyError
             account_search = await api.search_account(p['name'])
             account_id = account_search['data'][0]['account_id']
         except (KeyError, IndexError):
-            return Player(True, team, [p_name, ship_name], [None, None], class_sort, tier_sort, nation_sort, None)
+            return Player(True, team, [p_name, ship_name], [None, None], class_sort, tier_sort, nation_sort, clan_tag)
 
         tasks.append(asyncio.ensure_future(api.get_account_info(account_id)))
         tasks.append(asyncio.ensure_future(self.api.get_ship_infos(p['shipId'])))
@@ -254,13 +259,12 @@ class PotatoAlert:
             tasks.append(asyncio.ensure_future(api.get_player_clan(account_id)))
         responses = await asyncio.gather(*tasks)
         account_info = responses[0]
-        ship_infos = responses[1]
+        ship_info = responses[1]
         ship_stats = responses[2]
         pr = responses[3]
         clan = responses[4] if not match_group == 'clan' else None
 
         try:  # get general account info and overall stats
-            # account_info = await self.api.get_account_info(account_id)
             account_info = account_info['data'][str(account_id)]
             hidden_profile = account_info['hidden_profile']
             if not hidden_profile:
@@ -276,17 +280,17 @@ class PotatoAlert:
 
         if not match_group == 'clan':  # Don't add clan tags in clan wars
             try:  # get clan info and append clan tag to player name
-                # clan = await self.api.get_player_clan(account_id)
                 clan_data = clan['data'][str(account_id)]
                 if clan_data and clan_data['clan']:
                     clan_tag = clan_data['clan']['tag']
-                    p_name = f"[{clan_tag}]{p['name']}"
+                    # p_name = f"[{clan_tag}]{p['name']}"
+                    clan_id = clan_data['clan']['clan_id']
+                    clan_color = await ClanWrapper.get_rating(clan_id)
             except KeyError:
                 pass
 
         try:
-            # ship_infos = await self.api.get_ship_infos(p['shipId'])
-            ship = ship_infos['data'][str(p['shipId'])]
+            ship = ship_info['data'][str(p['shipId'])]
 
             if ship:
                 ship_name = shorten_name(ship['name'])
@@ -295,7 +299,6 @@ class PotatoAlert:
                 tier_sort = ship['tier']
 
                 if not hidden_profile:
-                    # ship_stats = await self.api.get_ship_stats(account_id, p['shipId'])
                     player_data = ship_stats['data'][str(account_id)]
                     if player_data:
                         ship_stats = player_data[0]['pvp']
@@ -308,7 +311,6 @@ class PotatoAlert:
 
         # Get personal rating for background
         if not hidden_profile:
-            # pr = await self.get_overall_personal_rating(account_id)
             if pr:
                 background = color_personal_rating(pr)
 
@@ -321,7 +323,8 @@ class PotatoAlert:
             if ship_name != 'Error':
                 row.extend([str(battles_ship), str(winrate_ship)])
                 colors.extend([None, color_winrate(winrate_ship)])
-        return Player(hidden_profile, team, row, colors, class_sort, tier_sort, nation_sort, background)
+        return Player(hidden_profile, team, row, colors, class_sort, tier_sort, nation_sort, clan_tag, background,
+                      clan_color)
 
     async def get_overall_personal_rating(self, account_id: int = 0, expected=None, api=None):
         try:
@@ -380,7 +383,7 @@ class PotatoAlert:
 
         return t1_wr_c, t1_dmg_c, t2_wr_c, t2_dmg_c, t1_wr, t1_dmg, t2_wr, t2_dmg
 
-    def read_arena_info(self) -> ArenaInfo:
+    def read_arena_info(self) -> Union[ArenaInfo, None]:
         arena_info = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
         if not os.path.exists(arena_info):
             return None

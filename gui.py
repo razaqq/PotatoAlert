@@ -25,9 +25,9 @@ import os
 import sys
 from assets.qtmodern import styles, windows
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
-     QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialogButtonBox, QLineEdit, \
+     QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialogButtonBox, QLineEdit, QSizePolicy, \
      QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar, QCheckBox
-from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie
+from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QPalette
 from PyQt5.QtCore import Qt, QUrl, QSize
 from utils.config import Config
 from version import __version__
@@ -213,12 +213,9 @@ class Table(QTableWidget):
 
         headers = QHeaderView(Qt.Horizontal, self)
         self.setHorizontalHeader(headers)
-        headers.setSectionResizeMode(QHeaderView.ResizeToContents)
-        headers.setSectionResizeMode(0, QHeaderView.Stretch)
-
-        # item = Label(text="<span style=\"color:red\">[HYDRO]</span>nGu_RaZaq", size=10)
-        # item.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-        # self.setCellWidget(0, 0, item)
+        headers.setSectionResizeMode(QHeaderView.Stretch)
+        headers.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        headers.setSectionResizeMode(0, QHeaderView.ResizeToContents)
 
         self.horizontalHeader().setVisible(True)
         self.verticalHeader().setVisible(False)
@@ -552,6 +549,8 @@ class MainWindow(QMainWindow):
     def fill_tables(self, players):
         for y in range(12):  # clear the tables before inserting
             for x in range(7):
+                self.left_table.removeCellWidget(y, x)
+                self.right_table.removeCellWidget(y, x)
                 self.left_table.setItem(y, x, QTableWidgetItem(''))
                 self.right_table.setItem(y, x, QTableWidgetItem(''))
 
@@ -570,6 +569,20 @@ class MainWindow(QMainWindow):
 
             for x in range(len(player.row)):
                 size = 10 if x < 2 else 12
+                if x == 0 and player.clan_tag:
+                    text = f'<span style="color:{player.clan_color}"> [{player.clan_tag}]</span>{player.row[x]}'
+                    item = Label(text=text, size=10, bold=False)
+                    item.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+                    item.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+                    item.setContentsMargins(3, 0, 3, 0)
+                    if player.background:
+                        b = player.background
+                        rgba = f"{b.red()}, {b.green()}, {b.blue()}, {b.alpha()}"
+                        item.setAutoFillBackground(True)
+                        item.setStyleSheet("QLabel { background-color: rgba("+rgba+"); }")
+                    table.setCellWidget(y, x, item)
+                    continue
+
                 font = QFont("Segoe UI", size, QFont.Bold) if x else QFont("Segoe UI", size)
                 item = QTableWidgetItem(player.row[x])
                 item.setFont(font)
