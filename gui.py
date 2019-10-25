@@ -579,9 +579,9 @@ class MainWindow(QMainWindow):
                         b = player.background
                         rgba = f"{b.red()}, {b.green()}, {b.blue()}, {b.alpha()}"
                         item.setAutoFillBackground(True)
-                        item.setStyleSheet("QLabel { background-color: rgba("+rgba+"); font-size: 10pt; }")
+                        item.setStyleSheet("QLabel { background-color: rgba("+rgba+"); font-size: 13px; }")
                     else:
-                        item.setStyleSheet("QLabel { font-size: 10pt; }")
+                        item.setStyleSheet("QLabel { font-size: 13px; }")
                     table.setCellWidget(y, x, item)
                     continue
 
