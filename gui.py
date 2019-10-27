@@ -161,6 +161,8 @@ class TeamStats:
 
     def update_clans(self, c1=None, c2=None):
         if c1 and c2:
+            self.t1_clan_name.show(), self.t2_clan_name.show()
+            self.t1_clan_tag.show(), self.t2_clan_tag.show()
             self.t1_clan_name.setText(c1[0])
             self.t2_clan_name.setText(c2[0])
             self.t1_clan_tag.setText(f'[{c1[1]}] ')
