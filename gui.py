@@ -206,7 +206,7 @@ class Table(QTableWidget):
         self.setContentsMargins(0, 0, 0, 0)
 
     def init_headers(self):
-        labels = ['Player', 'Ship', 'Matches', 'Winrate', 'Avg Dmg', 'Matches Ship', 'WR Ship']
+        labels = ['Player', 'Ship', 'Matches', 'Winrate', 'Avg Dmg', 'Matches Ship', 'Winrate Ship']
         for i in range(7):
             item = QTableWidgetItem()
             item.setText(labels[i])

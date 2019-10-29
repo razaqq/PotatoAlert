@@ -1,6 +1,5 @@
 aiohttp
 qtpy
 aiofiles
-pywin32-ctypes
 PyQt5>=5.11.3,<=5.12.1
 asyncqt
