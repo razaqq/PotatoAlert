@@ -42,5 +42,5 @@ if __name__ == '__main__':
         build
     )
 
-    os.rename(os.path.join(root, 'dist', 'potatoalert.py'), os.path.join(root, 'dist', 'potatoalert_x64.py'))
+    os.rename(os.path.join(root, 'dist', 'potatoalert.exe'), os.path.join(root, 'dist', 'potatoalert_x64.exe'))
     os.remove(os.path.join(root, 'potatoalert.spec'))
