@@ -33,6 +33,6 @@ deploy:
   auth_token:
     secure: yx3zdq/HfsztAvFdSyLIFxAXno5g1URqrLK1aiaeqgz9eY8NyOMG9SSLCNHSq93D
   artifact: potatoalert_x64
-  draft: false
+  draft: true
   on:
     appveyor_repo_tag: true # deploy on tag push only
