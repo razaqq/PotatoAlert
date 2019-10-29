@@ -27,6 +27,7 @@ python -m pip install -r requirements.txt
 
 ## Compile yourself
 Get dependencies like [here](#Run-with-python-without-compiling).
+Additionally you need pywin32-ctypes.
 Now you have two options: Use a GUI to compile or not.
 
 No GUI:
