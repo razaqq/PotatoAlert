@@ -20,8 +20,6 @@ install:
 build_script:
   - "%PYTHON%\\python.exe --version"
   - "%PYTHON%\\python.exe build.py"
-  - "ls -l"
-  - "ls -l dist"
 
 test: off
 
