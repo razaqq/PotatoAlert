@@ -24,7 +24,7 @@ build_script:
 test: off
 
 artifacts:
-  - path: 'dist\potatoalert_x64.exe'
+  - path: 'dist\\potatoalert_x64.exe'
     name: 'potatoalert_x64'
 
 deploy:
