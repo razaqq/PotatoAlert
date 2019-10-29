@@ -19,20 +19,14 @@ You can find pre-compiled builds for Windows and Linux [here](https://github.com
 
 ## Run with python without compiling
 Otherwise you can run it directly with python 3.7.
-For that you will need a few modules:
+For that you will need to install few dependencies:
 
-Dependencies:
-- PyQt5
-- asyncqt
-- qtpy
-- PyQtWebEngine
-- aiohttp
+```console
+python -m pip install -r requirements.txt
+```
 
 ## Compile yourself
-1. Get all the dependencies listed above except PyQt5
-2. Get PyQt5 version 5.12.1, I was getting lib issues with any newer version.
-3. Get pywin32, pypiwin32 and aiofiles
-
+Get dependencies like [here](#Run-with-python-without-compiling).
 Now you have two options: Use a GUI to compile or not.
 
 No GUI:
