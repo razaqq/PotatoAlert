@@ -29,6 +29,9 @@ artifacts:
   - path: 'dist\potatoalert_x64.exe'
     name: 'potatoalert_x64'
 
+  - path: 'build\potatoalert\warn-potatoalert.txt'
+    name: 'warnings'
+
 deploy:
   description: ''
   provider: GitHub
