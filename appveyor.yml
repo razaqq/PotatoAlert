@@ -1,6 +1,6 @@
 version: '{branch}b{build}'
 
-skip_non_tags: false
+skip_non_tags: true
 
 platform:
   - x64
@@ -27,15 +27,12 @@ artifacts:
   - path: 'dist\potatoalert_x64.exe'
     name: 'potatoalert_x64'
 
-  - path: 'build\potatoalert\warn-potatoalert.txt'
-    name: 'warnings'
-
 deploy:
   description: ''
   provider: GitHub
   auth_token:
     secure: yx3zdq/HfsztAvFdSyLIFxAXno5g1URqrLK1aiaeqgz9eY8NyOMG9SSLCNHSq93D
   artifact: potatoalert_x64
-  draft: true
+  draft: false
   on:
     appveyor_repo_tag: true # deploy on tag push only
