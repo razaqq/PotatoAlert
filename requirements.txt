@@ -2,4 +2,3 @@ aiohttp
 qtpy
 aiofiles
 PyQt5>=5.11.3,<=5.12.1
-asyncqt
