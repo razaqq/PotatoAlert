@@ -1,5 +1,10 @@
 # PotatoAlert
 
+
+[![version](https://img.shields.io/github/release/razaqq/PotatoAlert.svg)](https://github.com/razaqq/PotatoAlert/releases) 
+[![appveyor build status](https://ci.appveyor.com/api/projects/status/github/razaqq/PotatoAlert?svg=true)](https://ci.appveyor.com/project/razaqq/PotatoAlert)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ## Screenshots
 
 ![default](https://i.imgur.com/DEX3wjo.png)
