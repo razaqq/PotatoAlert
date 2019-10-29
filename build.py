@@ -35,12 +35,14 @@ if __name__ == '__main__':
     debug_flags = '-F -y'
     build_flags = '-F -y -w'
 
-    build = f'{sys.executable} -m PyInstaller {build_flags} -i "{icon}" --add-data "{assets}"{assets_sep}"assets/" ' \
+    build = f'{sys.executable} -m PyInstaller {debug_flags} -i "{icon}" --add-data "{assets}"{assets_sep}"assets/" ' \
             f'"{main}"'
 
     subprocess.call(
         build
     )
 
+    if os.path.exists(os.path.join(root, 'dist', 'potatoalert_x64.exe')):
+        os.remove(os.path.join(root, 'dist', 'potatoalert_x64.exe'))
     os.rename(os.path.join(root, 'dist', 'potatoalert.exe'), os.path.join(root, 'dist', 'potatoalert_x64.exe'))
     os.remove(os.path.join(root, 'potatoalert.spec'))
