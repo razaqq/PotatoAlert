@@ -1,0 +1,37 @@
+version: '{branch}b{build}'
+
+skip_non_tags: false
+
+platform:
+  - x64
+
+environment:
+  matrix:
+    - PYTHON: "C:\\Python37-x64"
+
+init:
+  - git config --global core.autocrlf true
+
+install:
+  - "%PYTHON%\\python.exe -m pip install --upgrade pip"
+  - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
+
+build_script:
+  - "%PYTHON%\\python.exe --version"
+  - "%PYTHON%\\python.exe build.py"
+
+test: off
+
+artifacts:
+  - path: 'dist\potatoalert_x64.exe'
+    name: 'potatoalert_x64'
+
+deploy:
+  description: ''
+  provider: GitHub
+  auth_token:
+    secure: yx3zdq/HfsztAvFdSyLIFxAXno5g1URqrLK1aiaeqgz9eY8NyOMG9SSLCNHSq93D
+  artifact: potatoalert_x64
+  draft: true
+  on:
+    appveyor_repo_tag: true # deploy on tag push only
