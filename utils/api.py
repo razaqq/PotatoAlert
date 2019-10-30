@@ -141,7 +141,7 @@ class ClanWrapper:
 
 class WoWsNumbersWrapper:
     @staticmethod
-    def get_results(url: str) -> Union[dict, None]:
+    async def get_results(url: str) -> Union[dict, None]:
         try:  # Get expected values for pr calculation from wows-numbers
             async with ClientSession(timeout=ClientTimeout(connect=10)) as s:
                 async with s.get(url) as resp:
@@ -149,9 +149,9 @@ class WoWsNumbersWrapper:
         except (ClientConnectionError, ClientError, ClientResponseError, TimeoutError, ServerTimeoutError):
             return None
 
-    def get_expected(self) -> Union[dict, None]:
-        return self.get_results('https://api.wows-numbers.com/personal/rating/expected/json/')
+    async def get_expected(self) -> Union[dict, None]:
+        return await self.get_results('https://api.wows-numbers.com/personal/rating/expected/json/')
 
-    def get_color_limits(self) -> Union[dict, None]:
-        return self.get_results('https://api.wows-numbers.com/colors/json/')
+    async def get_color_limits(self) -> Union[dict, None]:
+        return await self.get_results('https://api.wows-numbers.com/colors/json/')
 
