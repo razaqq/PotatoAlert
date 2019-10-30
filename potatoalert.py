@@ -229,7 +229,7 @@ class PotatoAlert:
         ship_name = 'Error'
         clan_color, clan_tag = '', ''
         background = None
-        battles, winrate, avg_dmg, winrate_ship, battles_ship = [0] * 5
+        battles, winrate, avg_dmg, winrate_ship, battles_ship, avg_dmg_ship = [0] * 6
         class_sort, nation_sort, tier_sort = [0] * 3
 
         # COOP BOTS
@@ -304,6 +304,8 @@ class PotatoAlert:
                         ship_stats = player_data[0]['pvp']
                         if ship_stats and 'battles' in ship_stats:
                             battles_ship = ship_stats['battles']
+                            if battles_ship and 'damage_dealt' in ship_stats:
+                                avg_dmg_ship = int(round(ship_stats['damage_dealt'] / battles_ship, -2))
                             if battles_ship and 'wins' in ship_stats:  # check that at least one match in ship
                                 winrate_ship = round(ship_stats['wins'] / battles_ship * 100, 1)
         except KeyError:
@@ -321,8 +323,9 @@ class PotatoAlert:
             row.extend([str(battles), str(winrate), str(avg_dmg)])
             colors.extend([color_battles(battles), color_winrate(winrate), color_avg_dmg(avg_dmg)])
             if ship_name != 'Error':
-                row.extend([str(battles_ship), str(winrate_ship)])
-                colors.extend([None, color_winrate(winrate_ship)])
+                row.extend([str(battles_ship), str(winrate_ship), str(avg_dmg_ship)])
+                colors.extend([None, color_winrate(winrate_ship), color_avg_dmg(avg_dmg_ship)])
+                # TODO color ship specific from expected
         return Player(hidden_profile, team, row, colors, class_sort, tier_sort, nation_sort, clan_tag, background,
                       clan_color)
 

@@ -201,13 +201,13 @@ class Table(QTableWidget):
         self.setAlternatingRowColors(False)
         self.setMouseTracking(False)
         self.setRowCount(12)
-        self.setColumnCount(7)
+        self.setColumnCount(8)
         self.setSortingEnabled(False)
         self.setContentsMargins(0, 0, 0, 0)
 
     def init_headers(self):
-        labels = ['Player', 'Ship', 'Matches', 'Winrate', 'Avg Dmg', 'Matches Ship', 'Winrate Ship']
-        for i in range(7):
+        labels = ['Player', 'Ship', 'Matches', 'Winrate', 'Avg DMG', 'M Ship', 'WR Ship', 'DMG Ship']
+        for i in range(len(labels)):
             item = QTableWidgetItem()
             item.setText(labels[i])
             item.setFont(QFont('Segoe UI', 11))
@@ -343,30 +343,30 @@ class MainWindow(QMainWindow):
             # d.windowContent.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: red;')
             d.setMinimumSize(400, 150)
 
-            about_widget = QWidget()
+            about_widget = QWidget(self.flags)
             about_layout = QHBoxLayout()
             pix = QPixmap(resource_path('./assets/potato.png'))
             pix = pix.scaled(70, 70)
             img = QLabel()
             img.setPixmap(pix)
-            about_layout.addWidget(img)
+            about_layout.addWidget(img, alignment=Qt.Alignment(0))
             font = QFont()
             font.setPointSize(10)
             text1 = QLabel(about)
             text1.setFont(font)
-            about_layout.addWidget(text1)
+            about_layout.addWidget(text1, alignment=Qt.Alignment(0))
             text2 = QLabel(about2)
             text2.setFont(font)
-            about_layout.addWidget(text2)
+            about_layout.addWidget(text2, alignment=Qt.Alignment(0))
             about_widget.setLayout(about_layout)
-            main_layout.addWidget(about_widget)
+            main_layout.addWidget(about_widget, alignment=Qt.Alignment(0))
 
             button_box = QDialogButtonBox()
             button_box.setOrientation(Qt.Horizontal)
             button_box.setStandardButtons(QDialogButtonBox.Ok)
             button_box.setCenterButtons(True)
             button_box.accepted.connect(d.accept)
-            main_layout.addWidget(button_box)
+            main_layout.addWidget(button_box, alignment=Qt.Alignment(0))
 
             d.windowContent.setLayout(main_layout)
             d.exec()
@@ -600,6 +600,7 @@ class MainWindow(QMainWindow):
                 x += 1
 
     def closeEvent(self, event):
+        # Save current window position and size
         self.config['DEFAULT']['windowx'] = str(self.mw.geometry().x())
         self.config['DEFAULT']['windowy'] = str(self.mw.geometry().y())
         self.config['DEFAULT']['windowh'] = str(self.mw.geometry().height())
