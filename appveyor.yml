@@ -1,6 +1,6 @@
 version: '{branch}b{build}'
 
-skip_non_tags: true
+skip_non_tags: false
 
 platform:
   - x64
