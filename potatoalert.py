@@ -28,15 +28,14 @@ import json
 import asyncio
 import logging
 from typing import List, Union
-from aiohttp import ClientSession, ClientTimeout
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.config import Config
 from dataclasses import dataclass
 import gui
 from asyncqt import QEventLoop
-from utils.api import ApiWrapper, ClanWrapper
+from utils.api import ApiWrapper, ClanWrapper, WoWsNumbersWrapper
 from utils.api_errors import InvalidApplicationIdError
-from utils.stat_colors import color_avg_dmg, color_battles, color_winrate, color_personal_rating
+from utils.stat_colors import color_avg_dmg, color_battles, color_winrate, color_personal_rating, color_avg_dmg_ship
 from utils.ship_utils import shorten_name, get_nation_sort, get_class_sort
 from assets.colors import Grey
 from utils import updater
@@ -133,12 +132,11 @@ class PotatoAlert:
             await asyncio.sleep(5)
 
     async def get_players(self, player_data: List[dict], match_group: str) -> List[Player]:
-        try:  # Get expected values for pr calculation from wows-numbers
-            async with ClientSession(timeout=ClientTimeout(connect=10)) as s:
-                async with s.get('https://api.wows-numbers.com/personal/rating/expected/json/') as resp:
-                    expected = await resp.json()
-        except (ClientConnectionError, ClientError, ClientResponseError, TimeoutError, ServerTimeoutError):
-            expected = None
+        # Get stats from wows-numbers and transform colors
+        w = WoWsNumbersWrapper()
+        expected = await w.get_expected()
+        color_limits = await w.get_color_limits()
+        color_limits = color_limits['average_damage_dealt']['eu']
 
         team2_api, team2_region, team2_account_id = None, None, None
         if match_group == 'clan':
@@ -201,7 +199,7 @@ class PotatoAlert:
         for p in player_data:
             self.ui.update_status(2, f'Getting stats ({round(len(players) / total * 100, 1)}%)')
             api = self.api if not (team2_api and p['relation'] == 2) else team2_api
-            player = await self.get_player(api, p, match_group, expected)
+            player = await self.get_player(api, p, match_group, expected, color_limits)
             if player:
                 players.append(player)
 
@@ -222,12 +220,12 @@ class PotatoAlert:
         self.ui.team_stats.update_avg(*self.get_averages_and_colors(players))
         return sorted(players, key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
 
-    async def get_player(self, api, p, match_group: str, expected) -> Union[Player, None]:
+    async def get_player(self, api, p, match_group: str, expected, color_limits) -> Union[Player, None]:
         tasks = []
         p_name = p['name']
         team = p['relation']
         ship_name = 'Error'
-        clan_color, clan_tag = '', ''
+        clan_color, clan_tag = None, ''
         background = None
         battles, winrate, avg_dmg, winrate_ship, battles_ship, avg_dmg_ship = [0] * 6
         class_sort, nation_sort, tier_sort = [0] * 3
@@ -324,8 +322,8 @@ class PotatoAlert:
             colors.extend([color_battles(battles), color_winrate(winrate), color_avg_dmg(avg_dmg)])
             if ship_name != 'Error':
                 row.extend([str(battles_ship), str(winrate_ship), str(avg_dmg_ship)])
-                colors.extend([None, color_winrate(winrate_ship), color_avg_dmg(avg_dmg_ship)])
-                # TODO color ship specific from expected
+                colors.extend([None, color_winrate(winrate_ship),
+                               color_avg_dmg_ship(avg_dmg_ship, str(p['shipId']), color_limits)])
         return Player(hidden_profile, team, row, colors, class_sort, tier_sort, nation_sort, clan_tag, background,
                       clan_color)
 

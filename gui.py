@@ -549,12 +549,8 @@ class MainWindow(QMainWindow):
         mw.exec()
 
     def fill_tables(self, players):
-        for y in range(12):  # clear the tables before inserting
-            for x in range(7):
-                self.left_table.removeCellWidget(y, x)
-                self.right_table.removeCellWidget(y, x)
-                self.left_table.setItem(y, x, QTableWidgetItem(''))
-                self.right_table.setItem(y, x, QTableWidgetItem(''))
+        self.left_table.clearContents()
+        self.right_table.clearContents()
 
         tables = {1: 0, 2: 0}
         table = None
@@ -598,6 +594,12 @@ class MainWindow(QMainWindow):
                     item.setTextAlignment(Qt.AlignRight)
                 table.setItem(y, x, item)
                 x += 1
+
+            if player.background:  # Set background for empty columns
+                for x in range(len(player.row)-1, 8):
+                    item = QTableWidgetItem('')
+                    item.setBackground(player.background)
+                    table.setItem(y, x, item)
 
     def closeEvent(self, event):
         # Save current window position and size
