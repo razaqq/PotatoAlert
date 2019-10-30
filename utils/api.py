@@ -21,7 +21,9 @@ SOFTWARE.
 """
 
 import asyncio
+from typing import Union
 from aiohttp import ClientSession, ClientTimeout
+from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.api_errors import InvalidApplicationIdError
 
 
@@ -105,7 +107,7 @@ class ApiWrapper:
 
 class ClanWrapper:
     @staticmethod
-    async def get_rating(clan_id):
+    async def get_rating(clan_id: str) -> str:
         url = f"https://clans.worldofwarships.eu/clans/wows/{clan_id}/api/claninfo/"
         try:
             async with ClientSession(timeout=ClientTimeout(connect=20)) as s:
@@ -134,4 +136,22 @@ class ClanWrapper:
                     # division = res['clanview']['wows_ladder']['division']
                 return color
         except (KeyError, TypeError):
-            return 'Error', 'Error', 'Error', '#e0deda'
+            return '#e0deda'
+
+
+class WoWsNumbersWrapper:
+    @staticmethod
+    def get_results(url: str) -> Union[dict, None]:
+        try:  # Get expected values for pr calculation from wows-numbers
+            async with ClientSession(timeout=ClientTimeout(connect=10)) as s:
+                async with s.get(url) as resp:
+                    return await resp.json()
+        except (ClientConnectionError, ClientError, ClientResponseError, TimeoutError, ServerTimeoutError):
+            return None
+
+    def get_expected(self) -> Union[dict, None]:
+        return self.get_results('https://api.wows-numbers.com/personal/rating/expected/json/')
+
+    def get_color_limits(self) -> Union[dict, None]:
+        return self.get_results('https://api.wows-numbers.com/colors/json/')
+
