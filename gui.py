@@ -27,7 +27,7 @@ from assets.qtmodern import styles, windows
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialogButtonBox, QLineEdit, QSizePolicy, \
      QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar, QCheckBox
-from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QPalette
+from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie
 from PyQt5.QtCore import Qt, QUrl, QSize
 from utils.config import Config
 from version import __version__
@@ -343,7 +343,7 @@ class MainWindow(QMainWindow):
             # d.windowContent.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: red;')
             d.setMinimumSize(400, 150)
 
-            about_widget = QWidget(self.flags)
+            about_widget = QWidget(flags=self.flags)
             about_layout = QHBoxLayout()
             pix = QPixmap(resource_path('./assets/potato.png'))
             pix = pix.scaled(70, 70)
