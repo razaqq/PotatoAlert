@@ -596,7 +596,7 @@ class MainWindow(QMainWindow):
                 x += 1
 
             if player.background:  # Set background for empty columns
-                for x in range(len(player.row)-1, 8):
+                for x in range(len(player.row), self.left_table.columnCount()):
                     item = QTableWidgetItem('')
                     item.setBackground(player.background)
                     table.setItem(y, x, item)
