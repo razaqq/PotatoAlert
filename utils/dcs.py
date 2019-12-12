@@ -52,7 +52,7 @@ class ArenaInfo:
 @dataclass()
 class Team:
     winrate: float = 0.0
-    avg_dmg: float = 0.0
+    avg_dmg: int = 0
     matches: int = 0
     winrate_c: QColor = Grey()
     avg_dmg_c: QColor = Grey()
