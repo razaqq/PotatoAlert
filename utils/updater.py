@@ -25,7 +25,6 @@ import sys
 import time
 from aiohttp import ClientSession
 import aiofiles
-from pkg_resources import parse_version
 from PyQt5.QtWidgets import QMainWindow, QProgressBar, QWidget, QVBoxLayout, QStatusBar, QLabel, QApplication,\
                             QHBoxLayout
 from PyQt5.QtCore import Qt
@@ -47,6 +46,10 @@ def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath('.'), relative_path)
+
+
+def parse_version(v):
+    return tuple(map(int, (v.split("."))))
 
 
 async def check_update():
