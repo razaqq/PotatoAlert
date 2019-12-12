@@ -27,6 +27,7 @@ import sys
 import json
 import asyncio
 import logging
+import traceback
 from typing import List, Union
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.config import Config
@@ -155,8 +156,8 @@ class PotatoAlert:
                 c2_name = clan_data['clan']['name']
                 c2_color = await ClanWrapper.get_rating(c2_id)
                 c2 = (c2_name, c2_tag, c2_color)
-            except (KeyError, IndexError, TypeError, ServerTimeoutError, TimeoutError):
-                # traceback.print_exc()
+            except (KeyError, IndexError, TypeError, ServerTimeoutError, TimeoutError) as e:
+                logging.exception(e)
                 c1 = ('', '', '')
                 c2 = ('', '', '')
                 team2_api = None
@@ -340,10 +341,11 @@ class PotatoAlert:
                 team.avg_dmg += int(p.row[4]) * int(p.row[2])
 
         for team in [t1, t2]:
-            team.winrate_c = color_winrate(team.winrate / team.matches)
-            team.avg_dmg_c = color_avg_dmg(team.avg_dmg / team.matches)
-            team.avg_dmg = int(round(team.avg_dmg / team.matches, -2))
-            team.winrate = round(team.winrate / team.matches, 1)
+            if team.matches:
+                team.winrate_c = color_winrate(team.winrate / team.matches)
+                team.avg_dmg_c = color_avg_dmg(team.avg_dmg / team.matches)
+                team.avg_dmg = int(round(team.avg_dmg / team.matches, -2))
+                team.winrate = round(team.winrate / team.matches, 1)
 
         return t1, t2
 
