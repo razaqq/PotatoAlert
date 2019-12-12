@@ -25,6 +25,7 @@ import sys
 import time
 from aiohttp import ClientSession
 import aiofiles
+from pkg_resources import parse_version
 from PyQt5.QtWidgets import QMainWindow, QProgressBar, QWidget, QVBoxLayout, QStatusBar, QLabel, QApplication,\
                             QHBoxLayout
 from PyQt5.QtCore import Qt
@@ -58,7 +59,7 @@ async def check_update():
                 async with s.get(url) as resp:
                     new_version = await resp.text()
                     new_version = new_version.split("'")[1]
-            if __version__ < new_version:
+            if parse_version(__version__) < parse_version(new_version):
                 update_needed = True
             return update_needed
         except (ClientResponseError, ClientError, ClientConnectionError, ConnectionError):
