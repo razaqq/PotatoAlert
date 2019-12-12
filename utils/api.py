@@ -113,14 +113,6 @@ class ClanWrapper:
             async with ClientSession(timeout=ClientTimeout(connect=20)) as s:
                 async with s.get(url) as resp:
                     res = await resp.json()
-                    leagues = {
-                        0: 'Hurricane',
-                        1: 'Typhoon',
-                        2: 'Storm',
-                        3: 'Gale',
-                        4: 'Squall'
-                    }
-                    # league_name = leagues[res['clanview']['wows_ladder']['league']]
                     colors = {
                         0: '#CDA4FF',
                         1: '#BEE7BD',
@@ -129,11 +121,6 @@ class ClanWrapper:
                         4: '#CC9966'
                     }
                     color = colors[res['clanview']['wows_ladder']['league']]
-                    # name = res['clanview']['clan']['name']
-                    # tag = res['clanview']['clan']['tag']
-                    # rating_realm = res['clanview']['wows_ladder']['rating_realm']
-                    # realm = res['clanview']['wows_ladder']['realm']
-                    # division = res['clanview']['wows_ladder']['division']
                 return color
         except (KeyError, TypeError):
             return '#e0deda'
