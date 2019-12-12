@@ -113,9 +113,6 @@ class TeamStats:
             else:
                 self.right_layout.addWidget(widgets[i], alignment=Qt.Alignment(0))
 
-        # self.left_layout.addStretch()
-        # self.right_layout.addStretch()
-
         layouts[0].addWidget(Label(text='WR: ', size=10), alignment=Qt.AlignRight)
         layouts[0].addWidget(self.t1_wr, alignment=Qt.AlignLeft)
         layouts[1].addWidget(Label(text='DMG: ', size=10), alignment=Qt.AlignRight)
