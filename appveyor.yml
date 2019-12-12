@@ -15,7 +15,7 @@ init:
 install:
   - "%PYTHON%\\python.exe -m pip install --upgrade pip"
   - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
-  - "%PYTHON%\\python.exe -m pip install pywin32-ctypes PyInstaller"
+  - "%PYTHON%\\python.exe -m pip install pywin32-ctypes pywin32 PyInstaller"
 
 build_script:
   - "%PYTHON%\\python.exe --version"
@@ -26,6 +26,8 @@ test: off
 artifacts:
   - path: 'dist\potatoalert_x64.exe'
     name: 'potatoalert_x64'
+  - path: 'build\potatoalert\warn-potatoalert.txt'
+    name: 'build_warn'
 
 deploy:
   description: ''
