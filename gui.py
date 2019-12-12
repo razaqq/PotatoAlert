@@ -29,6 +29,7 @@ from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableW
      QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar, QCheckBox
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie
 from PyQt5.QtCore import Qt, QUrl, QSize
+from utils.dcs import Team
 from utils.config import Config
 from version import __version__
 
@@ -134,20 +135,19 @@ class TeamStats:
         layouts[6].addWidget(self.t2_clan_name, alignment=Qt.AlignLeft)
 
         main_layout.addWidget(widget)
-        self.update_avg(None, None, None, None)
+        self.update_avg(Team(), Team())
         self.update_servers()
 
-    def update_avg(self, t1_wr_c, t1_dmg_c, t2_wr_c, t2_dmg_c, t1_wr=0.0, t1_dmg=0, t2_wr=0.0, t2_dmg=0):
-        self.t1_wr.setText(f'{t1_wr}%')
-        self.t1_dmg.setText(f'{t1_dmg}')
-        self.t2_wr.setText(f'{t2_wr}%')
-        self.t2_dmg.setText(f'{t2_dmg}')
+    def update_avg(self, team1: Team, team2: Team):
+        self.t1_wr.setText(f'{team1.winrate}%')
+        self.t1_dmg.setText(f'{team1.avg_dmg}')
+        self.t2_wr.setText(f'{team2.winrate}%')
+        self.t2_dmg.setText(f'{team2.avg_dmg}')
 
-        if t1_wr_c and t1_dmg_c and t2_wr_c and t2_dmg_c:
-            self.t1_wr.setStyleSheet(f"color: {t1_wr_c.name()}")
-            self.t1_dmg.setStyleSheet(f"color: {t1_dmg_c.name()}")
-            self.t2_wr.setStyleSheet(f"color: {t2_wr_c.name()}")
-            self.t2_dmg.setStyleSheet(f"color: {t2_dmg_c.name()}")
+        self.t1_wr.setStyleSheet(f"color: {team1.winrate_c.name()}")
+        self.t1_dmg.setStyleSheet(f"color: {team1.avg_dmg_c.name()}")
+        self.t2_wr.setStyleSheet(f"color: {team2.winrate_c.name()}")
+        self.t2_dmg.setStyleSheet(f"color: {team2.avg_dmg_c.name()}")
 
     def update_servers(self, t1_server=None, t2_server=None):
         if t1_server and t2_server:

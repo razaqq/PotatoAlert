@@ -30,40 +30,14 @@ import logging
 from typing import List, Union
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.config import Config
-from dataclasses import dataclass
 import gui
 from asyncqt import QEventLoop
 from utils.api import ApiWrapper, ClanWrapper, WoWsNumbersWrapper
 from utils.api_errors import InvalidApplicationIdError
 from utils.stat_colors import color_avg_dmg, color_battles, color_winrate, color_personal_rating, color_avg_dmg_ship
 from utils.ship_utils import shorten_name, get_nation_sort, get_class_sort
-from assets.colors import Grey
+from utils.dcs import Player, ArenaInfo, Team
 from utils import updater
-
-
-@dataclass()
-class Player:
-    hidden_profile: bool
-    team: int
-    row: list
-    colors: list
-    class_ship: int  # for sorting we keep track of these too
-    tier_ship: int
-    nation_ship: int
-    clan_tag: str
-    background: any = None
-    clan_color: any = None
-
-
-@dataclass()
-class ArenaInfo:
-    __slots__ = ['vehicles', 'mapId', 'mapName', 'matchGroup', 'ppt', 'scenario']
-    vehicles: list
-    mapId: int
-    mapName: str
-    matchGroup: str
-    ppt: int
-    scenario: str
 
 
 class PotatoAlert:
@@ -205,17 +179,6 @@ class PotatoAlert:
 
         if team2_api:
             await team2_api.session.close()
-
-        """
-        # ASYNC NOT WORKING
-        total = len(player_data)
-        tasks = []
-        for p in player_data:
-            # self.ui.update_status(2, f'Getting stats ({round(len(players) / total * 100, 1)}%)')
-            api = self.api if not (team2_api and p['relation'] == 2) else team2_api
-            tasks.append(asyncio.ensure_future(self.get_player(api, p, match_group, expected)))
-        players = await asyncio.gather(*tasks)
-        """
 
         self.ui.team_stats.update_avg(*self.get_averages_and_colors(players))
         return sorted(players, key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
@@ -367,22 +330,22 @@ class PotatoAlert:
 
     @staticmethod
     def get_averages_and_colors(players: List[Player]):
-        t1_wr = [float(p.row[3]) for p in players if (p.team == 1 or p.team == 0) and not p.hidden_profile]
-        t1_dmg = [int(p.row[4]) for p in players if (p.team == 1 or p.team == 0) and not p.hidden_profile]
-        t2_wr = [float(p.row[3]) for p in players if (p.team == 2 and not p.hidden_profile)]
-        t2_dmg = [int(p.row[4]) for p in players if (p.team == 2 and not p.hidden_profile)]
+        t1, t2 = Team(), Team()
 
-        t1_wr_c = color_winrate(sum(t1_wr) / len(t1_wr)) if t1_wr else Grey()
-        t1_dmg_c = color_avg_dmg(sum(t1_dmg) / len(t1_dmg)) if t1_dmg else Grey()
-        t2_wr_c = color_winrate(sum(t2_wr) / len(t2_wr)) if t2_wr else Grey()
-        t2_dmg_c = color_avg_dmg(sum(t2_dmg) / len(t2_dmg)) if t2_dmg else Grey()
+        for p in players:
+            if not p.hidden_profile:
+                team = t1 if p.team == 1 or p.team == 0 else t2
+                team.matches += int(p.row[2])
+                team.winrate += float(p.row[3]) * int(p.row[2])  # multiply with # matches
+                team.avg_dmg += int(p.row[4]) * int(p.row[2])
 
-        t1_wr = round(sum(t1_wr) / len(t1_wr), 1) if t1_wr else 0.0
-        t1_dmg = int(round(sum(t1_dmg) / len(t1_dmg), -2)) if t1_dmg else 0
-        t2_wr = round(sum(t2_wr) / len(t2_wr), 1) if t2_wr else 0.0
-        t2_dmg = int(round(sum(t2_dmg) / len(t2_dmg), -2)) if t2_dmg else 0
+        for team in [t1, t2]:
+            team.winrate_c = color_winrate(team.winrate / team.matches)
+            team.avg_dmg_c = color_avg_dmg(team.avg_dmg / team.matches)
+            team.avg_dmg = int(round(team.avg_dmg / team.matches, -2))
+            team.winrate = round(team.winrate / team.matches, 1)
 
-        return t1_wr_c, t1_dmg_c, t2_wr_c, t2_dmg_c, t1_wr, t1_dmg, t2_wr, t2_dmg
+        return t1, t2
 
     def read_arena_info(self) -> Union[ArenaInfo, None]:
         arena_info = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
