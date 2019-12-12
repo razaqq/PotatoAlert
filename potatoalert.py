@@ -27,7 +27,6 @@ import sys
 import json
 import asyncio
 import logging
-import traceback
 from typing import List, Union
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.config import Config
@@ -358,7 +357,6 @@ class PotatoAlert:
             a = ArenaInfo([d for d in data['vehicles']], data['mapId'], data['mapDisplayName'], data['matchGroup'],
                           data['playersPerTeam'], data['scenario'])
             return a
-            # return [d for d in data['vehicles']], data['matchGroup']
 
 
 if __name__ == '__main__':
