@@ -15,7 +15,7 @@ init:
 install:
   - "%PYTHON%\\python.exe -m pip install --upgrade pip"
   - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
-  - "%PYTHON%\\python.exe -m pip install pywin32-ctypes pywin32 PyInstaller"
+  - "%PYTHON%\\python.exe -m pip install pywin32-ctypes pywin32 PyInstaller=3.4"
 
 build_script:
   - "%PYTHON%\\python.exe --version"
