@@ -32,7 +32,7 @@ if __name__ == '__main__':
     icon = os.path.join(assets, 'potato.ico')
     assets_sep = ':' if os.name == 'posix' else ';'
 
-    debug_flags = '-F -y'
+    debug_flags = '-F -y -d imports -d bootloader'
     build_flags = '-F -y -w'
 
     build = f'{sys.executable} -m PyInstaller {build_flags} -i "{icon}" --add-data "{assets}"{assets_sep}"assets/" ' \
