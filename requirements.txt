@@ -2,4 +2,4 @@ aiohttp
 qtpy
 aiofiles
 PyQt5>=5.11.3,<=5.12.1
-multidict<=4.6.1
+multidict
