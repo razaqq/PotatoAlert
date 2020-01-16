@@ -26,7 +26,7 @@ import time
 from aiohttp import ClientSession
 import aiofiles
 from PyQt5.QtWidgets import QMainWindow, QProgressBar, QWidget, QVBoxLayout, QStatusBar, QLabel, QApplication,\
-                            QHBoxLayout
+                            QHBoxLayout, QMessageBox
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon, QPixmap
 from assets.qtmodern import styles, windows
@@ -102,6 +102,11 @@ async def update():
         os.rename(os.path.join(current_path, f'{file_name}_old'), os.path.join(current_path, file_name))
     finally:
         os.execl(os.path.join(current_path, file_name), os.path.join(current_path, file_name))
+
+
+def queue_update():
+    print(os.path.join(current_path, file_name))
+    os.execl(os.path.join(current_path, file_name), os.path.join(current_path, file_name), '--update')
 
 
 class UpdateWindow(QMainWindow):

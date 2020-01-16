@@ -607,15 +607,29 @@ class MainWindow(QMainWindow):
         self.config.save()
         super().closeEvent(event)
 
-    def notify_update(self):
-        reply = QMessageBox.question(self, 'Update', 'Do you want to update now?')
+    async def notify_update(self):
+        d = windows.ModernDialog(resource_path('./assets/frameless.qss'), parent=self, hide_window_buttons=True)
+        d.setWindowTitle('Update Available')
 
-        if reply == QMessageBox.Yes:
-            # event.accept()
-            pass
+        box = QMessageBox(d)
+        box.setIcon(QMessageBox.Question)
+        box.setText('There is a new version available.\nWould you like to update now?')
+        box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        box.setEscapeButton(QMessageBox.No)
+        box.setAttribute(Qt.WA_TranslucentBackground)
+        box.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowSystemMenuHint)
+
+        layout = QHBoxLayout()
+        layout.addWidget(box, alignment=Qt.Alignment(0))
+        d.windowContent.setLayout(layout)
+        d.show()
+
+        if box.exec_() == QMessageBox.Yes:
+            d.hide()
+            return True
         else:
-            # event.ignore()
-            pass
+            d.hide()
+            return False
 
 
 def resource_path(relative_path):

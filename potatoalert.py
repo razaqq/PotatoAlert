@@ -27,6 +27,7 @@ import sys
 import json
 import asyncio
 import logging
+import argparse
 from typing import List, Union
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.config import Config
@@ -360,18 +361,27 @@ class PotatoAlert:
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--update', dest='perform_update', action='store_true')
+    args = parser.parse_args()
+
     loop = asyncio.get_event_loop()
-    update = loop.run_until_complete(updater.check_update())
-    if update:
+    update_available = loop.run_until_complete(updater.check_update())
+    if args.perform_update:
         app, gui = updater.create_gui()
     else:
         app, gui = gui.create_gui()
     loop = QEventLoop(app)
     asyncio.set_event_loop(loop)
     loop.run_until_complete(asyncio.sleep(0.1))
-    if update:
+
+    if args.perform_update:
         loop.run_until_complete(gui.update_progress(updater.update))
         sys.exit(0)
+    if update_available:
+        perform_update = loop.run_until_complete(gui.notify_update())
+        if perform_update:
+            updater.queue_update()
 
     pa = PotatoAlert(gui)
     loop.create_task(pa.run())
