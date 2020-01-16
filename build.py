@@ -35,7 +35,7 @@ if __name__ == '__main__':
     debug_flags = '-F -y -d imports -d bootloader'
     build_flags = '-F -y -w'
 
-    build = f'{sys.executable} -m PyInstaller {debug_flags} -i "{icon}" --add-data "{assets}"{assets_sep}"assets/" ' \
+    build = f'{sys.executable} -m PyInstaller {build_flags} -i "{icon}" --add-data "{assets}"{assets_sep}"assets/" ' \
             f'"{main}"'
 
     subprocess.call(
