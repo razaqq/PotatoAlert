@@ -83,6 +83,11 @@ class PotatoAlert:
 
     async def run(self):
         while True:
+            # TEMPORARY FIX FOR WGS BULLSHIT
+            if self.ui.mode_changed:
+                self.last_started = 0
+                self.ui.mode_changed = False
+            # TEMPORARY FIX FOR WGS BULLSHIT
             if self.ui.config_reload_needed:
                 asyncio.get_event_loop().create_task(self.reload_config())
             if not self.invalid_api_key and os.path.exists(self.arena_info_file):
@@ -355,6 +360,10 @@ class PotatoAlert:
             return None
         with open(arena_info, 'r') as f:
             data = json.load(f)
+            # TEMPORARY FIX FOR WGS BULLSHIT
+            data['matchGroup'] = self.ui.mode_picker.currentText()
+            # TEMPORARY FIX FOR WGS BULLSHIT
+
             a = ArenaInfo([d for d in data['vehicles']], data['mapId'], data['mapDisplayName'], data['matchGroup'],
                           data['playersPerTeam'], data['scenario'])
             return a

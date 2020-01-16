@@ -243,6 +243,9 @@ class MainWindow(QMainWindow):
             self.match_info = MatchInfo(self.layout)
         self.config_reload_needed = False
         self.mw = None
+        # TEMPORARY FIX FOR WGS BULLSHIT
+        self.mode_changed = False
+        # TEMPORARY FIX FOR WGS BULLSHIT
 
     def init(self):
         self.setMouseTracking(False)
@@ -315,6 +318,20 @@ class MainWindow(QMainWindow):
         right_layout.addStretch()
         right_layout.addWidget(Label(text='Enemy Team'), alignment=Qt.Alignment(0))
         right_layout.addStretch()
+
+        # TEMPORARY FIX FOR WGS BULLSHIT
+        def mode_changed():
+            # print('changed')
+            self.mode_changed = True
+        mode_label = QLabel('Mode:')
+        right_layout.addWidget(mode_label, alignment=Qt.Alignment(0))
+        self.mode_picker = QComboBox()
+        self.mode_picker.addItems(['pvp', 'clan', 'ranked', 'cooperative', 'pve'])
+        self.mode_picker.setCurrentIndex(0)
+        self.mode_picker.setFixedSize(70, 20)
+        right_layout.addWidget(self.mode_picker, alignment=Qt.Alignment(0))
+        self.mode_picker.currentTextChanged.connect(mode_changed)
+        # TEMPORARY FIX FOR WGS BULLSHIT
 
         label_layout.addWidget(left_widget, alignment=Qt.Alignment(0))
         label_layout.addWidget(right_widget, alignment=Qt.Alignment(0))
