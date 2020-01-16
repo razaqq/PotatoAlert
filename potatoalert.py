@@ -367,17 +367,20 @@ if __name__ == '__main__':
 
     loop = asyncio.get_event_loop()
     update_available = loop.run_until_complete(updater.check_update())
+
     if args.perform_update:
         app, gui = updater.create_gui()
-    else:
-        app, gui = gui.create_gui()
+        loop = QEventLoop(app)
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(asyncio.sleep(0.1))
+        loop.run_until_complete(gui.update_progress(updater.update))
+        sys.exit(0)
+
+    app, gui = gui.create_gui()
     loop = QEventLoop(app)
     asyncio.set_event_loop(loop)
     loop.run_until_complete(asyncio.sleep(0.1))
 
-    if args.perform_update:
-        loop.run_until_complete(gui.update_progress(updater.update))
-        sys.exit(0)
     if update_available:
         perform_update = loop.run_until_complete(gui.notify_update())
         if perform_update:
