@@ -26,6 +26,7 @@ from assets.colors import QColor, Grey
 
 @dataclass()
 class Player:
+    account_id: int
     hidden_profile: bool
     team: int
     row: list
@@ -36,6 +37,7 @@ class Player:
     clan_tag: str
     background: any = None
     clan_color: any = None
+    region: any = None
 
 
 @dataclass()

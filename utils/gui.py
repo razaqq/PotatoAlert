@@ -190,6 +190,7 @@ class Table(QTableWidget):
         super().__init__(parent)
         self.init()
         self.init_headers()
+        self.players = []
 
     def init(self):
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -221,6 +222,17 @@ class Table(QTableWidget):
         # self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.resizeColumnsToContents()
+
+    def print_click(self, a):
+        try:
+            p = self.players[a.row()]
+            if not p.row[0]:
+                return
+            region = f'{p.region}.' if p.region != 'eu' else ''
+            url = QUrl(f'https://{region}wows-numbers.com/player/{p.account_id},{p.row[0]}/')
+            QDesktopServices.openUrl(url)
+        except IndexError:
+            pass
 
 
 class MainWindow(QMainWindow):
@@ -275,6 +287,8 @@ class MainWindow(QMainWindow):
         table_layout.addWidget(t2, alignment=Qt.Alignment(0))
         table_widget.setLayout(table_layout)
         self.layout.addWidget(table_widget, alignment=Qt.Alignment(0))
+        t1.doubleClicked.connect(t1.print_click)
+        t2.doubleClicked.connect(t2.print_click)
         return t1, t2
 
     def create_table_labels(self):
@@ -565,6 +579,8 @@ class MainWindow(QMainWindow):
     def fill_tables(self, players):
         self.left_table.clearContents()
         self.right_table.clearContents()
+        self.left_table.players = [p for p in players if p.team == 0 or p.team == 1]
+        self.right_table.players = [p for p in players if p.team == 2]
 
         tables = {1: 0, 2: 0}
         table = None

@@ -118,6 +118,7 @@ class PotatoAlert:
         color_limits = color_limits['average_damage_dealt']['eu']
 
         team2_api, team2_region, team2_account_id = None, None, None
+
         if match_group == 'clan':
             try:
                 # Find out which region the 2nd clan is from
@@ -180,6 +181,8 @@ class PotatoAlert:
             api = self.api if not (team2_api and p['relation'] == 2) else team2_api
             player = await self.get_player(api, p, match_group, expected, color_limits)
             if player:
+                player.region = self.config['DEFAULT']['region'] if not (team2_api and p['relation'] == 2) \
+                    else team2_region
                 players.append(player)
 
         if team2_api:
@@ -206,7 +209,8 @@ class PotatoAlert:
             class_sort = get_class_sort(ship['type'])  # these three are for sorting them in the board
             nation_sort = get_nation_sort(ship['nation'])
             tier_sort = ship['tier']
-            return Player(True, team, [p_name, ship_name], [None, None], class_sort, tier_sort, nation_sort, clan_tag)
+            return Player(0, True, team, [p_name, ship_name], [None, None], class_sort, tier_sort, nation_sort,
+                          clan_tag)
 
         if (match_group == 'pve' or match_group == 'pve_premade') and team == 2:  # SCENARIO
             return None
@@ -215,7 +219,8 @@ class PotatoAlert:
             account_search = await api.search_account(p['name'])
             account_id = account_search['data'][0]['account_id']
         except (KeyError, IndexError):
-            return Player(True, team, [p_name, ship_name], [None, None], class_sort, tier_sort, nation_sort, clan_tag)
+            return Player(0, True, team, [p_name, ship_name], [None, None], class_sort, tier_sort, nation_sort,
+                          clan_tag)
 
         tasks.append(asyncio.ensure_future(api.get_account_info(account_id)))
         tasks.append(asyncio.ensure_future(self.api.get_ship_infos(p['shipId'])))
@@ -292,8 +297,8 @@ class PotatoAlert:
                 row.extend([str(battles_ship), str(winrate_ship), str(avg_dmg_ship)])
                 colors.extend([None, color_winrate(winrate_ship),
                                color_avg_dmg_ship(avg_dmg_ship, str(p['shipId']), color_limits)])
-        return Player(hidden_profile, team, row, colors, class_sort, tier_sort, nation_sort, clan_tag, background,
-                      clan_color)
+        return Player(account_id, hidden_profile, team, row, colors, class_sort, tier_sort, nation_sort, clan_tag,
+                      background, clan_color)
 
     async def get_overall_personal_rating(self, account_id: int = 0, expected=None, api=None):
         try:
