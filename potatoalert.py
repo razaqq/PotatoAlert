@@ -31,14 +31,13 @@ import argparse
 from typing import List, Union
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.config import Config
-import gui
 from asyncqt import QEventLoop
 from utils.api import ApiWrapper, ClanWrapper, WoWsNumbersWrapper
 from utils.api_errors import InvalidApplicationIdError
 from utils.stat_colors import color_avg_dmg, color_battles, color_winrate, color_personal_rating, color_avg_dmg_ship
 from utils.ship_utils import shorten_name, get_nation_sort, get_class_sort
 from utils.dcs import Player, ArenaInfo, Team
-from utils import updater
+from utils import updater, gui
 
 
 class PotatoAlert:
