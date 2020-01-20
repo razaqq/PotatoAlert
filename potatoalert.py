@@ -38,6 +38,7 @@ from utils.stat_colors import color_avg_dmg, color_battles, color_winrate, color
 from utils.ship_utils import shorten_name, get_nation_sort, get_class_sort
 from utils.dcs import Player, ArenaInfo, Team
 from utils import updater, gui
+from version import __version__
 
 
 class PotatoAlert:
@@ -376,6 +377,7 @@ class PotatoAlert:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--update', dest='perform_update', action='store_true')
+    parser.add_argument('--changelog', dest='show_changelog', action='store_true')
     args = parser.parse_args()
 
     loop = asyncio.get_event_loop()
@@ -398,6 +400,9 @@ if __name__ == '__main__':
         perform_update = loop.run_until_complete(gui.notify_update())
         if perform_update:
             updater.queue_update()
+    if args.show_changelog:
+        changelog = loop.run_until_complete(updater.get_changelog())
+        loop.run_until_complete(gui.show_changelog(__version__, changelog))
 
     pa = PotatoAlert(gui)
     loop.create_task(pa.run())

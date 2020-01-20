@@ -26,8 +26,8 @@ import sys
 from assets.qtmodern import styles, windows
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialogButtonBox, QLineEdit, QSizePolicy, \
-     QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar, QCheckBox
-from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie
+     QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar, QCheckBox, QTextEdit, QScrollBar
+from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QTextCursor
 from PyQt5.QtCore import Qt, QUrl, QSize
 from utils.dcs import Team
 from utils.config import Config
@@ -663,6 +663,59 @@ class MainWindow(QMainWindow):
         else:
             d.hide()
             return False
+
+    async def show_changelog(self, version, text):
+        d = windows.ModernDialog(resource_path('./assets/frameless.qss'), parent=self, hide_window_buttons=True)
+        d.setMinimumWidth(550)
+
+        main_layout = QVBoxLayout()
+        main_layout.setSpacing(10)
+        d.setWindowTitle('Changelog')
+
+        about_widget = QWidget(flags=self.flags)
+        row_layout = QHBoxLayout()
+        row_layout.setSpacing(10)
+        row_layout.setContentsMargins(0, 0, 0, 0)
+
+        pix = QPixmap(resource_path('./assets/potato.png'))
+        pix = pix.scaled(70, 70)
+        img = QLabel()
+        img.setPixmap(pix)
+        row_layout.addWidget(img, alignment=Qt.Alignment(0))
+
+        changelog_widget = QWidget(flags=self.flags)
+        changelog_layout = QVBoxLayout()
+        changelog_layout.setSpacing(10)
+        changelog_layout.setContentsMargins(0, 0, 0, 0)
+
+        font = QFont()
+        font.setPointSize(12)
+        text1 = QLabel(f'New in version {version}')
+        text1.setFont(font)
+        changelog_layout.addWidget(text1, alignment=Qt.Alignment(0))
+
+        changes = QTextEdit()
+        changes.insertPlainText(text)
+        changes.setReadOnly(True)
+        changes.setFixedHeight(100)
+        changes.moveCursor(QTextCursor.Start)
+        changelog_layout.addWidget(changes, alignment=Qt.Alignment(0))
+
+        changelog_widget.setLayout(changelog_layout)
+        row_layout.addWidget(changelog_widget, alignment=Qt.Alignment(0))
+
+        about_widget.setLayout(row_layout)
+        main_layout.addWidget(about_widget, alignment=Qt.Alignment(0))
+
+        button_box = QDialogButtonBox()
+        button_box.setOrientation(Qt.Horizontal)
+        button_box.setStandardButtons(QDialogButtonBox.Ok)
+        button_box.setCenterButtons(True)
+        button_box.accepted.connect(d.accept)
+        main_layout.addWidget(button_box, alignment=Qt.Alignment(0))
+
+        d.windowContent.setLayout(main_layout)
+        d.exec()
 
 
 def resource_path(relative_path):

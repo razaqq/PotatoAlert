@@ -23,10 +23,11 @@ SOFTWARE.
 import os
 import sys
 import time
+import json
 from aiohttp import ClientSession
 import aiofiles
 from PyQt5.QtWidgets import QMainWindow, QProgressBar, QWidget, QVBoxLayout, QStatusBar, QLabel, QApplication,\
-                            QHBoxLayout, QMessageBox
+                            QHBoxLayout
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon, QPixmap
 from assets.qtmodern import styles, windows
@@ -101,12 +102,22 @@ async def update():
     except (ClientResponseError, ClientError, ClientConnectionError, ConnectionError) as e:
         os.rename(os.path.join(current_path, f'{file_name}_old'), os.path.join(current_path, file_name))
     finally:
-        os.execl(os.path.join(current_path, file_name), os.path.join(current_path, file_name))
+        os.execl(os.path.join(current_path, file_name), os.path.join(current_path, file_name), '--changelog')
 
 
 def queue_update():
-    print(os.path.join(current_path, file_name))
     os.execl(os.path.join(current_path, file_name), os.path.join(current_path, file_name), '--update')
+
+
+async def get_changelog():
+    try:
+        url = "https://api.github.com/repos/razaqq/PotatoAlert/releases/latest"
+        async with ClientSession() as s:
+            async with s.get(url) as resp:
+                res = await resp.json()
+                return res['body']
+    except (KeyError, TypeError, IndexError, ClientResponseError, ClientError, ClientConnectionError, ConnectionError):
+        return ''
 
 
 class UpdateWindow(QMainWindow):
