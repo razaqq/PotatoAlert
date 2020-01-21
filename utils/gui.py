@@ -26,7 +26,7 @@ import sys
 from assets.qtmodern import styles, windows
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialogButtonBox, QLineEdit, QSizePolicy, \
-     QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar, QCheckBox, QTextEdit, QScrollBar
+     QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar, QCheckBox, QTextEdit
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QTextCursor
 from PyQt5.QtCore import Qt, QUrl, QSize
 from utils.dcs import Team
@@ -197,11 +197,12 @@ class Table(QTableWidget):
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.setFocusPolicy(Qt.NoFocus)
         self.setAlternatingRowColors(False)
-        self.setMouseTracking(False)
+        self.setMouseTracking(True)
         self.setRowCount(12)
         self.setColumnCount(8)
         self.setSortingEnabled(False)
         self.setContentsMargins(0, 0, 0, 0)
+        self.setCursor(Qt.PointingHandCursor)
 
     def init_headers(self):
         labels = ['Player', 'Ship', 'Matches', 'Winrate', 'Avg DMG', 'M Ship', 'WR Ship', 'DMG Ship']
