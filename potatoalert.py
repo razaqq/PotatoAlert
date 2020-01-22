@@ -39,18 +39,43 @@ from utils.ship_utils import shorten_name, get_nation_sort, get_class_sort
 from utils.dcs import Player, ArenaInfo, Team
 from utils import updater, gui
 from version import __version__
+from PyQt5.QtCore import pyqtSignal, QObject, QRunnable, pyqtSlot, QThreadPool
+
+
+class Signals(QObject):
+    status = pyqtSignal(int, str)
+
+
+class Worker(QRunnable):
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = Signals()
+
+    @pyqtSlot()
+    def run(self):
+        result = self.fn(*self.args, **self.kwargs)
+        return result
 
 
 class PotatoAlert:
-    def __init__(self, ui):
-        self.ui = ui
-        self.config = Config()
+    def __init__(self, config):
+        self.config = config
+
+        # variables watched by gui
+        self.players = []
+        self.arena_info = None
+        self.signals = Signals()
+        self.servers = (None, None)
+        self.clans = (None, None)
+        self.avg = None
+        self.mode = 'pvp'  # TEMPORARY FIX FOR WGS BULLSHIT
+
         self.arena_info_file = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
-        self.client_version = ''
-        self.steam_version = False
-        self.region = ''
         self.last_started = 0.0
-        self.setup_logger()
+        # self.setup_logger()
         self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
         self.invalid_api_key = asyncio.get_event_loop().run_until_complete(self.check_api_key())
 
@@ -63,53 +88,38 @@ class PotatoAlert:
 
     async def check_api_key(self):
         try:
-            self.ui.update_status(1, 'Ready')
+            self.signals.status.emit(1, 'Ready')
             await self.api.get_account_info(0)
             return False
         except InvalidApplicationIdError:
-            self.ui.update_status(3, 'Invalid API')
+            self.signals.status.emit(3, 'Invalid API')
             logging.error('The API key you provided is invalid, please go to the settings and check it!')
             return True
         except ClientConnectionError:
             logging.exception('Check your internet connection!')
-            self.ui.update_status(3, 'Connection')
+            self.signals.status.emit(3, 'Connection')
 
-    async def reload_config(self):
-        self.config = Config()
+    def reload_config(self):
         self.arena_info_file = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
         self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
-        self.ui.config_reload_needed = False
-        self.invalid_api_key = await self.check_api_key()
+        self.invalid_api_key = asyncio.get_event_loop().run_until_complete(self.check_api_key())
 
-    async def run(self):
-        while True:
-            # TEMPORARY FIX FOR WGS BULLSHIT
-            if self.ui.mode_changed:
-                self.last_started = 0
-                self.ui.mode_changed = False
-            # TEMPORARY FIX FOR WGS BULLSHIT
-            if self.ui.config_reload_needed:
-                asyncio.get_event_loop().create_task(self.reload_config())
-            if not self.invalid_api_key and os.path.exists(self.arena_info_file):
-                last_started = float(os.stat(
-                    os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')).st_mtime)
-                if last_started != self.last_started:
-                    await asyncio.sleep(0.05)
-                    try:
-                        arena_info = self.read_arena_info()
-                        if self.config['DEFAULT'].getboolean('additional_info'):
-                            self.ui.match_info.update_text(arena_info.mapName, arena_info.scenario, arena_info.ppt)
-                        players = await self.get_players(arena_info.vehicles, arena_info.matchGroup)
-                        self.ui.fill_tables(players)
-                        self.ui.update_status(1, 'Ready')
-                        self.last_started = last_started
-                    except ClientConnectionError:
-                        logging.exception('Check your internet connection!')
-                        self.ui.update_status(3, 'Connection')
-                    except (ClientError, ClientResponseError, Exception) as e:
-                        logging.exception(e)
-                        self.ui.update_status(3, 'Check Logs')
-            await asyncio.sleep(5)
+    def run(self):
+        if not self.invalid_api_key and os.path.exists(self.arena_info_file):
+            try:
+                self.arena_info = self.read_arena_info()
+                # if self.config['DEFAULT'].getboolean('additional_info'):
+                #     self.match_info.update_text(arena_info.mapName, arena_info.scenario, arena_info.ppt)
+                loop = asyncio.get_running_loop()
+                # self.players = loop.run_until_complete(self.get_players(self.arena_info.vehicles, self.arena_info.matchGroup))
+                print(self.players)
+                self.signals.status.emit(1, 'Ready')
+            except ClientConnectionError:
+                logging.exception('Check your internet connection!')
+                self.signals.status.emit(3, 'Connection')
+            except (ClientError, ClientResponseError, Exception) as e:
+                logging.exception(e)
+                self.signals.status.emit(3, 'Check Logs')
 
     async def get_players(self, player_data: List[dict], match_group: str) -> List[Player]:
         # Get stats from wows-numbers and transform colors
@@ -123,7 +133,7 @@ class PotatoAlert:
         if match_group == 'clan':
             try:
                 # Find out which region the 2nd clan is from
-                self.ui.update_status(2, f'Getting regions')
+                self.signals.status.emit(2, f'Getting regions')
                 team2_names = [p['name'] for p in player_data if p['relation'] == 2]
                 for region in ['eu', 'ru', 'na', 'asia']:
                     tasks = []
@@ -143,7 +153,7 @@ class PotatoAlert:
                     pass  # TODO what to if they cant be found on any server?
 
                 # Determine both clans rating
-                self.ui.update_status(2, f'Getting clan ratings')
+                self.signals.status.emit(2, 'Getting clan ratings')
                 # try to get clanIDs from players and use them to find clan rating
                 a1 = await self.api.search_account([p['name'] for p in player_data if p['relation'] == 0][0])
                 a1_id = a1['data'][0]['account_id']
@@ -168,17 +178,17 @@ class PotatoAlert:
                 c2 = ('', '', '')
                 team2_api = None
 
-            self.ui.team_stats.update_servers(self.config['DEFAULT']['region'], team2_region)
-            self.ui.team_stats.update_clans(c1, c2)
+            self.servers = (self.config['DEFAULT']['region'], team2_region)
+            self.clans = (c1, c2)
         else:
-            self.ui.team_stats.update_clans()
-            self.ui.team_stats.update_servers()
+            self.clans = (None, None)
+            self.servers = (None, None)
 
         # SYNC
         players = []
         total = len(player_data)
         for p in player_data:
-            self.ui.update_status(2, f'Getting stats ({round(len(players) / total * 100, 1)}%)')
+            self.signals.status.emit(2, f'Getting stats ({round(len(players) / total * 100, 1)}%)')
             api = self.api if not (team2_api and p['relation'] == 2) else team2_api
             player = await self.get_player(api, p, match_group, expected, color_limits)
             if player:
@@ -189,7 +199,7 @@ class PotatoAlert:
         if team2_api:
             await team2_api.session.close()
 
-        self.ui.team_stats.update_avg(*self.get_averages_and_colors(players))
+        self.avg = self.get_averages_and_colors(players)
         return sorted(players, key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
 
     async def get_player(self, api, p, match_group: str, expected, color_limits) -> Union[Player, None]:
@@ -366,7 +376,7 @@ class PotatoAlert:
         with open(arena_info, 'r') as f:
             data = json.load(f)
             # TEMPORARY FIX FOR WGS BULLSHIT
-            data['matchGroup'] = self.ui.mode_picker.currentText()
+            data['matchGroup'] = self.mode
             # TEMPORARY FIX FOR WGS BULLSHIT
 
             a = ArenaInfo([d for d in data['vehicles']], data['mapId'], data['mapDisplayName'], data['matchGroup'],
@@ -391,20 +401,32 @@ if __name__ == '__main__':
         loop.run_until_complete(gui.update_progress(updater.update))
         sys.exit(0)
 
-    app, gui = gui.create_gui()
+    config = Config()
+
+    from PyQt5.Qt import QApplication
+    from assets.qtmodern import styles, windows
+    from utils.resource_path import resource_path
+
+    app = QApplication(sys.argv)
+
     loop = QEventLoop(app)
     asyncio.set_event_loop(loop)
     loop.run_until_complete(asyncio.sleep(0.1))
 
+    pa = PotatoAlert(config)
+    ui = gui.MainWindow(config, pa)
+    styles.dark(app, resource_path('./assets/style.qss'))
+    ui.mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
+    ui.mw.show()
+
     if update_available:
-        perform_update = loop.run_until_complete(gui.notify_update())
+        perform_update = loop.run_until_complete(ui.notify_update())
         if perform_update:
             updater.queue_update()
     if args.show_changelog:
         changelog = loop.run_until_complete(updater.get_changelog())
-        loop.run_until_complete(gui.show_changelog(__version__, changelog))
+        loop.run_until_complete(ui.show_changelog(__version__, changelog))
 
-    pa = PotatoAlert(gui)
-    loop.create_task(pa.run())
+    # sys.exit(app.exec_())
     with loop:
         sys.exit(loop.run_forever())

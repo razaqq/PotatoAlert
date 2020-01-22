@@ -21,16 +21,14 @@ SOFTWARE.
 """
 
 
-import os
-import sys
 from assets.qtmodern import styles, windows
 from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialogButtonBox, QLineEdit, QSizePolicy, \
      QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar, QCheckBox, QTextEdit, QScrollBar
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QTextCursor
-from PyQt5.QtCore import Qt, QUrl, QSize
+from PyQt5.QtCore import Qt, QUrl, QSize, pyqtSignal
 from utils.dcs import Team
-from utils.config import Config
+from utils.resource_path import resource_path
 from version import __version__
 
 
@@ -235,12 +233,14 @@ class Table(QTableWidget):
             pass
 
 
+# noinspection PyArgumentList
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, config, pa):
+        self.pa = pa
+        self.config = config
         self.flags = Qt.WindowFlags()
         super().__init__(flags=self.flags)
         self.central_widget = None
-        self.config = Config()
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
@@ -253,11 +253,7 @@ class MainWindow(QMainWindow):
         self.team_stats = TeamStats(self.layout)
         if self.config['DEFAULT'].getboolean('additional_info'):
             self.match_info = MatchInfo(self.layout)
-        self.config_reload_needed = False
         self.mw = None
-        # TEMPORARY FIX FOR WGS BULLSHIT
-        self.mode_changed = False
-        # TEMPORARY FIX FOR WGS BULLSHIT
 
     def init(self):
         self.setMouseTracking(False)
@@ -271,6 +267,7 @@ class MainWindow(QMainWindow):
         self.central_widget = QWidget(self, flags=self.flags)
         self.setCentralWidget(self.central_widget)
         self.central_widget.setLayout(self.layout)
+        self.connect_signals()
 
     def set_size(self):
         self.move(self.config.getint('DEFAULT', 'windowx'), self.config.getint('DEFAULT', 'windowy'))
@@ -334,9 +331,6 @@ class MainWindow(QMainWindow):
         right_layout.addStretch()
 
         # TEMPORARY FIX FOR WGS BULLSHIT
-        def mode_changed():
-            # print('changed')
-            self.mode_changed = True
         mode_label = QLabel('Mode:')
         right_layout.addWidget(mode_label, alignment=Qt.Alignment(0))
         self.mode_picker = QComboBox()
@@ -344,7 +338,7 @@ class MainWindow(QMainWindow):
         self.mode_picker.setCurrentIndex(0)
         self.mode_picker.setFixedSize(70, 20)
         right_layout.addWidget(self.mode_picker, alignment=Qt.Alignment(0))
-        self.mode_picker.currentTextChanged.connect(mode_changed)
+        self.mode_picker.currentTextChanged.connect(self.pa.run)
         # TEMPORARY FIX FOR WGS BULLSHIT
 
         label_layout.addWidget(left_widget, alignment=Qt.Alignment(0))
@@ -564,13 +558,10 @@ class MainWindow(QMainWindow):
                 [region for region, index in regions.items() if index == region_picker.currentIndex()][0]
             self.config['DEFAULT']['additional_info'] = 'true' if info_cb.isChecked() else 'false'
 
-        def flag_config_reload_needed():
-            self.config_reload_needed = True
-
         button_box.accepted.connect(mw.accept)
         button_box.accepted.connect(update_config)
         button_box.accepted.connect(self.config.save)
-        button_box.accepted.connect(flag_config_reload_needed)
+        button_box.accepted.connect(self.pa.reload_config)
         button_box.rejected.connect(mw.reject)
 
         mw.windowContent.setLayout(main_layout)
@@ -664,7 +655,7 @@ class MainWindow(QMainWindow):
             d.hide()
             return False
 
-    async def show_changelog(self, version, text):
+    def show_changelog(self, version, text):
         d = windows.ModernDialog(resource_path('./assets/frameless.qss'), parent=self, hide_window_buttons=True)
         d.setMinimumWidth(550)
 
@@ -717,17 +708,15 @@ class MainWindow(QMainWindow):
         d.windowContent.setLayout(main_layout)
         d.exec()
 
-
-def resource_path(relative_path):
-    if hasattr(sys, '_MEIPASS'):
-        return os.path.join(sys._MEIPASS, relative_path)
-    return os.path.join(os.path.abspath('.'), relative_path)
+    def connect_signals(self):
+        self.pa.signals.status.connect(self.update_status)
 
 
-def create_gui():
+def create_gui(config):
     import sys
+
     app = QApplication(sys.argv)
-    ui = MainWindow()
+    ui = MainWindow(config)
     styles.dark(app, resource_path('./assets/style.qss'))
     ui.mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
     ui.mw.show()
