@@ -22,7 +22,8 @@ SOFTWARE.
 
 import os
 import sys
-import subprocess
+import traceback
+from subprocess import call
 
 
 if __name__ == '__main__':
@@ -32,17 +33,22 @@ if __name__ == '__main__':
     icon = os.path.join(assets, 'potato.ico')
     assets_sep = ':' if os.name == 'posix' else ';'
 
-    debug_flags = '-F -y -d imports -d bootloader'
-    build_flags = '-F -y -w'
+    debug_flags = ['-F', '-y', '-d', 'imports', '-d', 'bootloader']
+    build_flags = ['-F', '-y', '-w']
+    excludes = ['--exclude-module', 'tkinter']
 
     build = f'{sys.executable} -m PyInstaller {build_flags} -i "{icon}" --add-data "{assets}"{assets_sep}"assets/" ' \
             f'"{main}"'
 
-    subprocess.call(
-        build
-    )
+    p = call([sys.executable, '-m', 'PyInstaller'] + build_flags + excludes +
+             ['-i', icon, '--add-data', f"{assets}{assets_sep}assets/", main])
 
-    if os.path.exists(os.path.join(root, 'dist', 'potatoalert_x64.exe')):
-        os.remove(os.path.join(root, 'dist', 'potatoalert_x64.exe'))
-    os.rename(os.path.join(root, 'dist', 'potatoalert.exe'), os.path.join(root, 'dist', 'potatoalert_x64.exe'))
-    os.remove(os.path.join(root, 'potatoalert.spec'))
+    try:
+        built_binary_file = 'potatoalert_x64' if os.name == 'posix' else 'potatoalert_x64.exe'
+        binary_file = 'potatoalert' if os.name == 'posix' else 'potatoalert.exe'
+        if os.path.exists(os.path.join(root, 'dist', built_binary_file)):
+            os.remove(os.path.join(root, 'dist', built_binary_file))
+        os.rename(os.path.join(root, 'dist', binary_file), os.path.join(root, 'dist', built_binary_file))
+        os.remove(os.path.join(root, 'potatoalert.spec'))
+    except FileNotFoundError as e:
+        print(traceback.format_exc())
