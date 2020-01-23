@@ -21,10 +21,12 @@ SOFTWARE.
 """
 
 from PyQt5.QtGui import QColor
-from assets.colors import Purple, Pink, Cyan, DGreen, LGreen, Yellow, Orange, Red, Grey
+from assets.colors import Purple, Pink, Cyan, DGreen, LGreen, Yellow, Orange, Red, DGrey
 
 
-def color_winrate(wr: float) -> QColor:
+def color_winrate(wr: float, battles_ship: int = 1) -> QColor:
+    if not battles_ship:
+        return DGrey()
     c = Purple() if wr >= 65 else Pink() if wr >= 60 else Cyan() if wr >= 56 else DGreen() if wr >= 54 else \
         LGreen() if wr >= 52 else Yellow() if wr >= 49 else Orange() if wr >= 47 else Red()
     return c
@@ -49,11 +51,13 @@ def color_personal_rating(pr) -> QColor:
     return c
 
 
-def color_avg_dmg_ship(avg_dmg: float, ship_id: str, color_limits: dict) -> QColor:
+def color_avg_dmg_ship(avg_dmg: float, ship_id: str, color_limits: dict, battles_ship: int = 1) -> QColor:
+    if not battles_ship:
+        return DGrey()
     if ship_id in color_limits:
         limits = [x['value'] for x in color_limits[ship_id]]
         c = Red() if avg_dmg < limits[0] else Orange() if avg_dmg < limits[1] else \
             Yellow() if avg_dmg < limits[2] else LGreen() if avg_dmg < limits[3] else \
             Cyan() if avg_dmg < limits[4] else Pink()
         return c
-    return Grey()
+    return DGrey()
