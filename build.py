@@ -37,9 +37,6 @@ if __name__ == '__main__':
     build_flags = ['-F', '-y', '-w']
     excludes = ['--exclude-module', 'tkinter']
 
-    build = f'{sys.executable} -m PyInstaller {build_flags} -i "{icon}" --add-data "{assets}"{assets_sep}"assets/" ' \
-            f'"{main}"'
-
     p = call([sys.executable, '-m', 'PyInstaller'] + build_flags + excludes +
              ['-i', icon, '--add-data', f"{assets}{assets_sep}assets/", main])
 
