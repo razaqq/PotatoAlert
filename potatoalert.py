@@ -59,10 +59,10 @@ class PotatoAlert:
         self.config = config
 
         # variables watched by gui
+        self.signals = Signals()
         self.players = []
         self.arena_info = None
-        self.signals = Signals()
-        self.servers = (None, None)  # TODO
+        self.servers = (None, None)
         self.avg = (Team(), Team())
         self.clans = (None, None)
         self.config_reload_needed = False
@@ -324,8 +324,8 @@ class PotatoAlert:
             colors.extend([color_battles(battles), color_winrate(winrate), color_avg_dmg(avg_dmg)])
             if ship_name != 'Error':
                 row.extend([str(battles_ship), str(winrate_ship), str(avg_dmg_ship)])
-                colors.extend([None, color_winrate(winrate_ship),
-                               color_avg_dmg_ship(avg_dmg_ship, str(p['shipId']), color_limits)])
+                colors.extend([None, color_winrate(winrate_ship, battles_ship),
+                               color_avg_dmg_ship(avg_dmg_ship, str(p['shipId']), color_limits, battles_ship)])
         return Player(account_id, hidden_profile, team, row, colors, class_sort, tier_sort, nation_sort, clan_tag,
                       background, clan_color)
 
