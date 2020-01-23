@@ -80,6 +80,11 @@ class Grey(QColor):
         super().__init__(224, 222, 218, alpha)
 
 
+class DGrey(QColor):
+    def __init__(self, alpha=255):
+        super().__init__(180, 180, 180, alpha)
+
+
 class Yellow(QColor):
     def __init__(self, alpha=255):
         super().__init__(*yellow, alpha)
