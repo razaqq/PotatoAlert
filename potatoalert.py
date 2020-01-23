@@ -41,7 +41,7 @@ from utils.dcs import Player, ArenaInfo, Team
 from utils import updater, gui
 from version import __version__
 from PyQt5.QtCore import pyqtSignal, QObject, QFileSystemWatcher
-from PyQt5.Qt import QApplication
+from PyQt5.QtWidgets import QApplication
 from assets.qtmodern import styles, windows
 from utils.resource_path import resource_path
 
