@@ -28,6 +28,7 @@ import json
 import asyncio
 import logging
 import argparse
+import traceback
 from typing import List, Union
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.config import Config
@@ -39,25 +40,18 @@ from utils.ship_utils import shorten_name, get_nation_sort, get_class_sort
 from utils.dcs import Player, ArenaInfo, Team
 from utils import updater, gui
 from version import __version__
-from PyQt5.QtCore import pyqtSignal, QObject, QRunnable, pyqtSlot, QThreadPool
+from PyQt5.QtCore import pyqtSignal, QObject, QFileSystemWatcher
+from PyQt5.Qt import QApplication
+from assets.qtmodern import styles, windows
+from utils.resource_path import resource_path
 
 
 class Signals(QObject):
     status = pyqtSignal(int, str)
-
-
-class Worker(QRunnable):
-    def __init__(self, fn, *args, **kwargs):
-        super(Worker, self).__init__()
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
-        self.signals = Signals()
-
-    @pyqtSlot()
-    def run(self):
-        result = self.fn(*self.args, **self.kwargs)
-        return result
+    players = pyqtSignal()
+    averages = pyqtSignal()
+    servers = pyqtSignal()
+    clans = pyqtSignal()
 
 
 class PotatoAlert:
@@ -68,16 +62,18 @@ class PotatoAlert:
         self.players = []
         self.arena_info = None
         self.signals = Signals()
-        self.servers = (None, None)
+        self.servers = (None, None)  # TODO
+        self.avg = (Team(), Team())
         self.clans = (None, None)
-        self.avg = None
+        self.config_reload_needed = False
         self.mode = 'pvp'  # TEMPORARY FIX FOR WGS BULLSHIT
 
-        self.arena_info_file = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
-        self.last_started = 0.0
-        # self.setup_logger()
-        self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
-        self.invalid_api_key = asyncio.get_event_loop().run_until_complete(self.check_api_key())
+        self.arena_info_file, self.invalid_api_key, self.api = [None] * 3
+        self.setup_logger()
+        asyncio.get_running_loop().run_until_complete(self.reload_config())
+        self._watcher = QFileSystemWatcher()  # watch arena info file for modification
+        self._watcher.addPath(self.config['DEFAULT']['replays_folder'])
+        self._watcher.directoryChanged.connect(self.run)
 
     def setup_logger(self):
         logging.basicConfig(level=logging.ERROR,
@@ -99,24 +95,41 @@ class PotatoAlert:
             logging.exception('Check your internet connection!')
             self.signals.status.emit(3, 'Connection')
 
-    def reload_config(self):
+    def set_config_reload_needed(self):
+        self.config_reload_needed = True
+
+    async def reload_config(self):
         self.arena_info_file = os.path.join(self.config['DEFAULT']['replays_folder'], 'tempArenaInfo.json')
         self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
-        self.invalid_api_key = asyncio.get_event_loop().run_until_complete(self.check_api_key())
+        self.invalid_api_key = await self.check_api_key()
 
     def run(self):
+        try:
+            t = asyncio.create_task(self._run())
+            t.type_run = True  # hacky way for python3.7
+        except asyncio.CancelledError:
+            pass
+
+    async def _run(self):
+        for task in asyncio.all_tasks():  # cancel all other running tasks
+            if not (task.done() or task == asyncio.current_task()) and (hasattr(task, 'type_run')):
+                task.cancel()
+        if self.config_reload_needed:
+            await self.reload_config()
+            self.config_reload_needed = False
         if not self.invalid_api_key and os.path.exists(self.arena_info_file):
             try:
                 self.arena_info = self.read_arena_info()
                 # if self.config['DEFAULT'].getboolean('additional_info'):
                 #     self.match_info.update_text(arena_info.mapName, arena_info.scenario, arena_info.ppt)
-                loop = asyncio.get_running_loop()
-                # self.players = loop.run_until_complete(self.get_players(self.arena_info.vehicles, self.arena_info.matchGroup))
-                print(self.players)
+                self.players = await self.get_players(self.arena_info.vehicles, self.arena_info.matchGroup)
+                self.signals.players.emit()
                 self.signals.status.emit(1, 'Ready')
             except ClientConnectionError:
                 logging.exception('Check your internet connection!')
                 self.signals.status.emit(3, 'Connection')
+            except asyncio.CancelledError:
+                self.signals.status.emit(1, 'Ready')  # do nothing
             except (ClientError, ClientResponseError, Exception) as e:
                 logging.exception(e)
                 self.signals.status.emit(3, 'Check Logs')
@@ -179,10 +192,14 @@ class PotatoAlert:
                 team2_api = None
 
             self.servers = (self.config['DEFAULT']['region'], team2_region)
+            self.signals.servers.emit()
             self.clans = (c1, c2)
+            self.signals.clans.emit()
         else:
-            self.clans = (None, None)
             self.servers = (None, None)
+            self.signals.servers.emit()
+            self.clans = (None, None)
+            self.signals.clans.emit()
 
         # SYNC
         players = []
@@ -200,6 +217,7 @@ class PotatoAlert:
             await team2_api.session.close()
 
         self.avg = self.get_averages_and_colors(players)
+        self.signals.averages.emit()
         return sorted(players, key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
 
     async def get_player(self, api, p, match_group: str, expected, color_limits) -> Union[Player, None]:
@@ -390,43 +408,44 @@ if __name__ == '__main__':
     parser.add_argument('--changelog', dest='show_changelog', action='store_true')
     args = parser.parse_args()
 
-    loop = asyncio.get_event_loop()
-    update_available = loop.run_until_complete(updater.check_update())
+    try:
+        loop = asyncio.get_event_loop()
+        update_available = loop.run_until_complete(updater.check_update())
 
-    if args.perform_update:
-        app, gui = updater.create_gui()
+        if args.perform_update:
+            app, gui = updater.create_gui()
+            loop = QEventLoop(app)
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(asyncio.sleep(0.1))
+            loop.run_until_complete(gui.update_progress(updater.update))
+            sys.exit(0)
+
+        config = Config()
+
+        app = QApplication(sys.argv)
+
         loop = QEventLoop(app)
         asyncio.set_event_loop(loop)
         loop.run_until_complete(asyncio.sleep(0.1))
-        loop.run_until_complete(gui.update_progress(updater.update))
-        sys.exit(0)
 
-    config = Config()
+        pa = PotatoAlert(config)
+        ui = gui.MainWindow(config, pa)
+        styles.dark(app, resource_path('./assets/style.qss'))
+        ui.mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
+        ui.mw.show()
 
-    from PyQt5.Qt import QApplication
-    from assets.qtmodern import styles, windows
-    from utils.resource_path import resource_path
+        if update_available:
+            perform_update = ui.notify_update()
+            if perform_update:
+                updater.queue_update()
+        if args.show_changelog:
+            changelog = loop.run_until_complete(updater.get_changelog())
+            ui.show_changelog(__version__, changelog)
 
-    app = QApplication(sys.argv)
-
-    loop = QEventLoop(app)
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(asyncio.sleep(0.1))
-
-    pa = PotatoAlert(config)
-    ui = gui.MainWindow(config, pa)
-    styles.dark(app, resource_path('./assets/style.qss'))
-    ui.mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
-    ui.mw.show()
-
-    if update_available:
-        perform_update = loop.run_until_complete(ui.notify_update())
-        if perform_update:
-            updater.queue_update()
-    if args.show_changelog:
-        changelog = loop.run_until_complete(updater.get_changelog())
-        loop.run_until_complete(ui.show_changelog(__version__, changelog))
-
-    # sys.exit(app.exec_())
-    with loop:
-        sys.exit(loop.run_forever())
+        pa.run()
+        with loop:
+            rc = loop.run_forever()
+            del pa.api, pa, app, ui
+            sys.exit(rc)
+    except Exception as e:
+        traceback.print_exc(e)

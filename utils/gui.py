@@ -21,13 +21,12 @@ SOFTWARE.
 """
 
 
-from assets.qtmodern import styles, windows
-from PyQt5.QtWidgets import QApplication, QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
+from assets.qtmodern import windows
+from PyQt5.QtWidgets import QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
      QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialogButtonBox, QLineEdit, QSizePolicy, \
      QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar, QCheckBox, QTextEdit, QScrollBar
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QTextCursor
-from PyQt5.QtCore import Qt, QUrl, QSize, pyqtSignal
-from utils.dcs import Team
+from PyQt5.QtCore import Qt, QUrl, QSize
 from utils.resource_path import resource_path
 from version import __version__
 
@@ -53,7 +52,8 @@ class MatchInfo:
 
 
 class TeamStats:
-    def __init__(self, main_layout):
+    def __init__(self, main_layout, pa):
+        self.pa = pa
         self.flags = Qt.WindowFlags()
         widget = QWidget(flags=self.flags)
         layout = QHBoxLayout()
@@ -130,10 +130,11 @@ class TeamStats:
         layouts[6].addWidget(self.t2_clan_name, alignment=Qt.AlignLeft)
 
         main_layout.addWidget(widget)
-        self.update_avg(Team(), Team())
+        self.update_avg()
         self.update_servers()
 
-    def update_avg(self, team1: Team, team2: Team):
+    def update_avg(self):
+        team1, team2 = self.pa.avg
         self.t1_wr.setText(f'{team1.winrate}%')
         self.t1_dmg.setText(f'{team1.avg_dmg}')
         self.t2_wr.setText(f'{team2.winrate}%')
@@ -144,7 +145,8 @@ class TeamStats:
         self.t2_wr.setStyleSheet(f"color: {team2.winrate_c.name()}")
         self.t2_dmg.setStyleSheet(f"color: {team2.avg_dmg_c.name()}")
 
-    def update_servers(self, t1_server=None, t2_server=None):
+    def update_servers(self):
+        t1_server, t2_server = self.pa.servers
         if t1_server and t2_server:
             self.t1_server.show(), self.t2_server.show()
             self.t1_server_label.show(), self.t2_server_label.show()
@@ -154,7 +156,8 @@ class TeamStats:
             self.t1_server.hide(), self.t2_server.hide()
             self.t1_server_label.hide(), self.t2_server_label.hide()
 
-    def update_clans(self, c1=None, c2=None):
+    def update_clans(self):
+        c1, c2 = self.pa.clans
         if c1 and c2:
             self.t1_clan_name.show(), self.t2_clan_name.show()
             self.t1_clan_tag.show(), self.t2_clan_tag.show()
@@ -220,6 +223,7 @@ class Table(QTableWidget):
         # self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.resizeColumnsToContents()
+        self.setCursor(Qt.PointingHandCursor)
 
     def print_click(self, a):
         try:
@@ -250,10 +254,11 @@ class MainWindow(QMainWindow):
         self.create_table_labels()
         self.left_table, self.right_table = self.create_tables()
         self.create_menubar()
-        self.team_stats = TeamStats(self.layout)
+        self.team_stats = TeamStats(self.layout, pa)
         if self.config['DEFAULT'].getboolean('additional_info'):
             self.match_info = MatchInfo(self.layout)
         self.mw = None
+        self.connect_signals()
 
     def init(self):
         self.setMouseTracking(False)
@@ -267,7 +272,6 @@ class MainWindow(QMainWindow):
         self.central_widget = QWidget(self, flags=self.flags)
         self.setCentralWidget(self.central_widget)
         self.central_widget.setLayout(self.layout)
-        self.connect_signals()
 
     def set_size(self):
         self.move(self.config.getint('DEFAULT', 'windowx'), self.config.getint('DEFAULT', 'windowy'))
@@ -339,6 +343,9 @@ class MainWindow(QMainWindow):
         self.mode_picker.setFixedSize(70, 20)
         right_layout.addWidget(self.mode_picker, alignment=Qt.Alignment(0))
         self.mode_picker.currentTextChanged.connect(self.pa.run)
+        def set_mode():
+            self.pa.mode = self.mode_picker.currentText()
+        self.mode_picker.currentTextChanged.connect(set_mode)
         # TEMPORARY FIX FOR WGS BULLSHIT
 
         label_layout.addWidget(left_widget, alignment=Qt.Alignment(0))
@@ -561,13 +568,15 @@ class MainWindow(QMainWindow):
         button_box.accepted.connect(mw.accept)
         button_box.accepted.connect(update_config)
         button_box.accepted.connect(self.config.save)
-        button_box.accepted.connect(self.pa.reload_config)
+        button_box.accepted.connect(self.pa.set_config_reload_needed)
+        button_box.accepted.connect(self.pa.run)
         button_box.rejected.connect(mw.reject)
 
         mw.windowContent.setLayout(main_layout)
         mw.exec()
 
-    def fill_tables(self, players):
+    def fill_tables(self):
+        players = self.pa.players
         self.left_table.clearContents()
         self.right_table.clearContents()
         self.left_table.players = [p for p in players if p.team == 0 or p.team == 1]
@@ -631,7 +640,7 @@ class MainWindow(QMainWindow):
         self.config.save()
         super().closeEvent(event)
 
-    async def notify_update(self):
+    def notify_update(self):
         d = windows.ModernDialog(resource_path('./assets/frameless.qss'), parent=self, hide_window_buttons=True)
         d.setWindowTitle('Update Available')
 
@@ -710,15 +719,7 @@ class MainWindow(QMainWindow):
 
     def connect_signals(self):
         self.pa.signals.status.connect(self.update_status)
-
-
-def create_gui(config):
-    import sys
-
-    app = QApplication(sys.argv)
-    ui = MainWindow(config)
-    styles.dark(app, resource_path('./assets/style.qss'))
-    ui.mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
-    ui.mw.show()
-    # app.setStyle('Fusion')
-    return app, ui
+        self.pa.signals.players.connect(self.fill_tables)
+        self.pa.signals.averages.connect(self.team_stats.update_avg)
+        self.pa.signals.servers.connect(self.team_stats.update_servers)
+        self.pa.signals.clans.connect(self.team_stats.update_clans)
