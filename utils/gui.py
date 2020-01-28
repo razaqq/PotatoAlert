@@ -354,10 +354,6 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(label_widget, alignment=Qt.Alignment(0))
 
     def create_menubar(self):
-        def open_github():
-            url = QUrl('https://github.com/razaqq/PotatoAlert')
-            QDesktopServices.openUrl(url)
-
         def open_about():
             about = 'Author: \n' \
                     f'Version: \n' \
@@ -401,9 +397,6 @@ class MainWindow(QMainWindow):
             d.windowContent.setLayout(main_layout)
             d.exec()
 
-        def open_logs():
-            QDesktopServices.openUrl(QUrl.fromLocalFile(self.config.config_path))
-
         menu = self.menuBar()
 
         settings_menu = menu.addMenu('Edit')
@@ -414,10 +407,10 @@ class MainWindow(QMainWindow):
         help_menu = menu.addMenu('Help')
         github_button = QAction('View Source on Github', self)
         help_menu.addAction(github_button)
-        github_button.triggered.connect(open_github)
+        github_button.triggered.connect(lambda: QDesktopServices.openUrl(QUrl('https://github.com/razaqq/PotatoAlert')))
         logs_button = QAction('Open Logs', self)
         help_menu.addAction(logs_button)
-        logs_button.triggered.connect(open_logs)
+        logs_button.triggered.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(self.config.config_path)))
         about_button = QAction('About', self)
         help_menu.addAction(about_button)
         about_button.triggered.connect(open_about)
@@ -489,13 +482,13 @@ class MainWindow(QMainWindow):
         replays.setText(self.config['DEFAULT']['replays_folder'])
         row2_layout.addWidget(replays, alignment=Qt.Alignment(0))
 
-        def dir_brower():
+        def dir_browser():
             fd = QFileDialog()
             fd.resize(500, 500)
             replays.setText(str(fd.getExistingDirectory(self, "Select Directory")))
         tool_but = QToolButton()
         tool_but.setText("...")
-        tool_but.clicked.connect(dir_brower)
+        tool_but.clicked.connect(dir_browser)
         row2_layout.addWidget(tool_but, alignment=Qt.Alignment(0))
 
         row2.setLayout(row2_layout)

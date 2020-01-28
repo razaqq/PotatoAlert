@@ -445,6 +445,8 @@ if __name__ == '__main__':
         pa.run()
         with loop:
             rc = loop.run_forever()
+            for task in asyncio.all_tasks():
+                task.cancel()
             del pa.api, pa, app, ui
             sys.exit(rc)
     except Exception as e:
