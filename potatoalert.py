@@ -38,6 +38,7 @@ from utils.api_errors import InvalidApplicationIdError
 from utils.stat_colors import color_avg_dmg, color_battles, color_winrate, color_personal_rating, color_avg_dmg_ship
 from utils.ship_utils import shorten_name, get_nation_sort, get_class_sort
 from utils.dcs import Player, ArenaInfo, Team
+from utils.analytics import run_ga
 from utils import updater, gui
 from version import __version__
 from PyQt5.QtCore import pyqtSignal, QObject, QFileSystemWatcher
@@ -441,6 +442,9 @@ if __name__ == '__main__':
         if args.show_changelog:
             changelog = loop.run_until_complete(updater.get_changelog())
             ui.show_changelog(__version__, changelog)
+
+        if pa.config['DEFAULT'].getboolean('ga'):
+            loop.run_until_complete(run_ga())
 
         pa.run()
         with loop:

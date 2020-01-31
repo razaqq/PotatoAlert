@@ -31,26 +31,6 @@ from utils.resource_path import resource_path
 from version import __version__
 
 
-class MatchInfo:
-    def __init__(self, main_layout):
-        self.flags = Qt.WindowFlags()
-        self.widget = QWidget(flags=self.flags)
-        self.layout = QHBoxLayout()
-        self.layout.setContentsMargins(20, 5, 20, 0)
-        self.layout.setSpacing(20)
-        self.widget.setLayout(self.layout)
-        self.map = Label(text='Map: ', size=10)
-        self.scenario = Label(text='Scenario: ', size=10)
-        self.layout.addWidget(self.map, alignment=Qt.Alignment(0))
-        self.layout.addWidget(self.scenario, alignment=Qt.Alignment(0))
-        self.layout.addStretch()
-        main_layout.addWidget(self.widget)
-
-    def update_text(self, map_name, scenario, players_per_team):
-        self.map.setText(f'Map: {map_name} ({players_per_team}vs{players_per_team})')
-        self.scenario.setText(f'Scenario: {scenario}')
-
-
 class TeamStats:
     def __init__(self, main_layout, pa):
         self.pa = pa
@@ -256,8 +236,6 @@ class MainWindow(QMainWindow):
         self.left_table, self.right_table = self.create_tables()
         self.create_menubar()
         self.team_stats = TeamStats(self.layout, pa)
-        if self.config['DEFAULT'].getboolean('additional_info'):
-            self.match_info = MatchInfo(self.layout)
         self.mw = None
         self.connect_signals()
 
@@ -519,7 +497,7 @@ class MainWindow(QMainWindow):
         row3.setLayout(row3_layout)
         main_layout.addWidget(row3, alignment=Qt.Alignment(0))
 
-        # ADDITIONAL INFO
+        # GOOGLE ANALYTICS
         row4 = QWidget(flags=self.flags)
         row4_layout = QHBoxLayout()
         row4_layout.setContentsMargins(10, 5, 10, 5)
@@ -527,12 +505,12 @@ class MainWindow(QMainWindow):
         info_label = QLabel()
         info_label.setFixedSize(110, 20)
         info_label.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
-        info_label.setText("Additional Info:")
+        info_label.setText("Google Analytics:")
         row4_layout.addWidget(info_label, alignment=Qt.Alignment(0))
 
-        info_cb = QCheckBox('(Restart Required)')
-        info_cb.setChecked(self.config['DEFAULT'].getboolean('additional_info'))
-        row4_layout.addWidget(info_cb, alignment=Qt.Alignment(0))
+        ga = QCheckBox('')
+        ga.setChecked(self.config['DEFAULT'].getboolean('ga'))
+        row4_layout.addWidget(ga, alignment=Qt.Alignment(0))
         row4_layout.addStretch()
 
         row4.setLayout(row4_layout)
@@ -557,7 +535,7 @@ class MainWindow(QMainWindow):
             self.config['DEFAULT']['api_key'] = api_key.text()
             self.config['DEFAULT']['region'] = \
                 [region for region, index in regions.items() if index == region_picker.currentIndex()][0]
-            self.config['DEFAULT']['additional_info'] = 'true' if info_cb.isChecked() else 'false'
+            self.config['DEFAULT']['ga'] = 'true' if ga.isChecked() else 'false'
 
         button_box.accepted.connect(mw.accept)
         button_box.accepted.connect(update_config)
