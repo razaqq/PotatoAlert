@@ -78,7 +78,7 @@ async def update():
             os.rename(os.path.join(current_path, file_name), os.path.join(current_path, f'{file_name}_old'))
         except Exception as e:
             print(e)
-        url = "https://github.com/razaqq/PotatoAlert/releases/latest/download/potatoalert_x64.exe"
+        url = 'https://github.com/razaqq/PotatoAlert/releases/latest/download/potatoalert_x64.exe'
         async with ClientSession() as s:
             async with s.get(url) as resp:
                 if resp.status == 200:
@@ -95,7 +95,7 @@ async def update():
                         total = round(size / 1E6, 1)
                         try:
                             rate = round(downloaded / 1E6 / (time.time() - start_time), 2)
-                        except ZeroDivisionError:  # If your internet is too fast, first tick might be zero. 16ms pres.
+                        except ZeroDivisionError:  # If your internet is too fast, first tick might be zero. 16ms prec.
                             rate = 0
                         yield percent, done, total, rate
                     await f.close()
@@ -111,7 +111,7 @@ def queue_update():
 
 async def get_changelog():
     try:
-        url = "https://api.github.com/repos/razaqq/PotatoAlert/releases/latest"
+        url = 'https://api.github.com/repos/razaqq/PotatoAlert/releases/latest'
         async with ClientSession() as s:
             async with s.get(url) as resp:
                 res = await resp.json()
