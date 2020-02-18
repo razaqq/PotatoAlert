@@ -22,9 +22,9 @@ SOFTWARE.
 
 
 from assets.qtmodern import windows
-from PyQt5.QtWidgets import QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView,\
-     QMainWindow, QHeaderView, QAction, QMessageBox, QComboBox, QDialogButtonBox, QLineEdit, QSizePolicy, \
-     QToolButton, QFileDialog, QHBoxLayout, QVBoxLayout, QStatusBar, QCheckBox, QTextEdit
+from PyQt5.QtWidgets import QLabel, QTableWidget, QWidget, QTableWidgetItem, QAbstractItemView, QMainWindow,\
+     QHeaderView, QAction, QMessageBox, QComboBox, QLineEdit, QSizePolicy, QToolButton, QFileDialog, QHBoxLayout,\
+     QVBoxLayout, QStatusBar, QCheckBox, QTextEdit, QPushButton
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QTextCursor
 from PyQt5.QtCore import Qt, QUrl, QSize
 from utils.resource_path import resource_path
@@ -365,12 +365,12 @@ class MainWindow(QMainWindow):
             about_widget.setLayout(about_layout)
             main_layout.addWidget(about_widget, alignment=Qt.Alignment(0))
 
-            button_box = QDialogButtonBox()
-            button_box.setOrientation(Qt.Horizontal)
-            button_box.setStandardButtons(QDialogButtonBox.Ok)
-            button_box.setCenterButtons(True)
-            button_box.accepted.connect(d.accept)
-            main_layout.addWidget(button_box, alignment=Qt.Alignment(0))
+            ok_btn = QPushButton('OK')
+            ok_btn.clicked.connect(d.accept)
+            ok_btn.setDefault(False)
+            ok_btn.setAutoDefault(False)
+            ok_btn.setFixedWidth(100)
+            main_layout.addWidget(ok_btn, alignment=Qt.AlignCenter)
 
             d.windowContent.setLayout(main_layout)
             d.exec()
@@ -521,14 +521,26 @@ class MainWindow(QMainWindow):
         button_layout = QHBoxLayout()
         button_layout.setContentsMargins(10, 5, 10, 10)
 
-        button_box = QDialogButtonBox()
-        button_box.setOrientation(Qt.Horizontal)
-        button_box.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
-        button_layout.addStretch()
-        button_layout.addWidget(button_box, alignment=Qt.Alignment(0))
-        button_layout.addStretch()
-        button_widget.setLayout(button_layout)
-        main_layout.addWidget(button_widget, alignment=Qt.Alignment(0))
+        btn_widget = QWidget()
+        btn_layout = QHBoxLayout()
+        btn_layout.setContentsMargins(0, 0, 0, 5)
+        btn_widget.setLayout(btn_layout)
+
+        btn_layout.addStretch()
+        ok_btn = QPushButton('OK')
+        ok_btn.setDefault(False)
+        ok_btn.setAutoDefault(False)
+        ok_btn.setFixedWidth(75)
+        btn_layout.addWidget(ok_btn)
+
+        cancel_btn = QPushButton('Cancel')
+        cancel_btn.setDefault(False)
+        cancel_btn.setAutoDefault(False)
+        cancel_btn.setFixedWidth(75)
+        btn_layout.addWidget(cancel_btn)
+        btn_layout.addStretch()
+
+        main_layout.addWidget(btn_widget)
 
         def update_config():
             self.config['DEFAULT']['replays_folder'] = replays.text()
@@ -537,12 +549,12 @@ class MainWindow(QMainWindow):
                 [region for region, index in regions.items() if index == region_picker.currentIndex()][0]
             self.config['DEFAULT']['ga'] = 'true' if ga.isChecked() else 'false'
 
-        button_box.accepted.connect(mw.accept)
-        button_box.accepted.connect(update_config)
-        button_box.accepted.connect(self.config.save)
-        button_box.accepted.connect(self.pa.set_config_reload_needed)
-        button_box.accepted.connect(self.pa.run)
-        button_box.rejected.connect(mw.reject)
+        ok_btn.clicked.connect(mw.accept)
+        ok_btn.clicked.connect(update_config)
+        ok_btn.clicked.connect(self.config.save)
+        ok_btn.clicked.connect(self.pa.set_config_reload_needed)
+        ok_btn.clicked.connect(self.pa.run)
+        cancel_btn.clicked.connect(mw.reject)
 
         mw.windowContent.setLayout(main_layout)
         mw.exec()
@@ -679,12 +691,12 @@ class MainWindow(QMainWindow):
         about_widget.setLayout(row_layout)
         main_layout.addWidget(about_widget, alignment=Qt.Alignment(0))
 
-        button_box = QDialogButtonBox()
-        button_box.setOrientation(Qt.Horizontal)
-        button_box.setStandardButtons(QDialogButtonBox.Ok)
-        button_box.setCenterButtons(True)
-        button_box.accepted.connect(d.accept)
-        main_layout.addWidget(button_box, alignment=Qt.Alignment(0))
+        ok_btn = QPushButton('OK')
+        ok_btn.setDefault(False)
+        ok_btn.setAutoDefault(False)
+        ok_btn.setFixedWidth(100)
+        ok_btn.clicked.connect(d.accept)
+        main_layout.addWidget(ok_btn, alignment=Qt.AlignCenter)
 
         d.windowContent.setLayout(main_layout)
         d.exec()
