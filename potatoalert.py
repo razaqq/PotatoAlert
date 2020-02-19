@@ -39,7 +39,8 @@ from utils.stat_colors import color_avg_dmg, color_battles, color_winrate, color
 from utils.ship_utils import shorten_name, get_nation_sort, get_class_sort
 from utils.dcs import Player, ArenaInfo, Team
 from utils.analytics import run_ga
-from utils import updater, gui
+from utils import updater
+from gui.main_window import MainWindow
 from version import __version__
 from PyQt5.QtCore import pyqtSignal, QObject, QFileSystemWatcher
 from PyQt5.QtWidgets import QApplication
@@ -430,7 +431,7 @@ if __name__ == '__main__':
         loop.run_until_complete(asyncio.sleep(0.1))
 
         pa = PotatoAlert(config)
-        ui = gui.MainWindow(config, pa)
+        ui = MainWindow(config, pa)
         styles.dark(app, resource_path('./assets/style.qss'))
         ui.mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
         ui.mw.show()
