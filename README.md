@@ -1,9 +1,10 @@
 # PotatoAlert
 
 
-[![version](https://img.shields.io/github/release/razaqq/PotatoAlert.svg)](https://github.com/razaqq/PotatoAlert/releases) 
-[![appveyor build status](https://ci.appveyor.com/api/projects/status/github/razaqq/PotatoAlert?svg=true)](https://ci.appveyor.com/project/razaqq/PotatoAlert)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![version](https://img.shields.io/github/v/release/razaqq/PotatoAlert.svg?style=flat-square)](https://github.com/razaqq/PotatoAlert/releases) 
+[![Github all releases](https://img.shields.io/github/downloads/razaqq/PotatoAlert/total.svg?style=flat-square)](https://github.com/razaqq/PotatoAlert/releases)
+[![appveyor build status](https://img.shields.io/appveyor/build/razaqq/PotatoAlert?style=flat-square&logo=appveyor)](https://ci.appveyor.com/project/razaqq/PotatoAlert)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 ## Screenshots
 
