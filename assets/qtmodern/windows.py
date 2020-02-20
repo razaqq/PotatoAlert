@@ -1,8 +1,9 @@
 from qtpy.QtCore import Qt, QMetaObject, Signal, Slot
 from qtpy.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QToolButton,
                             QLabel, QSizePolicy, QDialog)
-
+from PyQt5.QtGui import QIcon
 from ._utils import QT_VERSION
+from utils.resource_path import resource_path
 
 
 class WindowDragger(QWidget):
@@ -92,22 +93,26 @@ class ModernWindow(QWidget):
             self.btnMinimize = QToolButton(self.titleBar)
             self.btnMinimize.setObjectName('btnMinimize')
             self.btnMinimize.setSizePolicy(spButtons)
+            self.btnMinimize.setIcon(QIcon(resource_path('assets/menuicons/minimize.svg')))
             self.hboxTitle.addWidget(self.btnMinimize)
 
             self.btnRestore = QToolButton(self.titleBar)
             self.btnRestore.setObjectName('btnRestore')
             self.btnRestore.setSizePolicy(spButtons)
             self.btnRestore.setVisible(False)
+            self.btnRestore.setIcon(QIcon(resource_path('assets/menuicons/restore.svg')))
             self.hboxTitle.addWidget(self.btnRestore)
 
             self.btnMaximize = QToolButton(self.titleBar)
             self.btnMaximize.setObjectName('btnMaximize')
             self.btnMaximize.setSizePolicy(spButtons)
+            self.btnMaximize.setIcon(QIcon(resource_path('assets/menuicons/maximize.svg')))
             self.hboxTitle.addWidget(self.btnMaximize)
 
             self.btnClose = QToolButton(self.titleBar)
             self.btnClose.setObjectName('btnClose')
             self.btnClose.setSizePolicy(spButtons)
+            self.btnClose.setIcon(QIcon(resource_path('assets/menuicons/close.svg')))
             self.hboxTitle.addWidget(self.btnClose)
 
         self.vboxFrame.addWidget(self.titleBar)
@@ -118,8 +123,7 @@ class ModernWindow(QWidget):
         self.vboxWindow.addWidget(self.windowFrame)
 
         # set window flags
-        self.setWindowFlags(
-                Qt.Window | Qt.FramelessWindowHint | Qt.WindowSystemMenuHint)
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowSystemMenuHint)
 
         if QT_VERSION >= (5,):
             self.setAttribute(Qt.WA_TranslucentBackground)
