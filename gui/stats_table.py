@@ -60,7 +60,6 @@ class StatsTable(QTableWidget):
 
         self.horizontalHeader().setVisible(True)
         self.verticalHeader().setVisible(False)
-        # self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.resizeColumnsToContents()
         self.setCursor(Qt.PointingHandCursor)

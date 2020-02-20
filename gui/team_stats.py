@@ -22,7 +22,7 @@ SOFTWARE.
 
 from PyQt5.QtWidgets import QWidget, QHBoxLayout
 from PyQt5.QtCore import Qt
-from .label import Label
+from gui.label import Label
 
 
 class TeamStats:
@@ -34,7 +34,6 @@ class TeamStats:
         layout.setContentsMargins(10, 0, 10, 0)
         layout.setSpacing(10)
         widget.setLayout(layout)
-        # widget.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: red;')
 
         self.left_widget = QWidget(flags=self.flags)
         self.left_layout = QHBoxLayout()

@@ -153,3 +153,27 @@ QTableWidget {
 QTextEdit {
   background-color: #505050;
 }
+
+MenuEntry {
+  border-radius: 10px;
+}
+
+MenuEntry::hover {
+  background-color: #505050;
+  border-radius: 10px;
+}
+
+MenuEntry::checked {
+  background-color: palette(midlight);
+  border-radius: 10px;
+}
+
+VerticalMenuBar {
+  border-radius: 15px;
+  background-color: palette(base);
+}
+
+#settings_widget, #about_widget {
+  border-radius: 10px;
+  background-color: palette(alternate-base);
+}
