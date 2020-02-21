@@ -289,7 +289,7 @@ class MainWindow(QMainWindow):
             d.hide()
             return False
 
-    def show_changelog(self, version, text):
+    def show_changelog(self, version: str, text: str):
         d = windows.ModernDialog(resource_path('./assets/frameless.qss'), parent=self, hide_window_buttons=True)
         d.setMinimumWidth(550)
 
@@ -342,6 +342,22 @@ class MainWindow(QMainWindow):
         d.windowContent.setLayout(main_layout)
         d.exec()
 
+    def switch_tab(self, new: int):
+        old = self.menu_bar.btn_group.checkedId()
+        tabs = {
+            0: self.stats_widget,
+            1: self.settings_widget,
+            4: self.about_widget
+        }
+        if not old == new:
+            if self.menu_bar.btn_group.buttons()[old].isChecked():
+                self.menu_bar.btn_group.buttons()[old].setChecked(False)
+            if not self.menu_bar.btn_group.buttons()[new].isChecked():
+                self.menu_bar.btn_group.buttons()[new].setChecked(True)
+
+        tabs[new].setVisible(True)
+        [tab.setVisible(False) for _id, tab in tabs.items() if _id != new]
+
     def connect_signals(self):
         self.pa.signals.status.connect(self.update_status)
         self.pa.signals.players.connect(self.fill_tables)
@@ -349,22 +365,13 @@ class MainWindow(QMainWindow):
         self.pa.signals.servers.connect(self.team_stats.update_servers)
         self.pa.signals.clans.connect(self.team_stats.update_clans)
 
-        def switch_tab(btn):
-            if btn.name == 'table':
-                self.stats_widget.setVisible(True)
-                self.settings_widget.setVisible(False)
-                self.about_widget.setVisible(False)
-            elif btn.name == 'settings':
-                self.stats_widget.setVisible(False)
-                self.settings_widget.setVisible(True)
-                self.about_widget.setVisible(False)
-            elif btn.name == 'about':
-                self.stats_widget.setVisible(False)
-                self.settings_widget.setVisible(False)
-                self.about_widget.setVisible(True)
-            elif btn.name == 'github':
+        def button_actions(btn):
+            btn_id = self.menu_bar.btn_group.id(btn)
+            if btn_id == 2:
                 QDesktopServices.openUrl(QUrl('https://github.com/razaqq/PotatoAlert'))
-            elif btn.name == 'logs':
+            elif btn_id == 3:
                 QDesktopServices.openUrl(QUrl.fromLocalFile(self.config.config_path))
+            else:
+                self.switch_tab(btn_id)
 
-        self.menu_bar.btn_group.buttonClicked.connect(switch_tab)
+        self.menu_bar.btn_group.buttonClicked.connect(button_actions)

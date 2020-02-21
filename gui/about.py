@@ -31,6 +31,7 @@ from version import __version__
 class AboutMenu(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
+        self.mw = parent
         self.layout = QHBoxLayout()
         self.setup_ui()
 
@@ -48,31 +49,32 @@ class AboutMenu(QWidget):
                  'MIT'
 
         main_layout = QVBoxLayout()
-        # d.setMinimumSize(400, 150)
+        info_widget = QWidget()
 
-        about_layout = QHBoxLayout()
+        info_layout = QHBoxLayout()
         pix = QPixmap(resource_path('./assets/potato.png'))
         pix = pix.scaled(70, 70)
         img = QLabel()
         img.setPixmap(pix)
-        about_layout.addWidget(img, alignment=Qt.Alignment(0))
+        info_layout.addWidget(img, alignment=Qt.Alignment(0))
         font = QFont()
         font.setPointSize(10)
         text1 = QLabel(about)
         text1.setFont(font)
-        about_layout.addWidget(text1, alignment=Qt.Alignment(0))
+        info_layout.addWidget(text1, alignment=Qt.Alignment(0))
         text2 = QLabel(about2)
         text2.setFont(font)
-        about_layout.addWidget(text2, alignment=Qt.Alignment(0))
-        about_widget.setLayout(about_layout)
-        main_layout.addWidget(about_widget, alignment=Qt.Alignment(0))
+        info_layout.addWidget(text2, alignment=Qt.Alignment(0))
+        info_widget.setLayout(info_layout)
+        main_layout.addWidget(info_widget, alignment=Qt.Alignment(0))
 
         ok_btn = QPushButton('OK')
-        # ok_btn.clicked.connect(d.accept)
         ok_btn.setDefault(False)
         ok_btn.setAutoDefault(False)
         ok_btn.setFixedWidth(100)
         main_layout.addWidget(ok_btn, alignment=Qt.AlignCenter)
+
+        ok_btn.clicked.connect(lambda x: self.mw.switch_tab(0))
 
         about_widget.setLayout(main_layout)
         w = QWidget()

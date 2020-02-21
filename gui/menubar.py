@@ -28,9 +28,8 @@ from utils.resource_path import resource_path
 
 
 class MenuButton(QPushButton):
-    def __init__(self, parent, icon_path, name):
+    def __init__(self, parent, icon_path):
         super().__init__(parent)
-        self.name = name
         width = parent.width() - 2 * parent.layout().spacing()
         icon = QIcon(resource_path(icon_path))
         self.setIcon(icon)
@@ -41,14 +40,14 @@ class MenuButton(QPushButton):
 
 
 class MenuEntry(CustomWidget):
-    def __init__(self, parent, icon_path, name):
+    def __init__(self, parent, icon_path):
         super().__init__(parent)
         self.setFixedWidth(parent.width())
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(5)
         self.setLayout(layout)
-        self.btn = MenuButton(self, icon_path, name)
+        self.btn = MenuButton(self, icon_path)
         layout.addWidget(self.btn)
 
 
@@ -67,24 +66,24 @@ class VerticalMenuBar(CustomWidget):
         self.layout.setContentsMargins(0, 10, 0, 10)
         self.layout.setSpacing(0)
 
-        self.table_entry = MenuEntry(self, 'assets/menuicons/table.svg', 'table')
+        self.table_entry = MenuEntry(self, 'assets/menuicons/table.svg')
         self.table_entry.btn.setChecked(True)
         self.layout.addWidget(self.table_entry, False, Qt.AlignTop | Qt.AlignHCenter)
 
-        self.settings_entry = MenuEntry(self, 'assets/menuicons/settings.svg', 'settings')
+        self.settings_entry = MenuEntry(self, 'assets/menuicons/settings.svg')
         self.layout.addWidget(self.settings_entry, False, Qt.AlignTop | Qt.AlignHCenter)
 
         self.layout.addStretch()
 
-        self.github_entry = MenuEntry(self, 'assets/menuicons/github.svg', 'github')
+        self.github_entry = MenuEntry(self, 'assets/menuicons/github.svg')
         self.github_entry.btn.setCheckable(False)
         self.layout.addWidget(self.github_entry, False, Qt.AlignTop | Qt.AlignHCenter)
 
-        self.logs_entry = MenuEntry(self, 'assets/menuicons/log.svg', 'logs')
+        self.logs_entry = MenuEntry(self, 'assets/menuicons/log.svg')
         self.logs_entry.btn.setCheckable(False)
         self.layout.addWidget(self.logs_entry, False, Qt.AlignTop | Qt.AlignHCenter)
 
-        self.about_entry = MenuEntry(self, 'assets/menuicons/about.svg', 'about')
+        self.about_entry = MenuEntry(self, 'assets/menuicons/about.svg')
         self.layout.addWidget(self.about_entry, False, Qt.AlignTop | Qt.AlignHCenter)
 
         self.btn_group.setExclusive(True)

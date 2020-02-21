@@ -180,15 +180,9 @@ class SettingsMenu(QWidget):
 
         self.setLayout(self.layout)
 
-        def switch_to_table():
-            self.mw.menu_bar.settings_entry.btn.setChecked(False)
-            self.mw.settings_widget.setVisible(False)
-            self.mw.menu_bar.table_entry.btn.setChecked(True)
-            self.mw.stats_widget.setVisible(True)
-
-        ok_btn.clicked.connect(switch_to_table)
-        cancel_btn.clicked.connect(switch_to_table)
         ok_btn.clicked.connect(update_config)
         ok_btn.clicked.connect(self.config.save)
         ok_btn.clicked.connect(self.mw.pa.set_config_reload_needed)
         ok_btn.clicked.connect(self.mw.pa.run)
+        ok_btn.clicked.connect(lambda x: self.mw.switch_tab(0))
+        cancel_btn.clicked.connect(lambda x: self.mw.switch_tab(0))
