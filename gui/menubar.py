@@ -38,10 +38,6 @@ class MenuButton(QPushButton):
         self.setCursor(Qt.PointingHandCursor)
         self.setCheckable(True)
         self.setFlat(True)
-        self.setMouseTracking(True)
-
-    def mouseMoveEvent(self, *args, **kwargs):
-        pass
 
 
 class MenuEntry(CustomWidget):
@@ -93,46 +89,12 @@ class VerticalMenuBar(CustomWidget):
 
         self.btn_group.setExclusive(True)
         self.btn_group.addButton(self.table_entry.btn)
+        self.btn_group.setId(self.table_entry.btn, 0)
         self.btn_group.addButton(self.settings_entry.btn)
-        self.btn_group.addButton(self.about_entry.btn)
+        self.btn_group.setId(self.settings_entry.btn, 1)
         self.btn_group.addButton(self.github_entry.btn)
+        self.btn_group.setId(self.github_entry.btn, 2)
         self.btn_group.addButton(self.logs_entry.btn)
-
-
-if __name__ == '__main__':
-    from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem
-    from assets.qtmodern.styles import dark
-    from assets.qtmodern.windows import ModernWindow
-    from utils.resource_path import resource_path
-
-    app = QApplication([])
-    dark(app, resource_path('assets/style.qss'))
-    m = QMainWindow()
-    mw = ModernWindow(m, resource_path('assets/frameless.qss'))
-    mw.resize(1500, 600)
-    mw_layout = QHBoxLayout()
-    mw_layout.setContentsMargins(0, 0, 0, 0)
-    mw_layout.setSpacing(0)
-
-    # m.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: blue;')
-
-    central_widget = QWidget()
-    central_widget.setLayout(mw_layout)
-
-    m.setCentralWidget(central_widget)
-
-    menubar = VerticalMenuBar(central_widget)
-    print(menubar)
-    mw_layout.addWidget(menubar, alignment=Qt.AlignLeft)
-
-    t = QTableWidget()
-    t.setRowCount(10)
-    t.setColumnCount(10)
-    for i in range(10):
-        for j in range(10):
-            t.setItem(i, j, QTableWidgetItem('test'))
-    mw_layout.addWidget(t)
-    menubar.table_widget = t
-
-    mw.show()
-    app.exec()
+        self.btn_group.setId(self.logs_entry.btn, 3)
+        self.btn_group.addButton(self.about_entry.btn)
+        self.btn_group.setId(self.about_entry.btn, 4)
