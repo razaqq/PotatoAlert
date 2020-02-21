@@ -32,7 +32,6 @@ from gui.menubar import VerticalMenuBar
 from gui.settings import SettingsMenu
 from gui.about import AboutMenu
 from utils.resource_path import resource_path
-from version import __version__
 
 
 # noinspection PyArgumentList
