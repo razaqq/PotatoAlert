@@ -432,8 +432,11 @@ if __name__ == '__main__':
 
         pa = PotatoAlert(config)
         ui = MainWindow(config, pa)
-        styles.dark(app, resource_path('./assets/style.qss'))
-        ui.mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'))
+        styles.dark(app)
+        ui.mw = windows.ModernWindow(ui)
+        with open(resource_path('assets/style.qss')) as s:
+            app.setStyleSheet(app.styleSheet() + s.read())
+        ui.set_size()
         ui.mw.show()
 
         if update_available:

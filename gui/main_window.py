@@ -67,21 +67,21 @@ class MainWindow(QMainWindow):
 
     def setup_ui(self):
         # self.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: red;')
-        self.layout.setContentsMargins(10, 0, 0, 0)
+        self.layout.setContentsMargins(10, 0, 0, 10)
         self.layout.setSpacing(0)
         self.stats_layout.setContentsMargins(0, 0, 0, 0)
         self.stats_layout.setSpacing(0)
 
         self.setMouseTracking(False)
         self.setTabletTracking(False)
-        self.set_size()
+        # self.set_size()
         self.setWindowTitle('PotatoAlert')
 
         icon = QIcon()
         icon.addPixmap(QPixmap(resource_path('./assets/potato.png')), QIcon.Normal, QIcon.Off)
         self.setWindowIcon(icon)
 
-        self.setStatusBar(QStatusBar())
+        # self.setStatusBar(QStatusBar())
 
         self.stats_widget.setLayout(self.stats_layout)
         self.settings_widget.setVisible(False)
@@ -96,8 +96,8 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.about_widget)
 
     def set_size(self):
-        self.move(self.config.getint('DEFAULT', 'windowx'), self.config.getint('DEFAULT', 'windowy'))
-        self.resize(self.config.getint('DEFAULT', 'windoww'), self.config.getint('DEFAULT', 'windowh'))
+        self.mw.move(self.config.getint('DEFAULT', 'windowx'), self.config.getint('DEFAULT', 'windowy'))
+        self.mw.resize(self.config.getint('DEFAULT', 'windoww'), self.config.getint('DEFAULT', 'windowh'))
 
     def create_tables(self):
         table_widget = QWidget(flags=self.flags)
