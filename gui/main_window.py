@@ -21,8 +21,8 @@ SOFTWARE.
 """
 
 from assets.qtmodern import windows
-from PyQt5.QtWidgets import (QLabel, QWidget, QTableWidgetItem, QMainWindow, QAction, QMessageBox, QComboBox,
-                             QSizePolicy, QHBoxLayout, QVBoxLayout, QStatusBar, QTextEdit, QPushButton)
+from PyQt5.QtWidgets import (QLabel, QWidget, QTableWidgetItem, QMainWindow,  QMessageBox, QComboBox,
+                             QSizePolicy, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton)
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QTextCursor
 from PyQt5.QtCore import Qt, QUrl, QSize
 from gui.stats_table import StatsTable
@@ -221,10 +221,11 @@ class MainWindow(QMainWindow):
                 tables[2] += 1
 
             for x in range(len(player.row)):
-                size = 10 if x < 2 else 12
+                size = 13 if x < 2 else 16
                 if x == 0 and player.clan_tag:
-                    text = f'<span style="color:{player.clan_color}"> [{player.clan_tag}]</span>{player.row[x]}'
+                    text = f'<span style="color:{player.clan_color};"> [{player.clan_tag}]</span>{player.row[x]}'
                     item = Label(text=text, size=10, bold=False)
+                    item.setTextFormat(Qt.RichText)
                     item.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
                     item.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
                     item.setContentsMargins(3, 0, 3, 0)
@@ -232,21 +233,27 @@ class MainWindow(QMainWindow):
                         b = player.background
                         rgba = f"{b.red()}, {b.green()}, {b.blue()}, {b.alpha()}"
                         item.setAutoFillBackground(True)
-                        item.setStyleSheet("QLabel { background-color: rgba("+rgba+"); font-size: 13px; }")
+                        item.setStyleSheet(
+                            f'background-color: rgba({rgba});'
+                            f'font-size: {size}px;'
+                            f'font-family: Segoe UI;'
+                        )
                     else:
-                        item.setStyleSheet("QLabel { font-size: 13px; }")
+                        item.setStyleSheet(f'font-size: {size}px; font-family: Segoe UI;')
                     table.setCellWidget(y, x, item)
                     continue
 
-                font = QFont("Segoe UI", size, QFont.Bold) if x else QFont("Segoe UI", size)
+                font = QFont('Segoe UI', size, QFont.Bold) if x else QFont('Segoe UI', size)
+                font.setPixelSize(size)
                 item = QTableWidgetItem(player.row[x])
                 item.setFont(font)
+                item.setTextAlignment(Qt.AlignVCenter)
                 if player.background:
                     item.setBackground(player.background)
                 if player.colors[x]:
                     item.setForeground(player.colors[x])
                 if x > 1:
-                    item.setTextAlignment(Qt.AlignRight)
+                    item.setTextAlignment(Qt.AlignVCenter | Qt.AlignRight)
                 table.setItem(y, x, item)
                 x += 1
 

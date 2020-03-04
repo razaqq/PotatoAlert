@@ -436,8 +436,9 @@ if __name__ == '__main__':
         ui.mw = windows.ModernWindow(ui)
         with open(resource_path('assets/style.qss')) as s:
             app.setStyleSheet(app.styleSheet() + s.read())
-        ui.set_size()
         ui.mw.show()
+        app.processEvents()
+        ui.set_size()
 
         if update_available:
             perform_update = ui.notify_update()
