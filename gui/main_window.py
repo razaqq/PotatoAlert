@@ -265,7 +265,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         # Save current window position and size
-        self.config['DEFAULT']['windowx'] = str(self.mw.geometry().x())
+        self.config['DEFAULT']['windowx'] = str(self.mw.geometry().x()+7)
         self.config['DEFAULT']['windowy'] = str(self.mw.geometry().y())
         self.config['DEFAULT']['windowh'] = str(self.mw.geometry().height())
         self.config['DEFAULT']['windoww'] = str(self.mw.geometry().width())
