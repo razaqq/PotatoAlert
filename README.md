@@ -8,7 +8,7 @@
 
 ## Screenshots
 
-![default](https://i.imgur.com/DEX3wjo.png)
+![default](https://i.imgur.com/ra4l1Kd.png)
 
 ## Warning
 This tool is by no means meant for stat shaming or being toxic towards other players in general.
@@ -25,26 +25,16 @@ You can find pre-compiled builds for Windows and Linux [here](https://github.com
 
 ## Run with python without compiling
 Otherwise you can run it directly with python 3.7.
-For that you will need to install few dependencies:
+For that you will need to install a few dependencies:
 
 ```console
 python -m pip install -r requirements.txt
 ```
 
 ## Compile yourself
-Get dependencies like [here](#Run-with-python-without-compiling).
-Additionally you need pywin32-ctypes.
-Now you have two options: Use a GUI to compile or not.
+1. Get dependencies like [here](#Run-with-python-without-compiling).
+2. Get pywin32-ctypes by running `python -m pip install pywin32-ctypes`
+3. Get PyInstaller by running `python -m pip install PyInstaller`
+4. Run build.py to compile (`python build.py`)
 
-No GUI:
-1. Get PyInstaller
-2. Open build.py and edit lib paths
-3. Run it to compile
-
-With GUI:
-1. Get https://pypi.org/project/auto-py-to-exe/
-2. Add --paths "PYTHON/Lib/site - packages/PyQt5/Qt/bin" manual entry, replace PYTHON with the path to your python install
-3. Add /assets as additional files
-4. Compile
-
-In both cases you will find your binary in dist/
+You will find your binary in dist/
