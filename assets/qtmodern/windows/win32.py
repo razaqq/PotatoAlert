@@ -1,5 +1,5 @@
-from qtpy.QtWidgets import QWidget, QHBoxLayout, QLabel, QSizePolicy, QToolButton, QVBoxLayout, QDialog, QApplication
-from qtpy.QtCore import Qt, QEvent, QMetaObject
+from qtpy.QtWidgets import QWidget, QHBoxLayout, QLabel, QSizePolicy, QToolButton, QVBoxLayout, QDialog
+from qtpy.QtCore import Qt, QEvent, QMetaObject, QSize
 from qtpy.QtGui import QIcon, QPixmap
 
 from .._borderless.win32 import BorderlessWindow
@@ -11,6 +11,7 @@ QToolButton {{
   background-color: transparent;
   border: transparent;
   padding: 0 10px;
+  height: 20px;
 }}
 
 QToolButton:hover {{
@@ -30,6 +31,9 @@ class _TitleBar(QWidget):
     def __init__(self, parent=None):
         super(_TitleBar, self).__init__(parent)
         self.h_layout_content = QHBoxLayout()
+        self.title_layout_content = QHBoxLayout()
+        self.title_layout_content.setSpacing(5)
+        self.title_layout_content.setContentsMargins(5, 0, 0, 0)
         self.h_layout_content.setSpacing(0)
         self.h_layout_content.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.h_layout_content)
@@ -74,9 +78,10 @@ class _TitleBar(QWidget):
         self.btn_close.setStyleSheet(button_style)
         self.application_icon.setStyleSheet("QToolButton { background-color: transparent; border: transparent;}")
 
-        self.h_layout_content.addWidget(self.application_icon)
+        self.title_layout_content.addWidget(self.application_icon)
 
-        self.h_layout_content.addWidget(self.lbl_title)
+        self.title_layout_content.addWidget(self.lbl_title)
+        self.h_layout_content.addLayout(self.title_layout_content)
         self.h_layout_content.addWidget(self.btn_minimize)
         self.h_layout_content.addWidget(self.btn_restore)
         self.h_layout_content.addWidget(self.btn_maximize)
@@ -91,6 +96,7 @@ class _WindowsTitleBar(_TitleBar):
 
         icon = self._window.windowIcon() if not self._window.windowIcon().isNull() else self._window._window.windowIcon()
         self.application_icon.setIcon(icon)
+        self.application_icon.setIconSize(QSize(12, 12))
         self._window.windowIconChanged.connect(self.on_window_icon_changed)
         self._window._window.windowIconChanged.connect(self.on_window_icon_changed)
 
