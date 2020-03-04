@@ -9,6 +9,7 @@ class UpdateWindow(QMainWindow):
     def __init__(self):
         self.flags = Qt.WindowFlags()
         super().__init__(flags=self.flags)
+        self.config = Config()
         self.central_widget = QWidget(self, flags=self.flags)
         self.setCentralWidget(self.central_widget)
         self.layout = QVBoxLayout()
@@ -19,14 +20,10 @@ class UpdateWindow(QMainWindow):
         self.init()
 
     def init(self):
-        c = Config()
         self.setWindowTitle('PotatoAlert Updater')
         icon = QIcon()
         icon.addPixmap(QPixmap(resource_path('./assets/potato.png')), QIcon.Normal, QIcon.Off)
         self.setWindowIcon(icon)
-        self.setStatusBar(QStatusBar())
-        self.resize(300, 100)
-        self.move(c.getint('DEFAULT', 'windowx'), c.getint('DEFAULT', 'windowy'))
         self.progress_bar.setValue(0)
         self.progress_bar.setBaseSize(150, 20)
         upd = QLabel('Updating, please wait...')
@@ -51,3 +48,7 @@ class UpdateWindow(QMainWindow):
             self.progress_bar.setValue(percent)
             self.progress_mb.setText(f'{mb_done}/{mb_total} MB')
             self.speed.setText(f'{rate} MB/s')
+
+    def set_size(self):
+        self.mw.resize(300, 100)
+        self.move(self.config.getint('DEFAULT', 'windowx'), self.config.getint('DEFAULT', 'windowy'))

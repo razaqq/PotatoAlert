@@ -115,7 +115,13 @@ def create_gui():
     import sys
     app = QApplication(sys.argv)
     ui = UpdateWindow()
-    styles.dark(app, resource_path('./assets/style.qss'))
-    mw = windows.ModernWindow(ui, resource_path('./assets/frameless.qss'), hide_window_buttons=True)
-    mw.show()
+    styles.dark(app)
+    ui.mw = windows.ModernWindow(ui)
+    ui.mw.title_bar.btn_close.setVisible(False)
+    ui.mw.title_bar.btn_maximize.setVisible(False)
+    ui.mw.title_bar.btn_minimize.setVisible(False)
+    ui.mw.title_bar.btn_restore.setVisible(False)
+    ui.mw.show()
+    app.processEvents()
+    ui.set_size()
     return app, ui
