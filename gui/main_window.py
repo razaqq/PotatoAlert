@@ -283,6 +283,10 @@ class MainWindow(QMainWindow):
         box.setText('There is a new version available.\nWould you like to update now?')
         box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         box.setEscapeButton(QMessageBox.No)
+        box.button(QMessageBox.Yes).setDefault(False)
+        box.button(QMessageBox.Yes).setAutoDefault(False)
+        box.button(QMessageBox.No).setDefault(False)
+        box.button(QMessageBox.No).setAutoDefault(False)
         box.setAttribute(Qt.WA_TranslucentBackground)
 
         layout = QHBoxLayout()
