@@ -273,8 +273,10 @@ class MainWindow(QMainWindow):
         super().closeEvent(event)
 
     def notify_update(self):
-        d = windows.ModernDialog(resource_path('./assets/frameless.qss'), parent=self, hide_window_buttons=True)
-        d.setWindowTitle('Update Available')
+        d = windows.ModernDialog(self)
+        d.setFixedHeight(70)
+        d.setFixedWidth(265)
+        d.setWindowTitle('')
 
         box = QMessageBox(d)
         box.setIcon(QMessageBox.Question)
@@ -282,11 +284,10 @@ class MainWindow(QMainWindow):
         box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         box.setEscapeButton(QMessageBox.No)
         box.setAttribute(Qt.WA_TranslucentBackground)
-        box.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowSystemMenuHint)
 
         layout = QHBoxLayout()
         layout.addWidget(box, alignment=Qt.Alignment(0))
-        d.windowContent.setLayout(layout)
+        d.setLayout(layout)
         d.show()
 
         if box.exec_() == QMessageBox.Yes:
@@ -297,20 +298,19 @@ class MainWindow(QMainWindow):
             return False
 
     def show_changelog(self, version: str, text: str):
-        d = windows.ModernDialog(resource_path('./assets/frameless.qss'), parent=self, hide_window_buttons=True)
-        d.setMinimumWidth(550)
+        d = windows.ModernDialog(self)
+        d.setMinimumWidth(450)
+        d.setFixedHeight(130)
 
         main_layout = QVBoxLayout()
         main_layout.setSpacing(10)
-        d.setWindowTitle('Changelog')
 
-        about_widget = QWidget(flags=self.flags)
         row_layout = QHBoxLayout()
         row_layout.setSpacing(10)
         row_layout.setContentsMargins(0, 0, 0, 0)
 
         pix = QPixmap(resource_path('./assets/potato.png'))
-        pix = pix.scaled(70, 70)
+        pix = pix.scaled(60, 60)
         img = QLabel()
         img.setPixmap(pix)
         row_layout.addWidget(img, alignment=Qt.Alignment(0))
@@ -336,8 +336,10 @@ class MainWindow(QMainWindow):
         changelog_widget.setLayout(changelog_layout)
         row_layout.addWidget(changelog_widget, alignment=Qt.Alignment(0))
 
-        about_widget.setLayout(row_layout)
-        main_layout.addWidget(about_widget, alignment=Qt.Alignment(0))
+        row_widget = QWidget(flags=self.flags)
+        row_widget.setLayout(row_layout)
+        row_widget.adjustSize()
+        main_layout.addWidget(row_widget, alignment=Qt.Alignment(0))
 
         ok_btn = QPushButton('OK')
         ok_btn.setDefault(False)
@@ -346,7 +348,8 @@ class MainWindow(QMainWindow):
         ok_btn.clicked.connect(d.accept)
         main_layout.addWidget(ok_btn, alignment=Qt.AlignCenter)
 
-        d.windowContent.setLayout(main_layout)
+        d.setLayout(main_layout)
+        d.setWindowTitle('')
         d.exec()
 
     def switch_tab(self, new: int):
