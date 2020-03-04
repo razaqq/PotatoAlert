@@ -182,7 +182,7 @@ class ModernDialog(QDialog, BorderlessWindow):
         self.title_bar = _WindowsTitleBar(self, self)
         self.add_window_mover(self.title_bar.lbl_title)
 
-        self.title_bar.application_icon.setVisible(True)
+        self.title_bar.application_icon.setVisible(False)
         self.title_bar.btn_close.setVisible(False)
         self.title_bar.btn_maximize.setVisible(False)
         self.title_bar.btn_minimize.setVisible(False)
