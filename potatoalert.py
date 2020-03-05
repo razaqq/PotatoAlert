@@ -255,16 +255,16 @@ class PotatoAlert:
 
         tasks.append(asyncio.ensure_future(api.get_account_info(account_id)))
         tasks.append(asyncio.ensure_future(self.api.get_ship_infos(p['shipId'])))
-        tasks.append(asyncio.ensure_future(api.get_ship_stats(account_id, p['shipId'])))
-        tasks.append(asyncio.ensure_future(self.get_overall_personal_rating(account_id, expected, api)))
+        tasks.append(asyncio.ensure_future(api.get_ship_stats(account_id)))
         if not match_group == 'clan':  # Don't add clan tags in clan wars
             tasks.append(asyncio.ensure_future(api.get_player_clan(account_id)))
         responses = await asyncio.gather(*tasks)
         account_info = responses[0]
         ship_info = responses[1]
         ship_stats = responses[2]
-        pr = responses[3]
-        clan = responses[4] if not match_group == 'clan' else None
+        clan = responses[3] if not match_group == 'clan' else None
+
+        pr = self.get_overall_personal_rating(account_id, ship_stats, expected)
 
         try:  # get general account info and overall stats
             account_info = account_info['data'][str(account_id)]
@@ -303,13 +303,13 @@ class PotatoAlert:
                 if not hidden_profile:
                     player_data = ship_stats['data'][str(account_id)]
                     if player_data:
-                        ship_stats = player_data[0]['pvp']
-                        if ship_stats and 'battles' in ship_stats:
-                            battles_ship = ship_stats['battles']
-                            if battles_ship and 'damage_dealt' in ship_stats:
-                                avg_dmg_ship = int(round(ship_stats['damage_dealt'] / battles_ship, -2))
-                            if battles_ship and 'wins' in ship_stats:  # check that at least one match in ship
-                                winrate_ship = round(ship_stats['wins'] / battles_ship * 100, 1)
+                        current_ship_stats = [ss for ss in player_data if ss['ship_id'] == p['shipId']][0]['pvp']
+                        if current_ship_stats and 'battles' in current_ship_stats:
+                            battles_ship = current_ship_stats['battles']
+                            if battles_ship and 'damage_dealt' in current_ship_stats:
+                                avg_dmg_ship = int(round(current_ship_stats['damage_dealt'] / battles_ship, -2))
+                            if battles_ship and 'wins' in current_ship_stats:  # check that at least one match in ship
+                                winrate_ship = round(current_ship_stats['wins'] / battles_ship * 100, 1)
         except KeyError:
             pass
 
@@ -331,13 +331,12 @@ class PotatoAlert:
         return Player(account_id, hidden_profile, team, row, colors, class_sort, tier_sort, nation_sort, clan_tag,
                       background, clan_color)
 
-    async def get_overall_personal_rating(self, account_id: int = 0, expected=None, api=None):
+    @staticmethod
+    def get_overall_personal_rating(account_id: int = 0, stats=None, expected=None):
         try:
             if not expected:
                 return False
-            api = self.api if not api else api
             total_pr = []
-            stats = await api.get_ship_stats(account_id)
             total_battles = 0
             if stats:
                 ship_stats = stats['data'][str(account_id)]
