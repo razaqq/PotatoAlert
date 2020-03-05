@@ -60,7 +60,6 @@ class MainWindow(QMainWindow):
         self.create_table_labels()
 
         self.left_table, self.right_table = self.create_tables()
-        # self.create_menubar()
         self.team_stats = TeamStats(self.stats_layout, pa)
         self.mw = None
         self.connect_signals()
@@ -74,14 +73,11 @@ class MainWindow(QMainWindow):
 
         self.setMouseTracking(False)
         self.setTabletTracking(False)
-        # self.set_size()
         self.setWindowTitle('PotatoAlert')
 
         icon = QIcon()
         icon.addPixmap(QPixmap(resource_path('./assets/potato.png')), QIcon.Normal, QIcon.Off)
         self.setWindowIcon(icon)
-
-        # self.setStatusBar(QStatusBar())
 
         self.stats_widget.setLayout(self.stats_layout)
         self.settings_widget.setVisible(False)
@@ -125,7 +121,6 @@ class MainWindow(QMainWindow):
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(0)
         left_widget = QWidget(flags=self.flags)
-        # left_widget.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: red;')
         left_widget.setLayout(left_layout)
 
         status = QWidget(flags=self.flags)
