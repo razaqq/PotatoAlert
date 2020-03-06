@@ -303,13 +303,15 @@ class PotatoAlert:
                 if not hidden_profile:
                     player_data = ship_stats['data'][str(account_id)]
                     if player_data:
-                        current_ship_stats = [ss for ss in player_data if ss['ship_id'] == p['shipId']][0]['pvp']
-                        if current_ship_stats and 'battles' in current_ship_stats:
-                            battles_ship = current_ship_stats['battles']
-                            if battles_ship and 'damage_dealt' in current_ship_stats:
-                                avg_dmg_ship = int(round(current_ship_stats['damage_dealt'] / battles_ship, -2))
-                            if battles_ship and 'wins' in current_ship_stats:  # check that at least one match in ship
-                                winrate_ship = round(current_ship_stats['wins'] / battles_ship * 100, 1)
+                        current_ship_stats = [ss for ss in player_data if ss['ship_id'] == p['shipId']]
+                        if current_ship_stats:
+                            current_ship_stats = current_ship_stats[0]['pvp']
+                            if 'battles' in current_ship_stats:
+                                battles_ship = current_ship_stats['battles']
+                                if battles_ship and 'damage_dealt' in current_ship_stats:
+                                    avg_dmg_ship = int(round(current_ship_stats['damage_dealt'] / battles_ship, -2))
+                                if battles_ship and 'wins' in current_ship_stats:  # check that at least one match
+                                    winrate_ship = round(current_ship_stats['wins'] / battles_ship * 100, 1)
         except KeyError:
             pass
 
