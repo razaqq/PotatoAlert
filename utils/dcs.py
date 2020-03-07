@@ -20,8 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from dataclasses import dataclass
-from assets.colors import QColor, Grey
+from dataclasses import dataclass, field
+from assets.colors import DGrey
 
 
 @dataclass()
@@ -41,20 +41,9 @@ class Player:
 
 
 @dataclass()
-class ArenaInfo:
-    __slots__ = ['vehicles', 'mapId', 'mapName', 'matchGroup', 'ppt', 'scenario']
-    vehicles: list
-    mapId: int
-    mapName: str
-    matchGroup: str
-    ppt: int
-    scenario: str
-
-
-@dataclass()
 class Team:
     winrate: float = 0.0
     avg_dmg: int = 0
     matches: int = 0
-    winrate_c: QColor = Grey()
-    avg_dmg_c: QColor = Grey()
+    winrate_c: list = field(default_factory=lambda: DGrey)
+    avg_dmg_c: list = field(default_factory=lambda: DGrey)

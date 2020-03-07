@@ -23,7 +23,7 @@ SOFTWARE.
 from assets.qtmodern import windows
 from PyQt5.QtWidgets import (QLabel, QWidget, QTableWidgetItem, QMainWindow,  QMessageBox, QComboBox,
                              QSizePolicy, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QSizeGrip)
-from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QTextCursor
+from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QTextCursor, QColor
 from PyQt5.QtCore import Qt, QUrl, QSize
 from gui.stats_table import StatsTable
 from gui.label import Label
@@ -221,18 +221,20 @@ class MainWindow(QMainWindow):
                 for x in range(len(player.row)):
                     size = 13 if x < 2 else 16
                     if x == 0 and player.clan_tag:
-                        text = f'<span style="color:{player.clan_color};"> [{player.clan_tag}]</span>{player.row[x]}'
+                        cc = player.clan_color
+                        text = f'<span style="color: rgba({cc[0]}, {cc[1]}, {cc[2]});"> [{player.clan_tag}]</span>{player.row[x]}'
                         item = Label(text=text, size=10, bold=False)
                         item.setTextFormat(Qt.RichText)
                         item.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
                         item.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
                         item.setContentsMargins(3, 0, 3, 0)
+
                         if player.background:
                             b = player.background
-                            rgba = f"{b.red()}, {b.green()}, {b.blue()}, {b.alpha()}"
+                            rgba = f"rgba({b[0]}, {b[1]}, {b[2]}, {b[3]})"
                             item.setAutoFillBackground(True)
                             item.setStyleSheet(
-                                f'background-color: rgba({rgba});'
+                                f'background-color: {rgba};'
                                 f'font-size: {size}px;'
                                 f'font-family: Segoe UI;'
                             )
@@ -243,22 +245,21 @@ class MainWindow(QMainWindow):
 
                     font = QFont('Segoe UI', size, QFont.Bold) if x else QFont('Segoe UI', size)
                     font.setPixelSize(size)
-                    item = QTableWidgetItem(player.row[x])
+                    item = QTableWidgetItem(str(player.row[x]))
                     item.setFont(font)
                     item.setTextAlignment(Qt.AlignVCenter)
                     if player.background:
-                        item.setBackground(player.background)
+                        item.setBackground(QColor.fromRgb(*player.background))
                     if player.colors[x]:
-                        item.setForeground(player.colors[x])
+                        item.setForeground(QColor.fromRgb(*player.colors[x]))
                     if x > 1:
                         item.setTextAlignment(Qt.AlignVCenter | Qt.AlignRight)
                     table.setItem(y, x, item)
-                    x += 1
 
                 if player.background:  # Set background for empty columns
                     for x in range(len(player.row), self.left_table.columnCount()):
                         item = QTableWidgetItem('')
-                        item.setBackground(player.background)
+                        item.setBackground(QColor.fromRgb(*player.background))
                         table.setItem(y, x, item)
 
     def closeEvent(self, event):

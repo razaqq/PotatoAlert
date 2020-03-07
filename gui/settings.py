@@ -44,6 +44,24 @@ class SettingsMenu(QWidget):
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(0)
 
+        # CENTRAL API
+        row0 = QWidget(flags=self.flags)
+        row0_layout = QHBoxLayout()
+        row0_layout.setContentsMargins(10, 5, 10, 5)
+        central_api_label = QLabel()
+        central_api_label.setFixedSize(110, 20)
+        central_api_label.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
+        central_api_label.setText("Use Central API:")
+        row0_layout.addWidget(central_api_label, alignment=Qt.Alignment(0))
+
+        central_api = QCheckBox("(No API key required)")
+        central_api.setChecked(self.config['DEFAULT'].getboolean('use_central_api'))
+        row0_layout.addWidget(central_api, alignment=Qt.Alignment(0))
+        row0_layout.addStretch()
+
+        row0.setLayout(row0_layout)
+        main_layout.addWidget(row0, alignment=Qt.Alignment(0))
+
         # API KEY
         row1 = QWidget(flags=self.flags)
         row1_layout = QHBoxLayout()
@@ -57,6 +75,8 @@ class SettingsMenu(QWidget):
 
         api_key = QLineEdit()
         api_key.setText(self.config['DEFAULT']['api_key'])
+        api_key.setDisabled(self.config['DEFAULT'].getboolean('use_central_api'))
+        central_api.clicked.connect(lambda: api_key.setDisabled(api_key.isEnabled()))
         row1_layout.addWidget(api_key, alignment=Qt.Alignment(0))
         row1.setLayout(row1_layout)
         main_layout.addWidget(row1, alignment=Qt.Alignment(0))
@@ -118,11 +138,11 @@ class SettingsMenu(QWidget):
         row4_layout = QHBoxLayout()
         row4_layout.setContentsMargins(10, 5, 10, 5)
 
-        info_label = QLabel()
-        info_label.setFixedSize(110, 20)
-        info_label.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
-        info_label.setText("Google Analytics:")
-        row4_layout.addWidget(info_label, alignment=Qt.Alignment(0))
+        ga_label = QLabel()
+        ga_label.setFixedSize(110, 20)
+        ga_label.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
+        ga_label.setText("Google Analytics:")
+        row4_layout.addWidget(ga_label, alignment=Qt.Alignment(0))
 
         ga = QCheckBox('')
         ga.setChecked(self.config['DEFAULT'].getboolean('ga'))
@@ -164,6 +184,7 @@ class SettingsMenu(QWidget):
             self.config['DEFAULT']['region'] = \
                 [region for region, index in regions.items() if index == region_picker.currentIndex()][0]
             self.config['DEFAULT']['ga'] = 'true' if ga.isChecked() else 'false'
+            self.config['DEFAULT']['use_central_api'] = 'true' if central_api.isChecked() else 'false'
 
         settings_widget.setLayout(main_layout)
 

@@ -37,7 +37,7 @@ class Config(ConfigParser):
         if os.name == 'posix':
             return os.path.join(os.path.expanduser('~'), '.config/PotatoAlert')
         else:
-            print('I have no idea which os you are on, please fix your shit')
+            print('I have no idea which os you are on, please fix')
             exit(1)
 
     def read_config(self):
@@ -78,6 +78,9 @@ class Config(ConfigParser):
         if 'ga' not in self['DEFAULT']:
             ok = False
             self['DEFAULT']['ga'] = 'true'
+        if 'use_central_api' not in self['DEFAULT']:
+            ok = False
+            self['DEFAULT']['use_central_api'] = 'true'
         self.save()
         if not ok:
             self.read_config()

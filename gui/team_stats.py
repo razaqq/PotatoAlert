@@ -113,10 +113,10 @@ class TeamStats:
         self.t2_wr.setText(f'{team2.winrate}%')
         self.t2_dmg.setText(f'{team2.avg_dmg}')
 
-        self.t1_wr.setStyleSheet(f"color: {team1.winrate_c.name()}")
-        self.t1_dmg.setStyleSheet(f"color: {team1.avg_dmg_c.name()}")
-        self.t2_wr.setStyleSheet(f"color: {team2.winrate_c.name()}")
-        self.t2_dmg.setStyleSheet(f"color: {team2.avg_dmg_c.name()}")
+        self.t1_wr.setStyleSheet(f"color: rgb({team1.winrate_c[0]}, {team1.winrate_c[1]}, {team1.winrate_c[2]})")
+        self.t1_dmg.setStyleSheet(f"color: rgb({team1.avg_dmg_c[0]}, {team1.avg_dmg_c[1]}, {team1.avg_dmg_c[2]})")
+        self.t2_wr.setStyleSheet(f"color: rgb({team2.winrate_c[0]}, {team2.winrate_c[1]}, {team2.winrate_c[2]})")
+        self.t2_dmg.setStyleSheet(f"color: rgb({team2.avg_dmg_c[0]}, {team2.avg_dmg_c[1]}, {team2.avg_dmg_c[2]})")
 
     def update_servers(self):
         t1_server, t2_server = self.pa.servers

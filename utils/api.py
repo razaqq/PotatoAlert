@@ -25,6 +25,7 @@ from typing import Union
 from aiohttp import ClientSession, ClientTimeout
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.api_errors import InvalidApplicationIdError
+from assets.colors import DGrey
 
 
 class ApiWrapper:
@@ -115,7 +116,7 @@ class ClanWrapper:
                     res = await resp.json()
                 return f"#{hex(res['clanview']['wows_ladder']['color']).split('x')[1]}"
         except (KeyError, TypeError, IndexError):
-            return '#e0deda'
+            return DGrey
 
 
 class WoWsNumbersWrapper:
