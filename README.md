@@ -16,7 +16,7 @@ Please behave yourself in chat.
 If you think you cannot follow this simple rule, then you hereby don't have my permission to use this tool.
 
 ## Use pre-compiled build (recommended)
-You can find pre-compiled builds for Windows and Linux [here](https://github.com/razaqq/PotatoAlert/releases).
+You can find pre-compiled builds for Windows [here](https://github.com/razaqq/PotatoAlert/releases).
 
 1. Just start the binary, there is no install.
 2. Go [here](https://developers.wargaming.net/applications/) and create an application for WoWs. Enter the API key in the settings.
