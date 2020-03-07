@@ -210,67 +210,56 @@ class MainWindow(QMainWindow):
             self.status_text.setText(text)
 
     def fill_tables(self):
-        players = self.pa.players
         self.left_table.clearContents()
         self.right_table.clearContents()
-        self.left_table.players = [p for p in players if p.team == 0 or p.team == 1]
-        self.right_table.players = [p for p in players if p.team == 2]
+        self.left_table.players = self.pa.team1
+        self.right_table.players = self.pa.team2
 
-        tables = {1: 0, 2: 0}
-        table = None
-        y = 0
-        for player in players:
-            if player.team == 0 or player.team == 1:
-                table = self.left_table
-                y = tables[1]
-                tables[1] += 1
-            if player.team == 2:
-                table = self.right_table
-                y = tables[2]
-                tables[2] += 1
+        for team in [self.pa.team1, self.pa.team2]:
+            table = self.left_table if team == self.pa.team1 else self.right_table
+            for y, player in enumerate(team):
+                for x in range(len(player.row)):
+                    size = 13 if x < 2 else 16
+                    if x == 0 and player.clan_tag:
+                        text = f'<span style="color:{player.clan_color};"> [{player.clan_tag}]</span>{player.row[x]}'
+                        item = Label(text=text, size=10, bold=False)
+                        item.setTextFormat(Qt.RichText)
+                        item.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+                        item.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+                        item.setContentsMargins(3, 0, 3, 0)
+                        if player.background:
+                            b = player.background
+                            rgba = f"{b.red()}, {b.green()}, {b.blue()}, {b.alpha()}"
+                            item.setAutoFillBackground(True)
+                            item.setStyleSheet(
+                                f'background-color: rgba({rgba});'
+                                f'font-size: {size}px;'
+                                f'font-family: Segoe UI;'
+                            )
+                        else:
+                            item.setStyleSheet(f'font-size: {size}px; font-family: Segoe UI;')
+                        table.setCellWidget(y, x, item)
+                        continue
 
-            for x in range(len(player.row)):
-                size = 13 if x < 2 else 16
-                if x == 0 and player.clan_tag:
-                    text = f'<span style="color:{player.clan_color};"> [{player.clan_tag}]</span>{player.row[x]}'
-                    item = Label(text=text, size=10, bold=False)
-                    item.setTextFormat(Qt.RichText)
-                    item.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-                    item.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-                    item.setContentsMargins(3, 0, 3, 0)
+                    font = QFont('Segoe UI', size, QFont.Bold) if x else QFont('Segoe UI', size)
+                    font.setPixelSize(size)
+                    item = QTableWidgetItem(player.row[x])
+                    item.setFont(font)
+                    item.setTextAlignment(Qt.AlignVCenter)
                     if player.background:
-                        b = player.background
-                        rgba = f"{b.red()}, {b.green()}, {b.blue()}, {b.alpha()}"
-                        item.setAutoFillBackground(True)
-                        item.setStyleSheet(
-                            f'background-color: rgba({rgba});'
-                            f'font-size: {size}px;'
-                            f'font-family: Segoe UI;'
-                        )
-                    else:
-                        item.setStyleSheet(f'font-size: {size}px; font-family: Segoe UI;')
-                    table.setCellWidget(y, x, item)
-                    continue
-
-                font = QFont('Segoe UI', size, QFont.Bold) if x else QFont('Segoe UI', size)
-                font.setPixelSize(size)
-                item = QTableWidgetItem(player.row[x])
-                item.setFont(font)
-                item.setTextAlignment(Qt.AlignVCenter)
-                if player.background:
-                    item.setBackground(player.background)
-                if player.colors[x]:
-                    item.setForeground(player.colors[x])
-                if x > 1:
-                    item.setTextAlignment(Qt.AlignVCenter | Qt.AlignRight)
-                table.setItem(y, x, item)
-                x += 1
-
-            if player.background:  # Set background for empty columns
-                for x in range(len(player.row), self.left_table.columnCount()):
-                    item = QTableWidgetItem('')
-                    item.setBackground(player.background)
+                        item.setBackground(player.background)
+                    if player.colors[x]:
+                        item.setForeground(player.colors[x])
+                    if x > 1:
+                        item.setTextAlignment(Qt.AlignVCenter | Qt.AlignRight)
                     table.setItem(y, x, item)
+                    x += 1
+
+                if player.background:  # Set background for empty columns
+                    for x in range(len(player.row), self.left_table.columnCount()):
+                        item = QTableWidgetItem('')
+                        item.setBackground(player.background)
+                        table.setItem(y, x, item)
 
     def closeEvent(self, event):
         # Save current window position and size

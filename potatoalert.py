@@ -29,7 +29,7 @@ import asyncio
 import logging
 import argparse
 import traceback
-from typing import List, Union
+from typing import List, Union, Tuple
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.config import Config
 from asyncqt import QEventLoop
@@ -62,7 +62,9 @@ class PotatoAlert:
 
         # variables watched by gui
         self.signals = Signals()
-        self.players = []
+        # self.players = []
+        self.team1 = []
+        self.team2 = []
         self.arena_info = None
         self.servers = (None, None)
         self.avg = (Team(), Team())
@@ -122,9 +124,7 @@ class PotatoAlert:
         if not self.invalid_api_key and os.path.exists(self.arena_info_file):
             try:
                 self.arena_info = self.read_arena_info()
-                # if self.config['DEFAULT'].getboolean('additional_info'):
-                #     self.match_info.update_text(arena_info.mapName, arena_info.scenario, arena_info.ppt)
-                self.players = await self.get_players(self.arena_info.vehicles, self.arena_info.matchGroup)
+                self.team1, self.team2 = await self.get_players(self.arena_info.vehicles, self.arena_info.matchGroup)
                 self.signals.players.emit()
                 self.signals.status.emit(1, 'Ready')
             except ClientConnectionError:
@@ -136,7 +136,7 @@ class PotatoAlert:
                 logging.exception(e)
                 self.signals.status.emit(3, 'Check Logs')
 
-    async def get_players(self, player_data: List[dict], match_group: str) -> List[Player]:
+    async def get_players(self, player_data: List[dict], match_group: str) -> Tuple[List[Player], List[Player]]:
         # Get stats from wows-numbers and transform colors
         w = WoWsNumbersWrapper()
         expected = await w.get_expected()
@@ -220,7 +220,11 @@ class PotatoAlert:
 
         self.avg = self.get_averages_and_colors(players)
         self.signals.averages.emit()
-        return sorted(players, key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
+        team1 = sorted([p for p in players if p.team == 0 or p.team == 1],
+                       key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
+        team2 = sorted([p for p in players if p.team == 2],
+                       key=lambda x: (x.class_ship, x.tier_ship, x.nation_ship), reverse=True)
+        return team1, team2
 
     async def get_player(self, api, p, match_group: str, expected, color_limits) -> Union[Player, None]:
         tasks = []
