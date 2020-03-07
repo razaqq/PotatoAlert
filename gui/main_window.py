@@ -22,7 +22,7 @@ SOFTWARE.
 
 from assets.qtmodern import windows
 from PyQt5.QtWidgets import (QLabel, QWidget, QTableWidgetItem, QMainWindow,  QMessageBox, QComboBox,
-                             QSizePolicy, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton)
+                             QSizePolicy, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QSizeGrip)
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QTextCursor
 from PyQt5.QtCore import Qt, QUrl, QSize
 from gui.stats_table import StatsTable
@@ -42,6 +42,9 @@ class MainWindow(QMainWindow):
         self.flags = Qt.WindowFlags()
         super().__init__(flags=self.flags)
 
+        self.v_widget = QWidget(self)
+        self.v_layout = QVBoxLayout()
+        self.h_widget = QWidget(self)
         self.layout = QHBoxLayout()
 
         self.stats_widget = QWidget(self)
@@ -65,8 +68,9 @@ class MainWindow(QMainWindow):
         self.connect_signals()
 
     def setup_ui(self):
-        # self.setStyleSheet('border-style: solid; border-width: 0.5px; border-color: red;')
-        self.layout.setContentsMargins(10, 0, 0, 10)
+        self.v_layout.setContentsMargins(0, 0, 0, 0)
+        self.v_layout.setSpacing(0)
+        self.layout.setContentsMargins(10, 0, 0, 0)
         self.layout.setSpacing(0)
         self.stats_layout.setContentsMargins(0, 0, 0, 0)
         self.stats_layout.setSpacing(0)
@@ -79,12 +83,22 @@ class MainWindow(QMainWindow):
         icon.addPixmap(QPixmap(resource_path('./assets/potato.png')), QIcon.Normal, QIcon.Off)
         self.setWindowIcon(icon)
 
+        size_grip_widget = QWidget(self)
+        size_grip_layout = QHBoxLayout()
+        size_grip_layout.setContentsMargins(0, 0, 0, 0)
+        size_grip_layout.setSpacing(0)
+        size_grip_widget.setLayout(size_grip_layout)
+        size_grip_layout.addWidget(QSizeGrip(self), alignment=Qt.AlignBottom | Qt.AlignRight)
+
         self.stats_widget.setLayout(self.stats_layout)
         self.settings_widget.setVisible(False)
         self.about_widget.setVisible(False)
 
-        self.setCentralWidget(QWidget(self))
-        self.centralWidget().setLayout(self.layout)
+        self.setCentralWidget(self.v_widget)
+        self.v_widget.setLayout(self.v_layout)
+        self.v_layout.addWidget(self.h_widget)
+        self.v_layout.addWidget(size_grip_widget)
+        self.h_widget.setLayout(self.layout)
 
         self.layout.addWidget(self.menu_bar)
         self.layout.addWidget(self.stats_widget)
