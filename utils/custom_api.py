@@ -22,11 +22,6 @@ class CustomApi:
     def __init__(self, config, pa):
         self.config = config
         self.pa = pa
-        self.team1 = []
-        self.team2 = []
-        self.arena_info = None
-        self.servers = (None, None)
-        self.clans = (None, None)
 
     async def check_api_key(self):
         try:
@@ -100,14 +95,14 @@ class CustomApi:
                 c2 = ('', '', '')
                 team2_api = None
 
-            self.servers = (self.config['DEFAULT']['region'], team2_region)
+            self.pa.servers = (self.config['DEFAULT']['region'], team2_region)
             self.pa.signals.servers.emit()
-            self.clans = (c1, c2)
+            self.pa.clans = (c1, c2)
             self.pa.signals.clans.emit()
         else:
-            self.servers = (None, None)
+            self.pa.servers = (None, None)
             self.pa.signals.servers.emit()
-            self.clans = (None, None)
+            self.pa.clans = (None, None)
             self.pa.signals.clans.emit()
 
         # SYNC
