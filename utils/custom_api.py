@@ -72,6 +72,8 @@ class CustomApi:
                 # Determine both clans rating
                 self.pa.signals.status.emit(2, 'Getting clan ratings')
                 # try to get clanIDs from players and use them to find clan rating
+                cw = ClanWrapper()
+
                 a1 = await self.pa.api.search_account([p['name'] for p in player_data if p['relation'] == 0][0])
                 a1_id = a1['data'][0]['account_id']
                 clan = await self.pa.api.get_player_clan(a1_id)
@@ -79,7 +81,7 @@ class CustomApi:
                 c1_id = clan_data['clan']['clan_id']
                 c1_tag = clan_data['clan']['tag']
                 c1_name = clan_data['clan']['name']
-                c1_color = await ClanWrapper.get_rating(c1_id)
+                c1_color = await cw.get_rating(c1_id)
                 c1 = (c1_name, c1_tag, c1_color)
 
                 clan = await team2_api.get_player_clan(team2_account_id)
@@ -87,7 +89,7 @@ class CustomApi:
                 c2_id = clan_data['clan']['clan_id']
                 c2_tag = clan_data['clan']['tag']
                 c2_name = clan_data['clan']['name']
-                c2_color = await ClanWrapper.get_rating(c2_id)
+                c2_color = await cw.get_rating(c2_id)
                 c2 = (c2_name, c2_tag, c2_color)
             except (KeyError, IndexError, TypeError, ServerTimeoutError, TimeoutError) as e:
                 logging.exception(e)
@@ -192,7 +194,8 @@ class CustomApi:
                     clan_tag = clan_data['clan']['tag']
                     # p_name = f"[{clan_tag}]{p['name']}"
                     clan_id = clan_data['clan']['clan_id']
-                    clan_color = await ClanWrapper.get_rating(clan_id)
+                    cw = ClanWrapper()
+                    clan_color = await cw.get_rating(clan_id)
             except KeyError:
                 pass
 

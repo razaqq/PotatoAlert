@@ -29,7 +29,7 @@ import asyncio
 import logging
 import argparse
 import traceback
-from typing import Union
+from websockets.exceptions import ConnectionClosedError, InvalidMessage
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError
 from utils.config import Config
 from asyncqt import QEventLoop
@@ -95,6 +95,8 @@ class PotatoAlert:
         self.api = ApiWrapper(self.config['DEFAULT']['api_key'], self.config['DEFAULT']['region'])
         if not self.config['DEFAULT'].getboolean('use_central_api'):
             self.invalid_api_key = await self.custom_api.check_api_key()
+        else:
+            self.signals.status.emit(1, 'Ready')
 
     def run(self):
         try:
@@ -112,12 +114,14 @@ class PotatoAlert:
             self.config_reload_needed = False
         if os.path.exists(self.arena_info_file):
             try:
+                if not self.config['DEFAULT'].getboolean('use_central_api') and self.invalid_api_key:
+                    return self.signals.status.emit(3, 'Invalid API')
                 self.arena_info = self.read_arena_info()
                 if not self.arena_info:
                     return
                 if self.config['DEFAULT'].getboolean('use_central_api'):
                     self.team1, self.team2, self.avg = await self.central_api.get_players(self.arena_info)
-                elif not self.invalid_api_key:
+                else:
                     self.team1, self.team2, self.avg = await self.custom_api.get_players(self.arena_info)
                 self.signals.players.emit()
                 self.signals.averages.emit()
@@ -127,6 +131,15 @@ class PotatoAlert:
                 self.signals.status.emit(3, 'Connection')
             except asyncio.CancelledError:
                 self.signals.status.emit(1, 'Ready')  # do nothing
+            except ConnectionClosedError:
+                logging.exception('Connection was closed by remote host!')
+                self.signals.status.emit(3, 'Central Server')
+            except InvalidMessage:
+                logging.exception('Did not receive valid response!')
+                self.signals.status.emit(3, 'Central Server')
+            except ConnectionRefusedError:
+                logging.exception('Connection refused by remote host!')
+                self.signals.status.emit(3, 'Central Server')
             except (ClientError, ClientResponseError, Exception) as e:
                 logging.exception(e)
                 self.signals.status.emit(3, 'Check Logs')

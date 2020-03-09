@@ -138,8 +138,8 @@ class TeamStats:
             self.t2_clan_name.setText(c2[0])
             self.t1_clan_tag.setText(f'[{c1[1]}] ')
             self.t2_clan_tag.setText(f'[{c2[1]}] ')
-            self.t1_clan_tag.setStyleSheet(f"color: {c1[2]}")
-            self.t2_clan_tag.setStyleSheet(f"color: {c2[2]}")
+            self.t1_clan_tag.setStyleSheet(f"color: rgb({c1[2][0]}, {c1[2][1]}, {c1[2][2]})")
+            self.t2_clan_tag.setStyleSheet(f"color: rgb({c2[2][0]}, {c2[2][1]}, {c2[2][2]})")
         else:
             self.t1_clan_tag.hide(), self.t2_clan_tag.hide()
             self.t1_clan_name.hide(), self.t2_clan_name.hide()

@@ -21,7 +21,7 @@ SOFTWARE.
 """
 
 import asyncio
-from typing import Union
+from typing import Union, Tuple
 from aiohttp import ClientSession, ClientTimeout
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError, ServerTimeoutError
 from utils.api_errors import InvalidApplicationIdError
@@ -107,16 +107,22 @@ class ApiWrapper:
 
 
 class ClanWrapper:
-    @staticmethod
-    async def get_rating(clan_id: str) -> str:
+    async def get_rating(self, clan_id: str) -> Tuple[int, int, int]:
         url = f"https://clans.worldofwarships.eu/clans/wows/{clan_id}/api/claninfo/"
         try:
             async with ClientSession(timeout=ClientTimeout(connect=20)) as s:
                 async with s.get(url) as resp:
                     res = await resp.json()
-                return f"#{hex(res['clanview']['wows_ladder']['color']).split('x')[1]}"
+                return self.rgb_from_dec(res['clanview']['wows_ladder']['color'])
         except (KeyError, TypeError, IndexError):
             return DGrey
+
+    @staticmethod
+    def rgb_from_dec(dec: int) -> Tuple[int, int, int]:
+        blue = dec & 255
+        green = (dec >> 8) & 255
+        red = (dec >> 16) & 255
+        return red, green, blue
 
 
 class WoWsNumbersWrapper:
