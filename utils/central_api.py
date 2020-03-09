@@ -11,7 +11,7 @@ class CentralApi:
         self.pa = pa
 
     async def get_players(self, arena_info) -> Tuple[List[Player], List[Player], Tuple[Team, Team]]:
-        async with websockets.connect('ws://192.168.178.36:10000') as websocket:
+        async with websockets.connect('ws://www.perry-swift.de:33333') as websocket:
             try:
                 self.pa.signals.status.emit(2, f'Loading')
                 await websocket.send(json.dumps(arena_info))
