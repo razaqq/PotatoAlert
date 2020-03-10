@@ -36,8 +36,8 @@ class CentralApi:
                             values.append(p['Ship']['Name'])
                             colors.append(p['Ship']['Color'])
                         if not p['HiddenPro'] and not (match['MatchGroup'] == 'cooperative' and t_id == 1):
-                            values += [p['Battles'], p['WinRate'], p['AvgDmg'], p['BattlesShip'], p['WRShip'],
-                                       p['AvgDmgShip']]
+                            values += [p['Battles'], self.to_fixed_str(p['WinRate']), p['AvgDmg'], p['BattlesShip'],
+                                       self.to_fixed_str(p['WRShip']), p['AvgDmgShip']]
                             colors += [p['BattlesC'], p['WinRateC'], p['AvgDmgC'], p['BattlesShipC'], p['WRShipC'],
                                        p['AvgDmgShipC']]
                         player = Player(p['AccountID'], p['HiddenPro'], -1, values, colors,
@@ -46,12 +46,12 @@ class CentralApi:
                         t.append(player)
 
                 t1_avg, t2_avg = Team(), Team()
-                t1_avg.winrate = match['Team1']['AvgWR']
+                t1_avg.winrate = self.to_fixed_str(match['Team1']['AvgWR'])
                 t1_avg.avg_dmg = match['Team1']['AvgDmg']
                 t1_avg.winrate_c = match['Team1']['AvgWRC']
                 t1_avg.avg_dmg_c = match['Team1']['AvgDmgC']
                 if match['MatchGroup'] not in ['cooperative', 'pve', 'pve_premade']:
-                    t2_avg.winrate = match['Team2']['AvgWR']
+                    t2_avg.winrate = self.to_fixed_str(match['Team2']['AvgWR'])
                     t2_avg.avg_dmg = match['Team2']['AvgDmg']
                     t2_avg.winrate_c = match['Team2']['AvgWRC']
                     t2_avg.avg_dmg_c = match['Team2']['AvgDmgC']
@@ -77,3 +77,9 @@ class CentralApi:
                 self.pa.signals.status.emit(3, 'EOFError')
             finally:
                 await websocket.close()
+
+    @staticmethod
+    def to_fixed_str(value: float, digits: int = 1) -> str:
+        if type(value) == float or type(value) == int:
+            value = f'{value:.{digits}f}'
+        return value
