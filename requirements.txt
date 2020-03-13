@@ -4,3 +4,4 @@ aiofiles
 PyQt5>=5.11.3,<=5.12.1
 multidict
 aioga
+websockets
