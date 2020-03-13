@@ -165,20 +165,6 @@ class MainWindow(QMainWindow):
         right_layout.addWidget(Label(text='Enemy Team'), alignment=Qt.Alignment(0))
         right_layout.addStretch()
 
-        # TEMPORARY FIX FOR WGS BULLSHIT
-        mode_label = QLabel('Mode:')
-        right_layout.addWidget(mode_label, alignment=Qt.Alignment(0))
-        self.mode_picker = QComboBox()
-        self.mode_picker.addItems(['pvp', 'clan', 'ranked', 'cooperative', 'pve'])
-        self.mode_picker.setCurrentIndex(0)
-        self.mode_picker.setFixedSize(70, 20)
-        right_layout.addWidget(self.mode_picker, alignment=Qt.Alignment(0))
-        self.mode_picker.currentTextChanged.connect(self.pa.run)
-        def set_mode():
-            self.pa.mode = self.mode_picker.currentText()
-        self.mode_picker.currentTextChanged.connect(set_mode)
-        # TEMPORARY FIX FOR WGS BULLSHIT
-
         label_layout.addWidget(left_widget, alignment=Qt.Alignment(0))
         label_layout.addWidget(right_widget, alignment=Qt.Alignment(0))
         self.stats_layout.addWidget(label_widget, alignment=Qt.Alignment(0))

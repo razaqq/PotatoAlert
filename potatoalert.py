@@ -71,7 +71,6 @@ class PotatoAlert:
         self.avg = (Team(), Team())
         self.clans = (None, None)
         self.config_reload_needed = False
-        self.mode = 'pvp'  # TEMPORARY FIX FOR WGS BULLSHIT
 
         self.arena_info_file, self.invalid_api_key, self.api = [None] * 3
         self.setup_logger()
@@ -150,11 +149,7 @@ class PotatoAlert:
             return {}
         with open(arena_info, 'r') as f:
             data = json.load(f)
-            # TEMPORARY FIX FOR WGS BULLSHIT
-            data['matchGroup'] = self.mode
             data['region'] = self.config['DEFAULT']['region']
-            # TEMPORARY FIX FOR WGS BULLSHIT
-
             return data
 
 
