@@ -7,6 +7,7 @@ from utils.api_errors import InvalidApplicationIdError
 from utils.stat_colors import color_avg_dmg, color_battles, color_winrate, color_personal_rating, color_avg_dmg_ship
 from utils.ship_utils import shorten_name, get_nation_sort, get_class_sort
 from utils.dcs import Player, Team
+from assets.colors import DGrey
 from PyQt5.QtCore import pyqtSignal, QObject
 
 
@@ -93,8 +94,8 @@ class CustomApi:
                 c2 = (c2_name, c2_tag, c2_color)
             except (KeyError, IndexError, TypeError, ServerTimeoutError, TimeoutError) as e:
                 logging.exception(e)
-                c1 = ('', '', '')
-                c2 = ('', '', '')
+                c1 = ('', '', DGrey)
+                c2 = ('', '', DGrey)
                 team2_api = None
 
             self.pa.servers = (self.config['DEFAULT']['region'], team2_region)
