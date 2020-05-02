@@ -26,7 +26,8 @@ ship_short_names = {
     'Admiral Graf Spee': 'A. Graf Spee',
     'Oktyabrskaya Revolutsiya': 'Okt. Revolutsiya',
     'HSF Admiral Graf Spee': 'HSF A. Graf Spee',
-    'Jurien de la Gravière': 'J. de la Gravière'
+    'Jurien de la Gravière': 'J. de la Gravière',
+    'Raimondo Montecuccoli': 'Montecuccoli'
 }
 
 class_sort = {
