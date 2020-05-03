@@ -82,7 +82,7 @@ class PotatoAlert:
     def setup_logger(self):
         logging.basicConfig(level=logging.ERROR,
                             format='%(asctime)s - %(levelname)-5s:  %(message)s',
-                            datefmt='%H:%M:%S',
+                            datefmt='%Y-%m-%d %H:%M:%S',
                             filename=os.path.join(self.config.config_path, 'Error.log'),
                             filemode='a')
 
