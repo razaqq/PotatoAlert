@@ -21,8 +21,8 @@ SOFTWARE.
 """
 
 from assets.qtmodern import windows
-from PyQt5.QtWidgets import (QLabel, QWidget, QTableWidgetItem, QMainWindow,  QMessageBox, QComboBox,
-                             QSizePolicy, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QSizeGrip)
+from PyQt5.QtWidgets import (QLabel, QWidget, QTableWidgetItem, QMainWindow,  QMessageBox, QSizePolicy, QHBoxLayout,
+                             QVBoxLayout, QTextEdit, QPushButton, QSizeGrip)
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QTextCursor, QColor
 from PyQt5.QtCore import Qt, QUrl, QSize
 from gui.stats_table import StatsTable
@@ -150,7 +150,7 @@ class MainWindow(QMainWindow):
 
         left_layout.addWidget(status, alignment=Qt.Alignment(0))
         left_layout.addStretch()
-        left_layout.addWidget(Label(text='Your Team'), alignment=Qt.Alignment(0))
+        left_layout.addWidget(Label(text='My Team'), alignment=Qt.Alignment(0))
         left_layout.addStretch()
         dummy = QWidget(flags=self.flags)
         dummy.setFixedWidth(130)
