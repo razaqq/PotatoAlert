@@ -31,6 +31,7 @@ from gui.team_stats import TeamStats
 from gui.menubar import VerticalMenuBar
 from gui.settings import SettingsMenu
 from gui.about import AboutMenu
+from gui.help import HelpMenu
 from utils.resource_path import resource_path
 
 
@@ -52,6 +53,7 @@ class MainWindow(QMainWindow):
 
         self.settings_widget = SettingsMenu(self)
         self.about_widget = AboutMenu(self)
+        self.help_widget = HelpMenu(self)
 
         self.menu_bar = VerticalMenuBar(self.centralWidget())
 
@@ -93,6 +95,7 @@ class MainWindow(QMainWindow):
         self.stats_widget.setLayout(self.stats_layout)
         self.settings_widget.setVisible(False)
         self.about_widget.setVisible(False)
+        self.help_widget.setVisible(False)
 
         self.setCentralWidget(self.v_widget)
         self.v_widget.setLayout(self.v_layout)
@@ -103,6 +106,7 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.menu_bar)
         self.layout.addWidget(self.stats_widget)
         self.layout.addWidget(self.settings_widget)
+        self.layout.addWidget(self.help_widget)
         self.layout.addWidget(self.about_widget)
 
     def set_size(self):
@@ -346,7 +350,8 @@ class MainWindow(QMainWindow):
         tabs = {
             0: self.stats_widget,
             1: self.settings_widget,
-            4: self.about_widget
+            2: self.help_widget,
+            5: self.about_widget
         }
         if not old == new:
             if self.menu_bar.btn_group.buttons()[old].isChecked():
@@ -366,7 +371,7 @@ class MainWindow(QMainWindow):
 
         def button_actions(btn):
             btn_id = self.menu_bar.btn_group.id(btn)
-            if btn_id == 2:
+            if btn_id == 4:
                 QDesktopServices.openUrl(QUrl('https://github.com/razaqq/PotatoAlert'))
             elif btn_id == 3:
                 QDesktopServices.openUrl(QUrl.fromLocalFile(self.config.config_path))

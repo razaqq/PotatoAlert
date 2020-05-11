@@ -17,7 +17,7 @@ VerticalMenuBar {
   background-color: palette(base);
 }
 
-#settings_widget, #about_widget {
+#settings_widget, #about_widget, #help_widget {
   border-radius: 10px;
   background-color: palette(alternate-base);
 }

@@ -75,13 +75,16 @@ class VerticalMenuBar(CustomWidget):
 
         self.layout.addStretch()
 
-        self.github_entry = MenuEntry(self, 'assets/menuicons/github.svg')
-        self.github_entry.btn.setCheckable(False)
-        self.layout.addWidget(self.github_entry, False, Qt.AlignTop | Qt.AlignHCenter)
+        self.help_entry = MenuEntry(self, 'assets/menuicons/help.svg')
+        self.layout.addWidget(self.help_entry, False, Qt.AlignTop | Qt.AlignHCenter)
 
         self.logs_entry = MenuEntry(self, 'assets/menuicons/log.svg')
         self.logs_entry.btn.setCheckable(False)
         self.layout.addWidget(self.logs_entry, False, Qt.AlignTop | Qt.AlignHCenter)
+
+        self.github_entry = MenuEntry(self, 'assets/menuicons/github.svg')
+        self.github_entry.btn.setCheckable(False)
+        self.layout.addWidget(self.github_entry, False, Qt.AlignTop | Qt.AlignHCenter)
 
         self.about_entry = MenuEntry(self, 'assets/menuicons/about.svg')
         self.layout.addWidget(self.about_entry, False, Qt.AlignTop | Qt.AlignHCenter)
@@ -91,9 +94,12 @@ class VerticalMenuBar(CustomWidget):
         self.btn_group.setId(self.table_entry.btn, 0)
         self.btn_group.addButton(self.settings_entry.btn)
         self.btn_group.setId(self.settings_entry.btn, 1)
-        self.btn_group.addButton(self.github_entry.btn)
-        self.btn_group.setId(self.github_entry.btn, 2)
+
+        self.btn_group.addButton(self.help_entry.btn)
+        self.btn_group.setId(self.help_entry.btn, 2)
         self.btn_group.addButton(self.logs_entry.btn)
         self.btn_group.setId(self.logs_entry.btn, 3)
+        self.btn_group.addButton(self.github_entry.btn)
+        self.btn_group.setId(self.github_entry.btn, 4)
         self.btn_group.addButton(self.about_entry.btn)
-        self.btn_group.setId(self.about_entry.btn, 4)
+        self.btn_group.setId(self.about_entry.btn, 5)
