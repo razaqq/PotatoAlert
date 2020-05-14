@@ -58,13 +58,14 @@ class CentralApi:
 
                 if match['MatchGroup'] == 'clan':
                     t1_clan = match['Team1']['Players'][0]['Clan']
-                    c1 = (t1_clan['Name'], t1_clan['Tag'], t1_clan['Color'])
                     t2_clan = match['Team2']['Players'][0]['Clan']
-                    c2 = (t2_clan['Name'], t2_clan['Tag'], t2_clan['Color'])
-                    self.pa.servers = (match['Region'], t2_clan['Region'])
-                    self.pa.signals.servers.emit()
-                    self.pa.clans = (c1, c2)
-                    self.pa.signals.clans.emit()
+                    if t1_clan and t2_clan:
+                        c1 = (t1_clan['Name'], t1_clan['Tag'], t1_clan['Color'])
+                        c2 = (t2_clan['Name'], t2_clan['Tag'], t2_clan['Color'])
+                        self.pa.servers = (match['Region'], t2_clan['Region'])
+                        self.pa.signals.servers.emit()
+                        self.pa.clans = (c1, c2)
+                        self.pa.signals.clans.emit()
                 else:
                     self.pa.servers = (None, None)
                     self.pa.signals.servers.emit()
