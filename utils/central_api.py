@@ -2,6 +2,7 @@ import logging
 from typing import Tuple, List
 import websockets
 import json
+from json import JSONDecodeError
 from utils.dcs import Player, Team
 
 
@@ -75,6 +76,9 @@ class CentralApi:
             except EOFError:
                 logging.exception('Connection was closed by remote host!')
                 self.pa.signals.status.emit(3, 'EOFError')
+            except JSONDecodeError:
+                logging.exception('Received invalid json response from server.')
+                self.pa.signals.status.emit(3, 'Response-Error')
             finally:
                 await websocket.close()
 
