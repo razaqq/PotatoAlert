@@ -29,7 +29,8 @@ import asyncio
 import logging
 import argparse
 import traceback
-from websockets.exceptions import ConnectionClosedError, InvalidMessage
+from json import JSONDecodeError
+from hashlib import md5
 from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientConnectionError
 from utils.config import Config
 from asyncqt import QEventLoop
@@ -71,6 +72,7 @@ class PotatoAlert:
         self.avg = (Team(), Team())
         self.clans = (None, None)
         self.config_reload_needed = False
+        self.last_hash = ''
 
         self.arena_info_file, self.invalid_api_key, self.api = [None] * 3
         self.setup_logger()
@@ -112,6 +114,14 @@ class PotatoAlert:
             await self.reload_config()
             self.config_reload_needed = False
         if os.path.exists(self.arena_info_file):
+            # prevent duplicate run on same arena info file
+            file_hash = md5(open(self.arena_info_file, 'rb').read()).hexdigest()
+            if file_hash == self.last_hash:
+                print('aborting run')
+                return
+            else:
+                self.last_hash = file_hash
+
             try:
                 if not self.config['DEFAULT'].getboolean('use_central_api') and self.invalid_api_key:
                     return self.signals.status.emit(3, 'Invalid API')
@@ -125,20 +135,23 @@ class PotatoAlert:
                 self.signals.players.emit()
                 self.signals.averages.emit()
                 self.signals.status.emit(1, 'Ready')
+            except asyncio.CancelledError:
+                self.signals.status.emit(1, 'Ready')  # do nothing
+            except asyncio.TimeoutError:
+                logging.exception('Connection with server timed out.')
+                self.signals.status.emit(3, 'Connection Timeout')
             except ClientConnectionError:
                 logging.exception('Check your internet connection!')
                 self.signals.status.emit(3, 'Connection')
-            except asyncio.CancelledError:
-                self.signals.status.emit(1, 'Ready')  # do nothing
-            except ConnectionClosedError:
-                logging.exception('Connection was closed by remote host!')
-                self.signals.status.emit(3, 'Central Server')
-            except InvalidMessage:
-                logging.exception('Did not receive valid response!')
-                self.signals.status.emit(3, 'Central Server')
             except ConnectionRefusedError:
                 logging.exception('Connection refused by remote host!')
                 self.signals.status.emit(3, 'Central Server')
+            except EOFError:
+                logging.exception('Connection was unexpectedly closed by remote host!')
+                self.signals.status.emit(3, 'EOFError')
+            except (JSONDecodeError, TypeError, ValueError):
+                logging.exception('Received invalid json response from server.')
+                self.signals.status.emit(3, 'Response-Error')
             except (ClientError, ClientResponseError, Exception) as e:
                 logging.exception(e)
                 self.signals.status.emit(3, 'Check Logs')

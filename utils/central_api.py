@@ -1,8 +1,6 @@
-import logging
 from typing import Tuple, List
-import websockets
+import aiohttp
 import json
-from json import JSONDecodeError
 from utils.dcs import Player, Team
 
 
@@ -12,12 +10,13 @@ class CentralApi:
         self.pa = pa
 
     async def get_players(self, arena_info) -> Tuple[List[Player], List[Player], Tuple[Team, Team]]:
-        async with websockets.connect('ws://www.perry-swift.de:33333') as websocket:
-            try:
+        session = aiohttp.ClientSession(conn_timeout=10)
+        try:
+            async with session.ws_connect('ws://www.perry-swift.de:33333') as ws:
                 self.pa.signals.status.emit(2, f'Loading')
-                await websocket.send(json.dumps(arena_info))
-                res = await websocket.recv()
-                match = json.loads(res)
+
+                await ws.send_str(json.dumps(arena_info))
+                match = await ws.receive_json()
 
                 team1, team2 = [], []
                 for t_id, team in enumerate((match['Team1'], match['Team2'])):
@@ -73,14 +72,8 @@ class CentralApi:
                     self.pa.signals.clans.emit()
 
                 return team1, team2, (t1_avg, t2_avg)
-            except EOFError:
-                logging.exception('Connection was closed by remote host!')
-                self.pa.signals.status.emit(3, 'EOFError')
-            except JSONDecodeError:
-                logging.exception('Received invalid json response from server.')
-                self.pa.signals.status.emit(3, 'Response-Error')
-            finally:
-                await websocket.close()
+        finally:
+            await session.close()
 
     @staticmethod
     def to_fixed_str(value: float, digits: int = 1) -> str:
