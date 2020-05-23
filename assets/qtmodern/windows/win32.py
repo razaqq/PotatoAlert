@@ -183,6 +183,7 @@ class ModernDialog(QDialog, BorderlessWindow):
         self.hLayout.setSpacing(0)
 
         self.title_bar = _WindowsTitleBar(self, self)
+        self.title_bar.setAttribute(Qt.WA_StyledBackground, False)
         self.add_window_mover(self.title_bar.lbl_title)
 
         self.title_bar.application_icon.setVisible(False)
