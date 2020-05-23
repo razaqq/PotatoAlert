@@ -94,6 +94,9 @@ class _WindowsTitleBar(_TitleBar):
         self._window = window
         self._window.installEventFilter(self)
 
+        self.setObjectName('titleBar')
+        self.setAttribute(Qt.WA_StyledBackground, True)
+
         icon = self._window.windowIcon() if not self._window.windowIcon().isNull() else self._window._window.windowIcon()
         self.application_icon.setIcon(icon)
         self.application_icon.setIconSize(QSize(12, 12))

@@ -22,7 +22,7 @@ SOFTWARE.
 
 from assets.qtmodern import windows
 from PyQt5.QtWidgets import (QLabel, QWidget, QTableWidgetItem, QMainWindow,  QMessageBox, QSizePolicy, QHBoxLayout,
-                             QVBoxLayout, QTextEdit, QPushButton, QSizeGrip)
+                             QVBoxLayout, QTextEdit, QPushButton, QSizeGrip, QDockWidget)
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QDesktopServices, QMovie, QTextCursor, QColor
 from PyQt5.QtCore import Qt, QUrl, QSize
 from gui.stats_table import StatsTable
@@ -55,7 +55,7 @@ class MainWindow(QMainWindow):
         self.about_widget = AboutMenu(self)
         self.help_widget = HelpMenu(self)
 
-        self.menu_bar = VerticalMenuBar(self.centralWidget())
+        self.menu_bar = VerticalMenuBar(self)
 
         self.setup_ui()
 
@@ -72,7 +72,7 @@ class MainWindow(QMainWindow):
     def setup_ui(self):
         self.v_layout.setContentsMargins(0, 0, 0, 0)
         self.v_layout.setSpacing(0)
-        self.layout.setContentsMargins(10, 0, 0, 0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
         self.stats_layout.setContentsMargins(0, 0, 0, 0)
         self.stats_layout.setSpacing(0)
@@ -103,7 +103,12 @@ class MainWindow(QMainWindow):
         self.v_layout.addWidget(size_grip_widget)
         self.h_widget.setLayout(self.layout)
 
-        self.layout.addWidget(self.menu_bar)
+        dock = QDockWidget()
+        dock.setTitleBarWidget(QWidget())
+        dock.setFeatures(QDockWidget.NoDockWidgetFeatures)
+        dock.setWidget(self.menu_bar)
+        self.addDockWidget(Qt.LeftDockWidgetArea, dock)
+
         self.layout.addWidget(self.stats_widget)
         self.layout.addWidget(self.settings_widget)
         self.layout.addWidget(self.help_widget)
@@ -375,6 +380,8 @@ class MainWindow(QMainWindow):
                 QDesktopServices.openUrl(QUrl('https://github.com/razaqq/PotatoAlert'))
             elif btn_id == 3:
                 QDesktopServices.openUrl(QUrl.fromLocalFile(self.config.config_path))
+            elif btn_id == 6:
+                QDesktopServices.openUrl(QUrl('https://discord.gg/Ut8t8PA'))
             else:
                 self.switch_tab(btn_id)
 

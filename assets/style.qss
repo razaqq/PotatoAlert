@@ -13,11 +13,20 @@ MenuEntry::checked {
 }
 
 VerticalMenuBar {
-  border-radius: 15px;
   background-color: palette(base);
 }
 
 #settings_widget, #about_widget, #help_widget {
   border-radius: 10px;
   background-color: palette(alternate-base);
+}
+
+QMainWindow::separator
+{
+  width: 0px; /* when vertical */
+  height: 0px; /* when horizontal */
+}
+
+#titleBar {
+  background-color: palette(base);
 }

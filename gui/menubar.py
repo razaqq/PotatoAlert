@@ -58,7 +58,7 @@ class VerticalMenuBar(CustomWidget):
         self.layout = QVBoxLayout()
         self.setFixedWidth(30)
         self.btn_group = QButtonGroup(self)
-        self.table_entry, self.settings_entry, self.about_entry, self.github_entry, self.logs_entry = [None] * 5
+        self.table_entry, self.settings_entry, self.discord_entry, self.about_entry, self.github_entry, self.logs_entry = [None] * 6
         self.setup_ui()
 
     def setup_ui(self):
@@ -75,19 +75,23 @@ class VerticalMenuBar(CustomWidget):
 
         self.layout.addStretch()
 
+        self.discord_entry = MenuEntry(self, 'assets/menuicons/discord.svg')
+        self.discord_entry.btn.setCheckable(False)
+        self.layout.addWidget(self.discord_entry, False, Qt.AlignBottom | Qt.AlignHCenter)
+
         self.help_entry = MenuEntry(self, 'assets/menuicons/help.svg')
-        self.layout.addWidget(self.help_entry, False, Qt.AlignTop | Qt.AlignHCenter)
+        self.layout.addWidget(self.help_entry, False, Qt.AlignBottom | Qt.AlignHCenter)
 
         self.logs_entry = MenuEntry(self, 'assets/menuicons/log.svg')
         self.logs_entry.btn.setCheckable(False)
-        self.layout.addWidget(self.logs_entry, False, Qt.AlignTop | Qt.AlignHCenter)
+        self.layout.addWidget(self.logs_entry, False, Qt.AlignBottom | Qt.AlignHCenter)
 
         self.github_entry = MenuEntry(self, 'assets/menuicons/github.svg')
         self.github_entry.btn.setCheckable(False)
-        self.layout.addWidget(self.github_entry, False, Qt.AlignTop | Qt.AlignHCenter)
+        self.layout.addWidget(self.github_entry, False, Qt.AlignBottom | Qt.AlignHCenter)
 
         self.about_entry = MenuEntry(self, 'assets/menuicons/about.svg')
-        self.layout.addWidget(self.about_entry, False, Qt.AlignTop | Qt.AlignHCenter)
+        self.layout.addWidget(self.about_entry, False, Qt.AlignBottom | Qt.AlignHCenter)
 
         self.btn_group.setExclusive(True)
         self.btn_group.addButton(self.table_entry.btn)
@@ -95,6 +99,8 @@ class VerticalMenuBar(CustomWidget):
         self.btn_group.addButton(self.settings_entry.btn)
         self.btn_group.setId(self.settings_entry.btn, 1)
 
+        self.btn_group.addButton(self.discord_entry.btn)
+        self.btn_group.setId(self.discord_entry.btn, 6)
         self.btn_group.addButton(self.help_entry.btn)
         self.btn_group.setId(self.help_entry.btn, 2)
         self.btn_group.addButton(self.logs_entry.btn)
