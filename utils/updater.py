@@ -23,6 +23,7 @@ SOFTWARE.
 import os
 import sys
 import time
+import ctypes
 from aiohttp import ClientSession
 import aiofiles
 from PyQt5.QtWidgets import QApplication
@@ -32,12 +33,19 @@ from aiohttp.client_exceptions import ClientResponseError, ClientError, ClientCo
 from utils.resource_path import resource_path
 from version import __version__
 
-file_name = os.path.basename(sys.executable)
+
+def full_path(filename: str):
+    return os.path.join(current_path, filename)
+
+
+current_name = os.path.basename(sys.executable)
+temp_name = current_name + '_temp'
+old_name = current_name + '_old'
 current_path = os.path.dirname(sys.executable)
 
 # Check if old version around and delete it
-if os.path.exists(os.path.join(current_path, f'{file_name}_old')):
-    os.remove(os.path.join(current_path, f'{file_name}_old'))
+if os.path.exists(full_path(old_name)):
+    os.remove(full_path(old_name))
 
 
 def parse_version(v):
@@ -65,10 +73,6 @@ async def check_update():
 
 async def update():
     try:
-        try:
-            os.rename(os.path.join(current_path, file_name), os.path.join(current_path, f'{file_name}_old'))
-        except Exception as e:
-            print(e)
         url = 'https://github.com/razaqq/PotatoAlert/releases/latest/download/potatoalert_x64.exe'
         async with ClientSession() as s:
             async with s.get(url) as resp:
@@ -76,7 +80,7 @@ async def update():
                     size = int(resp.headers.get('content-length', '0')) or None
                     downloaded = 0
 
-                    f = await aiofiles.open(os.path.join(current_path, file_name), mode='wb')
+                    f = await aiofiles.open(full_path(temp_name), mode='wb')
                     start_time = time.time()
                     async for chunk in resp.content.iter_any():
                         await f.write(chunk)
@@ -90,14 +94,22 @@ async def update():
                             rate = 0
                         yield percent, done, total, rate
                     await f.close()
-    except (ClientResponseError, ClientError, ClientConnectionError, ConnectionError) as e:
-        os.rename(os.path.join(current_path, f'{file_name}_old'), os.path.join(current_path, file_name))
+    except Exception as e:  # any exception
+        if os.path.exists(full_path(temp_name)):  # remove failed download
+            os.remove(full_path(temp_name))
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, '', None, 1)  # restart current binary
     finally:
-        os.execl(os.path.join(current_path, file_name), os.path.join(current_path, file_name), '--changelog')
+        os.rename(full_path(current_name), full_path(old_name))  # move current to old
+        os.rename(full_path(temp_name), full_path(current_name))  # move new to current
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, '--changelog', None, 1)  # restart
 
 
 def queue_update():
-    os.execl(os.path.join(current_path, file_name), os.path.join(current_path, file_name), '--update')
+    if not ctypes.windll.shell32.IsUserAnAdmin():  # need admin for some folders
+        ctypes.windll.shell32.ShellExecuteW(None, 'runas', sys.executable, '--update', None, 1)  # restart
+        sys.exit(0)
+    else:
+        os.execl(os.path.join(current_path, current_name), os.path.join(current_path, current_name), '--update')
 
 
 async def get_changelog():
