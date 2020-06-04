@@ -12,9 +12,9 @@
 #include <QWindow>
 #include <QButtonGroup>
 #include <QDesktopServices>
-#include "../utils/Config.h"
-#include "../utils/Logger.h"
-#include "../utils/PotatoClient.h"
+#include "Config.h"
+#include "Logger.h"
+#include "PotatoClient.h"
 #include "StatsWidget/StatsWidget.h"
 #include "StatsWidget/StatsHeader.h"
 #include "MenuBar/VerticalMenuBar.h"

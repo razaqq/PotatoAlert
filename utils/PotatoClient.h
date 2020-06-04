@@ -4,8 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QFileSystemWatcher>
-#include <QMainWindow>
-#include <QtWebSockets>
+#include <QWebSocket>
 #include <QLabel>
 #include <QTableWidgetItem>
 #include <string>

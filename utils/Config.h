@@ -15,12 +15,12 @@ class Config : public QObject
 	Q_OBJECT
 public:
 	explicit Config(Logger* l);
-	~Config();
+	~Config() override;
 
 	void load();
 	void save();
 	void createDefault();
-	bool exists() const;
+	[[nodiscard]] bool exists() const;
 
 	template <typename T> T get(char* name) const;
 	template <typename T> void set(char* name, T value);
@@ -28,7 +28,7 @@ public:
 	nlohmann::json j;
 private:
 	std::string filePath;
-	std::string getFilePath() const;
+	static std::string getFilePath() ;
 	Logger* l;
 signals:
 	void modified();

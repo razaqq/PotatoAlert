@@ -80,7 +80,7 @@ void StatsTeamFooter::init()
 	layout->addWidget(leftWidget);
 	layout->addWidget(rightWidget);
 	this->setLayout(layout);
-};
+}
 
 void StatsTeamFooter::setAverages(const std::vector<QString>& avg)
 {

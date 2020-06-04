@@ -32,7 +32,7 @@ void StatsWidget::init()
 	tableLayout->setContentsMargins(10, 0, 10, 0);
 	vLayout->addLayout(tableLayout);
 
-	vLayout->addWidget(this->teams);
+	vLayout->addWidget(this->footer);
 
 	this->setLayout(vLayout);
 
@@ -77,12 +77,12 @@ void StatsWidget::setStatus(int statusID, const std::string& statusText)
 
 void StatsWidget::setAverages(const std::vector<QString>& avg)
 {
-	this->teams->setAverages(avg);
+	this->footer->setAverages(avg);
 }
 
 void StatsWidget::setClans(const std::vector<QString>& clans)
 {
-	this->teams->setClans(clans);
+	this->footer->setClans(clans);
 }
 
 void StatsWidget::setWowsNumbers(const std::vector<std::vector<QString>>& wowsNumbers)

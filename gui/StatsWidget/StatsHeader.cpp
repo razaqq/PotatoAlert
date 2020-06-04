@@ -84,9 +84,9 @@ void StatsHeader::init()
 }
 
 
-void StatsHeader::setStatus(int statusID, const std::string& statusText)
+void StatsHeader::setStatus(int statusID, const std::string& text)
 {
-	this->statusText->setText(QString::fromStdString(statusText));
+	this->statusText->setText(QString::fromStdString(text));
 	this->statusIcon->clear();
 
 	switch (statusID)

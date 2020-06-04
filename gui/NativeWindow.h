@@ -9,7 +9,7 @@
 #include <QEvent>
 #include <QByteArray>
 #include <QPaintEvent>
-#include "../utils/Config.h"
+#include "Config.h"
 #include "TitleBar.h"
 
 
@@ -43,4 +43,4 @@ private:
 	Qt::Edges mouseLocation(QMouseEvent* event);
 };
 
-}; // namespace PotatoAlert
+}  // namespace PotatoAlert

@@ -12,7 +12,7 @@
 #include <QApplication>
 #include "NativeWindow.h"
 #include "TitleBar.h"
-#include "../utils/Config.h"
+#include "Config.h"
 #include <atlstr.h>
 
 #include <Windows.h>  // windows only

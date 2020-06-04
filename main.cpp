@@ -20,6 +20,7 @@
 
 using PotatoAlert::MainWindow;
 using PotatoAlert::NativeWindow;
+using PotatoAlert::PotatoClient;
 using PotatoAlert::Logger;
 using PotatoAlert::Config;
 using PotatoAlert::Updater;
@@ -28,25 +29,25 @@ int main(int argc, char *argv[]) {
 	Q_INIT_RESOURCE(PotatoAlert);
 
 	QApplication app(argc, argv);
-	app.setApplicationName("PotatoAlert");
-	QFont font = app.font();
+	QApplication::setApplicationName("PotatoAlert");
+	QFont font = QApplication::font();
 	font.setStyleStrategy(QFont::PreferAntialias);
-	app.setFont(font);
+	QApplication::setFont(font);
 
 	Logger l;
 	Config c(&l);
 
-	PotatoAlert::PotatoClient* client = new PotatoAlert::PotatoClient(&c, &l);
+	auto client = new PotatoClient(&c, &l);
 
-	MainWindow* mainWindow = new PotatoAlert::MainWindow(&c, &l, client);
-	NativeWindow* nativeWindow = new NativeWindow(mainWindow, &c);
+	auto mainWindow = new MainWindow(&c, &l, client);
+	auto nativeWindow = new NativeWindow(mainWindow, &c);
 	nativeWindow->show();
 
 	QFile file(":/style.qss");
 	file.open(QFile::ReadOnly | QFile::Text);
 	QString style = QLatin1String(file.readAll());
-	app.setStyle("fusion");
-	app.setPalette(dark());
+	QApplication::setStyle("fusion");
+	QApplication::setPalette(dark());
 	app.setStyleSheet(style);
 
 	if (Updater::updateAvailable())
@@ -55,7 +56,7 @@ int main(int argc, char *argv[]) {
 			Updater::update();
 	}
 
-	int exitCode = app.exec();
+	int exitCode = QApplication::exec();
 	c.save();
 	return exitCode;
 }

@@ -13,7 +13,7 @@
 #include <QToolButton>
 #include <QPushButton>
 #include "SettingsWidget.h"
-#include "../../utils/Config.h"
+#include "Config.h"
 #include "SettingsSwitch.h"
 #include "SettingsChoice.h"
 #include "HorizontalLine.h"
@@ -24,6 +24,7 @@ const int ROWHEIGHT = 20;
 const int ROWWIDTH = 500;
 
 using PotatoAlert::SettingsWidget;
+using PotatoAlert::SettingsChoice;
 
 SettingsWidget::SettingsWidget(QWidget* parent, Config* c) : QWidget(parent)
 {

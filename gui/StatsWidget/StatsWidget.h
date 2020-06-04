@@ -28,7 +28,7 @@ private:
 	void init();
 	StatsTable* left = new StatsTable(this);
 	StatsTable* right = new StatsTable(this);
-	StatsTeamFooter* teams = new StatsTeamFooter(this);
+	StatsTeamFooter* footer = new StatsTeamFooter(this);
 	StatsHeader* header = new StatsHeader(this);
 };
 

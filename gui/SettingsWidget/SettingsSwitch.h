@@ -49,4 +49,4 @@ public:
 	textType thumbText;
 };
 
-};  // namespace PotatoAlert
+}  // namespace PotatoAlert

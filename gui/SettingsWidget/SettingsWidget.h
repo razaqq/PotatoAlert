@@ -10,7 +10,7 @@
 #include <QPushButton>
 #include "SettingsSwitch.h"
 #include "SettingsChoice.h"
-#include "../../utils/Config.h"
+#include "Config.h"
 
 
 namespace PotatoAlert {
@@ -21,7 +21,6 @@ public:
 	SettingsWidget(QWidget* parent, Config* c);
 private:
 	void init();
-	void save();
 	void load();
 	void connectSignals();
 

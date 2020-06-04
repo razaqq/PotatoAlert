@@ -19,15 +19,15 @@ private:
 
 	QLabel* team1Wr = new QLabel("");
 	QLabel* team1Dmg = new QLabel("");
-	QLabel* team1Tag = new QLabel("[RUUU]");
-	QLabel* team1Name = new QLabel("dfgdfgdfg asdasd");
-	QLabel* team1Region = new QLabel("ru");
+	QLabel* team1Tag = new QLabel("");
+	QLabel* team1Name = new QLabel("");
+	QLabel* team1Region = new QLabel("");
 
 	QLabel* team2Wr = new QLabel("");
 	QLabel* team2Dmg = new QLabel("");
-	QLabel* team2Tag = new QLabel("[HYDRO]");
-	QLabel* team2Name = new QLabel("poor mans radar");
-	QLabel* team2Region = new QLabel("eu");
+	QLabel* team2Tag = new QLabel("");
+	QLabel* team2Name = new QLabel("");
+	QLabel* team2Region = new QLabel("");
 
 	QLabel* region1Label = new QLabel("Region: ");
 	QLabel* region2Label = new QLabel("Region: ");

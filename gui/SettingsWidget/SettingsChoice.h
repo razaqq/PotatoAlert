@@ -11,7 +11,7 @@ namespace PotatoAlert {
 class SettingsChoice : public QWidget
 {
 public:
-	SettingsChoice(QWidget* parent, std::vector<QString>& buttons);
+	SettingsChoice(QWidget* parent, const std::vector<QString>& buttons);
 	QButtonGroup* btnGroup;
 };
 

@@ -17,22 +17,30 @@ include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/fmt/include)
 link_directories(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2/lib)
 link_directories(${PROJECT_SOURCE_DIR}/ThirdParty/fmt/lib)
 
-include_directories(
-        ${PROJECT_SOURCE_DIR}/gui
-        ${PROJECT_SOURCE_DIR}/utils
-)
-file(GLOB all_SRCS
-        "${PROJECT_SOURCE_DIR}/utils/*.cpp"
-        "${PROJECT_SOURCE_DIR}/gui/*.cpp"
-        "${PROJECT_SOURCE_DIR}/gui/MenuBar/*.cpp"
-        "${PROJECT_SOURCE_DIR}/gui/SettingsWidget/*.cpp"
-        "${PROJECT_SOURCE_DIR}/gui/StatsWidget/*.cpp"
+include_directories(utils)
+include_directories(gui)
+
+add_subdirectory(utils)
+add_subdirectory(gui)
+add_subdirectory(test)
+
+add_executable(PotatoAlert main.cpp Resources/PotatoAlert.rc Resources/PotatoAlert.qrc)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set_property(TARGET PotatoAlert PROPERTY WIN32_EXECUTABLE true)
+endif()
+
+target_link_libraries(PotatoAlert
+        Qt5::Widgets
+        Qt5::Core
+        Qt5::Gui
+        utilslib
+        guilib
         )
-
-add_executable(PotatoAlert main.cpp ${all_SRCS} PotatoAlert.rc PotatoAlert.qrc)
-
-target_link_libraries(PotatoAlert Qt5::Widgets Qt5::Core Qt5::Gui Qt5::WebSockets)
-target_link_libraries(PotatoAlert debug fmtd tinyxml2d optimized fmt tinyxml2)
+target_link_libraries(PotatoAlert
+        debug fmtd optimized fmt
+        debug tinyxml2d optimized tinyxml2
+        )
 
 # windeployqt
 get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)

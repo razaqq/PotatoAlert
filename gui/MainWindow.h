@@ -5,9 +5,9 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include "../utils/Config.h"
-#include "../utils/Logger.h"
-#include "../utils/PotatoClient.h"
+#include "Config.h"
+#include "Logger.h"
+#include "PotatoClient.h"
 #include "StatsWidget/StatsWidget.h"
 #include "SettingsWidget/SettingsWidget.h"
 #include "HelpWidget.h"

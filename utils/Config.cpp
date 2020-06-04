@@ -14,7 +14,7 @@ using nlohmann::json;
 Config::Config(Logger* l)
 {
 	this->l = l;
-	this->filePath = this->getFilePath();
+	this->filePath = Config::getFilePath();
 	if (this->exists()) {
 		this->load();
 	} else {
@@ -97,7 +97,7 @@ template void Config::set(char* name, int value);
 template void Config::set(char* name, bool value);
 template void Config::set(char* name, std::string value);
 
-std::string Config::getFilePath() const
+std::string Config::getFilePath()
 {
 	QString dirPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
 
