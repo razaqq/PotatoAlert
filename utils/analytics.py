@@ -1,6 +1,7 @@
 import uuid
 import platform
 import os
+import logging
 from version import __version__
 
 from aioga import GA
@@ -22,5 +23,8 @@ def get_useragent():
 async def run_ga():
     cid = uuid.UUID(int=uuid.getnode())
 
-    async with GA(TRACKING_ID) as ga:
-        ga.event(str(cid), ec='start', ea='launched app', ua=get_useragent())
+    try:
+        async with GA(TRACKING_ID) as ga:
+            ga.event(str(cid), ec='start', ea='launched app', ua=get_useragent())
+    except Exception as e:
+        logging.exception(e)
