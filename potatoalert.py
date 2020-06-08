@@ -221,4 +221,5 @@ if __name__ == '__main__':
             del pa.api, pa, app, ui
             sys.exit(rc)
     except Exception as e:
+        logging.exception(e)
         traceback.print_exc(e)
