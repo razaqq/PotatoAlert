@@ -98,8 +98,12 @@ class SettingsMenu(QWidget):
 
         def dir_browser():
             fd = QFileDialog()
+            fd.setFileMode(QFileDialog.Directory)
+            fd.setOption(QFileDialog.ShowDirsOnly, True)
             fd.resize(500, 500)
-            replays.setText(str(fd.getExistingDirectory(self, "Select Directory")))
+            selected = str(fd.getExistingDirectory(self, "Select Directory"))
+            if selected:
+                replays.setText(selected)
         tool_but = QToolButton()
         tool_but.setText("...")
         tool_but.clicked.connect(dir_browser)
