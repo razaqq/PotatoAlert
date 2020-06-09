@@ -183,10 +183,12 @@ Qt::Edges NativeWindow::mouseLocation(QMouseEvent* event)
 void NativeWindow::changeEvent(QEvent* event)
 {
 	if (event->type() == QEvent::WindowStateChange)
-		if (this->windowState() == Qt::WindowMaximized)
-			this->setContentsMargins(7, 7, 7, 7);
-		else
-			this->setContentsMargins(0, 0, 0, 0);
+	{
+        if (this->windowState() == Qt::WindowMaximized)
+            this->setContentsMargins(7, 7, 7, 7);
+        else
+            this->setContentsMargins(0, 0, 0, 0);
+    }
 }
 
 bool NativeWindow::confirmUpdate()

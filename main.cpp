@@ -7,7 +7,6 @@
 #include <QFont>
 #include <QString>
 #include <QLatin1String>
-#include <iostream>
 #include <string>
 #include "gui/MainWindow.h"
 #include "gui/NativeWindow.h"

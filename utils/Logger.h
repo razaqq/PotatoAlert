@@ -12,13 +12,13 @@ class Logger
 public:
 	Logger();
 	~Logger();
-	void Debug(const char* text);
+	static void Debug(const char* text);
 	void Info(const char* text);
 	void Warn(const char* text);
 	void Error(const char* text);
 private:
 	std::ofstream _ofs;
-	std::string getTimeString() const;
+	static std::string getTimeString() ;
 	Logger(const Logger&);
 	Logger& operator=(const Logger&);
 };

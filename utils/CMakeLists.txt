@@ -9,6 +9,7 @@ set(
         StatsParser.cpp
         Updater.cpp
 )
+set(CMAKE_CXX_FLAGS "/EHsc")
 
 add_library(utilslib ${utils_src})
 target_link_libraries(utilslib Qt5::Core Qt5::WebSockets Qt5::Widgets)

@@ -144,18 +144,21 @@ bool Game::readPreferences(folderStatus& status, Logger* logger)
 	}
 }
 
-void Game::setReplaysFolder(folderStatus& status, Logger* logger)
-{
-	if (status.replaysPathBase == "CWD")
-		status.replaysPath = (fs::path(status.gamePath) / status.replaysDirPath).string();
-	else if (status.replaysPathBase == "EXE_PATH")
-		if (status.steamVersion)
-			// can be bin32 or bin64
-			status.replaysPath = (fs::path(status.gamePath) / "bin" / status.gameVersion / "bin32" / status.replaysDirPath).string();
-		else
-			// can be bin32 or bin64
-			status.replaysPath = (fs::path(status.gamePath) / "bin32" / status.replaysDirPath).string();
-
+void Game::setReplaysFolder(folderStatus& status, Logger* logger) {
+    if (status.replaysPathBase == "CWD")
+    {
+        status.replaysPath = (fs::path(status.gamePath) / status.replaysDirPath).string();
+    }
+    else if (status.replaysPathBase == "EXE_PATH")
+    {
+        if (status.steamVersion)
+            // can be bin32 or bin64
+            status.replaysPath = (fs::path(status.gamePath) / "bin" / status.gameVersion / "bin32" /
+                                  status.replaysDirPath).string();
+        else
+            // can be bin32 or bin64
+            status.replaysPath = (fs::path(status.gamePath) / "bin32" / status.replaysDirPath).string();
+    }
 	if (status.versionedReplays)
 		// TODO
 		;

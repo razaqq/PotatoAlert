@@ -22,8 +22,8 @@ public:
 	void createDefault();
 	[[nodiscard]] bool exists() const;
 
-	template <typename T> T get(char* name) const;
-	template <typename T> void set(char* name, T value);
+	template <typename T> T get(const char* name) const;
+	template <typename T> void set(const char* name, T value);
 
 	nlohmann::json j;
 private:

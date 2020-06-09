@@ -75,7 +75,7 @@ void Config::createDefault()
 	this->save();
 }
 
-template <typename T> T Config::get(char* name) const
+template <typename T> T Config::get(const char* name) const
 {
 	T value;
 	try {
@@ -85,17 +85,17 @@ template <typename T> T Config::get(char* name) const
 	}
 	return value;
 }
-template int Config::get(char* name) const;
-template bool Config::get(char* name) const;
-template std::string Config::get(char* name) const;
+template int Config::get(const char* name) const;
+template bool Config::get(const char* name) const;
+template std::string Config::get(const char* name) const;
 
-template <typename T> void Config::set(char* name, T value)
+template <typename T> void Config::set(const char* name, T value)
 {
 	this->j[name] = value;
 }
-template void Config::set(char* name, int value);
-template void Config::set(char* name, bool value);
-template void Config::set(char* name, std::string value);
+template void Config::set(const char* name, int value);
+template void Config::set(const char* name, bool value);
+template void Config::set(const char* name, std::string value);
 
 std::string Config::getFilePath()
 {
