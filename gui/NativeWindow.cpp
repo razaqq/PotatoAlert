@@ -42,7 +42,7 @@ void NativeWindow::closeEvent(QCloseEvent* event) {
 
 void NativeWindow::init()
 {
-	QVBoxLayout* layout = new QVBoxLayout;
+	auto layout = new QVBoxLayout;
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(0);
 

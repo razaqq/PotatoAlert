@@ -21,6 +21,7 @@
 #include <fmt/format.h>
 #include "Config.h"
 #include "Logger.h"
+#include "Game.h"
 #include "StatsParser.h"
 
 
@@ -44,10 +45,10 @@ PotatoClient::PotatoClient(Config* config, Logger* logger) : QObject()
 
 void PotatoClient::init()
 {
-	connect(this->config, &Config::modified, this, &PotatoClient::updateReplaysPath);
+	// connect(this->config, &Config::modified, this, &PotatoClient::updateReplaysPath);
 
 	connect(socket, &QWebSocket::connected, [this] {
-		this->logger->Debug("Websocket open, sending arena info...");
+        Logger::Debug("Websocket open, sending arena info...");
 		socket->sendTextMessage(this->tempArenaInfo);
 	});
 
@@ -56,29 +57,32 @@ void PotatoClient::init()
 	connect(this->watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::onDirectoryChanged);
 	emit this->status(STATUS_READY, "Ready");
 	
-	this->updateReplaysPath();  // sets replays path and triggers initial run
+	// this->updateReplaysPath();  // sets replays path and triggers initial run
 }
 
 // sets filesystem watcher to current replays folder, triggered when config is modified
 void PotatoClient::updateReplaysPath()
 {
-	this->logger->Debug("Updating replays path.");
+    Logger::Debug("Updating replays path.");
 
 	if (this->watcher->directories().length() > 0)
 		this->watcher->removePaths(this->watcher->directories());
 
-	QString newPath = QString::fromStdString(config->j["/replays_folder"_json_pointer]);
-	if (newPath != "")
-	{
-		this->watcher->addPath(newPath);  // watch new path
-		this->onDirectoryChanged(newPath);  // trigger run
-	}
+	// for (auto& folder : config->j["/replays_folder"_json_pointer]) {
+	for (auto& folder : this->fStatus.replaysPath)
+    {
+        QString newPath = QString::fromStdString(folder);
+        if (newPath != "") {
+            this->watcher->addPath(newPath);  // watch new path
+            this->onDirectoryChanged(newPath);  // trigger run
+        }
+    }
 }
 
-// triggered whenever a file gets modified in the replays path
+// triggered whenever a file gets modified in a replays path
 void PotatoClient::onDirectoryChanged(const QString& path)
 {
-	this->logger->Debug("Directory changed.");
+    Logger::Debug("Directory changed.");
 
 	std::string filePath = path.toStdString() + "\\" + arenaInfoFile;
 	std::string tempPath = std::filesystem::temp_directory_path().append(arenaInfoFile + ".temp").string();
@@ -92,7 +96,7 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 			try {
 				if (!std::filesystem::copy_file(filePath, tempPath, std::filesystem::copy_options::overwrite_existing))
 				{
-					this->logger->Debug("failed to copy file");
+                    Logger::Debug("failed to copy file");
 					return;
 				}
 
@@ -110,7 +114,7 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 			}
 
 			std::string s = "ArenaInfo read from file. Content: " + arenaInfo;
-			this->logger->Debug(s.c_str());
+            Logger::Debug(s.c_str());
 
 			// parse arenaInfo to json and add region
 			nlohmann::json j = nlohmann::json::parse(arenaInfo);
@@ -124,8 +128,8 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 				return;
 
 			emit this->status(STATUS_LOADING, "Loading");
-			
-			this->logger->Debug("Opening websocket.");
+
+            Logger::Debug("Opening websocket.");
 			this->socket->open(url);  // starts the request cycle
 			// TODO: handle connection error with timeout
 		}
@@ -141,12 +145,12 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 // triggered when server response is received. processes the response, updates gui tables
 void PotatoClient::onResponse(const QString& message)
 {
-	this->logger->Debug("Closing websocket connection.");
+	Logger::Debug("Closing websocket connection.");
 	this->socket->close();
 
 	std::string d = "Received response from server: ";
 	d += message.toStdString();
-	this->logger->Debug(d.c_str());
+    Logger::Debug(d.c_str());
 
 	json j;
 	try {
@@ -159,7 +163,7 @@ void PotatoClient::onResponse(const QString& message)
 		return;
 	}
 
-	this->logger->Debug("Updating tables.");
+    Logger::Debug("Updating tables.");
 
 	auto matchGroup = j["MatchGroup"].get<std::string>();
 	auto team1Json = j["Team1"].get<json>();
@@ -205,4 +209,11 @@ void PotatoClient::onResponse(const QString& message)
 		emit this->status(STATUS_ERROR, "JSON Type Error");
 		return;
 	}
+}
+
+// sets the folder status and triggers a new match run
+void PotatoClient::setFolderStatus(folderStatus& status)
+{
+    this->fStatus = status;
+    this->updateReplaysPath();
 }

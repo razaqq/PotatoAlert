@@ -34,4 +34,4 @@ signals:
 	void modified();
 };
 
-};  // namespace PotatoAlert
+}  // namespace PotatoAlert

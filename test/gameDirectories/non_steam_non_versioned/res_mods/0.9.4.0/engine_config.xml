@@ -1,0 +1,11 @@
+<engine_config.xml>
+    <preferences>
+        <pathBase>CWD</pathBase>
+    </preferences>
+    <replays>
+        <dirPath>replays</dirPath>
+        <pathBase>CWD</pathBase>
+        <versioned>true</versioned>
+        <maxReplaysToSave>30</maxReplaysToSave>
+    </replays>
+</engine_config.xml>

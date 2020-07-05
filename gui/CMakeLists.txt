@@ -9,6 +9,7 @@ set(
         MenuBar/MenuEntry.cpp
         MenuBar/VerticalMenuBar.cpp
 
+        SettingsWidget/FolderStatus.cpp
         SettingsWidget/HorizontalLine.cpp
         SettingsWidget/SettingsChoice.cpp
         SettingsWidget/SettingsSwitch.cpp

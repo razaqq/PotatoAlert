@@ -1,0 +1,1483 @@
+<preferences.xml>
+	<graphicsPreferences>
+		<graphicsSettingsVersion>	1	</graphicsSettingsVersion>
+		<graphicsSettingsVersionMinor>	0	</graphicsSettingsVersionMinor>
+		<graphicsSettingsStatus>	3	</graphicsSettingsStatus>
+		<detector>
+			<gpuMemory>	3072	</gpuMemory>
+			<gpuScore>	100	</gpuScore>
+			<ram>	8140	</ram>
+			<virtualMemory>	4095	</virtualMemory>
+			<cpuScore>	13552	</cpuScore>
+		</detector>
+		<deviceGUID>	C3B44BD1.1FB0D667.E15D950E.17F0AD73	</deviceGUID>
+		<entry>
+			<label>	GRAPHICS_API	</label>
+			<activeOption>	1	</activeOption>
+		</entry>
+		<entry>
+			<label>	SHADOWS_QUALITY	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	LIGHTING_QUALITY	</label>
+			<activeOption>	1	</activeOption>
+		</entry>
+		<entry>
+			<label>	TEXTURE_QUALITY	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	MSAA_MODE	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	TEXTURE_FILTERING	</label>
+			<activeOption>	1	</activeOption>
+		</entry>
+		<entry>
+			<label>	PARTICLE_QUALITY	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	SEA_REFLECTION_QUALITY	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	SCREENSPACE_REFLECTIONS	</label>
+			<activeOption>	1	</activeOption>
+		</entry>
+		<entry>
+			<label>	SOFT_PARTICLES	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	PARTICLES_SHADOWS_QUALITY	</label>
+			<activeOption>	3	</activeOption>
+		</entry>
+		<entry>
+			<label>	SOUND_PRESET	</label>
+			<activeOption>	1	</activeOption>
+		</entry>
+		<entry>
+			<label>	GAMELOGIC_PRESET	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	LOW_QUALITY_GUI	</label>
+			<activeOption>	1	</activeOption>
+		</entry>
+		<entry>
+			<label>	USE_GUI_EFFECTS	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	MISC_SETTING	</label>
+			<activeOption>	2	</activeOption>
+		</entry>
+		<entry>
+			<label>	TERRAIN_LOD	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	TERRAIN_MESH_RESOLUTION	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	TERRAIN_LIGHTING_QUALITY	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	FOREST_QUALITY	</label>
+			<activeOption>	1	</activeOption>
+		</entry>
+		<entry>
+			<label>	SKIP_LOD	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	DECALS_QUALITY	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	PARTICLES_PRESET	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	DYNAMIC_LIGHTING	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	FLAGS_QUALITY	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	POST_PROCESSING	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	FXAA_QUALITY	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	COLORBLIND_MODE	</label>
+			<activeOption>	3	</activeOption>
+		</entry>
+		<entry>
+			<label>	ARMOR_SYSTEM_QUALITY	</label>
+			<activeOption>	2	</activeOption>
+		</entry>
+		<entry>
+			<label>	FAR_PLANE	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	SEA_SIMULATION_QUALITY	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+		<entry>
+			<label>	OBJECT_LOD	</label>
+			<activeOption>	0	</activeOption>
+		</entry>
+	</graphicsPreferences>
+	<devicePreferences>
+		<windowedWidth>	1280	</windowedWidth>
+		<windowedHeight>	720	</windowedHeight>
+		<windowedPositionX>	320	</windowedPositionX>
+		<windowedPositionY>	160	</windowedPositionY>
+		<isWindowMaximized>	true	</isWindowMaximized>
+		<borderlessBehaviour>	0	</borderlessBehaviour>
+		<borderlessPositionX>	0	</borderlessPositionX>
+		<borderlessPositionY>	0	</borderlessPositionY>
+		<borderlessWidth>	0	</borderlessWidth>
+		<borderlessHeight>	0	</borderlessHeight>
+		<fullscreenWidth>	1920	</fullscreenWidth>
+		<fullscreenHeight>	1080	</fullscreenHeight>
+		<fullscreenRefresh>	0	</fullscreenRefresh>
+		<windowMode>	2	</windowMode>
+		<monitorIndex>	0	</monitorIndex>
+		<toggleBorderless>	true	</toggleBorderless>
+		<waitVSync>	false	</waitVSync>
+		<tripleBuffering>	false	</tripleBuffering>
+		<aspectRatio>	1.7778	</aspectRatio>
+		<userGamma>	1.0000	</userGamma>
+		<colorblindIntensity>	1.0000	</colorblindIntensity>
+	</devicePreferences>
+	<scriptsPreferences>
+		<ui>
+			<locale>	de	</locale>
+			<enableLanguageBar>	false	</enableLanguageBar>
+			<extendedRibbons>	true	</extendedRibbons>
+			<damageWidget>	true	</damageWidget>
+			<showPortClock>	true	</showPortClock>
+			<uiPVEOperationsDifficulty>	normal	</uiPVEOperationsDifficulty>
+			<curRowCountIndex>	2.0000	</curRowCountIndex>
+			<IMPositionX>
+				<Stopwatch>	501.0000	</Stopwatch>
+				<SB>	303.0000	</SB>
+				<advChat>	6.0000	</advChat>
+				<IM>	704.0000	</IM>
+			</IMPositionX>
+			<IMPositionY>
+				<Stopwatch>	996.0000	</Stopwatch>
+				<SB>	403.0000	</SB>
+				<advChat>	735.0000	</advChat>
+				<IM>	91.0000	</IM>
+			</IMPositionY>
+			<commentWantTo_division></commentWantTo_division>
+			<commentWantTo_party />
+			<summaryInset>	1	</summaryInset>
+			<playerProfileSummaryInset>	0	</playerProfileSummaryInset>
+			<contactsInset>	0	</contactsInset>
+			<battleLoadingTabIndex>	1	</battleLoadingTabIndex>
+			<crosshairIsDynamic>	false	</crosshairIsDynamic>
+			<crosshairIndexStatic>	6	</crosshairIndexStatic>
+			<crosshairIndexDynamic>	0	</crosshairIndexDynamic>
+			<operationsSelectedId>	0	</operationsSelectedId>
+			<operationsDifficulty>	normal	</operationsDifficulty>
+			<operationsEnterMM>	false	</operationsEnterMM>
+			<tabStatsTabIndex>	0	</tabStatsTabIndex>
+			<showOwnShipInCompare>	true	</showOwnShipInCompare>
+			<elementsGroupExpand>
+				<contacts4944535f434841545f47524f55505f465249454e4453>	true	</contacts4944535f434841545f47524f55505f465249454e4453>
+				<showArpeggioShips>	false	</showArpeggioShips>
+				<showCurrencyExp>	false	</showCurrencyExp>
+				<showExperienceMultiplier>	false	</showExperienceMultiplier>
+				<stopwatchMinimalMode>	false	</stopwatchMinimalMode>
+				<showSettingsBox>	false	</showSettingsBox>
+				<clockEnabled>	false	</clockEnabled>
+				<whiteShipNames>	true	</whiteShipNames>
+				<showClanIcon>	true	</showClanIcon>
+				<showParams>	false	</showParams>
+				<showLamp>	true	</showLamp>
+				<showLevel>	true	</showLevel>
+				<showNickNames>	true	</showNickNames>
+				<showShipNames>	true	</showShipNames>
+				<showClasses>	true	</showClasses>
+				<showIcons>	false	</showIcons>
+				<showKilled>	true	</showKilled>
+				<showPanels>	true	</showPanels>
+				<contacts4944535f47524f55505f5449544c455f49474e4f525f4c495354>	false	</contacts4944535f47524f55505f5449544c455f49474e4f525f4c495354>
+			</elementsGroupExpand>
+			<sseChallengesLayout>	0	</sseChallengesLayout>
+			<sseBattleTasksLayout>	0	</sseBattleTasksLayout>
+			<contactsAndChannelsHeight>	350.0000	</contactsAndChannelsHeight>
+			<shipStatsSortIndex>	2	</shipStatsSortIndex>
+			<loginVideoPaused>	false	</loginVideoPaused>
+			<unFreezePriceIndex>	0.0000	</unFreezePriceIndex>
+			<PBSEconomicsExpand>
+				<expModifiers>	true	</expModifiers>
+				<creditsSpentPerBattle>	true	</creditsSpentPerBattle>
+				<crewPoints>	true	</crewPoints>
+				<expTakenTillDamage>	true	</expTakenTillDamage>
+				<creditsTakenTillDamage>	true	</creditsTakenTillDamage>
+				<creditsModifiers>	true	</creditsModifiers>
+				<expBattleTasks>	true	</expBattleTasks>
+				<creditsBattleTasks>	true	</creditsBattleTasks>
+			</PBSEconomicsExpand>
+			<notificationsInboxHeight>	693.0000	</notificationsInboxHeight>
+			<isSmallCarouselView>	true	</isSmallCarouselView>
+			<shownHintAutoPurchaseExterior>	true	</shownHintAutoPurchaseExterior>
+			<shownHintAutoPurchaseConsumables>	true	</shownHintAutoPurchaseConsumables>
+			<trainingRoomMapGPName>	53_Shoreside	</trainingRoomMapGPName>
+			<ssePrivateTasksAndChallengesLayout>	0	</ssePrivateTasksAndChallengesLayout>
+			<showAssistedDamage>	true	</showAssistedDamage>
+			<showBlockedDamage>	true	</showBlockedDamage>
+			<allowSpecialTypeScenarios>	false	</allowSpecialTypeScenarios>
+			<chatBoxWidth>
+				<clan-500144041@clans.wows.wowseu.loc>	462.0000	</clan-500144041@clans.wows.wowseu.loc>
+				<prebattle>	541.0000	</prebattle>
+				<529369017@wowseu.loc>	462.0000	</529369017@wowseu.loc>
+				<548726279@wowseu.loc>	462.0000	</548726279@wowseu.loc>
+				<clan-500149521@clans.wows.wowseu.loc>	462.0000	</clan-500149521@clans.wows.wowseu.loc>
+				<500028128@wowseu.loc>	462.0000	</500028128@wowseu.loc>
+				<556001412_1543528023@user-rooms.wows.wowseu.loc>	462.0000	</556001412_1543528023@user-rooms.wows.wowseu.loc>
+				<500799833@wowseu.loc>	462.0000	</500799833@wowseu.loc>
+				<534095050@wowseu.loc>	462.0000	</534095050@wowseu.loc>
+				<549972062@wowseu.loc>	462.0000	</549972062@wowseu.loc>
+				<510255075@wowseu.loc>	462.0000	</510255075@wowseu.loc>
+				<stopwatchName0>	1.0000	</stopwatchName0>
+				<stopwatchStartValue0>	120	</stopwatchStartValue0>
+				<stopwatchName1>	2.0000	</stopwatchName1>
+				<stopwatchStartValue1>	36	</stopwatchStartValue1>
+				<527316128@wowseu.loc>	462.0000	</527316128@wowseu.loc>
+				<521392009@wowseu.loc>	462.0000	</521392009@wowseu.loc>
+				<531186440@wowseu.loc>	462.0000	</531186440@wowseu.loc>
+				<500012571@wowseu.loc>	462.0000	</500012571@wowseu.loc>
+				<clan-500152241@clans.wows.wowseu.loc>	462.0000	</clan-500152241@clans.wows.wowseu.loc>
+				<Lang>	2.0000	</Lang>
+				<customIcons>	0.0000	</customIcons>
+				<colorClasses>	1.0000	</colorClasses>
+				<colorHP>	1.0000	</colorHP>
+				<heightHP>	100.0000	</heightHP>
+				<alphaHPbar>	0.5000	</alphaHPbar>
+				<scalePanels>	0.9924	</scalePanels>
+				<presetIndex>	2	</presetIndex>
+				<healthBarType>	2.0000	</healthBarType>
+				<537553466@wowseu.loc>	462.0000	</537553466@wowseu.loc>
+				<503120585@wowseu.loc>	462.0000	</503120585@wowseu.loc>
+				<525420204@wowseu.loc>	462.0000	</525420204@wowseu.loc>
+			</chatBoxWidth>
+			<chatBoxHeight>
+				<clan-500144041@clans.wows.wowseu.loc>	310.0000	</clan-500144041@clans.wows.wowseu.loc>
+				<prebattle>	341.0000	</prebattle>
+				<529369017@wowseu.loc>	311.0000	</529369017@wowseu.loc>
+				<548726279@wowseu.loc>	310.0000	</548726279@wowseu.loc>
+				<clan-500149521@clans.wows.wowseu.loc>	310.0000	</clan-500149521@clans.wows.wowseu.loc>
+				<500028128@wowseu.loc>	310.0000	</500028128@wowseu.loc>
+				<556001412_1543528023@user-rooms.wows.wowseu.loc>	310.0000	</556001412_1543528023@user-rooms.wows.wowseu.loc>
+				<500799833@wowseu.loc>	310.0000	</500799833@wowseu.loc>
+				<534095050@wowseu.loc>	310.0000	</534095050@wowseu.loc>
+				<549972062@wowseu.loc>	310.0000	</549972062@wowseu.loc>
+				<510255075@wowseu.loc>	310.0000	</510255075@wowseu.loc>
+				<527316128@wowseu.loc>	310.0000	</527316128@wowseu.loc>
+				<521392009@wowseu.loc>	310.0000	</521392009@wowseu.loc>
+				<531186440@wowseu.loc>	310.0000	</531186440@wowseu.loc>
+				<500012571@wowseu.loc>	310.0000	</500012571@wowseu.loc>
+				<clan-500152241@clans.wows.wowseu.loc>	308.0000	</clan-500152241@clans.wows.wowseu.loc>
+				<537553466@wowseu.loc>	310.0000	</537553466@wowseu.loc>
+				<503120585@wowseu.loc>	310.0000	</503120585@wowseu.loc>
+				<525420204@wowseu.loc>	310.0000	</525420204@wowseu.loc>
+			</chatBoxHeight>
+			<shipSortStatsDirection>	false	</shipSortStatsDirection>
+			<divisionPlayersListWidth>	280.0000	</divisionPlayersListWidth>
+			<premiumInfoExpanded>	true	</premiumInfoExpanded>
+			<navalFlagAccordeonExpanded>	true	</navalFlagAccordeonExpanded>
+			<tabInBattleSeen>	true	</tabInBattleSeen>
+			<isFilteredShipsHided>	false	</isFilteredShipsHided>
+			<shipModifiersHintSeen>	true	</shipModifiersHintSeen>
+			<formationWidgetHeight>	410.0000	</formationWidgetHeight>
+			<seenAlmanacs>
+				<acc529548579_5>	5.0000	</acc529548579_5>
+				<acc529548579_7>	5.0000	</acc529548579_7>
+				<acc529548579_8>	4.0000	</acc529548579_8>
+				<acc529548579_9>	3.0000	</acc529548579_9>
+				<acc529548579_10>	5.0000	</acc529548579_10>
+				<acc529548579_11>	5.0000	</acc529548579_11>
+				<acc529548579_12>	1.0000	</acc529548579_12>
+				<acc529548579_13>	1.0000	</acc529548579_13>
+				<acc529548579_14>	5.0000	</acc529548579_14>
+				<acc529548579_15>	4.0000	</acc529548579_15>
+				<acc529548579_16>	1.0000	</acc529548579_16>
+				<acc510255075_16>	14.0000	</acc510255075_16>
+				<acc529548579_17>	5.0000	</acc529548579_17>
+				<acc529548579_18>	1.0000	</acc529548579_18>
+				<acc529548579_19>	1.0000	</acc529548579_19>
+				<acc529548579_20>	1.0000	</acc529548579_20>
+				<acc529548579_21>	3.0000	</acc529548579_21>
+				<acc529548579_22>	4.0000	</acc529548579_22>
+				<acc529548579_23>	1.0000	</acc529548579_23>
+				<acc529548579_24>	5.0000	</acc529548579_24>
+				<acc564539162_1>	6.0000	</acc564539162_1>
+			</seenAlmanacs>
+			<tutorial />
+			<spectatorHotkeysHidden>	true	</spectatorHotkeysHidden>
+			<premShownCommon>	false	</premShownCommon>
+			<premShownWOWS>	false	</premShownWOWS>
+			<chatBoxPositionX>	585.0000
+				<clan-500149521@clans.wows.wowseu.loc>	955.0000	</clan-500149521@clans.wows.wowseu.loc>
+				<510255075@wowseu.loc>	976.0000	</510255075@wowseu.loc>
+				<537553466@wowseu.loc>	1267.0000	</537553466@wowseu.loc>
+				<503120585@wowseu.loc>	1046.0000	</503120585@wowseu.loc>
+				<549972062@wowseu.loc>	437.0000	</549972062@wowseu.loc>
+				<531186440@wowseu.loc>	437.0000	</531186440@wowseu.loc>
+				<529369017@wowseu.loc>	255.0000	</529369017@wowseu.loc>
+				<prebattle>	990.0000	</prebattle>
+				<clan-500152241@clans.wows.wowseu.loc>	985.0000	</clan-500152241@clans.wows.wowseu.loc>
+			</chatBoxPositionX>
+			<chatBoxPositionY>	716.0000
+				<clan-500149521@clans.wows.wowseu.loc>	738.0000	</clan-500149521@clans.wows.wowseu.loc>
+				<510255075@wowseu.loc>	738.0000	</510255075@wowseu.loc>
+				<537553466@wowseu.loc>	761.0000	</537553466@wowseu.loc>
+				<503120585@wowseu.loc>	738.0000	</503120585@wowseu.loc>
+				<549972062@wowseu.loc>	738.0000	</549972062@wowseu.loc>
+				<531186440@wowseu.loc>	738.0000	</531186440@wowseu.loc>
+				<529369017@wowseu.loc>	737.0000	</529369017@wowseu.loc>
+				<prebattle>	707.0000	</prebattle>
+				<clan-500152241@clans.wows.wowseu.loc>	740.0000	</clan-500152241@clans.wows.wowseu.loc>
+			</chatBoxPositionY>
+			<seenPriorLoadingHints>
+				<IDS_TIPS_AIR_DEFENSE_SECTOR_GAIN>	true	</IDS_TIPS_AIR_DEFENSE_SECTOR_GAIN>
+				<IDS_TIPS_SHIP_MANAGEMENT>	true	</IDS_TIPS_SHIP_MANAGEMENT>
+				<IDS_TIPS_DEFENSE>	true	</IDS_TIPS_DEFENSE>
+			</seenPriorLoadingHints>
+			<shipPanelExpanded>	true	</shipPanelExpanded>
+			<enableBattleChat>	true	</enableBattleChat>
+			<shipyardSeen>	true	</shipyardSeen>
+			<seenTutorialHints>
+				<aaPrioritySectorHint>	3	</aaPrioritySectorHint>
+				<submarineDiveDown>	3	</submarineDiveDown>
+				<submarineDiveUp>	3	</submarineDiveUp>
+				<shipModifiersHint>	3	</shipModifiersHint>
+				<searchPointAdded>	3	</searchPointAdded>
+			</seenTutorialHints>
+			<aaPrioritySectorActivateCount>	295	</aaPrioritySectorActivateCount>
+			<switchBattleLoadingTabForEvent>	false	</switchBattleLoadingTabForEvent>
+		</ui>
+		<lobby_values>
+			<port_preset>	fjords	</port_preset>
+			<is_forced_preset_hall17_0612>	true	</is_forced_preset_hall17_0612>
+			<ship>	3763221872	</ship>
+			<game_type>	RankedBattle	</game_type>
+			<shipBattleHistory>	4285445840,1565891897,4078876656,1545742258,4077828048,1590068375,4187894992,1512659573,3762206160,1570827345,4179539408,1589307554,4079891920,1533408526,3655251408,1590067002,4179506480,1590691802,4074649296,1580156036,4181604048,1547407871,4291704528,1590278614,4286494416,1533208742,4180588528,1567187925,4259264496,1533501243,4181637072,1565392499,4184750032,1541089125,4184815408,1515776736,4179572176,1588614677,4258182864,1590275160,4292753104,1590275694,4287542992,1532772747,4290689008,1529161971,4183701456,1567371158,4180588496,1565643297,4179506992,1570831962,4185863984,1513811900,3867587856,1541077166,3767482320,1545581131,4280169744,1562088922,4188976880,1580142281,3761190608,1589400778,4292753392,1529157623,4255037136,1590065932,4281251088,1572900047,4179539920,1579035266,4282300112,1536525150,3751753552,1590060127,4292851408,1513637283,3764270896,1590608408,4292785968,1510253401,4184749776,1541709975,4292785616,1513639332,3554555600,1568402894,4185896656,1589193065,4076746448,1571689452,4272830448,1568741434,4183734256,1566415268,3742316496,1563216565,4290754544,1534188321,4182685648,1565375873,3555670000,1545324486,4293834544,1510431220,3765319120,1590241596,3760109008,1590101013,4077795024,1547325454,3763221872,1590751775,3752736720,1590061463,4183734224,1542482774,4186912560,1513367599,4182160656,1541610137,4293834736,1590272784,4271781136,1572901188,4180587984,1590693694,4078843600,1541773938,4274927600,1565826586,4269717488,1531138238,4184749904,1565720014,4179539792,1589394902,4184782800,1530914498,3760142288,1583176893,4289640144,1532248964,4186846672,1529339712,4181636560,1580510248,4180555056,1588680304,4259231440,1589917336,4186879952,1514925117,4282333168,1565029978,4286526736,1543003886,4185831376,1515707174,4179539760,1590058953,4182685424,1577927677,4181636848,1578096764,4187895248,1516210265,4182685136,1548023425,4282267344,1590004768,3550394352,1571429810,3762206544,1590254204,4286461936,1544380616,4291736848,1509480009,4065212112,1590269474,4180588368,1545650696,4180588336,1530442829,4183799504,1589197424,4181637104,1566580686,4187928528,1514814098,4186847024,1515345199,4181636912,1529848635,4183701328,1566496906,3762173744,1578433489,4182718256,1531488446,3971888592,1565861925,4277090288,1590256260,3764336432,1547751920,4183701200,1516560066,4279154384,1531510837,4273911792,1589482310,3530504176,1589487700,4183734096,1546468610,4181636944,1545414576,4276041712,1543844569,4188977104,1514757381,4293867504,1513531143,4187895600,1513450338,4182685488,1513438120,4182685520,1544975777,4181603632,1588615422,4182652752,1590070524,4077303056,1542380804,4293801232,1539882625,4180620752,1582064480,4183701296,1565026793,4280170480,1543927475,4286527472,1531530352,4269684432,1590277893,3760142160,1589658760,4292851696,1548348793,4183734064,1534785776,4183766864,1547588250,3762173136,1576531669,3767416176,1545322838,4291704080,1572028520,4281219056,1589402689,4283348240,1573339229,4181669328,1580147168,4182685680,1566466001,3764336464,1570885404,4281251536,1531588828,4074682352,1589309450,4292786160,1513028650,4293867216,1528498051,4179507152,1586017209,4184782640,1541709079,3340711728,1532514556,4284429584,1572809240,4290721040,1540383848,4182717904,1590242763,3765352400,1589746846,4289640432,1533413614,4077828080,1545756069,3751753712,1583182020,4186879824,1528920469,4180555728,1568934609,4074682320,1583178743,4293834000,1571328167,4185831216,1510258209,4180621104,1579112610,4280170192,1564950433,4179539696,1590694745,4183766480,1564761701,3751687888,1589479669,4266538992,1531314173,4076779504,1567540086,4293866768,1572034445,4285478160,1572811320,4181604304,1568744694,4186846416,1531863258,4186879792,1542563456,4181669680,1564086882,4292818896,1590337235,4183766832,1528405161,4077794768,1546518192,4184815056,1564089188,4288559088,1544217165,4180588272,1578688146,3766368080,1565827578,4290721776,1534085780,4292752656,1543004549,4075730928,1567895134,4188976336,1512296696,3768497968,1590240613,3763287856,1578434296,4182652624,1565816301,4185797840,1532076809,4289607664,1544129446,4185798096,1529693435,4078843344,1533935534,3754866128,1590677063	</shipBattleHistory>
+			<is_forced_preset_hamburg_0615>	true	</is_forced_preset_hamburg_0615>
+			<is_forced_preset_marseille_071>	true	</is_forced_preset_marseille_071>
+			<is_forced_preset_newyork_076>	true	</is_forced_preset_newyork_076>
+			<is_forced_preset_spb_curVersion>	true	</is_forced_preset_spb_curVersion>
+			<is_forced_preset_london_curVersion>	true	</is_forced_preset_london_curVersion>
+			<is_forced_preset_hall16_curVersion>	true	</is_forced_preset_hall16_curVersion>
+			<is_forced_preset_dunkirk_711>	true	</is_forced_preset_dunkirk_711>
+			<is_forced_preset_nagasaki_711>	true	</is_forced_preset_nagasaki_711>
+			<is_forced_preset_chinaarpeggio_80>	true	</is_forced_preset_chinaarpeggio_80>
+			<is_forced_preset_postapocalypse_0.8.50>	true	</is_forced_preset_postapocalypse_0.8.50>
+			<is_forced_preset_postapocalypse_0.8.51>	true	</is_forced_preset_postapocalypse_0.8.51>
+			<is_forced_preset_marseille_0.8.60>	true	</is_forced_preset_marseille_0.8.60>
+			<is_forced_preset_table_0.8.80>	true	</is_forced_preset_table_0.8.80>
+			<is_forced_preset_table_0.8.81>	true	</is_forced_preset_table_0.8.81>
+		</lobby_values>
+		<net_credentials>
+			<active_server>	WOWS EU	</active_server>
+			<demo />
+			<external />
+		</net_credentials>
+		<sound>
+			<music_volume>	0.0000	</music_volume>
+			<music_battle>	0.0000	</music_battle>
+			<music_port>	0.0000	</music_port>
+			<world_volume>	0.0000	</world_volume>
+			<dock_music_volume>	0.0000	</dock_music_volume>
+			<battle_music_volume>	0.0000	</battle_music_volume>
+			<master_volume>	0.4100	</master_volume>
+			<engines_volume>	0.8200	</engines_volume>
+		</sound>
+		<voice_chat>
+			<input_device>	Default System Device	</input_device>
+			<output_device>	Default System Device	</output_device>
+		</voice_chat>
+		<battle>
+			<enableEars>	true	</enableEars>
+			<simultaneousReload>	true	</simultaneousReload>
+			<altVisionMode>	2	</altVisionMode>
+			<autoATBAswitch>	true	</autoATBAswitch>
+			<alternativeMouseControls>	false	</alternativeMouseControls>
+			<autoPilotMode>	0	</autoPilotMode>
+			<terrainShootingMode>	0	</terrainShootingMode>
+			<hedgehogMode>	true	</hedgehogMode>
+			<showSmokeIndicator>	true	</showSmokeIndicator>
+			<carrierSettingsX>	0.3330	</carrierSettingsX>
+			<carrierSettingsY>	1.0000	</carrierSettingsY>
+			<carrierSettingsDefaultPos>	false	</carrierSettingsDefaultPos>
+			<carrierSettingsLock>	false	</carrierSettingsLock>
+			<teamBattleRoyaleTutorialShown>	true	</teamBattleRoyaleTutorialShown>
+			<fogAlpha>	1.0000	</fogAlpha>
+			<aircarrierTutorialShown>	true	</aircarrierTutorialShown>
+		</battle>
+		<camera>
+			<autoChangePosition>	true	</autoChangePosition>
+			<wheelTransition>	true	</wheelTransition>
+			<yawBarrierTorpedoes>	false	</yawBarrierTorpedoes>
+			<autoTrackTarget>	true	</autoTrackTarget>
+			<resistanceEffect>	true	</resistanceEffect>
+			<observeYawRestore>	true	</observeYawRestore>
+			<damageEffect>	true	</damageEffect>
+			<startBattleTps>	true	</startBattleTps>
+			<sensX>	0.6500	</sensX>
+			<sensY>	0.6500	</sensY>
+			<sensZ>	0.6500	</sensZ>
+			<signY>	1	</signY>
+			<carrierShiftDisable>	true	</carrierShiftDisable>
+		</camera>
+		<peculiarities>	32172	</peculiarities>
+		<inset>
+			<it_1>	2	</it_1>
+			<it_3>	0	</it_3>
+			<it_4>	1	</it_4>
+		</inset>
+		<weaponSection>
+			<id_529548579>
+				<ship_4293834544>
+					<wt_0>	0	</wt_0>
+				</ship_4293834544>
+				<ship_4293834736>
+					<wt_0>	0	</wt_0>
+				</ship_4293834736>
+				<ship_4186879824>
+					<wt_0>	1	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4186879824>
+				<ship_4256085712>
+					<wt_0>	0	</wt_0>
+				</ship_4256085712>
+				<ship_4186879792>
+					<wt_0>	0	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4186879792>
+				<ship_4258182864>
+					<wt_0>	0	</wt_0>
+				</ship_4258182864>
+				<ship_4185831216>
+					<wt_0>	1	</wt_0>
+					<wt_2>	1	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4185831216>
+				<ship_4186912560>
+					<wt_0>	1	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4186912560>
+				<ship_4291736848>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4291736848>
+				<ship_4290721040>
+					<wt_0>	1	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4290721040>
+				<ship_4291704080>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4291704080>
+				<ship_4292753104>
+					<wt_0>	0	</wt_0>
+					<wt_2>	1	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4292753104>
+				<ship_4292785968>
+					<wt_0>	1	</wt_0>
+				</ship_4292785968>
+				<ship_4184782640>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4184782640>
+				<ship_4185863984>
+					<wt_0>	1	</wt_0>
+				</ship_4185863984>
+				<ship_4269684432>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4269684432>
+				<ship_4183734064>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4183734064>
+				<ship_4182685488>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4182685488>
+				<ship_4291704528>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4291704528>
+				<ship_4188976336>
+					<wt_0>	0	</wt_0>
+				</ship_4188976336>
+				<ship_4187894992>
+					<wt_0>	0	</wt_0>
+					<wt_2>	1	</wt_2>
+				</ship_4187894992>
+				<ship_4292786160>
+					<wt_0>	0	</wt_0>
+				</ship_4292786160>
+				<ship_4187895600>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4187895600>
+				<ship_4293867504>
+					<wt_0>	0	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4293867504>
+				<ship_4181636912>
+					<wt_0>	1	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4181636912>
+				<ship_4186847024>
+					<wt_0>	0	</wt_0>
+					<wt_2>	1	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_4186847024>
+				<ship_3767416176>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_3767416176>
+				<ship_4184815408>
+					<wt_0>	1	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4184815408>
+				<ship_3765319120>
+					<wt_0>	1	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_3765319120>
+				<ship_4290689008>
+					<wt_0>	0	</wt_0>
+				</ship_4290689008>
+				<ship_4184749776>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_4184749776>
+				<ship_4186846416>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4186846416>
+				<ship_4188977104>
+					<wt_0>	0	</wt_0>
+				</ship_4188977104>
+				<ship_4187928528>
+					<wt_0>	0	</wt_0>
+				</ship_4187928528>
+				<ship_4186879952>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4186879952>
+				<ship_4185831376>
+					<wt_0>	0	</wt_0>
+					<wt_2>	1	</wt_2>
+				</ship_4185831376>
+				<ship_4183766832>
+					<wt_0>	1	</wt_0>
+				</ship_4183766832>
+				<ship_4183701200>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4183701200>
+				<ship_4180588336>
+					<wt_0>	1	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4180588336>
+				<ship_4184782800>
+					<wt_0>	0	</wt_0>
+					<wt_2>	1	</wt_2>
+				</ship_4184782800>
+				<ship_3742316496>
+					<wt_0>	1	</wt_0>
+				</ship_3742316496>
+				<ship_4259264496>
+					<wt_0>	1	</wt_0>
+				</ship_4259264496>
+				<ship_4183734096>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4183734096>
+				<ship_4187895248>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4187895248>
+				<ship_4186846672>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_4186846672>
+				<ship_4292753392>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4292753392>
+				<ship_4279154384>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4279154384>
+				<ship_4293867216>
+					<wt_0>	1	</wt_0>
+				</ship_4293867216>
+				<ship_3555670000>
+					<wt_0>	1	</wt_0>
+				</ship_3555670000>
+				<ship_4182652624>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_4182652624>
+				<ship_4182718256>
+					<wt_0>	1	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4182718256>
+				<ship_4266538992>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_4266538992>
+				<ship_4269717488>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4269717488>
+				<ship_4185798096>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4185798096>
+				<ship_4079891920>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4079891920>
+				<ship_4179539760>
+					<wt_0>	1	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4179539760>
+				<ship_3763287856>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_3763287856>
+				<ship_3761190608>
+					<wt_0>	1	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_3761190608>
+				<ship_4286527472>
+					<wt_0>	1	</wt_0>
+				</ship_4286527472>
+				<ship_4289640432>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4289640432>
+				<ship_4078876656>
+					<wt_0>	0	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4078876656>
+				<ship_3762173136>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_3762173136>
+				<ship_4181669680>
+					<wt_0>	1	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4181669680>
+				<ship_4282333168>
+					<wt_0>	1	</wt_0>
+				</ship_4282333168>
+				<ship_4281251536>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4281251536>
+				<ship_4289640144>
+					<wt_0>	1	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4289640144>
+				<ship_4185797840 />
+				<ship_4287542992>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4287542992>
+				<ship_4255037136>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4255037136>
+				<ship_3340711728>
+					<wt_0>	1	</wt_0>
+				</ship_3340711728>
+				<ship_4286494416>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4286494416>
+				<ship_4285445840>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4285445840>
+				<ship_4183734224>
+					<wt_2>	0	</wt_2>
+				</ship_4183734224>
+				<ship_4078843344>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_4078843344>
+				<ship_4282300112>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4282300112>
+				<ship_4077794768>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_4077794768>
+				<ship_4290721776>
+					<wt_0>	1	</wt_0>
+				</ship_4290721776>
+				<ship_4290754544 />
+				<ship_4078843600>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_4078843600>
+				<ship_4259231440>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4259231440>
+				<ship_4182685520>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4182685520>
+				<ship_4293866768>
+					<wt_0>	1	</wt_0>
+				</ship_4293866768>
+				<ship_4293834000 />
+				<ship_4293801232>
+					<wt_2>	0	</wt_2>
+				</ship_4293801232>
+				<ship_3867587856>
+					<wt_2>	1	</wt_2>
+				</ship_3867587856>
+				<ship_4077303056>
+					<wt_2>	0	</wt_2>
+				</ship_4077303056>
+				<ship_4184750032 />
+				<ship_3550394352>
+					<wt_0>	0	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_3550394352>
+				<ship_4182160656>
+					<wt_2>	0	</wt_2>
+				</ship_4182160656>
+				<ship_3554555600>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_3554555600>
+				<ship_3971888592>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_3971888592>
+				<ship_4077795024>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_4077795024>
+				<ship_3764270896>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_3764270896>
+				<ship_4183701296>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4183701296>
+				<ship_4276041712>
+					<wt_0>	1	</wt_0>
+				</ship_4276041712>
+				<ship_4182685648>
+					<wt_2>	1	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4182685648>
+				<ship_4280170192>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4280170192>
+				<ship_4286526736>
+					<wt_0>	1	</wt_0>
+				</ship_4286526736>
+				<ship_4292752656>
+					<wt_2>	0	</wt_2>
+				</ship_4292752656>
+				<ship_4285445392>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4285445392>
+				<ship_4289672464>
+					<wt_0>	1	</wt_0>
+				</ship_4289672464>
+				<ship_4277090288>
+					<wt_0>	1	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4277090288>
+				<ship_4280170480>
+					<wt_2>	0	</wt_2>
+				</ship_4280170480>
+				<ship_4289607664>
+					<wt_2>	0	</wt_2>
+				</ship_4289607664>
+				<ship_4288559088>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_4288559088>
+				<ship_4286461936>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_4286461936>
+				<ship_4272830448>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_4272830448>
+				<ship_4281219056>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_4281219056>
+				<ship_3752736720>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+					<wt_0>	1	</wt_0>
+				</ship_3752736720>
+				<ship_4181636944>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_4181636944>
+				<ship_4180588368>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4180588368>
+				<ship_3767482320>
+					<wt_0>	1	</wt_0>
+				</ship_3767482320>
+				<ship_4179539792>
+					<wt_0>	1	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4179539792>
+				<ship_4077828080>
+					<wt_0>	0	</wt_0>
+				</ship_4077828080>
+				<ship_3751687888>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_3751687888>
+				<ship_4076779504>
+					<wt_0>	0	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4076779504>
+				<ship_3764336432>
+					<wt_0>	1	</wt_0>
+				</ship_3764336432>
+				<ship_4181604048>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+					<wt_1>	0	</wt_1>
+				</ship_4181604048>
+				<ship_4065212112>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+					<wt_1>	0	</wt_1>
+				</ship_4065212112>
+				<ship_3751753552>
+					<wt_0>	1	</wt_0>
+				</ship_3751753552>
+				<ship_4183766864>
+					<wt_0>	1	</wt_0>
+				</ship_4183766864>
+				<ship_4182685136>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4182685136>
+				<ship_4181636560>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4181636560>
+				<ship_4292851696 />
+				<ship_4074649296>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_4074649296>
+				<ship_4289639696>
+					<wt_2>	0	</wt_2>
+					<wt_0>	1	</wt_0>
+				</ship_4289639696>
+				<ship_4274927600>
+					<wt_1>	1	</wt_1>
+					<wt_2>	0	</wt_2>
+				</ship_4274927600>
+				<ship_4184815056>
+					<wt_0>	1	</wt_0>
+				</ship_4184815056>
+				<ship_4180587984>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4180587984>
+				<ship_4179539408>
+					<wt_0>	1	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4179539408>
+				<ship_4280169744>
+					<wt_2>	0	</wt_2>
+				</ship_4280169744>
+				<ship_3760109008>
+					<wt_0>	1	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_3760109008>
+				<ship_4183766480>
+					<wt_0>	1	</wt_0>
+				</ship_4183766480>
+				<ship_4180621104>
+					<wt_0>	1	</wt_0>
+				</ship_4180621104>
+				<ship_4182717904>
+					<wt_0>	1	</wt_0>
+				</ship_4182717904>
+				<ship_4181669328>
+					<wt_0>	1	</wt_0>
+				</ship_4181669328>
+				<ship_4181637072>
+					<wt_1>	1	</wt_1>
+					<wt_2>	1	</wt_2>
+				</ship_4181637072>
+				<ship_4180588496>
+					<wt_2>	1	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4180588496>
+				<ship_4179539920>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4179539920>
+				<ship_4184749904>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4184749904>
+				<ship_3766368080>
+					<wt_2>	0	</wt_2>
+					<wt_0>	1	</wt_0>
+				</ship_3766368080>
+				<ship_4183734256>
+					<wt_0>	1	</wt_0>
+				</ship_4183734256>
+				<ship_4182685680>
+					<wt_0>	0	</wt_0>
+				</ship_4182685680>
+				<ship_4181637104>
+					<wt_1>	1	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_4181637104>
+				<ship_4183701328>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4183701328>
+				<ship_4182652752>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_4182652752>
+				<ship_3655251408>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_3655251408>
+				<ship_4180588528>
+					<wt_0>	0	</wt_0>
+				</ship_4180588528>
+				<ship_4273911792>
+					<wt_0>	0	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4273911792>
+				<ship_4183701456>
+					<wt_2>	1	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4183701456>
+				<ship_4075730928>
+					<wt_0>	0	</wt_0>
+				</ship_4075730928>
+				<ship_4074682352>
+					<wt_0>	0	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4074682352>
+				<ship_4181604304>
+					<wt_0>	1	</wt_0>
+					<wt_2>	1	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_4181604304>
+				<ship_4180555728>
+					<wt_0>	1	</wt_0>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_4180555728>
+				<ship_4179507152>
+					<wt_0>	0	</wt_0>
+					<wt_2>	1	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_4179507152>
+				<ship_3763221872>
+					<wt_2>	1	</wt_2>
+					<wt_1>	0	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_3763221872>
+				<ship_3762173744>
+					<wt_2>	0	</wt_2>
+					<wt_0>	1	</wt_0>
+				</ship_3762173744>
+				<ship_4076746448>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4076746448>
+				<ship_3764336464>
+					<wt_0>	0	</wt_0>
+				</ship_3764336464>
+				<ship_4282267344>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+				</ship_4282267344>
+				<ship_4270732560>
+					<wt_2>	0	</wt_2>
+				</ship_4270732560>
+				<ship_4282299664>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4282299664>
+				<ship_4284429584 />
+				<ship_4283348240>
+					<wt_0>	0	</wt_0>
+					<wt_1>	0	</wt_1>
+				</ship_4283348240>
+				<ship_4271781136>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4271781136>
+				<ship_4285478160 />
+				<ship_4281251088>
+					<wt_0>	1	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4281251088>
+				<ship_4182685424>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_4182685424>
+				<ship_3760142160>
+					<wt_0>	0	</wt_0>
+				</ship_3760142160>
+				<ship_4181636848>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4181636848>
+				<ship_4180588272>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4180588272>
+				<ship_4179539696>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4179539696>
+				<ship_4188976880 />
+				<ship_4180620752>
+					<wt_0>	1	</wt_0>
+				</ship_4180620752>
+				<ship_4078876624>
+					<wt_0>	1	</wt_0>
+				</ship_4078876624>
+				<ship_4077828048>
+					<wt_0>	1	</wt_0>
+				</ship_4077828048>
+				<ship_4179572176>
+					<wt_0>	1	</wt_0>
+				</ship_4179572176>
+				<ship_3762206544>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+					<wt_1>	1	</wt_1>
+				</ship_3762206544>
+				<ship_4183700784>
+					<wt_1>	0	</wt_1>
+					<wt_2>	1	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4183700784>
+				<ship_4182652208>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+				</ship_4182652208>
+				<ship_4181603632>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_4181603632>
+				<ship_4180555056>
+					<wt_2>	0	</wt_2>
+					<wt_1>	1	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_4180555056>
+				<ship_4179506480>
+					<wt_2>	0	</wt_2>
+					<wt_1>	0	</wt_1>
+					<wt_0>	0	</wt_0>
+				</ship_4179506480>
+				<ship_4185896656 />
+				<ship_4183799504 />
+				<ship_3765352400>
+					<wt_2>	1	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_3765352400>
+				<ship_3768497968>
+					<wt_0>	0	</wt_0>
+				</ship_3768497968>
+				<ship_3754866128 />
+			</id_529548579>
+			<id_0>
+				<ship_4187894992>
+					<wt_0>	0	</wt_0>
+					<wt_2>	0	</wt_2>
+				</ship_4187894992>
+				<ship_3767416176>
+					<wt_2>	0	</wt_2>
+					<wt_0>	1	</wt_0>
+				</ship_3767416176>
+				<ship_4182652624 />
+				<ship_4277090288>
+					<wt_0>	1	</wt_0>
+				</ship_4277090288>
+				<ship_4180588528>
+					<wt_0>	1	</wt_0>
+				</ship_4180588528>
+				<ship_4181669328 />
+			</id_0>
+			<id_1014883957>
+				<ship_4292851408 />
+				<ship_4292785616>
+					<wt_0>	0	</wt_0>
+				</ship_4292785616>
+			</id_1014883957>
+			<id_510255075>
+				<ship_3764270896>
+					<wt_1>	0	</wt_1>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_3764270896>
+				<ship_4292818896>
+					<wt_0>	1	</wt_0>
+				</ship_4292818896>
+				<ship_3762173744>
+					<wt_2>	0	</wt_2>
+				</ship_3762173744>
+				<ship_3762206160>
+					<wt_0>	0	</wt_0>
+				</ship_3762206160>
+				<ship_4179572176>
+					<wt_0>	1	</wt_0>
+				</ship_4179572176>
+				<ship_4282267344>
+					<wt_2>	0	</wt_2>
+				</ship_4282267344>
+				<ship_4181636848>
+					<wt_2>	0	</wt_2>
+				</ship_4181636848>
+				<ship_3762206544>
+					<wt_2>	0	</wt_2>
+				</ship_3762206544>
+				<ship_3760142288>
+					<wt_0>	1	</wt_0>
+				</ship_3760142288>
+				<ship_4074682320>
+					<wt_0>	1	</wt_0>
+				</ship_4074682320>
+				<ship_4179507024>
+					<wt_2>	0	</wt_2>
+					<wt_0>	0	</wt_0>
+				</ship_4179507024>
+				<ship_4074682352>
+					<wt_0>	0	</wt_0>
+				</ship_4074682352>
+			</id_510255075>
+			<id_529369017>
+				<ship_3530504176>
+					<wt_0>	1	</wt_0>
+				</ship_3530504176>
+			</id_529369017>
+			<id_564539162>
+				<ship_4293834736 />
+				<ship_4258182864>
+					<wt_0>	0	</wt_0>
+				</ship_4258182864>
+				<ship_4292753104>
+					<wt_2>	0	</wt_2>
+				</ship_4292753104>
+				<ship_4269684432>
+					<wt_2>	0	</wt_2>
+				</ship_4269684432>
+				<ship_4291704528>
+					<wt_2>	0	</wt_2>
+				</ship_4291704528>
+				<ship_4292818896>
+					<wt_0>	1	</wt_0>
+				</ship_4292818896>
+			</id_564539162>
+		</weaponSection>
+		<keyboardControls />
+		<seenFeatures>
+			<PCVO006_EV_HL_17_e02_Halloween_2017>	true	</PCVO006_EV_HL_17_e02_Halloween_2017>
+			<aprilFoolsDayPromo>	true	</aprilFoolsDayPromo>
+			<PCVO015_EV_HL_16_50_VanHellsing>	true	</PCVO015_EV_HL_16_50_VanHellsing>
+			<PCVO014_EV_HL_17_e02_Halloween_2017>	true	</PCVO014_EV_HL_17_e02_Halloween_2017>
+			<PCVO013_EV_HL_18_e04_Halloween_2018>	true	</PCVO013_EV_HL_18_e04_Halloween_2018>
+			<PCVO017_EV_HL_18_e04_Halloween_2018_Hard>	true	</PCVO017_EV_HL_18_e04_Halloween_2018_Hard>
+			<PCVO018_EV_HL_16_50_VanHellsing>	true	</PCVO018_EV_HL_16_50_VanHellsing>
+			<PCVO021_EV_HL_17_e02_Halloween_2017>	true	</PCVO021_EV_HL_17_e02_Halloween_2017>
+		</seenFeatures>
+		<version>	9	</version>
+		<ussSettings>
+			<contrast>	1	</contrast>
+			<blurEnabled>	0	</blurEnabled>
+		</ussSettings>
+		<minimapOptions>
+			<lastVisEnabled>	true	</lastVisEnabled>
+			<PGSC105_Konigsberg>
+				<visibilityPlaneRangeEnabled>	false	</visibilityPlaneRangeEnabled>
+			</PGSC105_Konigsberg>
+			<shipNamesDisplayEnabled>	true	</shipNamesDisplayEnabled>
+			<rangesAlpha>	68	</rangesAlpha>
+			<waterAlpha>	0	</waterAlpha>
+			<PASC710_Salem>
+				<aaRangeEnabled>	false	</aaRangeEnabled>
+				<rlsRangeEnabled>	true	</rlsRangeEnabled>
+			</PASC710_Salem>
+			<distanceDisplayEnabled>	true	</distanceDisplayEnabled>
+			<PASC208_Cleveland>
+				<rlsRangeEnabled>	true	</rlsRangeEnabled>
+			</PASC208_Cleveland>
+			<PRSC108_Pr_68_Chapaev>
+				<rlsRangeEnabled>	true	</rlsRangeEnabled>
+			</PRSC108_Pr_68_Chapaev>
+			<PRSC109_Dmitry_Donskoy>
+				<rlsRangeEnabled>	true	</rlsRangeEnabled>
+			</PRSC109_Dmitry_Donskoy>
+			<PRSC110_Pr_66_Moskva>
+				<rlsRangeEnabled>	true	</rlsRangeEnabled>
+			</PRSC110_Pr_66_Moskva>
+			<minimapRotationEnabled>	false	</minimapRotationEnabled>
+			<minimapSizeIndex>	6	</minimapSizeIndex>
+			<PRSC510_Stalingrad>
+				<rlsRangeEnabled>	true	</rlsRangeEnabled>
+			</PRSC510_Stalingrad>
+			<PBSC108_Edinburgh>
+				<rlsRangeEnabled>	true	</rlsRangeEnabled>
+			</PBSC108_Edinburgh>
+			<PBSC110_Minotaur>
+				<rlsRangeEnabled>	true	</rlsRangeEnabled>
+			</PBSC110_Minotaur>
+			<PASC108_Baltimore_1944>
+				<rlsRangeEnabled>	true	</rlsRangeEnabled>
+			</PASC108_Baltimore_1944>
+			<PASC109_Buffalo>
+				<rlsRangeEnabled>	true	</rlsRangeEnabled>
+			</PASC109_Buffalo>
+			<PASC020_Des_Moines_1948>
+				<rlsRangeEnabled>	true	</rlsRangeEnabled>
+				<sonarRangeEnabled>	true	</sonarRangeEnabled>
+			</PASC020_Des_Moines_1948>
+			<PASC209_Seattle>
+				<rlsRangeEnabled>	true	</rlsRangeEnabled>
+			</PASC209_Seattle>
+			<PASC210_Worcester>
+				<rlsRangeEnabled>	true	</rlsRangeEnabled>
+			</PASC210_Worcester>
+		</minimapOptions>
+		<isReplayEnabled>	true	</isReplayEnabled>
+		<ReplayCameraUpdate>	30	</ReplayCameraUpdate>
+		<account>
+			<currency>
+				<ship_4182685488>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+				</ship_4182685488>
+				<ship_4184815408>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+				</ship_4184815408>
+				<ship_4181636912>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY016_SonarSearchPremium>	false	</PCY016_SonarSearchPremium>
+					<PCY011_AirDefenseDispPremium>	false	</PCY011_AirDefenseDispPremium>
+					<PCY012_FighterPremium>	false	</PCY012_FighterPremium>
+				</ship_4181636912>
+				<ship_3765319120>
+					<PCY014_SmokeGeneratorPremium>	false	</PCY014_SmokeGeneratorPremium>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY015_SpeedBoosterPremium>	false	</PCY015_SpeedBoosterPremium>
+				</ship_3765319120>
+				<ship_4183766832>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+				</ship_4183766832>
+				<ship_4180588336>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+					<PCY013_SpotterPremium>	false	</PCY013_SpotterPremium>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY016_SonarSearchPremium>	false	</PCY016_SonarSearchPremium>
+				</ship_4180588336>
+				<ship_4183701200>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY014_SmokeGeneratorPremium>	false	</PCY014_SmokeGeneratorPremium>
+					<PCY015_SpeedBoosterPremium>	false	</PCY015_SpeedBoosterPremium>
+				</ship_4183701200>
+				<ship_3742316496>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+					<PCY016_SonarSearchPremium>	false	</PCY016_SonarSearchPremium>
+				</ship_3742316496>
+				<ship_4259264496>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+				</ship_4259264496>
+				<ship_3555670000>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+				</ship_3555670000>
+				<ship_3763287856>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+				</ship_3763287856>
+				<ship_4182652624>
+					<PCY014_SmokeGeneratorPremium>	false	</PCY014_SmokeGeneratorPremium>
+				</ship_4182652624>
+				<ship_3767416176>
+					<PCY014_SmokeGeneratorPremium>	false	</PCY014_SmokeGeneratorPremium>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+				</ship_3767416176>
+				<ship_4179539760>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+				</ship_4179539760>
+				<ship_3761190608>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+					<PCY013_SpotterPremium>	false	</PCY013_SpotterPremium>
+				</ship_3761190608>
+				<ship_4286527472>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+				</ship_4286527472>
+				<ship_4266538992>
+					<PCY014_SmokeGeneratorPremium>	false	</PCY014_SmokeGeneratorPremium>
+				</ship_4266538992>
+				<ship_4182718256>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+				</ship_4182718256>
+				<ship_4078876656>
+					<PCY011_AirDefenseDispPremium>	false	</PCY011_AirDefenseDispPremium>
+					<PCY016_SonarSearchPremium>	false	</PCY016_SonarSearchPremium>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+				</ship_4078876656>
+				<ship_3762173136>
+					<PCY016_SonarSearchPremium>	false	</PCY016_SonarSearchPremium>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY014_SmokeGeneratorPremium>	false	</PCY014_SmokeGeneratorPremium>
+				</ship_3762173136>
+				<ship_4183734064>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+				</ship_4183734064>
+				<ship_4181669680>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+					<PCY016_SonarSearchPremium>	false	</PCY016_SonarSearchPremium>
+				</ship_4181669680>
+				<ship_4282333168>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+				</ship_4282333168>
+				<ship_4281251536>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+				</ship_4281251536>
+				<ship_4289640144>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+				</ship_4289640144>
+				<ship_4186846416>
+					<PCY014_SmokeGeneratorPremium>	false	</PCY014_SmokeGeneratorPremium>
+				</ship_4186846416>
+				<ship_4185797840>
+					<PCY014_SmokeGeneratorPremium>	false	</PCY014_SmokeGeneratorPremium>
+				</ship_4185797840>
+				<ship_3340711888>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+				</ship_3340711888>
+				<ship_4287542992>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+				</ship_4287542992>
+				<ship_4255037136>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+					<PCY016_SonarSearchPremium>	false	</PCY016_SonarSearchPremium>
+					<PCY010_RegenCrewPremium>	false	</PCY010_RegenCrewPremium>
+				</ship_4255037136>
+				<ship_4183734096>
+					<PCY009_CrashCrewPremium>	false	</PCY009_CrashCrewPremium>
+				</ship_4183734096>
+			</currency>
+		</account>
+		<controlPresets>
+			<keyboard>
+				<currentPreset>	preset_keyboard_1.xml	</currentPreset>
+			</keyboard>
+			<gamepad>
+				<currentPreset>	preset_gamepad_1.xml	</currentPreset>
+			</gamepad>
+		</controlPresets>
+		<trainRoom>
+			<trainingRoomMap>	1	</trainingRoomMap>
+			<trainingRoomTeamSize>	1	</trainingRoomTeamSize>
+			<trainingRoomDuration>	3600	</trainingRoomDuration>
+		</trainRoom>
+		<common_filters>
+			<search_string />
+			<shipCarouselSortReverse>	true	</shipCarouselSortReverse>
+			<shipCarouselSortIndex>	1	</shipCarouselSortIndex>
+		</common_filters>
+		<openedChannels>
+			<item>	clan-500152241@clans.wows.wowseu.loc	</item>
+		</openedChannels>
+	</scriptsPreferences>
+	<consoleHistory />
+	<clientVersion>	0,9,4,0	</clientVersion>
+</preferences.xml>

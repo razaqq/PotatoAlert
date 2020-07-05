@@ -37,10 +37,6 @@ target_link_libraries(PotatoAlert
         utilslib
         guilib
         )
-target_link_libraries(PotatoAlert
-        debug fmtd optimized fmt
-        debug tinyxml2d optimized tinyxml2
-        )
 
 # windeployqt
 get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)

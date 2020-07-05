@@ -29,18 +29,18 @@ public:
 	explicit SettingsSwitch(QWidget* parent = nullptr);
 public:
 	void init();
-	void paintEvent(QPaintEvent* event);
-	void mouseReleaseEvent(QMouseEvent* event);
-	void resizeEvent(QResizeEvent* event);
+	void paintEvent(QPaintEvent* event) override;
+	void mouseReleaseEvent(QMouseEvent* event) override;
+	void resizeEvent(QResizeEvent* event) override;
 	void setChecked(bool checked);
-	QSize sizeHint();
+	[[nodiscard]] QSize sizeHint() const override;
 
 	int trackRadius;  // track radius > thumb radius
 	int thumbRadius;
 
 	int _offset;
 	offsetType endOffset;
-	int getOffset() const;
+	[[nodiscard]] int getOffset() const;
 	void setOffset(int value);
 
 	brushType thumbColor;

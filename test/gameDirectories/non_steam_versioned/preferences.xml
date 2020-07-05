@@ -1,0 +1,21 @@
+<preferences.xml>
+	<scriptsPreferences>
+		<ui>
+			<chatBoxPositionX>	585.0000
+				<clan-500149521@clans.wows.wowseu.loc>	955.0000	</clan-500149521@clans.wows.wowseu.loc>
+				<510255075@wowseu.loc>	976.0000	</510255075@wowseu.loc>
+				<537553466@wowseu.loc>	1267.0000	</537553466@wowseu.loc>
+				<503120585@wowseu.loc>	1046.0000	</503120585@wowseu.loc>
+				<549972062@wowseu.loc>	437.0000	</549972062@wowseu.loc>
+				<531186440@wowseu.loc>	437.0000	</531186440@wowseu.loc>
+				<529369017@wowseu.loc>	255.0000	</529369017@wowseu.loc>
+				<prebattle>	990.0000	</prebattle>
+				<clan-500152241@clans.wows.wowseu.loc>	985.0000	</clan-500152241@clans.wows.wowseu.loc>
+			</chatBoxPositionX>
+		</ui>
+		<net_credentials>
+			<active_server>	WOWS EU	</active_server>
+		</net_credentials>
+	</scriptsPreferences>
+	<clientVersion>	0,9,4,0	</clientVersion>
+</preferences.xml>

@@ -15,11 +15,10 @@ Config::Config(Logger* l)
 {
 	this->l = l;
 	this->filePath = Config::getFilePath();
-	if (this->exists()) {
+	if (this->exists())
 		this->load();
-	} else {
+	else
 		this->createDefault();
-	}
 }
 
 Config::~Config()
@@ -46,7 +45,7 @@ void Config::save()
 {
 	std::ofstream file(this->filePath);
 	file << this->j;
-	emit this->modified();
+	// emit this->modified();
 }
 
 bool Config::exists() const
@@ -69,8 +68,7 @@ void Config::createDefault()
 		{"window_width", 1500},
 		{"window_x", 0},
 		{"window_y", 0},
-		{"game_folder", ""},
-		{"replays_folder", ""}
+		{"game_folder", ""}
 	};
 	this->save();
 }
@@ -88,6 +86,7 @@ template <typename T> T Config::get(const char* name) const
 template int Config::get(const char* name) const;
 template bool Config::get(const char* name) const;
 template std::string Config::get(const char* name) const;
+template std::vector<std::string> Config::get(const char* name) const;
 
 template <typename T> void Config::set(const char* name, T value)
 {
@@ -96,6 +95,7 @@ template <typename T> void Config::set(const char* name, T value)
 template void Config::set(const char* name, int value);
 template void Config::set(const char* name, bool value);
 template void Config::set(const char* name, std::string value);
+template void Config::set(const char* name, std::vector<std::string> value);
 
 std::string Config::getFilePath()
 {

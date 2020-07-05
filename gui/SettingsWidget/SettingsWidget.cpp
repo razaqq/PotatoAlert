@@ -13,10 +13,14 @@
 #include <QToolButton>
 #include <QPushButton>
 #include "SettingsWidget.h"
+#include "Game.h"
 #include "Config.h"
+#include "Logger.h"
+#include "PotatoClient.h"
 #include "SettingsSwitch.h"
 #include "SettingsChoice.h"
 #include "HorizontalLine.h"
+#include "FolderStatus.h"
 
 
 const int LABELWIDTH = 200;
@@ -25,22 +29,26 @@ const int ROWWIDTH = 500;
 
 using PotatoAlert::SettingsWidget;
 using PotatoAlert::SettingsChoice;
+using PotatoAlert::Game;
 
-SettingsWidget::SettingsWidget(QWidget* parent, Config* c) : QWidget(parent)
+SettingsWidget::SettingsWidget(QWidget* parent, Config* c, Logger* l, PotatoClient* pc) : QWidget(parent)
 {
 	this->config = c;
+	this->logger = l;
+	this->pc = pc;
 	this->init();
 	this->connectSignals();
+	this->checkPath();
 }
 
 void SettingsWidget::init()
 {
-	// this->setStyleSheet("border: 1px solid red");
+	this->folderStatusGui = new FolderStatus(this);
 
-	QHBoxLayout* horLayout = new QHBoxLayout;
+    auto horLayout = new QHBoxLayout;
 	horLayout->setContentsMargins(10, 10, 10, 10);
 	horLayout->setSpacing(0);
-	QWidget* centralWidget = new QWidget(this);
+    auto centralWidget = new QWidget(this);
 	centralWidget->setObjectName("settingsWidget");
 	horLayout->addStretch();
 	horLayout->addWidget(centralWidget);
@@ -49,11 +57,11 @@ void SettingsWidget::init()
 	QFont labelFont("Helvetica Neue", 13, QFont::Bold);
 	labelFont.setStyleStrategy(QFont::PreferAntialias);
 
-	QVBoxLayout* layout = new QVBoxLayout;
+    auto layout = new QVBoxLayout;
 	
 	/* UPDATE NOTIFICATIONS */
-	QHBoxLayout* updateLayout = new QHBoxLayout;
-	QLabel* updateLabel = new QLabel("Update Notifications");
+    auto updateLayout = new QHBoxLayout;
+    auto updateLabel = new QLabel("Update Notifications");
 	updateLabel->setFont(labelFont);
 	updateLabel->setFixedWidth(LABELWIDTH);
 	updateLayout->addWidget(updateLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -63,8 +71,8 @@ void SettingsWidget::init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* CENTRAL API */
-	QHBoxLayout* centralApiLayout = new QHBoxLayout;
-	QLabel* centralApiLabel = new QLabel("Use Central API");
+	auto centralApiLayout = new QHBoxLayout;
+    auto centralApiLabel = new QLabel("Use Central API");
 	centralApiLabel->setFixedWidth(LABELWIDTH);
 	centralApiLabel->setFont(labelFont);
 	centralApiLabel->setFixedWidth(LABELWIDTH);
@@ -76,8 +84,8 @@ void SettingsWidget::init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* SELECTOR FOR GAME FOLDER */
-	QHBoxLayout* gamePathLayout = new QHBoxLayout;
-	QLabel* gamePathLabel = new QLabel("Game Directory");
+    auto gamePathLayout = new QHBoxLayout;
+    auto gamePathLabel = new QLabel("Game Directory");
 	gamePathLabel->setFont(labelFont);
 	gamePathLabel->setFixedWidth(LABELWIDTH);
 	gamePathLayout->addWidget(gamePathLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -97,11 +105,14 @@ void SettingsWidget::init()
 	gamePathLayout->addWidget(this->gamePathButton, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(gamePathLayout);
 
+	this->folderStatusGui = new FolderStatus(this);
+    layout->addWidget(this->folderStatusGui);
+
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* DISPLAYED STATS MODE */
-	QHBoxLayout* statsModeLayout = new QHBoxLayout;
-	QLabel* statsModeLabel = new QLabel("Stats Mode");
+    auto statsModeLayout = new QHBoxLayout;
+    auto statsModeLabel = new QLabel("Stats Mode");
 	statsModeLabel->setFont(labelFont);
 	statsModeLabel->setFixedWidth(LABELWIDTH);
 	statsModeLayout->addWidget(statsModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -113,8 +124,8 @@ void SettingsWidget::init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* GOOGLE ANALYTICS */
-	QHBoxLayout* gaLayout = new QHBoxLayout;
-	QLabel* gaLabel = new QLabel("Allow Google Analytics");
+    auto gaLayout = new QHBoxLayout;
+    auto gaLabel = new QLabel("Allow Google Analytics");
 	gaLabel->setFont(labelFont);
 	gaLabel->setFixedWidth(LABELWIDTH);
 	gaLayout->addWidget(gaLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -125,7 +136,7 @@ void SettingsWidget::init()
 	layout->addStretch();
 
 	/* SAVE & CANCEL BUTTON */
-	QHBoxLayout* confirmLayout = new QHBoxLayout;
+    auto confirmLayout = new QHBoxLayout;
 	this->saveButton = new QPushButton("Save", this);
 	this->cancelButton = new QPushButton("Cancel", this);
 	confirmLayout->addWidget(this->saveButton);
@@ -150,7 +161,7 @@ void SettingsWidget::load()
 void SettingsWidget::connectSignals()
 {
 	connect(this->saveButton, &QPushButton::clicked, [this]() { this->config->save(); });
-	connect(this->cancelButton, &QPushButton::clicked, [this]() { this->config->load(); this->load(); });
+	connect(this->cancelButton, &QPushButton::clicked, [this]() { this->config->load(); this->load(); this->checkPath(); });
 	connect(this->updates, &SettingsSwitch::clicked, [this](bool checked) { this->config->set<bool>("update_notifications", checked); });
 	connect(this->centralApi, &SettingsSwitch::clicked, [this](bool checked) { this->config->set("use_central_api", checked); });
 	connect(this->googleAnalytics, &SettingsSwitch::clicked, [this](bool checked) { this->config->set("use_ga", checked); });
@@ -162,6 +173,15 @@ void SettingsWidget::connectSignals()
 		{
 			this->gamePathEdit->setText(dir);
 			this->config->set("game_folder", dir.toStdString());
+			this->checkPath();
 		}
 	});
+}
+
+void SettingsWidget::checkPath()
+{
+    auto path = this->config->get<std::string>("game_folder");
+    folderStatus status = Game::checkPath(path, this->logger);
+    this->folderStatusGui->updateStatus(status);
+    this->pc->setFolderStatus(status);
 }

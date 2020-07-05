@@ -13,4 +13,4 @@ public:
 	explicit HorizontalLine(QWidget* parent);
 };
 
-};  // namespace PotatoAlert
+}  // namespace PotatoAlert

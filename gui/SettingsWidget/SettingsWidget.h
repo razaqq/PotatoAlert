@@ -10,7 +10,10 @@
 #include <QPushButton>
 #include "SettingsSwitch.h"
 #include "SettingsChoice.h"
+#include "FolderStatus.h"
+#include "PotatoClient.h"
 #include "Config.h"
+#include "Logger.h"
 
 
 namespace PotatoAlert {
@@ -18,13 +21,16 @@ namespace PotatoAlert {
 class SettingsWidget : public QWidget
 {
 public:
-	SettingsWidget(QWidget* parent, Config* c);
+	SettingsWidget(QWidget* parent, Config* c, Logger* h, PotatoClient* pc);
 private:
 	void init();
 	void load();
 	void connectSignals();
+    void checkPath();
 
 	Config* config;
+	Logger* logger;
+	PotatoClient* pc;
 
 	SettingsSwitch* updates = new SettingsSwitch;
 	SettingsSwitch* centralApi = new SettingsSwitch;
@@ -36,9 +42,9 @@ private:
 	QPushButton* cancelButton;
 
 	// game directory selection
-	QFileDialog* gamePathDialog;
 	QLineEdit* gamePathEdit;
 	QToolButton* gamePathButton;
+	FolderStatus* folderStatusGui;
 };
 
 }  // namespace PotatoAlert

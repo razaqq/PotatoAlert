@@ -15,4 +15,4 @@ public:
 	QButtonGroup* btnGroup;
 };
 
-};  // namespace PotatoAlert
+}  // namespace PotatoAlert

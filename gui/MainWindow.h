@@ -21,7 +21,6 @@ class MainWindow : public QMainWindow
 {
 public:
 	MainWindow(Config* c, Logger* l, PotatoClient* pc);
-	~MainWindow();
 protected:
 	void init();
 	Config* c;

@@ -12,6 +12,7 @@
 #include <variant>
 #include <nlohmann/json.hpp>
 #include "Config.h"
+#include "Game.h"
 #include "Logger.h"
 
 
@@ -25,6 +26,7 @@ class PotatoClient :  public QObject
 public:
 	PotatoClient(Config* config, Logger* l);
 	void init();
+	void setFolderStatus(folderStatus& status);
 private:
 	void onResponse(const QString& message);
 	void onDirectoryChanged(const QString& path);
@@ -36,6 +38,7 @@ private:
 	QFileSystemWatcher* watcher = new QFileSystemWatcher;
 
 	QString tempArenaInfo;
+	folderStatus fStatus;
 signals:
 	void teamsReady(std::vector<teamType> team1);
 	void avgReady(std::vector<QString> avgs);
@@ -44,4 +47,4 @@ signals:
 	void status(int statusID, const std::string& statusText);
 };
 
-};  // namespace PotatoAlert
+}  // namespace PotatoAlert

@@ -60,7 +60,7 @@ void SettingsSwitch::init()
 
 void SettingsSwitch::paintEvent(QPaintEvent* event)
 {
-	QPainter* p = new QPainter(this);
+	auto p = new QPainter(this);
 	p->setRenderHint(QPainter::Antialiasing, true); 
 	p->setPen(Qt::NoPen);
 
@@ -100,7 +100,7 @@ void SettingsSwitch::paintEvent(QPaintEvent* event)
 	p->setPen(textC);
 	QFont font = p->font();
 	font.setStyleStrategy(QFont::PreferAntialias);
-	font.setPixelSize(1.5 * this->thumbRadius);
+	font.setPixelSize(static_cast<int>(1.5 * this->thumbRadius));
 	p->setFont(font);
 	p->drawText(
 		QRectF(
@@ -116,7 +116,7 @@ void SettingsSwitch::paintEvent(QPaintEvent* event)
 	p->end();
 }
 
-QSize SettingsSwitch::sizeHint()
+QSize SettingsSwitch::sizeHint() const
 {
 	return QSize(4 * this->trackRadius, 2 * this->trackRadius);
 }
@@ -126,7 +126,7 @@ void SettingsSwitch::mouseReleaseEvent(QMouseEvent* event)
 	QAbstractButton::mouseReleaseEvent(event);
 	if (event->button() == Qt::LeftButton)
 	{
-		QPropertyAnimation* anim = new QPropertyAnimation(this, "offset", this);
+		auto anim = new QPropertyAnimation(this, "offset", this);
 		anim->setDuration(120);
 		anim->setStartValue(this->getOffset());
 		anim->setEndValue(this->endOffset[this->isChecked()]());

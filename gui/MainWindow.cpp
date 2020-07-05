@@ -33,10 +33,6 @@ MainWindow::MainWindow(Config* c, Logger* l, PotatoClient* pc) : QMainWindow()
 	this->pc->init();
 }
 
-MainWindow::~MainWindow()
-{
-}
-
 void MainWindow::init()
 {
 	// this->setMouseTracking(true);
@@ -51,7 +47,7 @@ void MainWindow::init()
 	this->centralW->setLayout(centralLayout);
 
 	// menubar dock widget
-	QDockWidget* dock = new QDockWidget(this);
+	auto dock = new QDockWidget(this);
 	dock->setTitleBarWidget(new QWidget(this));
 	dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 	dock->setFeatures(QDockWidget::DockWidgetMovable);
@@ -59,7 +55,7 @@ void MainWindow::init()
 	dock->setWidget(this->menuBar);
 	this->addDockWidget(Qt::LeftDockWidgetArea, dock);
 
-	this->settingsWidget = new SettingsWidget(this, this->c);
+	this->settingsWidget = new SettingsWidget(this, this->c, this->l, this->pc);
 
 	// set other tabs invisible
 	this->settingsWidget->setVisible(false);
