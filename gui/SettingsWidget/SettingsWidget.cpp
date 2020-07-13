@@ -136,6 +136,7 @@ void SettingsWidget::init()
 	layout->addStretch();
 
 	/* SAVE & CANCEL BUTTON */
+	// TODO: rework buttons
     auto confirmLayout = new QHBoxLayout;
 	this->saveButton = new QPushButton("Save", this);
 	this->cancelButton = new QPushButton("Cancel", this);

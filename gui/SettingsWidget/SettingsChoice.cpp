@@ -18,7 +18,7 @@ SettingsChoice::SettingsChoice(QWidget* parent, const std::vector<QString>& butt
 {
 	this->setObjectName("settingsChoice");
 
-	QHBoxLayout* layout = new QHBoxLayout;
+    auto layout = new QHBoxLayout;
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(0);
 
@@ -34,7 +34,7 @@ SettingsChoice::SettingsChoice(QWidget* parent, const std::vector<QString>& butt
 
 	for (int i = 0; i < buttons.size(); i++)
 	{
-		QPushButton* button = new QPushButton(buttons[i], this);
+        auto button = new QPushButton(buttons[i], this);
 		button->setObjectName("settingsChoiceButton");
 		button->setMinimumWidth(5);
 		button->setFont(btnFont);

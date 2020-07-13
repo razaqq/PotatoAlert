@@ -16,7 +16,7 @@ MenuEntry::MenuEntry(QWidget* parent, const QIcon& icon) : QWidget(parent)
 {
     this->setObjectName("menuEntry");
 
-    QVBoxLayout* layout = new QVBoxLayout;
+    auto layout = new QVBoxLayout;
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(5);
 

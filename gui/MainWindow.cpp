@@ -73,25 +73,22 @@ void MainWindow::switchTab(int i)
 	QWidget* oldWidget = this->activeWidget;
 	switch (i)
 	{
-	case 4:  // log
-		QDesktopServices::openUrl(QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)));
-		return;
-	case 5:  // github
-		QDesktopServices::openUrl(QUrl("https://github.com/razaqq/PotatoAlert"));
-		return;
-	case 2:  // discord
-		QDesktopServices::openUrl(QUrl("https://discord.gg/Ut8t8PA"));
-		return;
 	case 0:  // stats table
-		this->activeWidget = this->statsWidget;
-		break;
+        this->activeWidget = this->statsWidget;
+        break;
 	case 1:  // settings
 		this->activeWidget = this->settingsWidget;
 		break;
-	case 3:  // help
-		this->activeWidget = this->helpWidget;
-		break;
-	case 6:  // about
+	case 2:  // discord
+        QDesktopServices::openUrl(QUrl("https://discord.gg/Ut8t8PA"));
+        return;
+    case 3:  // log
+        QDesktopServices::openUrl(QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)));
+        return;
+    case 4:  // github
+        QDesktopServices::openUrl(QUrl("https://github.com/razaqq/PotatoAlert"));
+        return;
+	case 5:  // about
 		this->activeWidget = this->aboutWidget;
 		break;
 	default:
