@@ -11,6 +11,8 @@
 using PotatoAlert::Config;
 using nlohmann::json;
 
+// TODO: create default config if config cannot be parsed
+
 Config::Config(Logger* l)
 {
 	this->l = l;

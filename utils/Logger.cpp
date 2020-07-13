@@ -14,7 +14,7 @@ using PotatoAlert::Logger;
 const char debugPrefix[] = " - [DEBUG] ";
 const char infoPrefix[] = " - [INFO] ";
 const char warnPrefix[] = " - [WARN] ";
-const char errorPrefix[] = " -[ERROR] ";
+const char errorPrefix[] = " - [ERROR] ";
 
 Logger::Logger()
 {
