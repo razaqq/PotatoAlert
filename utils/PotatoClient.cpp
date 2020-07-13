@@ -24,7 +24,6 @@
 #include "Game.h"
 #include "StatsParser.h"
 
-
 // statuses
 #define STATUS_READY 0
 #define STATUS_LOADING 1
@@ -45,19 +44,26 @@ PotatoClient::PotatoClient(Config* config, Logger* logger) : QObject()
 
 void PotatoClient::init()
 {
-	// connect(this->config, &Config::modified, this, &PotatoClient::updateReplaysPath);
-
-	connect(socket, &QWebSocket::connected, [this] {
+    // handle connection
+	connect(this->socket, &QWebSocket::connected, [this] {
         Logger::Debug("Websocket open, sending arena info...");
-		socket->sendTextMessage(this->tempArenaInfo);
+		this->socket->sendTextMessage(this->tempArenaInfo);
 	});
 
-	connect(socket, &QWebSocket::textMessageReceived, this, &PotatoClient::onResponse);
+	// handle error
+    connect(this->socket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), [=](QAbstractSocket::SocketError error)
+    {
+        if (error == QAbstractSocket::ConnectionRefusedError)
+            emit this->status(STATUS_ERROR, "Connection");
+        else
+            emit this->status(STATUS_ERROR, "Websocket Error");
+        this->logger->Error(this->socket->errorString().toStdString().c_str());
+    });
+
+	connect(this->socket, &QWebSocket::textMessageReceived, this, &PotatoClient::onResponse);
 
 	connect(this->watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::onDirectoryChanged);
 	emit this->status(STATUS_READY, "Ready");
-	
-	// this->updateReplaysPath();  // sets replays path and triggers initial run
 }
 
 // sets filesystem watcher to current replays folder, triggered when config is modified
@@ -131,7 +137,6 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 
             Logger::Debug("Opening websocket.");
 			this->socket->open(url);  // starts the request cycle
-			// TODO: handle connection error with timeout
 		}
 		catch (nlohmann::json::parse_error& e)
 		{
