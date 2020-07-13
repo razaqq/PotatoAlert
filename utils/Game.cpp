@@ -59,39 +59,32 @@ folderStatus Game::checkPath(const std::string& selectedPath, Logger* logger)
 // finds the res folder path in the currently selected directory
 bool Game::getResFolderPath(folderStatus& status, Logger* logger)
 {
-	if (!status.steamVersion)
-	{
-		status.resPath = (fs::path(status.gamePath) / "res").string();
-		return fs::exists(status.resPath);
-	}
-	else
-	{
-	    int folderVersion = -1;
-        for (const auto& entry: fs::directory_iterator(fs::path(status.gamePath) / "bin"))
-        {
-            if (entry.is_directory()) {
-                try {
-                    int v = std::stoi(entry.path().filename().string());
-                    if (v > folderVersion)
-                        folderVersion = v;
-                } catch (std::invalid_argument& ia) {
-                    // ignore folders that aren't a valid version
-                }
+    // get newest folder version inside /bin folder
+    int folderVersion = -1;
+    for (const auto& entry: fs::directory_iterator(fs::path(status.gamePath) / "bin"))
+    {
+        if (entry.is_directory()) {
+            try {
+                int v = std::stoi(entry.path().filename().string());
+                if (v > folderVersion)
+                    folderVersion = v;
+            } catch (std::invalid_argument& ia) {
+                // ignore folders that aren't a valid version
             }
         }
+    }
 
-        if (folderVersion != -1)
-        {
-            status.folderVersion = std::to_string(folderVersion);
-            status.resPath = (fs::path(status.gamePath) / "bin" / status.folderVersion / "res").string();
-            return fs::exists(status.resPath);
-        }
-        else
-        {
-            logger->Error("Could not find a valid res folder!");
-            return false;
-        }
-	}
+    if (folderVersion != -1)
+    {
+        status.folderVersion = std::to_string(folderVersion);
+        status.resPath = (fs::path(status.gamePath) / "bin" / status.folderVersion / "res").string();
+        return fs::exists(status.resPath);
+    }
+    else
+    {
+        logger->Error("Could not find a valid res folder!");
+        return false;
+    }
 }
 
 // reads the engine config and sets values
@@ -158,8 +151,10 @@ bool Game::readEngineConfig(folderStatus& status, Logger* logger)
 bool Game::readPreferences(folderStatus& status, Logger* logger)
 {
 	// For some reason preferences.xml is not valid xml and so we have to parse it with regex instead of xml
-	std::string preferencesPath = (fs::path(status.gamePath) / "preferences.xml").string();
-	if (status.steamVersion && status.preferencesPathBase == "EXE_PATH")
+    std::string preferencesPath;
+	if (status.preferencesPathBase == "CWD")
+        preferencesPath = (fs::path(status.gamePath) / "preferences.xml").string();
+	else if (status.preferencesPathBase == "EXE_PATH")
 		preferencesPath = (fs::path(status.gamePath) / "bin" / status.folderVersion / "preferences.xml").string();
 
 	if (fs::exists(fs::path(preferencesPath)))
@@ -213,16 +208,10 @@ void Game::setReplaysFolder(folderStatus& status) {
     }
     else if (status.replaysPathBase == "EXE_PATH")
     {
-        if (status.steamVersion)
-            status.replaysPath = {
-                (fs::path(status.gamePath) / "bin" / status.folderVersion / "bin32" / status.replaysDirPath).string(),
-                (fs::path(status.gamePath) / "bin" / status.folderVersion / "bin64" / status.replaysDirPath).string()
-            };
-        else
-            status.replaysPath = {
-                (fs::path(status.gamePath) / "bin32" / status.replaysDirPath).string(),
-                (fs::path(status.gamePath) / "bin64" / status.replaysDirPath).string()
-            };
+        status.replaysPath = {
+            (fs::path(status.gamePath) / "bin" / status.folderVersion / "bin32" / status.replaysDirPath).string(),
+            (fs::path(status.gamePath) / "bin" / status.folderVersion / "bin64" / status.replaysDirPath).string()
+        };
     }
 	if (status.versionedReplays)
     {

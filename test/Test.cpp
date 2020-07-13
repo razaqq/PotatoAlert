@@ -53,7 +53,7 @@ TEST_CASE( "GameTest_ReadPreferencesTest" )
 {
     folderStatus status = {
             nsnvDir.string(),
-            "", "", "", "", "", "", {},
+            "", "", "CWD", "", "", "", {},
             "", false, false
     };
     REQUIRE( Game::readPreferences(status, nullptr) );
@@ -69,7 +69,7 @@ TEST_CASE( "GameTest_GetResFolderPathTest" )
             "", false, false
     };
     REQUIRE( Game::getResFolderPath(status, nullptr) );
-    REQUIRE( status.resPath == (nsnvDir / "res").string() );
+    REQUIRE( status.resPath == (nsnvDir / "bin" / "2666186" / "res").string() );
 
     status.gamePath = snvexeDir.string();
     status.steamVersion = true;
