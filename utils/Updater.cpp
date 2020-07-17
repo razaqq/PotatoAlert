@@ -2,7 +2,11 @@
 
 #include "Updater.h"
 
+
 using PotatoAlert::Updater;
+
+const char* updateURL = "";
+const char* versionURL = "";
 
 bool Updater::updateAvailable()
 {
