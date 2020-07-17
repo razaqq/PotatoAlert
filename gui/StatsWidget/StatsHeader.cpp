@@ -1,7 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "StatsHeader.h"
-#include <atlstr.h>
+#include "StringTable.h"
+#include "Config.h"
 #include <QWidget>
 #include <QLabel>
 #include <QFont>
@@ -32,8 +33,8 @@ void StatsHeader::init()
 	layout->setContentsMargins(10, 0, 10, 0);
 	layout->setSpacing(10);
 
-	QHBoxLayout* leftLayout = new QHBoxLayout;
-	QHBoxLayout* rightLayout = new QHBoxLayout;
+	auto leftLayout = new QHBoxLayout;
+	auto rightLayout = new QHBoxLayout;
 
 	const QFont labelFont("Segoe UI", 16, QFont::Bold);
 
@@ -52,31 +53,23 @@ void StatsHeader::init()
 	statusLayout->addStretch();
 	status->setLayout(statusLayout);
 
-	// team 1 label
-	CStringW text;
-	text.LoadStringA(104);
-	// QLabel* team1 = new QLabel(QString::fromWCharArray(text, text.GetLength()));
-	auto team1 = new QLabel();
-	team1->setFont(labelFont);
-
-	// team 2 label
-	text.LoadStringA(105);
-	auto team2 = new QLabel(QString::fromWCharArray(text, text.GetLength()));
-	team2->setFont(labelFont);
+	// team labels
+	this->team1Label->setFont(labelFont);
+	this->team2Label->setFont(labelFont);
 
 	// dummy with same width as status
-	QWidget* dummy = new QWidget;
+	auto dummy = new QWidget;
 	dummy->setFixedWidth(130);
 
 	// add to layouts
 	leftLayout->addWidget(status);
 	leftLayout->addStretch();
-	leftLayout->addWidget(team1);
+	leftLayout->addWidget(this->team1Label);
 	leftLayout->addStretch();
 	leftLayout->addWidget(dummy);
 
 	rightLayout->addStretch();
-	rightLayout->addWidget(team2);
+	rightLayout->addWidget(this->team2Label);
 	rightLayout->addStretch();
 
 	layout->addLayout(leftLayout);
@@ -84,6 +77,18 @@ void StatsHeader::init()
 	this->setLayout(layout);
 }
 
+void StatsHeader::changeEvent(QEvent* event)
+{
+    if (event->type() == QEvent::LanguageChange)
+    {
+        this->team1Label->setText(GetString(PotatoAlert::Keys::LABEL_MYTEAM));
+        this->team2Label->setText(GetString(PotatoAlert::Keys::LABEL_ENEMYTEAM));
+    }
+    else
+    {
+        QWidget::changeEvent(event);
+    }
+}
 
 void StatsHeader::setStatus(int statusID, const std::string& text)
 {

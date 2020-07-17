@@ -26,7 +26,7 @@ void TitleBar::init()
 	this->setAttribute(Qt::WA_StyledBackground, true);
 	this->setObjectName("titleBar");
 
-	QHBoxLayout* hLayout = new QHBoxLayout;
+	auto hLayout = new QHBoxLayout;
 	hLayout->setContentsMargins(5, 0, 0, 0);
 	hLayout->setSpacing(0);
 

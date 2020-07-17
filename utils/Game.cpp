@@ -98,14 +98,14 @@ bool Game::readEngineConfig(folderStatus& status)
 		tinyxml2::XMLError err = doc.LoadFile(filePath.c_str());
 		if (err != tinyxml2::XML_SUCCESS)
 		{
-            Logger::Debug("Failed to open engine_config.xml for reading.");
+            PotatoLogger().Debug("Failed to open engine_config.xml for reading.");
 			return false;
 		}
 
 		tinyxml2::XMLNode* root = doc.FirstChild();
 		if (root == nullptr)
 		{
-			Logger::Debug("engine_config.xml seems to be empty.");
+			PotatoLogger().Debug("engine_config.xml seems to be empty.");
 			return false;
 		}
 

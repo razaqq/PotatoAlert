@@ -3,6 +3,7 @@
 #include <QMouseEvent>
 #include <QTableWidgetItem>
 #include <QFont>
+#include <QEvent>
 #include <QString>
 #include <QAbstractItemView>
 #include <QHeaderView>
@@ -12,6 +13,7 @@
 #include <vector>
 #include <iostream>
 #include "StatsTable.h"
+#include "StringTable.h"
 
 
 using PotatoAlert::StatsTable;
@@ -41,13 +43,9 @@ void StatsTable::init()
 
 void StatsTable::initHeaders()
 {
-	const std::vector<QString> headerLabels{
-		"Player", "Ship", "Matches", "Winrate", "Avg DMG", "M Ship", "WR Ship", "DMG Ship"
-	};
-	for (int i = 0; i < headerLabels.size(); i++)
+	for (int i = 0; i < this->columnCount(); i++)
 	{
 		QTableWidgetItem* item = new QTableWidgetItem;
-		item->setText(headerLabels[i]);
 		item->setFont(QFont("Segoe UI", 11));
 		this->setHorizontalHeaderItem(i, item);
 	}
@@ -74,4 +72,23 @@ void StatsTable::clickEvent(int row, int column)
 void StatsTable::setWowsNumbers(const std::vector<QString>& wowsNumbers)
 {
 	this->wowsNumbers = wowsNumbers;
+}
+
+void StatsTable::changeEvent(QEvent* event)
+{
+    if (event->type() == QEvent::LanguageChange)
+    {
+        this->horizontalHeaderItem(0)->setText(GetString(Keys::COLUMN_PLAYER));
+        this->horizontalHeaderItem(1)->setText(GetString(Keys::COLUMN_SHIP));
+        this->horizontalHeaderItem(2)->setText(GetString(Keys::COLUMN_MATCHES));
+        this->horizontalHeaderItem(3)->setText(GetString(Keys::COLUMN_WINRATE));
+        this->horizontalHeaderItem(4)->setText(GetString(Keys::COLUMN_AVERAGE_DAMAGE));
+        this->horizontalHeaderItem(5)->setText(GetString(Keys::COLUMN_MATCHES_SHIP));
+        this->horizontalHeaderItem(6)->setText(GetString(Keys::COLUMN_WINRATE_SHIP));
+        this->horizontalHeaderItem(7)->setText(GetString(Keys::COLUMN_AVERAGE_DAMAGE_SHIP));
+    }
+    else
+    {
+        QWidget::changeEvent(event);
+    }
 }

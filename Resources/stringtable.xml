@@ -1,5 +1,78 @@
 <Package name="Translations">
-    <!-- TABLES -->
+    <!-- SETTINGS -->
+    <Key ID="SETTINGS_REPLAYSFOLDER_STATUS">
+        <English>Status:</English>
+        <German>Status:</German>
+    </Key>
+    <Key ID="SETTINGS_REPLAYSFOLDER_FOLDERS">
+        <English>Replays Folders:</English>
+        <German>Replays Ordner:</German>
+    </Key>
+    <Key ID="SETTINGS_REPLAYSFOLDER_REGION">
+        <English>Region:</English>
+        <German>Region:</German>
+    </Key>
+    <Key ID="SETTINGS_REPLAYSFOLDER_GAMEVERSION">
+        <English>Game Version:</English>
+        <German>Spielversion:</German>
+    </Key>
+    <Key ID="SETTINGS_REPLAYSFOLDER_STEAM">
+        <English>Steam:</English>
+        <German>Steam:</German>
+    </Key>
+    <Key ID="SETTINGS_REPLAYSFOLDER_VERSIONED">
+        <English>Versioned Replays:</English>
+        <German>Versioned Replays:</German>
+    </Key>
+
+    <Key ID="SETTINGS_UPDATES">
+        <English>Update Notifications</English>
+        <German>Update Benachrichtigungen</German>
+    </Key>
+    <Key ID="SETTINGS_CENTRAL_API">
+        <English>Use Central API</English>
+        <German>Zentrale API Benutzen</German>
+    </Key>
+    <Key ID="SETTINGS_GAME_DIRECTORY">
+        <English>Game Directory</English>
+        <German>Spiel Verzeichnis</German>
+    </Key>
+    <Key ID="SETTINGS_STATS_MODE">
+        <English>Stats Mode</English>
+        <German>Statistik Modus</German>
+    </Key>
+    <Key ID="SETTINGS_GA">
+        <English>Allow Google Analytics</English>
+        <German>Google Analytics Erlauben</German>
+    </Key>
+    <Key ID="SETTINGS_LANGUAGE">
+        <English>Language</English>
+        <German>Sprache</German>
+    </Key>
+    <Key ID="SETTINGS_SAVE">
+        <English>Save</English>
+        <German>Speichern</German>
+    </Key>
+    <Key ID="SETTINGS_CANCEL">
+        <English>Cancel</English>
+        <German>Abbrechen</German>
+    </Key>
+
+
+    <!-- STATS TABLES -->
+    <Key ID="LABEL_WINRATE">
+        <English>WR: </English>
+        <German>WR: </German>
+    </Key>
+    <Key ID="LABEL_DAMAGE">
+        <English>DMG: </English>
+        <German>DMG: </German>
+    </Key>
+    <Key ID="LABEL_REGION">
+        <English>Region: </English>
+        <German>Region: </German>
+    </Key>
+
     <Key ID="LABEL_MYTEAM">
         <English>My Team</English>
         <German>Mein Team</German>
@@ -27,7 +100,7 @@
     </Key>
     <Key ID="COLUMN_AVERAGE_DAMAGE">
         <English>Avg DMG</English>
-        <German>Dein Team</German>
+        <German>Avg DMG</German>
     </Key>
     <Key ID="COLUMN_MATCHES_SHIP">
         <English>M Ship</English>

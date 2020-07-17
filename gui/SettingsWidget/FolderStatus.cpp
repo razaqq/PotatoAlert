@@ -5,8 +5,11 @@
 #include <QLabel>
 #include <QString>
 #include <QGridLayout>
+#include <QEvent>
 #include "FolderStatus.h"
 #include "Game.h"
+#include "StringTable.h"
+
 
 using PotatoAlert::FolderStatus;
 
@@ -20,34 +23,28 @@ void FolderStatus::init()
     auto gridLayout = new QGridLayout;
     gridLayout->setContentsMargins(10, 0, 10, 0);
 
-    auto statusLabel = new QLabel("Status:");
-    statusLabel->setBuddy(this->statusText);
-    gridLayout->addWidget(statusLabel, 0, 0);
+    this->statusLabel->setBuddy(this->statusText);
+    gridLayout->addWidget(this->statusLabel, 0, 0);
     gridLayout->addWidget(this->statusText, 0, 1);
 
-    auto replaysLabel = new QLabel("Replays Folders:");
-    replaysLabel->setBuddy(this->replaysFolders);
-    gridLayout->addWidget(replaysLabel, 1, 0);
+    this->replaysLabel->setBuddy(this->replaysFolders);
+    gridLayout->addWidget(this->replaysLabel, 1, 0);
     gridLayout->addWidget(this->replaysFolders, 1, 1);
 
-    auto regionLabel = new QLabel("Region:");
-    regionLabel->setBuddy(this->region);
-    gridLayout->addWidget(regionLabel, 2, 0);
+    this->regionLabel->setBuddy(this->region);
+    gridLayout->addWidget(this->regionLabel, 2, 0);
     gridLayout->addWidget(this->region, 2, 1);
 
-    auto versionLabel = new QLabel("Game Version:");
-    versionLabel->setBuddy(this->gameVersion);
-    gridLayout->addWidget(versionLabel, 3, 0);
+    this->versionLabel->setBuddy(this->gameVersion);
+    gridLayout->addWidget(this->versionLabel, 3, 0);
     gridLayout->addWidget(this->gameVersion, 3, 1);
 
-    auto steamLabel = new QLabel("Steam:");
-    steamLabel->setBuddy(this->steamVersion);
-    gridLayout->addWidget(steamLabel, 4, 0);
+    this->steamLabel->setBuddy(this->steamVersion);
+    gridLayout->addWidget(this->steamLabel, 4, 0);
     gridLayout->addWidget(this->steamVersion, 4, 1);
 
-    auto versionedLabel = new QLabel("Versioned Replays:");
-    versionLabel->setBuddy(this->versionedReplays);
-    gridLayout->addWidget(versionedLabel, 5, 0);
+    this->versionLabel->setBuddy(this->versionedReplays);
+    gridLayout->addWidget(this->versionedLabel, 5, 0);
     gridLayout->addWidget(this->versionedReplays, 5, 1);
 
     this->setLayout(gridLayout);
@@ -73,4 +70,21 @@ void FolderStatus::updateStatus(folderStatus &status)
         this->replaysFolders->setText(
                 QString::fromStdString(status.replaysPath[0]) + "\n" + QString::fromStdString(status.replaysPath[1])
                 );
+}
+
+void FolderStatus::changeEvent(QEvent* event)
+{
+    if (event->type() == QEvent::LanguageChange)
+    {
+        this->statusLabel->setText(GetString(PotatoAlert::Keys::SETTINGS_REPLAYSFOLDER_STATUS));
+        this->replaysLabel->setText(GetString(PotatoAlert::Keys::SETTINGS_REPLAYSFOLDER_FOLDERS));
+        this->regionLabel->setText(GetString(PotatoAlert::Keys::SETTINGS_REPLAYSFOLDER_REGION));
+        this->versionLabel->setText(GetString(PotatoAlert::Keys::SETTINGS_REPLAYSFOLDER_GAMEVERSION));
+        this->steamLabel->setText(GetString(PotatoAlert::Keys::SETTINGS_REPLAYSFOLDER_STEAM));
+        this->versionedLabel->setText(GetString(PotatoAlert::Keys::SETTINGS_REPLAYSFOLDER_VERSIONED));
+    }
+    else
+    {
+        QWidget::changeEvent(event);
+    }
 }

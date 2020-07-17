@@ -22,8 +22,6 @@ void VerticalMenuBar::init()
 {
 	this->setObjectName("menuBar");
 
-	// this->setMouseTracking(true);
-
     auto layout = new QVBoxLayout;
 	layout->setContentsMargins(0, 10, 0, 10);
 	layout->setSpacing(0);

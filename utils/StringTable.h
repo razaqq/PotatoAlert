@@ -2,6 +2,7 @@
 #pragma once
 
 #include <string>
+#include <QString>
 
 
 namespace PotatoAlert {
@@ -15,10 +16,10 @@ const std::string_view Languages[] = {
 #include "StringTableLanguages.i"
 };
 
-const std::string_view Strings[][10] = {
+const std::string_view Strings[][100] = {  // TODO: size of array
 #include "StringTableStrings.i"
 };
 
-std::string_view GetString(const std::string& lang, Keys key);
+QString GetString(Keys key);
 
 }  // namespace PotatoAlert

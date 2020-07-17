@@ -31,7 +31,7 @@ Config::~Config()
 
 void Config::load()
 {
-    PotatoLogger().Info("Loading config.");
+    PotatoLogger().Debug("Loading config.");
 	try {
 		std::ifstream ifs(this->filePath);
 		this->j = json::parse(ifs);
@@ -71,7 +71,8 @@ void Config::createDefault()
 		{"window_width", 1500},
 		{"window_x", 0},
 		{"window_y", 0},
-		{"game_folder", ""}
+		{"game_folder", ""},
+        {"language", 0}
 	};
 	this->save();
 }

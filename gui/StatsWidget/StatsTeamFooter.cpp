@@ -4,43 +4,44 @@
 #include <QLabel>
 #include <QHBoxLayout>
 #include <QString>
+#include <QEvent>
 #include <iostream>
 #include <vector>
 #include "StatsTeamFooter.h"
+#include "StringTable.h"
 
 
 using PotatoAlert::StatsTeamFooter;
 
 StatsTeamFooter::StatsTeamFooter(QWidget* parent) : QWidget(parent)
 {
-	init();
-	// this->setStyleSheet("border: 1px solid red;");
+	this->init();
 }
 
 void StatsTeamFooter::init()
 {
-	QHBoxLayout* layout = new QHBoxLayout;
+	auto layout = new QHBoxLayout;
 	layout->setContentsMargins(10, 0, 10, 0);
 	layout->setSpacing(10);
 
 	const QFont labelFont = QFont("Segoe UI", 10, QFont::Bold);
 
 	// left side
-	QWidget* leftWidget = new QWidget;
-	QHBoxLayout* leftLayout = new QHBoxLayout;
+	auto leftWidget = new QWidget;
+	auto leftLayout = new QHBoxLayout;
 	leftLayout->setContentsMargins(10, 0, 10, 0);
 	leftLayout->setSpacing(20);
 
 	// right side
-	QWidget* rightWidget = new QWidget;
-	QHBoxLayout* rightLayout = new QHBoxLayout;
+	auto rightWidget = new QWidget;
+	auto rightLayout = new QHBoxLayout;
 	rightLayout->setContentsMargins(10, 0, 10, 0);
 	rightLayout->setSpacing(20);
 
 	// set font on all labels
 	std::vector<std::vector<QLabel*>> labels{
-		std::vector<QLabel*>{ new QLabel("WR: "), this->team1Wr, new QLabel("DMG: "), this->team1Dmg, this->team1Tag, this->team1Name, this->region1Label, this->team1Region },
-		std::vector<QLabel*>{ new QLabel("WR: "), this->team2Wr, new QLabel("DMG: "), this->team2Dmg, this->team2Tag, this->team2Name, this->region2Label, this->team2Region }
+		std::vector<QLabel*>{ this->team1WrLabel, this->team1Wr, this->team1DmgLabel, this->team1Dmg, this->team1Tag, this->team1Name, this->team1RegionLabel, this->team1Region },
+		std::vector<QLabel*>{ this->team2WrLabel, this->team2Wr, this->team2DmgLabel, this->team2Dmg, this->team2Tag, this->team2Name, this->team2RegionLabel, this->team2Region }
 	};
 	for (auto side : labels)
 		for (auto label : side)
@@ -51,8 +52,8 @@ void StatsTeamFooter::init()
 	{
 		for (size_t element = 0; element < 4; element++)
 		{
-			QWidget* w = new QWidget;
-			QHBoxLayout* l = new QHBoxLayout;
+			auto w = new QWidget;
+			auto l = new QHBoxLayout;
 			l->setContentsMargins(0, 0, 0, 0);
 			l->setSpacing(0);
 
@@ -111,7 +112,7 @@ void StatsTeamFooter::setClans(const std::vector<QString>& clans)
 		this->team1Tag->setVisible(true);
 		this->team1Name->setVisible(true);
 		this->team1Region->setVisible(true);
-		this->region1Label->setVisible(true);
+		this->team1RegionLabel->setVisible(true);
 
 		this->team2Tag->setText(clans[4]);
 		this->team2Tag->setStyleSheet(clans[5]);
@@ -121,7 +122,7 @@ void StatsTeamFooter::setClans(const std::vector<QString>& clans)
 		this->team2Tag->setVisible(true);
 		this->team2Name->setVisible(true);
 		this->team2Region->setVisible(true);
-		this->region2Label->setVisible(true);
+		this->team2RegionLabel->setVisible(true);
 	}
 	else
 	{
@@ -129,11 +130,28 @@ void StatsTeamFooter::setClans(const std::vector<QString>& clans)
 		this->team1Tag->setVisible(false);
 		this->team1Name->setVisible(false);
 		this->team1Region->setVisible(false);
-		this->region1Label->setVisible(false);
+		this->team1RegionLabel->setVisible(false);
 
 		this->team2Tag->setVisible(false);
 		this->team2Name->setVisible(false);
 		this->team2Region->setVisible(false);
-		this->region2Label->setVisible(false);
+		this->team2RegionLabel->setVisible(false);
 	}
+}
+
+void StatsTeamFooter::changeEvent(QEvent* event)
+{
+    if (event->type() == QEvent::LanguageChange)
+    {
+        this->team1WrLabel->setText(GetString(Keys::LABEL_WINRATE));
+        this->team1DmgLabel->setText(GetString(Keys::LABEL_DAMAGE));
+        this->team1RegionLabel->setText(GetString(Keys::LABEL_REGION));
+        this->team2WrLabel->setText(GetString(Keys::LABEL_WINRATE));
+        this->team2DmgLabel->setText(GetString(Keys::LABEL_DAMAGE));
+        this->team2RegionLabel->setText(GetString(Keys::LABEL_REGION));
+    }
+    else
+    {
+        QWidget::changeEvent(event);
+    }
 }

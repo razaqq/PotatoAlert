@@ -8,16 +8,13 @@
 #include <QString>
 #include <QLatin1String>
 #include <string>
-#include "utils/Logger.h"
-#include "utils/Config.h"
-#include "utils/PotatoClient.h"
-#include "utils/Palette.h"
-#include "utils/Updater.h"
-#include "gui/MainWindow.h"
-#include "gui/NativeWindow.h"
+#include "Config.h"
+#include "PotatoClient.h"
+#include "Palette.h"
+#include "Updater.h"
+#include "MainWindow.h"
+#include "NativeWindow.h"
 #include "VersionInfo.h"
-#include <iostream>
-#include "StringTable.h"
 
 
 using PotatoAlert::MainWindow;
@@ -35,8 +32,6 @@ int main(int argc, char *argv[]) {
 	QApplication app(argc, argv);
     QApplication::setOrganizationName(PRODUCT_COMPANY_NAME);
 
-	std::cout << PotatoAlert::GetString("English", PotatoAlert::Keys::COLUMN_AVERAGE_DAMAGE);
-
 	QFont font = QApplication::font();
 	font.setStyleStrategy(QFont::PreferAntialias);
 	QApplication::setFont(font);
@@ -52,6 +47,10 @@ int main(int argc, char *argv[]) {
     QApplication::setStyle("fusion");
     QApplication::setPalette(dark());
     app.setStyleSheet(style);
+
+    // force update of language
+    QEvent event(QEvent::LanguageChange);
+    QApplication::sendEvent(mainWindow, &event);
 
     if (Updater::updateAvailable())
     {

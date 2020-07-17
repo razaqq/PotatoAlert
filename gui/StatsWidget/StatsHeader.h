@@ -19,8 +19,13 @@ public:
 	void setStatus(int statusID, const std::string& statusText);
 private:
 	void init();
+    void changeEvent(QEvent* event);
+
 	QLabel* statusIcon = new QLabel;
 	QLabel* statusText = new QLabel;
+
+	QLabel* team1Label = new QLabel;
+    QLabel* team2Label = new QLabel;
 
 	QMovie* loading = new QMovie(":/loading.gif");
 	QPixmap ready = QPixmap(":/ready.png");

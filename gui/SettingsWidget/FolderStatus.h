@@ -3,6 +3,7 @@
 
 #include <QLabel>
 #include <QWidget>
+#include <QEvent>
 #include "Game.h"
 
 namespace PotatoAlert {
@@ -14,6 +15,14 @@ public:
     void updateStatus(folderStatus& status);
 private:
     void init();
+    void changeEvent(QEvent* event);
+
+    QLabel* statusLabel = new QLabel;
+    QLabel* replaysLabel = new QLabel;
+    QLabel* regionLabel = new QLabel;
+    QLabel* versionLabel = new QLabel;
+    QLabel* steamLabel = new QLabel;
+    QLabel* versionedLabel = new QLabel;
 
     QLabel* region = new QLabel;
     QLabel* gameVersion = new QLabel;

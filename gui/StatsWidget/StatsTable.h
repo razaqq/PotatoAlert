@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QMouseEvent>
 #include <QString>
+#include <QEvent>
 #include <vector>
 
 
@@ -19,6 +20,7 @@ private:
 	void init();
 	void initHeaders();
 	void clickEvent(int row, int column);
+	void changeEvent(QEvent* event);
 
 	std::vector<QString> wowsNumbers;
 };

@@ -2,20 +2,11 @@
 
 #include "StringTable.h"
 #include "Config.h"
+#include <QString>
 
 
-std::string_view PotatoAlert::GetString(const std::string& lang, Keys key)
+QString PotatoAlert::GetString(Keys key)
 {
-    int langIndex;
-
-    for (int i = 0; i < Languages->size(); i++)
-    {
-        if (Languages[i] == lang)
-            langIndex = i;
-    }
-
-    if (langIndex == -1)
-        return "";
-
-    return Strings[langIndex][(int)(Keys)key];
+    auto lang = PotatoConfig().get<int>("language");
+    return QString::fromStdString(std::string(Strings[lang][(int)(Keys)key]));
 }

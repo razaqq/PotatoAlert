@@ -12,7 +12,7 @@ class Logger
 public:
 	Logger();
 	~Logger();
-	static void Debug(const char* text);
+	void Debug(const char* text);
 	void Info(const char* text);
 	void Warn(const char* text);
 	void Error(const char* text);

@@ -2,6 +2,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QEvent>
 #include <QComboBox>
 #include <QFileDialog>
 #include <QLineEdit>
@@ -27,14 +28,23 @@ private:
 	void load();
 	void connectSignals();
     void checkPath();
+    void changeEvent(QEvent* event);
 
 	PotatoClient* pc;
+
+    QLabel* updateLabel = new QLabel;
+    QLabel* centralApiLabel = new QLabel;
+    QLabel* gamePathLabel = new QLabel;
+    QLabel* statsModeLabel = new QLabel;
+    QLabel* gaLabel = new QLabel;
+    QLabel* languageLabel = new QLabel;
 
 	SettingsSwitch* updates = new SettingsSwitch;
 	SettingsSwitch* centralApi = new SettingsSwitch;
 	SettingsSwitch* googleAnalytics = new SettingsSwitch;
 	
 	SettingsChoice* statsMode;
+    SettingsChoice* language;
 
 	QPushButton* saveButton;
 	QPushButton* cancelButton;
