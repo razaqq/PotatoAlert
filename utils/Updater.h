@@ -11,4 +11,4 @@ public:
 	static void update();
 };
 
-};  // namespace PotatoAlert
+}  // namespace PotatoAlert

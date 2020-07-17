@@ -31,10 +31,10 @@ struct folderStatus
 class Game
 {
 public:
-	static folderStatus checkPath(const std::string& selectedPath, Logger* logger);
-	static bool getResFolderPath(folderStatus& status, Logger* logger);
-	static bool readEngineConfig(folderStatus& status, Logger* logger);
-	static bool readPreferences(folderStatus& status, Logger* logger);
+	static folderStatus checkPath(const std::string& selectedPath);
+	static bool getResFolderPath(folderStatus& status);
+	static bool readEngineConfig(folderStatus& status);
+	static bool readPreferences(folderStatus& status);
 	static void setReplaysFolder(folderStatus& status);
 };
 

@@ -18,7 +18,7 @@ const char errorPrefix[] = " - [ERROR] ";
 
 Logger::Logger()
 {
-	QString dirPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    QString dirPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/PotatoAlert";
 
 	QDir d;
 	d.mkpath(dirPath);
@@ -68,4 +68,10 @@ std::string Logger::getTimeString()
 	strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", &localTime);
 
 	return std::string(buffer);
+}
+
+Logger& PotatoAlert::PotatoLogger()
+{
+    static Logger l;
+    return l;
 }

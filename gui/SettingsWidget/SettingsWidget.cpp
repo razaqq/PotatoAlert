@@ -31,10 +31,8 @@ using PotatoAlert::SettingsWidget;
 using PotatoAlert::SettingsChoice;
 using PotatoAlert::Game;
 
-SettingsWidget::SettingsWidget(QWidget* parent, Config* c, Logger* l, PotatoClient* pc) : QWidget(parent)
+SettingsWidget::SettingsWidget(QWidget* parent, PotatoClient* pc) : QWidget(parent)
 {
-	this->config = c;
-	this->logger = l;
 	this->pc = pc;
 	this->init();
 	this->connectSignals();
@@ -152,28 +150,28 @@ void SettingsWidget::init()
 
 void SettingsWidget::load()
 {
-	this->updates->setChecked(this->config->get<bool>("update_notifications"));
-	this->centralApi->setChecked(this->config->get<bool>("use_central_api"));
-	this->googleAnalytics->setChecked(this->config->get<bool>("use_ga"));
-	this->gamePathEdit->setText(QString::fromStdString(this->config->get<std::string>("game_folder")));
-	this->statsMode->btnGroup->button(this->config->get<int>("stats_mode"))->setChecked(true);
+	this->updates->setChecked(PotatoConfig().get<bool>("update_notifications"));
+	this->centralApi->setChecked(PotatoConfig().get<bool>("use_central_api"));
+	this->googleAnalytics->setChecked(PotatoConfig().get<bool>("use_ga"));
+	this->gamePathEdit->setText(QString::fromStdString(PotatoConfig().get<std::string>("game_folder")));
+	this->statsMode->btnGroup->button(PotatoConfig().get<int>("stats_mode"))->setChecked(true);
 }
 
 void SettingsWidget::connectSignals()
 {
-	connect(this->saveButton, &QPushButton::clicked, [this]() { this->config->save(); });
-	connect(this->cancelButton, &QPushButton::clicked, [this]() { this->config->load(); this->load(); this->checkPath(); });
-	connect(this->updates, &SettingsSwitch::clicked, [this](bool checked) { this->config->set<bool>("update_notifications", checked); });
-	connect(this->centralApi, &SettingsSwitch::clicked, [this](bool checked) { this->config->set("use_central_api", checked); });
-	connect(this->googleAnalytics, &SettingsSwitch::clicked, [this](bool checked) { this->config->set("use_ga", checked); });
-	connect(this->centralApi, &SettingsSwitch::clicked, [this](bool checked) { this->config->set<bool>("use_central_api", checked); });
-	connect(this->statsMode->btnGroup, &QButtonGroup::idClicked, [this](int id) { this->config->set<int>("stats_mode", id); });
+	connect(this->saveButton, &QPushButton::clicked, [this]() { PotatoConfig().save(); });
+	connect(this->cancelButton, &QPushButton::clicked, [this]() { PotatoConfig().load(); this->load(); this->checkPath(); });
+	connect(this->updates, &SettingsSwitch::clicked, [this](bool checked) { PotatoConfig().set<bool>("update_notifications", checked); });
+	connect(this->centralApi, &SettingsSwitch::clicked, [this](bool checked) { PotatoConfig().set("use_central_api", checked); });
+	connect(this->googleAnalytics, &SettingsSwitch::clicked, [this](bool checked) { PotatoConfig().set("use_ga", checked); });
+	connect(this->centralApi, &SettingsSwitch::clicked, [this](bool checked) { PotatoConfig().set<bool>("use_central_api", checked); });
+	connect(this->statsMode->btnGroup, &QButtonGroup::idClicked, [this](int id) { PotatoConfig().set<int>("stats_mode", id); });
 	connect(this->gamePathButton, &QToolButton::clicked, [this]() { 
 		QString dir = QFileDialog::getExistingDirectory(this, "Select Game Directory", "", QFileDialog::ShowDirsOnly);
 		if (dir != "")
 		{
 			this->gamePathEdit->setText(dir);
-			this->config->set("game_folder", dir.toStdString());
+            PotatoConfig().set("game_folder", dir.toStdString());
 			this->checkPath();
 		}
 	});
@@ -181,8 +179,8 @@ void SettingsWidget::connectSignals()
 
 void SettingsWidget::checkPath()
 {
-    auto path = this->config->get<std::string>("game_folder");
-    folderStatus status = Game::checkPath(path, this->logger);
+    auto path = PotatoConfig().get<std::string>("game_folder");
+    folderStatus status = Game::checkPath(path);
     this->folderStatusGui->updateStatus(status);
     this->pc->setFolderStatus(status);
 }

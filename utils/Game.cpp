@@ -16,7 +16,7 @@ using PotatoAlert::Game;
 using PotatoAlert::folderStatus;
 namespace fs = std::filesystem;
 
-folderStatus Game::checkPath(const std::string& selectedPath, Logger* logger)
+folderStatus Game::checkPath(const std::string& selectedPath)
 {
 	folderStatus status;
 	status.gamePath = selectedPath;
@@ -25,10 +25,10 @@ folderStatus Game::checkPath(const std::string& selectedPath, Logger* logger)
 	if (!selectedPath.empty() && fs::exists(gamePath))
 	{
 		status.steamVersion = fs::exists(gamePath / "bin" / "clientrunner");
-		Game::getResFolderPath(status, logger);
-		if (Game::readEngineConfig(status, logger))
+		Game::getResFolderPath(status);
+		if (Game::readEngineConfig(status))
 		{
-            if (Game::readPreferences(status, logger))
+            if (Game::readPreferences(status))
             {
                 Game::setReplaysFolder(status);
                 bool found = true;
@@ -57,7 +57,7 @@ folderStatus Game::checkPath(const std::string& selectedPath, Logger* logger)
 }
 
 // finds the res folder path in the currently selected directory
-bool Game::getResFolderPath(folderStatus& status, Logger* logger)
+bool Game::getResFolderPath(folderStatus& status)
 {
     // get newest folder version inside /bin folder
     int folderVersion = -1;
@@ -82,13 +82,13 @@ bool Game::getResFolderPath(folderStatus& status, Logger* logger)
     }
     else
     {
-        logger->Error("Could not find a valid res folder!");
+        PotatoLogger().Error("Could not find a valid res folder!");
         return false;
     }
 }
 
 // reads the engine config and sets values
-bool Game::readEngineConfig(folderStatus& status, Logger* logger)
+bool Game::readEngineConfig(folderStatus& status)
 {
 	fs::path resPath(status.resPath);
 	if (fs::exists(resPath / "engine_config.xml"))
@@ -141,14 +141,14 @@ bool Game::readEngineConfig(folderStatus& status, Logger* logger)
 	}
 	else
 	{
-		logger->Error("engine_config.xml does not exist in path: ");
-		logger->Error(status.resPath.c_str());
+        PotatoLogger().Error("engine_config.xml does not exist in path: ");
+        PotatoLogger().Error(status.resPath.c_str());
 		return false;
 	}
 }
 
 // reads game version and region from preferences.xml
-bool Game::readPreferences(folderStatus& status, Logger* logger)
+bool Game::readPreferences(folderStatus& status)
 {
 	// For some reason preferences.xml is not valid xml and so we have to parse it with regex instead of xml
     std::string preferencesPath;
@@ -175,7 +175,7 @@ bool Game::readPreferences(folderStatus& status, Logger* logger)
 			std::replace(status.gameVersion.begin(), status.gameVersion.end(), ',', '.');
 			status.gameVersion.erase(std::remove(status.gameVersion.begin(), status.gameVersion.end(), '\t'), status.gameVersion.end());
 		} else {
-			logger->Error("Cannot find version string in preferences.xml.");
+            PotatoLogger().Error("Cannot find version string in preferences.xml.");
 			return false;
 		}
 
@@ -186,7 +186,7 @@ bool Game::readPreferences(folderStatus& status, Logger* logger)
             status.region.erase(std::remove(status.region.begin(), status.region.end(), '\t'), status.region.end());  // remove tabs
             std::transform(status.region.begin(), status.region.end(), status.region.begin(), ::tolower);  // to lower
         } else {
-            logger->Error("Cannot find region string in preferences.xml.");
+            PotatoLogger().Error("Cannot find region string in preferences.xml.");
             return false;
         }
 
@@ -194,8 +194,8 @@ bool Game::readPreferences(folderStatus& status, Logger* logger)
 	}
 	else
 	{
-		logger->Error("Cannot find preferences.xml for reading.");
-		logger->Error(preferencesPath.c_str());
+        PotatoLogger().Error("Cannot find preferences.xml for reading.");
+        PotatoLogger().Error(preferencesPath.c_str());
 		return false;
 	}
 }

@@ -24,7 +24,7 @@ class PotatoClient :  public QObject
 {
 	Q_OBJECT
 public:
-	PotatoClient(Config* config, Logger* l);
+	PotatoClient();
 	void init();
 	void setFolderStatus(folderStatus& status);
 private:
@@ -32,8 +32,6 @@ private:
 	void onDirectoryChanged(const QString& path);
 	void updateReplaysPath();
 
-	Config* config;
-	Logger* logger;
 	QWebSocket* socket = new QWebSocket();
 	QFileSystemWatcher* watcher = new QFileSystemWatcher;
 

@@ -20,11 +20,9 @@ namespace PotatoAlert {
 class MainWindow : public QMainWindow
 {
 public:
-	MainWindow(Config* c, Logger* l, PotatoClient* pc);
+	MainWindow(PotatoClient* pc);
 protected:
 	void init();
-	Config* c;
-	Logger* l;
 	PotatoClient* pc;
 
 	void switchTab(int i);

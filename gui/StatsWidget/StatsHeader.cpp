@@ -28,7 +28,7 @@ void StatsHeader::init()
 	this->ready = this->ready.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 	this->error = this->error.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
-	QHBoxLayout* layout = new QHBoxLayout;
+	auto layout = new QHBoxLayout;
 	layout->setContentsMargins(10, 0, 10, 0);
 	layout->setSpacing(10);
 
@@ -38,8 +38,8 @@ void StatsHeader::init()
 	const QFont labelFont("Segoe UI", 16, QFont::Bold);
 
 	// status icon and text
-	QWidget* status = new QWidget(this);
-	QHBoxLayout* statusLayout = new QHBoxLayout;
+	auto status = new QWidget(this);
+	auto statusLayout = new QHBoxLayout;
 	statusLayout->getContentsMargins(0, 0, 0, 0);
 	statusLayout->setSpacing(0);
 	status->setFixedWidth(130);
@@ -55,12 +55,13 @@ void StatsHeader::init()
 	// team 1 label
 	CStringW text;
 	text.LoadStringA(104);
-	QLabel* team1 = new QLabel(QString::fromWCharArray(text, text.GetLength()));
+	// QLabel* team1 = new QLabel(QString::fromWCharArray(text, text.GetLength()));
+	auto team1 = new QLabel();
 	team1->setFont(labelFont);
 
 	// team 2 label
 	text.LoadStringA(105);
-	QLabel* team2 = new QLabel(QString::fromWCharArray(text, text.GetLength()));
+	auto team2 = new QLabel(QString::fromWCharArray(text, text.GetLength()));
 	team2->setFont(labelFont);
 
 	// dummy with same width as status

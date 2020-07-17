@@ -1,0 +1,44 @@
+<Package name="Translations">
+    <!-- TABLES -->
+    <Key ID="LABEL_MYTEAM">
+        <English>My Team</English>
+        <German>Mein Team</German>
+    </Key>
+    <Key ID="LABEL_ENEMYTEAM">
+        <English>Enemy Team</English>
+        <German>Gegnerteam</German>
+    </Key>
+
+    <Key ID="COLUMN_PLAYER">
+        <English>Player</English>
+        <German>Spieler</German>
+    </Key>
+    <Key ID="COLUMN_SHIP">
+        <English>Ship</English>
+        <German>Schiff</German>
+    </Key>
+    <Key ID="COLUMN_MATCHES">
+        <English>Matches</English>
+        <German>Gefechte</German>
+    </Key>
+    <Key ID="COLUMN_WINRATE">
+        <English>Winrate</English>
+        <German>Winrate</German>
+    </Key>
+    <Key ID="COLUMN_AVERAGE_DAMAGE">
+        <English>Avg DMG</English>
+        <German>Dein Team</German>
+    </Key>
+    <Key ID="COLUMN_MATCHES_SHIP">
+        <English>M Ship</English>
+        <German>Gef. Schiff</German>
+    </Key>
+    <Key ID="COLUMN_WINRATE_SHIP">
+        <English>WR Ship</English>
+        <German>WR Schiff</German>
+    </Key>
+    <Key ID="COLUMN_AVERAGE_DAMAGE_SHIP">
+        <English>DMG Ship</English>
+        <German>DMG Schiff</German>
+    </Key>
+</Package>

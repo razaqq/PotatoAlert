@@ -1,11 +1,11 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Logger.h"
 #include <QString>
 #include <QObject>
 #include <string>
 #include <nlohmann/json.hpp>
-#include "Logger.h"
 
 
 namespace PotatoAlert {
@@ -14,7 +14,7 @@ class Config : public QObject
 {
 	Q_OBJECT
 public:
-	explicit Config(Logger* l);
+	explicit Config();
 	~Config() override;
 
 	void load();
@@ -29,9 +29,10 @@ public:
 private:
 	std::string filePath;
 	static std::string getFilePath() ;
-	Logger* l;
 signals:
 	void modified();
 };
+
+Config& PotatoConfig();
 
 }  // namespace PotatoAlert

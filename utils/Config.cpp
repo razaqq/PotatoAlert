@@ -1,5 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Logger.h"
 #include "Config.h"
 #include <QDir>
 #include <QStandardPaths>
@@ -8,14 +9,14 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
+
 using PotatoAlert::Config;
 using nlohmann::json;
 
 // TODO: create default config if config cannot be parsed
 
-Config::Config(Logger* l)
+Config::Config()
 {
-	this->l = l;
 	this->filePath = Config::getFilePath();
 	if (this->exists())
 		this->load();
@@ -30,7 +31,7 @@ Config::~Config()
 
 void Config::load()
 {
-	this->l->Info("Loading config.");
+    PotatoLogger().Info("Loading config.");
 	try {
 		std::ifstream ifs(this->filePath);
 		this->j = json::parse(ifs);
@@ -38,7 +39,7 @@ void Config::load()
 	catch (json::exception& e)
 	{
 		std::string errorText = "Cannot read config: " + std::string(e.what());
-		this->l->Error(errorText.c_str());
+        PotatoLogger().Error(errorText.c_str());
 		exit(1);
 	}
 }
@@ -58,7 +59,7 @@ bool Config::exists() const
 
 void Config::createDefault()
 {
-	this->l->Info("Creating default config.");
+    PotatoLogger().Info("Creating default config.");
 	this->j = {
 		{"stats_mode", 1},  // "current mode", "pvp", "ranked", "clan"
 		{"update_notifications", true},
@@ -101,11 +102,17 @@ template void Config::set(const char* name, std::vector<std::string> value);
 
 std::string Config::getFilePath()
 {
-	QString dirPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+	QString dirPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/PotatoAlert";
 
 	QDir d;
 	d.mkpath(dirPath);
 	d.setPath(dirPath);
 
 	return d.filePath("config.json").toStdString();
+}
+
+Config& PotatoAlert::PotatoConfig()
+{
+    static Config p;
+    return p;
 }

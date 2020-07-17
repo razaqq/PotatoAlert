@@ -23,4 +23,6 @@ private:
 	Logger& operator=(const Logger&);
 };
 
-};  // namespace PotatoAlert
+Logger& PotatoLogger();
+
+} // namespace PotatoAlert

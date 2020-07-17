@@ -31,15 +31,14 @@
 
 using PotatoAlert::PotatoClient;
 using nlohmann::json;
+namespace fs = std::filesystem;
 
 const QUrl url("ws://www.perry-swift.de:33333");
 // const QUrl url("ws://192.168.178.36:10000");
 const std::string arenaInfoFile = "tempArenaInfo.json";
 
-PotatoClient::PotatoClient(Config* config, Logger* logger) : QObject()
+PotatoClient::PotatoClient() : QObject()
 {
-	this->config = config;
-	this->logger = logger;
 }
 
 void PotatoClient::init()
@@ -57,7 +56,7 @@ void PotatoClient::init()
             emit this->status(STATUS_ERROR, "Connection");
         else
             emit this->status(STATUS_ERROR, "Websocket Error");
-        this->logger->Error(this->socket->errorString().toStdString().c_str());
+        PotatoLogger().Error(this->socket->errorString().toStdString().c_str());
     });
 
 	connect(this->socket, &QWebSocket::textMessageReceived, this, &PotatoClient::onResponse);
@@ -91,16 +90,16 @@ void PotatoClient::onDirectoryChanged(const QString& path)
     Logger::Debug("Directory changed.");
 
 	std::string filePath = path.toStdString() + "\\" + arenaInfoFile;
-	std::string tempPath = std::filesystem::temp_directory_path().append(arenaInfoFile + ".temp").string();
+	std::string tempPath = fs::temp_directory_path().append(arenaInfoFile + ".temp").string();
 
-	if (std::filesystem::exists(filePath))
+	if (fs::exists(filePath))
 	{
 		try
 		{
 			// read arena info from file, copy file to avoid locking it
 			std::string arenaInfo;
 			try {
-				if (!std::filesystem::copy_file(filePath, tempPath, std::filesystem::copy_options::overwrite_existing))
+				if (!fs::copy_file(filePath, tempPath, fs::copy_options::overwrite_existing))
 				{
                     Logger::Debug("failed to copy file");
 					return;
@@ -112,9 +111,9 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 				arenaInfo = buffer.str();
 				fs.close();
 
-				std::filesystem::remove(tempPath);
+				fs::remove(tempPath);
 			}
-			catch (std::filesystem::filesystem_error& e) {
+			catch (fs::filesystem_error& e) {
 				std::cerr << e.what() << std::endl;
 				return;
 			}
@@ -124,7 +123,7 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 
 			// parse arenaInfo to json and add region
 			nlohmann::json j = nlohmann::json::parse(arenaInfo);
-			j["region"] = this->config->get<std::string>("region");
+			j["region"] = PotatoConfig().get<std::string>("region");
 			QString newArenaInfo = QString::fromStdString(j.dump());
 
 			// make sure we dont pull the same match twice
@@ -140,8 +139,8 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 		}
 		catch (nlohmann::json::parse_error& e)
 		{
-			this->logger->Error("Failed to parse arenaInfoFile to json.");
-			this->logger->Error(e.what());
+            PotatoLogger().Error("Failed to parse arenaInfoFile to json.");
+            PotatoLogger().Error(e.what());
 			emit this->status(STATUS_ERROR, "JSON Parse Error");
 		}
 	}
@@ -162,8 +161,8 @@ void PotatoClient::onResponse(const QString& message)
 		j = json::parse(message.toStdString());
 	}
 	catch (json::parse_error& e) {
-		this->logger->Error("ParseError while parsing server response json.");
-		this->logger->Error(e.what());
+        PotatoLogger().Error("ParseError while parsing server response json.");
+        PotatoLogger().Error(e.what());
 		emit this->status(STATUS_ERROR, "JSON Parse Error");
 		return;
 	}
@@ -203,14 +202,14 @@ void PotatoClient::onResponse(const QString& message)
 		emit this->status(STATUS_READY, "Ready");
 	}
 	catch (json::parse_error& e) {
-		this->logger->Error("ParseError while parsing server response json.");
-		this->logger->Error(e.what());
+        PotatoLogger().Error("ParseError while parsing server response json.");
+        PotatoLogger().Error(e.what());
 		emit this->status(STATUS_ERROR, "JSON Parse Error");
 		return;
 	}
 	catch (json::type_error& e) {
-		this->logger->Error("TypeError while parsing server response json.");
-		this->logger->Error(e.what());
+        PotatoLogger().Error("TypeError while parsing server response json.");
+        PotatoLogger().Error(e.what());
 		emit this->status(STATUS_ERROR, "JSON Type Error");
 		return;
 	}

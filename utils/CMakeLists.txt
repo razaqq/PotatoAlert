@@ -8,6 +8,7 @@ set(
         PotatoClient.cpp
         StatsParser.cpp
         Updater.cpp
+        StringTable.cpp
 )
 set(CMAKE_CXX_FLAGS "/EHsc")
 

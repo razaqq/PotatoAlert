@@ -2,11 +2,25 @@ cmake_minimum_required(VERSION 3.16)
 project(PotatoAlert)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+include(generate_product_version)
+generate_product_version(
+        VersionFilesOutputVariable
+        NAME ${PROJECT_NAME}
+        FILE_DESCRIPTION "Stats tool for World of Warships"
+        COMPANY_NAME github.com/razaqq
+        ICON Resources/potato.ico
+        VERSION_MAJOR 3
+        VERSION_MINOR 0
+        VERSION_PATCH ${BUILD_COUNTER}
+        VERSION_REVISION ${BUILD_REVISION}
+)
 
 find_package(Qt5 COMPONENTS Widgets Core Gui WebSockets REQUIRED)
 
@@ -19,12 +33,13 @@ link_directories(${PROJECT_SOURCE_DIR}/ThirdParty/fmt/lib)
 
 include_directories(utils)
 include_directories(gui)
+include_directories(Resources)
 
 add_subdirectory(utils)
 add_subdirectory(gui)
 add_subdirectory(test)
 
-add_executable(PotatoAlert main.cpp Resources/PotatoAlert.rc Resources/PotatoAlert.qrc)
+add_executable(PotatoAlert main.cpp Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set_property(TARGET PotatoAlert PROPERTY WIN32_EXECUTABLE true)

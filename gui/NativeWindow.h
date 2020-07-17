@@ -19,10 +19,9 @@ class NativeWindow : public QWidget
 {
 	Q_OBJECT
 public:
-	NativeWindow(QMainWindow* mainWindow, Config* c);
+	NativeWindow(QMainWindow* mainWindow);
 	bool confirmUpdate();
 private:
-	Config* c;
 	QMainWindow* mainWindow;
 
 	int borderWidth = 4;

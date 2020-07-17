@@ -23,10 +23,8 @@
 
 using PotatoAlert::MainWindow;
 
-MainWindow::MainWindow(Config* c, Logger* l, PotatoClient* pc) : QMainWindow()
+MainWindow::MainWindow(PotatoClient* pc) : QMainWindow()
 {
-	this->c = c;
-	this->l = l;
 	this->pc = pc;
 	this->init();
 	this->connectSignals();
@@ -55,7 +53,7 @@ void MainWindow::init()
 	dock->setWidget(this->menuBar);
 	this->addDockWidget(Qt::LeftDockWidgetArea, dock);
 
-	this->settingsWidget = new SettingsWidget(this, this->c, this->l, this->pc);
+	this->settingsWidget = new SettingsWidget(this, this->pc);
 
 	// set other tabs invisible
 	this->settingsWidget->setVisible(false);
