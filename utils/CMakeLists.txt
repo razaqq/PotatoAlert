@@ -9,6 +9,7 @@ set(
         StatsParser.cpp
         Updater.cpp
         StringTable.cpp
+        CSVWriter.cpp
 )
 set(CMAKE_CXX_FLAGS "/EHsc")
 

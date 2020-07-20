@@ -166,6 +166,10 @@ void PotatoClient::onResponse(const QString& message)
 		return;
 	}
 
+	// save match to csv file
+	if (PotatoConfig().get<bool>("save_csv"))
+	    this->csvWriter.saveMatch(message.toStdString());
+
     PotatoLogger().Debug("Updating tables.");
 
 	auto matchGroup = j["MatchGroup"].get<std::string>();

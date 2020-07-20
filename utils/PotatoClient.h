@@ -14,6 +14,7 @@
 #include "Config.h"
 #include "Game.h"
 #include "Logger.h"
+#include "CSVWriter.h"
 
 
 typedef std::vector<std::vector<std::variant<QLabel*, QTableWidgetItem*>>> teamType;
@@ -37,6 +38,7 @@ private:
 
 	QString tempArenaInfo;
 	folderStatus fStatus;
+	CSVWriter csvWriter;
 signals:
 	void teamsReady(std::vector<teamType> team1);
 	void avgReady(std::vector<QString> avgs);

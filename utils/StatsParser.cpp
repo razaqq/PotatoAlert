@@ -28,7 +28,6 @@ teamType StatsParser::parseTeam(json& teamJson, std::string& matchGroup)
 		playerType player;
 
 		auto playerName = playerJson["Name"].get<std::string>();
-		auto accountID = playerJson["AccountID"].get<std::string>();
 		auto hiddenProfile = playerJson["HiddenPro"].get<bool>();
 		auto clanJson = playerJson["Clan"].get<json>();
 		auto shipJson = playerJson["Ship"].get<json>();
