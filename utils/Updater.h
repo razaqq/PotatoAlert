@@ -9,6 +9,7 @@ class Updater
 public:
 	static bool updateAvailable();
 	static void update();
+	static void download();
 };
 
 }  // namespace PotatoAlert

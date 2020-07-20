@@ -69,13 +69,13 @@ TEST_CASE( "GameTest_GetResFolderPathTest" )
             "", false, false
     };
     REQUIRE( Game::getResFolderPath(status, nullptr) );
-    REQUIRE( status.resPath == (nsnvDir / "bin" / "2666186" / "res").string() );
+    REQUIRE(status.resFolderPath == (nsnvDir / "bin" / "2666186" / "res").string() );
 
     status.gamePath = snvexeDir.string();
     status.steamVersion = true;
     REQUIRE( Game::getResFolderPath(status, nullptr) );
     REQUIRE( status.folderVersion == "1427460" );
-    REQUIRE( status.resPath == (snvexeDir / "bin" / "1427460" / "res").string() );
+    REQUIRE(status.resFolderPath == (snvexeDir / "bin" / "1427460" / "res").string() );
 }
 
 TEST_CASE( "GameTest_ReadEngineConfigTest" )

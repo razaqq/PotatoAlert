@@ -191,7 +191,7 @@ QMainWindow::separator
   background-color: palette(base); /* base */
 }
 
-#settingsWidget, #about_widget, #help_widget {
+#settingsWidget, #aboutWidget {
   background-color: #444444;
 }
 

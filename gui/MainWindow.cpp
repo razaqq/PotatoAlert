@@ -81,7 +81,7 @@ void MainWindow::switchTab(int i)
         QDesktopServices::openUrl(QUrl("https://discord.gg/Ut8t8PA"));
         return;
     case 3:  // log
-        QDesktopServices::openUrl(QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)));
+        QDesktopServices::openUrl(QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/PotatoAlert"));
         return;
     case 4:  // github
         QDesktopServices::openUrl(QUrl("https://github.com/razaqq/PotatoAlert"));
@@ -105,4 +105,6 @@ void MainWindow::connectSignals()
 	connect(this->pc, &PotatoClient::avgReady, this->statsWidget, &StatsWidget::setAverages);
 	connect(this->pc, &PotatoClient::clansReady, this->statsWidget, &StatsWidget::setClans);
 	connect(this->pc, &PotatoClient::wowsNumbersReady, this->statsWidget, &StatsWidget::setWowsNumbers);
+
+	connect(this->settingsWidget, &SettingsWidget::done,[this](){ this->switchTab(0); this->menuBar->btnGroup->button(0)->setChecked(true); });
 }

@@ -24,13 +24,13 @@ using PotatoAlert::Logger;
 using PotatoAlert::Config;
 using PotatoAlert::Updater;
 using PotatoAlert::PotatoConfig;
-using PotatoAlert::PotatoLogger;
 
 int main(int argc, char *argv[]) {
 	Q_INIT_RESOURCE(PotatoAlert);
 
 	QApplication app(argc, argv);
     QApplication::setOrganizationName(PRODUCT_COMPANY_NAME);
+    QApplication::setApplicationVersion(PRODUCT_VERSION_FULL_STR);
 
 	QFont font = QApplication::font();
 	font.setStyleStrategy(QFont::PreferAntialias);
@@ -52,10 +52,11 @@ int main(int argc, char *argv[]) {
     QEvent event(QEvent::LanguageChange);
     QApplication::sendEvent(mainWindow, &event);
 
-    if (Updater::updateAvailable())
+    if (true)  // Updater::updateAvailable()
     {
-        if (nativeWindow->confirmUpdate())
-            Updater::update();
+        if (true)  // nativeWindow->confirmUpdate()
+            // Updater::update();
+            int i;
     }
 
     int exitCode = QApplication::exec();

@@ -15,7 +15,7 @@ struct folderStatus
 {
 	std::string gamePath;
 	std::string gameVersion;
-	std::string resPath;
+	std::string resFolderPath;
 	std::string preferencesPathBase;
 	std::string folderVersion;
 	std::string replaysPathBase;
@@ -33,7 +33,7 @@ class Game
 public:
 	static folderStatus checkPath(const std::string& selectedPath);
 	static bool getResFolderPath(folderStatus& status);
-	static bool readEngineConfig(folderStatus& status);
+	static bool readEngineConfig(folderStatus& status, const char* resFolder);
 	static bool readPreferences(folderStatus& status);
 	static void setReplaysFolder(folderStatus& status);
 };

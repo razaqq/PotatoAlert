@@ -65,7 +65,7 @@ void Config::createDefault()
 		{"update_notifications", true},
 		{"region", "eu"},
 		{"api_key", "1234567890"},
-		{"use_central_api", true},
+		{"save_csv", false},
 		{"use_ga", true},
 		{"window_height", 450},
 		{"window_width", 1500},

@@ -70,18 +70,6 @@ void SettingsWidget::init()
 
 	layout->addWidget(new HorizontalLine(centralWidget));
 
-	/* CENTRAL API */
-	auto centralApiLayout = new QHBoxLayout;
-    this->centralApiLabel->setFixedWidth(LABELWIDTH);
-    this->centralApiLabel->setFont(labelFont);
-    this->centralApiLabel->setFixedWidth(LABELWIDTH);
-	centralApiLayout->addWidget(this->centralApiLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
-	this->centralApi->setDisabled(true);
-	centralApiLayout->addWidget(this->centralApi, 0, Qt::AlignVCenter | Qt::AlignRight);
-	layout->addLayout(centralApiLayout);
-
-	layout->addWidget(new HorizontalLine(centralWidget));
-
 	/* SELECTOR FOR GAME FOLDER */
     auto gamePathLayout = new QHBoxLayout;
     this->gamePathLabel->setFont(labelFont);
@@ -96,7 +84,7 @@ void SettingsWidget::init()
 	this->gamePathEdit->setFocusPolicy(Qt::NoFocus);
 	gamePathLayout->addWidget(this->gamePathEdit, 0, Qt::AlignVCenter | Qt::AlignRight);
 
-	this->gamePathButton = new QToolButton();
+	this->gamePathButton = new QToolButton(this);
 	this->gamePathButton->setIcon(QIcon(QPixmap(":/folder.svg")));
 	this->gamePathButton->setIconSize(QSize(ROWHEIGHT, ROWHEIGHT));
 	this->gamePathButton->setCursor(Qt::PointingHandCursor);
@@ -146,15 +134,30 @@ void SettingsWidget::init()
     languageLayout->addWidget(this->language, 0, Qt::AlignVCenter | Qt::AlignRight);
     layout->addLayout(languageLayout);
 
+    layout->addWidget(new HorizontalLine(centralWidget));
+
+    /* CSV OUTPUT */
+    auto csvLayout = new QHBoxLayout;
+    this->csvLabel->setFixedWidth(LABELWIDTH);
+    this->csvLabel->setFont(labelFont);
+    this->csvLabel->setFixedWidth(LABELWIDTH);
+    csvLayout->addWidget(this->csvLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+    csvLayout->addWidget(this->csv, 0, Qt::AlignVCenter | Qt::AlignRight);
+    layout->addLayout(csvLayout);
+
 	layout->addStretch();
 
 	/* SAVE & CANCEL BUTTON */
 	// TODO: rework buttons
     auto confirmLayout = new QHBoxLayout;
 	this->saveButton = new QPushButton;
+	this->saveButton->setFixedWidth(100);
 	this->cancelButton = new QPushButton;
+    this->cancelButton->setFixedWidth(100);
+    confirmLayout->addStretch();
 	confirmLayout->addWidget(this->saveButton);
 	confirmLayout->addWidget(this->cancelButton);
+    confirmLayout->addStretch();
 	layout->addLayout(confirmLayout);
 
 	centralWidget->setLayout(layout);
@@ -166,28 +169,28 @@ void SettingsWidget::init()
 void SettingsWidget::load()
 {
 	this->updates->setChecked(PotatoConfig().get<bool>("update_notifications"));
-	this->centralApi->setChecked(PotatoConfig().get<bool>("use_central_api"));
 	this->googleAnalytics->setChecked(PotatoConfig().get<bool>("use_ga"));
 	this->gamePathEdit->setText(QString::fromStdString(PotatoConfig().get<std::string>("game_folder")));
 	this->statsMode->btnGroup->button(PotatoConfig().get<int>("stats_mode"))->setChecked(true);
     this->language->btnGroup->button(PotatoConfig().get<int>("language"))->setChecked(true);
+    this->csv->setChecked(PotatoConfig().get<bool>("save_csv"));
 }
 
 void SettingsWidget::connectSignals()
 {
-	connect(this->saveButton, &QPushButton::clicked, [this]() { PotatoConfig().save(); });
+	connect(this->saveButton, &QPushButton::clicked, [this]() { PotatoConfig().save(); emit this->done(); });
 	connect(this->cancelButton, &QPushButton::clicked, [this]() {
 	    PotatoConfig().load();
 	    this->load();
 	    this->checkPath();
         QEvent event(QEvent::LanguageChange);
         QApplication::sendEvent(this->window(), &event);
+        emit this->done();
 	});
 	connect(this->updates, &SettingsSwitch::clicked, [this](bool checked) { PotatoConfig().set<bool>("update_notifications", checked); });
-	connect(this->centralApi, &SettingsSwitch::clicked, [this](bool checked) { PotatoConfig().set("use_central_api", checked); });
 	connect(this->googleAnalytics, &SettingsSwitch::clicked, [this](bool checked) { PotatoConfig().set("use_ga", checked); });
-	connect(this->centralApi, &SettingsSwitch::clicked, [this](bool checked) { PotatoConfig().set<bool>("use_central_api", checked); });
 	connect(this->statsMode->btnGroup, &QButtonGroup::idClicked, [this](int id) { PotatoConfig().set<int>("stats_mode", id); });
+	connect(this->csv, &SettingsSwitch::clicked, [this](bool checked) { PotatoConfig().set<bool>("save_csv", checked); });
     connect(this->language->btnGroup, &QButtonGroup::idClicked, [this](int id) {
         PotatoConfig().set<int>("language", id);
         QEvent event(QEvent::LanguageChange);
@@ -217,7 +220,7 @@ void SettingsWidget::changeEvent(QEvent* event)
     if (event->type() == QEvent::LanguageChange)
     {
         this->updateLabel->setText(GetString(Keys::SETTINGS_UPDATES));
-        this->centralApiLabel->setText(GetString(Keys::SETTINGS_CENTRAL_API));
+        this->csvLabel->setText(GetString(Keys::SETTINGS_SAVE_CSV));
         this->gamePathLabel->setText(GetString(Keys::SETTINGS_GAME_DIRECTORY));
         this->statsModeLabel->setText(GetString(Keys::SETTINGS_STATS_MODE));
         this->gaLabel->setText(GetString(Keys::SETTINGS_GA));

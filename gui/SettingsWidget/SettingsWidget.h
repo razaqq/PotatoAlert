@@ -21,6 +21,7 @@ namespace PotatoAlert {
 
 class SettingsWidget : public QWidget
 {
+    Q_OBJECT
 public:
 	SettingsWidget(QWidget* parent, PotatoClient* pc);
 private:
@@ -33,14 +34,14 @@ private:
 	PotatoClient* pc;
 
     QLabel* updateLabel = new QLabel;
-    QLabel* centralApiLabel = new QLabel;
+    QLabel* csvLabel = new QLabel;
     QLabel* gamePathLabel = new QLabel;
     QLabel* statsModeLabel = new QLabel;
     QLabel* gaLabel = new QLabel;
     QLabel* languageLabel = new QLabel;
 
 	SettingsSwitch* updates = new SettingsSwitch;
-	SettingsSwitch* centralApi = new SettingsSwitch;
+	SettingsSwitch* csv = new SettingsSwitch;
 	SettingsSwitch* googleAnalytics = new SettingsSwitch;
 	
 	SettingsChoice* statsMode;
@@ -53,6 +54,8 @@ private:
 	QLineEdit* gamePathEdit;
 	QToolButton* gamePathButton;
 	FolderStatus* folderStatusGui;
+signals:
+    void done();
 };
 
 }  // namespace PotatoAlert

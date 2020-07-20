@@ -16,6 +16,8 @@ using PotatoAlert::Game;
 using PotatoAlert::folderStatus;
 namespace fs = std::filesystem;
 
+// versioned replays can be false and still in versioned folder, read res_mods
+
 folderStatus Game::checkPath(const std::string& selectedPath)
 {
 	folderStatus status;
@@ -26,10 +28,12 @@ folderStatus Game::checkPath(const std::string& selectedPath)
 	{
 		status.steamVersion = fs::exists(gamePath / "bin" / "clientrunner");
 		Game::getResFolderPath(status);
-		if (Game::readEngineConfig(status))
+		if (Game::readEngineConfig(status, "res"))
 		{
             if (Game::readPreferences(status))
             {
+                std::string resModsFolder = fs::path(fs::path(status.resFolderPath) / "res_mods" / fs::path(status.gameVersion)).string();
+                Game::readEngineConfig(status, resModsFolder.c_str());
                 Game::setReplaysFolder(status);
                 bool found = true;
                 for (auto& replaysPath : status.replaysPath)
@@ -77,8 +81,8 @@ bool Game::getResFolderPath(folderStatus& status)
     if (folderVersion != -1)
     {
         status.folderVersion = std::to_string(folderVersion);
-        status.resPath = (fs::path(status.gamePath) / "bin" / status.folderVersion / "res").string();
-        return fs::exists(status.resPath);
+        status.resFolderPath = (fs::path(status.gamePath) / "bin" / status.folderVersion).string();
+        return fs::exists(status.resFolderPath);
     }
     else
     {
@@ -88,14 +92,13 @@ bool Game::getResFolderPath(folderStatus& status)
 }
 
 // reads the engine config and sets values
-bool Game::readEngineConfig(folderStatus& status)
+bool Game::readEngineConfig(folderStatus& status, const char* resFolder)
 {
-	fs::path resPath(status.resPath);
-	if (fs::exists(resPath / "engine_config.xml"))
+    fs::path engineConfig(status.resFolderPath / fs::path(resFolder) / "engine_config.xml");
+	if (fs::exists(engineConfig))
 	{
-		std::string filePath = (resPath / "engine_config.xml").string();
 		tinyxml2::XMLDocument doc;
-		tinyxml2::XMLError err = doc.LoadFile(filePath.c_str());
+		tinyxml2::XMLError err = doc.LoadFile(engineConfig.string().c_str());
 		if (err != tinyxml2::XML_SUCCESS)
 		{
             PotatoLogger().Debug("Failed to open engine_config.xml for reading.");
@@ -141,8 +144,7 @@ bool Game::readEngineConfig(folderStatus& status)
 	}
 	else
 	{
-        PotatoLogger().Error("engine_config.xml does not exist in path: ");
-        PotatoLogger().Error(status.resPath.c_str());
+        PotatoLogger().Debug((std::string("No engine_config.xml in path: ") + std::string(resFolder)).c_str());
 		return false;
 	}
 }

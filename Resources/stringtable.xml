@@ -29,9 +29,9 @@
         <English>Update Notifications</English>
         <German>Update Benachrichtigungen</German>
     </Key>
-    <Key ID="SETTINGS_CENTRAL_API">
-        <English>Use Central API</English>
-        <German>Zentrale API Benutzen</German>
+    <Key ID="SETTINGS_SAVE_CSV">
+        <English>Save Match As CSV</English>
+        <German>Gefechte Als CSV Speichern</German>
     </Key>
     <Key ID="SETTINGS_GAME_DIRECTORY">
         <English>Game Directory</English>
