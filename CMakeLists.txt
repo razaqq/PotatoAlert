@@ -25,7 +25,7 @@ generate_product_version(
 
 find_package(Qt5 COMPONENTS Widgets Core Gui WebSockets REQUIRED)
 
-include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2)
+include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2/include)
 include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/nlohmann_json/include)
 include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/fmt/include)
 
