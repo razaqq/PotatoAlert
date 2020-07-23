@@ -21,5 +21,5 @@ set(
         StatsWidget/StatsWidget.cpp
 )
 
-add_library(guilib ${gui_src})
+add_library(guilib STATIC ${gui_src})
 target_link_libraries(guilib utilslib Qt5::Widgets)

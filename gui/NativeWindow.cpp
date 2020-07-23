@@ -1,5 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include <QMessageBox>
 #include <QWidget>
 #include <QPointF>
 #include <QVBoxLayout>
@@ -192,8 +193,5 @@ void NativeWindow::changeEvent(QEvent* event)
 
 bool NativeWindow::confirmUpdate()
 {
-    // CString text;
-    // text.LoadStringW(104);
-    // QString::fromWCharArray((LPCTSTR)text, text.GetLength());
-    return false;  // TODO
+    return QMessageBox::question(this, "title", "text");  // TODO
 }

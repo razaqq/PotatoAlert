@@ -10,14 +10,14 @@ set(
         Updater.cpp
         StringTable.cpp
         CSVWriter.cpp
+        Version.cpp
 )
-set(CMAKE_CXX_FLAGS "/EHsc")
 
-add_library(utilslib ${utils_src})
+add_library(utilslib STATIC ${utils_src})
 target_link_libraries(
         utilslib
-        debug fmtd optimized fmt
-        debug tinyxml2d optimized tinyxml2
+        fmt::fmt-header-only
+        tinyxml2
         Qt5::Core
         Qt5::WebSockets
         Qt5::Widgets)

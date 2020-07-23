@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(PotatoAlert)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "/EHa")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 set(CMAKE_AUTOMOC ON)
@@ -24,17 +25,16 @@ generate_product_version(
 
 find_package(Qt5 COMPONENTS Widgets Core Gui WebSockets REQUIRED)
 
-include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2/include)
+include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2)
 include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/nlohmann_json/include)
 include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/fmt/include)
-
-link_directories(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2/lib)
-link_directories(${PROJECT_SOURCE_DIR}/ThirdParty/fmt/lib)
 
 include_directories(utils)
 include_directories(gui)
 include_directories(Resources)
 
+add_subdirectory(ThirdParty/tinyxml2)
+add_subdirectory(ThirdParty/fmt)
 add_subdirectory(utils)
 add_subdirectory(gui)
 add_subdirectory(test)
@@ -60,7 +60,29 @@ find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
 
 add_custom_command(TARGET PotatoAlert POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E
-        env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
+        env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}" --no-translations
         "$<TARGET_FILE:PotatoAlert>"
         COMMENT "Running windeployqt..."
+        )
+
+# OpenSSL DLLS
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(SSL_DLLS
+            "${PROJECT_SOURCE_DIR}/ThirdParty/ssl/lib/libssl-1_1-x64.dll"
+            "${PROJECT_SOURCE_DIR}/ThirdParty/ssl/lib/libcrypto-1_1-x64.dll"
+            )
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(SSL_DLLS
+            "${PROJECT_SOURCE_DIR}/ThirdParty/ssl/lib/libssl-1_1.dll"
+            "${PROJECT_SOURCE_DIR}/ThirdParty/ssl/lib/libcrypto-1_1.dll"
+            )
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+endif()
+
+add_custom_command(TARGET PotatoAlert POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${SSL_DLLS}
+        $<TARGET_FILE_DIR:PotatoAlert>
+        COMMENT "Copying OpenSSL dlls..."
         )

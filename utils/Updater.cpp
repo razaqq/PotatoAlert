@@ -1,20 +1,59 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Updater.h"
+#include "Logger.h"
+#include "Version.h"
 #include <windows.h>
 #include <string>
+#include <sstream>
 #include <filesystem>
+#include <QtNetwork>
+#include <QUrl>
+#include <QApplication>
+#include <QEventLoop>
+#include <nlohmann/json.hpp>
+
+#include <iostream>
 
 
+using nlohmann::json;
 using PotatoAlert::Updater;
+using PotatoAlert::Version;
 namespace fs = std::filesystem;
 
+// needs libssl-1_1-x64.dll and libcrypto-1_1-x64.dll from OpenSSL
 const char* updateURL = "";
-const char* versionURL = "";
+const char* versionURL = "https://api.github.com/repos/razaqq/PotatoAlert/releases/latest";
+
 
 bool Updater::updateAvailable()
 {
-	return false;  // TODO
+    QEventLoop loop;
+    auto manager = new QNetworkAccessManager;
+
+    QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(versionURL)));
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    if (reply->error())
+    {
+        PotatoLogger().Debug(reply->errorString().toStdString().c_str());
+        return false;
+    }
+
+    json j;
+    try {
+        j = json::parse(reply->readAll().toStdString());
+    }
+    catch (json::parse_error& e) {
+        PotatoLogger().Error("Failed to parse github api response as json.");
+        return false;
+    }
+
+    auto remoteVersion = j["tag_name"].get<std::string>();
+    auto localVersion = QApplication::applicationVersion().toStdString();
+
+    return Version(remoteVersion) > Version(localVersion);
 }
 
 void Updater::update()
@@ -59,5 +98,5 @@ void Updater::update()
 
 void Updater::download()
 {
-
+    // connect(reply, &QNetworkReply::downloadProgress, progressDialog, &ProgressDialog::networkReplyProgress);
 }

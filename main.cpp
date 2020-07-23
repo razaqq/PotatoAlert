@@ -52,12 +52,13 @@ int main(int argc, char *argv[]) {
     QEvent event(QEvent::LanguageChange);
     QApplication::sendEvent(mainWindow, &event);
 
-    if (true)  // Updater::updateAvailable()
-    {
-        if (true)  // nativeWindow->confirmUpdate()
-            // Updater::update();
-            int i;
-    }
+    // check if there is a new version available
+    if (PotatoConfig().get<bool>("update_notifications"))
+        if (Updater::updateAvailable())
+            if (nativeWindow->confirmUpdate())
+                // Updater::update();
+                ;
+
 
     int exitCode = QApplication::exec();
     PotatoConfig().save();

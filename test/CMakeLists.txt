@@ -13,7 +13,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/catch2)
 enable_testing()
 
 # Add a testing executable
-add_executable(PotatoTest Test.cpp)
+add_executable(PotatoTest GameTest.cpp VersionTest.cpp)
 
 target_link_libraries(PotatoTest
         utilslib

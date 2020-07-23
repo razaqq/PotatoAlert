@@ -1,10 +1,13 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include <QWidget>
+#include <QtNetwork>
+
 
 namespace PotatoAlert {
 
-class Updater
+class Updater : QWidget
 {
 public:
 	static bool updateAvailable();
