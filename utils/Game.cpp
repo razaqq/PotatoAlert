@@ -101,14 +101,14 @@ bool Game::readEngineConfig(folderStatus& status, const char* resFolder)
 		tinyxml2::XMLError err = doc.LoadFile(engineConfig.string().c_str());
 		if (err != tinyxml2::XML_SUCCESS)
 		{
-            PotatoLogger().Debug("Failed to open engine_config.xml for reading.");
+            Logger::Debug("Failed to open engine_config.xml for reading.");
 			return false;
 		}
 
 		tinyxml2::XMLNode* root = doc.FirstChild();
 		if (root == nullptr)
 		{
-			PotatoLogger().Debug("engine_config.xml seems to be empty.");
+			Logger::Debug("engine_config.xml seems to be empty.");
 			return false;
 		}
 
@@ -144,7 +144,7 @@ bool Game::readEngineConfig(folderStatus& status, const char* resFolder)
 	}
 	else
 	{
-        PotatoLogger().Debug((std::string("No engine_config.xml in path: ") + std::string(resFolder)).c_str());
+        Logger::Debug((std::string("No engine_config.xml in path: ") + std::string(resFolder)).c_str());
 		return false;
 	}
 }

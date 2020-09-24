@@ -31,7 +31,7 @@ Config::~Config()
 
 void Config::load()
 {
-    PotatoLogger().Debug("Loading config.");
+    Logger::Debug("Loading config.");
 	try {
 		std::ifstream ifs(this->filePath);
 		this->j = json::parse(ifs);

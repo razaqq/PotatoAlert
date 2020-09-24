@@ -66,7 +66,7 @@ teamType StatsParser::parseTeam(json& teamJson, std::string& matchGroup)
 		assert(values.size() == colors.size());
 
 		// get player name widget
-		if (matchGroup != "clan" && !clanJson.is_null() && clanJson["Name"].get<std::string>() != "")
+		if (matchGroup != "clan" && !clanJson.is_null() && !clanJson["Name"].get<std::string>().empty())
 			player.push_back(nameClanTag(playerName, prC, clanJson));
 		else
 			player.push_back(nameNoClanTag(playerName, prC));
@@ -82,7 +82,7 @@ teamType StatsParser::parseTeam(json& teamJson, std::string& matchGroup)
 
 		for (int i = 0; i < values.size(); i++)
 		{
-			QTableWidgetItem* item = new QTableWidgetItem(values[i]);
+			auto item = new QTableWidgetItem(values[i]);
 			
 			if (i == 0) {
 				item->setFont(font13);
@@ -112,14 +112,14 @@ fieldType StatsParser::nameClanTag(std::string& playerName, std::vector<int>& pr
 	auto clanTag = clanJson["Tag"].get<std::string>();
 	auto clanC = clanJson["Color"].get<std::vector<int>>();
 
-	QLabel* name = new QLabel;
+	auto name = new QLabel;
 	name->setTextFormat(Qt::RichText);
 	name->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 	name->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 	name->setContentsMargins(3, 0, 3, 0);
 	name->setText(QString::fromStdString(fmt::format("<span style=\"color: {};\">[{}]</span>{}", arrToRgbString(clanC), clanTag, playerName)));
 
-	if (prC.size() > 0)
+	if (!prC.empty())
 	{
 		name->setAutoFillBackground(true);
 		name->setStyleSheet(QString::fromStdString(
@@ -135,12 +135,12 @@ fieldType StatsParser::nameClanTag(std::string& playerName, std::vector<int>& pr
 
 fieldType StatsParser::nameNoClanTag(std::string& playerName, std::vector<int>& prC)
 {
-	QTableWidgetItem* name = new QTableWidgetItem(QString::fromStdString(playerName));
+	auto name = new QTableWidgetItem(QString::fromStdString(playerName));
 	QFont font("Segoe UI");
 	font.setPixelSize(13);
 	name->setFont(font);
 	name->setTextAlignment(Qt::AlignVCenter);
-	if (prC.size() > 0)
+	if (!prC.empty())
 		name->setBackground(QColor::fromRgb(prC[0], prC[1], prC[2], prC[3]));
 	return name;
 }
@@ -162,10 +162,7 @@ bool StatsParser::validColor(const std::vector<int>& color)
 {
 	if (color.size() < 3)
 		return false;
-	for (int i : color)
-		if (i != 0)
-			return true;
-	return false;
+	return std::any_of(color.begin(), color.end(), [](int i){ return i != 0; });
 }
 
 std::string StatsParser::floatToString(float f)

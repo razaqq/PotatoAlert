@@ -1,7 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Version.h"
-#include <vector>
 #include <string>
 #include <sstream>
 #include <algorithm>

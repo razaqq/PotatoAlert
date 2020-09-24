@@ -45,7 +45,7 @@ void PotatoClient::init()
 {
     // handle connection
 	connect(this->socket, &QWebSocket::connected, [this] {
-        PotatoLogger().Debug("Websocket open, sending arena info...");
+        Logger::Debug("Websocket open, sending arena info...");
 		this->socket->sendTextMessage(this->tempArenaInfo);
 	});
 
@@ -68,7 +68,7 @@ void PotatoClient::init()
 // sets filesystem watcher to current replays folder, triggered when config is modified
 void PotatoClient::updateReplaysPath()
 {
-    PotatoLogger().Debug("Updating replays path.");
+    Logger::Debug("Updating replays path.");
 
 	if (this->watcher->directories().length() > 0)
 		this->watcher->removePaths(this->watcher->directories());
@@ -86,7 +86,7 @@ void PotatoClient::updateReplaysPath()
 // triggered whenever a file gets modified in a replays path
 void PotatoClient::onDirectoryChanged(const QString& path)
 {
-    PotatoLogger().Debug("Directory changed.");
+    Logger::Debug("Directory changed.");
 
 	std::string filePath = path.toStdString() + "\\" + arenaInfoFile;
 	std::string tempPath = fs::temp_directory_path().append(arenaInfoFile + ".temp").string();
@@ -100,7 +100,7 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 			try {
 				if (!fs::copy_file(filePath, tempPath, fs::copy_options::overwrite_existing))
 				{
-                    PotatoLogger().Debug("failed to copy file");
+                    Logger::Debug("failed to copy file");
 					return;
 				}
 
@@ -118,7 +118,7 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 			}
 
 			std::string s = "ArenaInfo read from file. Content: " + arenaInfo;
-            PotatoLogger().Debug(s.c_str());
+            Logger::Debug(s.c_str());
 
 			// parse arenaInfo to json and add region
 			nlohmann::json j = nlohmann::json::parse(arenaInfo);
@@ -133,7 +133,7 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 
 			emit this->status(STATUS_LOADING, "Loading");
 
-            PotatoLogger().Debug("Opening websocket.");
+            Logger::Debug("Opening websocket.");
 			this->socket->open(url);  // starts the request cycle
 		}
 		catch (nlohmann::json::parse_error& e)
@@ -148,12 +148,12 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 // triggered when server response is received. processes the response, updates gui tables
 void PotatoClient::onResponse(const QString& message)
 {
-    PotatoLogger().Debug("Closing websocket connection.");
+    Logger::Debug("Closing websocket connection.");
 	this->socket->close();
 
 	std::string d = "Received response from server: ";
 	d += message.toStdString();
-    PotatoLogger().Debug(d.c_str());
+    Logger::Debug(d.c_str());
 
 	json j;
 	try {
@@ -170,7 +170,7 @@ void PotatoClient::onResponse(const QString& message)
 	if (PotatoConfig().get<bool>("save_csv"))
 	    this->csvWriter.saveMatch(message.toStdString());
 
-    PotatoLogger().Debug("Updating tables.");
+    Logger::Debug("Updating tables.");
 
 	auto matchGroup = j["MatchGroup"].get<std::string>();
 	auto team1Json = j["Team1"].get<json>();

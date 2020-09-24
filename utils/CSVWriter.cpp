@@ -29,7 +29,7 @@ void CSVWriter::saveMatch(const std::string& jsonObj)
     if (this->file.is_open())
     {
         this->file << jsonObj + ";";
-        PotatoLogger().Debug("Appending match to csv log.");
+        Logger::Debug("Appending match to csv log.");
     }
 }
 
