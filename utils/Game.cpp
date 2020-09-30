@@ -32,7 +32,7 @@ folderStatus Game::checkPath(const std::string& selectedPath)
 		{
             if (Game::readPreferences(status))
             {
-                std::string resModsFolder = fs::path(fs::path(status.resFolderPath) / "res_mods" / fs::path(status.gameVersion)).string();
+                std::string resModsFolder = fs::path(fs::path(status.resFolderPath) / "res_mods").string();
                 Game::readEngineConfig(status, resModsFolder.c_str());
                 Game::setReplaysFolder(status);
                 bool found = true;
