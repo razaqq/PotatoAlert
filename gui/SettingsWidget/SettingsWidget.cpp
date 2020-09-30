@@ -26,9 +26,9 @@
 #include "StringTable.h"
 
 
-const int LABELWIDTH = 220;
-const int ROWHEIGHT = 20;
-const int ROWWIDTH = 520;
+const int LABEL_WIDTH = 220;
+const int ROW_HEIGHT = 20;
+const int ROW_WIDTH = 520;
 
 using PotatoAlert::SettingsWidget;
 using PotatoAlert::SettingsChoice;
@@ -63,7 +63,7 @@ void SettingsWidget::init()
 	/* UPDATE NOTIFICATIONS */
     auto updateLayout = new QHBoxLayout;
 	this->updateLabel->setFont(labelFont);
-    this->updateLabel->setFixedWidth(LABELWIDTH);
+    this->updateLabel->setFixedWidth(LABEL_WIDTH);
 	updateLayout->addWidget(this->updateLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 	updateLayout->addWidget(this->updates, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(updateLayout);
@@ -73,20 +73,20 @@ void SettingsWidget::init()
 	/* SELECTOR FOR GAME FOLDER */
     auto gamePathLayout = new QHBoxLayout;
     this->gamePathLabel->setFont(labelFont);
-    this->gamePathLabel->setFixedWidth(LABELWIDTH);
+    this->gamePathLabel->setFixedWidth(LABEL_WIDTH);
 	gamePathLayout->addWidget(this->gamePathLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
 	gamePathLayout->addStretch();
 
 	this->gamePathEdit = new QLineEdit(centralWidget);
-	this->gamePathEdit->setFixedSize(278, ROWHEIGHT);
+	this->gamePathEdit->setFixedSize(278, ROW_HEIGHT);
 	this->gamePathEdit->setReadOnly(true);
 	this->gamePathEdit->setFocusPolicy(Qt::NoFocus);
 	gamePathLayout->addWidget(this->gamePathEdit, 0, Qt::AlignVCenter | Qt::AlignRight);
 
 	this->gamePathButton = new QToolButton(this);
 	this->gamePathButton->setIcon(QIcon(QPixmap(":/folder.svg")));
-	this->gamePathButton->setIconSize(QSize(ROWHEIGHT, ROWHEIGHT));
+	this->gamePathButton->setIconSize(QSize(ROW_HEIGHT, ROW_HEIGHT));
 	this->gamePathButton->setCursor(Qt::PointingHandCursor);
 	gamePathLayout->addWidget(this->gamePathButton, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(gamePathLayout);
@@ -99,7 +99,7 @@ void SettingsWidget::init()
 	/* DISPLAYED STATS MODE */
     auto statsModeLayout = new QHBoxLayout;
     this->statsModeLabel->setFont(labelFont);
-    this->statsModeLabel->setFixedWidth(LABELWIDTH);
+    this->statsModeLabel->setFixedWidth(LABEL_WIDTH);
 	statsModeLayout->addWidget(this->statsModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
 	this->statsMode = new SettingsChoice(this, std::vector<QString>{"current mode", "pvp", "ranked", "clan"});  // TODO: localize
@@ -111,7 +111,7 @@ void SettingsWidget::init()
 	/* GOOGLE ANALYTICS */
     auto gaLayout = new QHBoxLayout;
     this->gaLabel->setFont(labelFont);
-    this->gaLabel->setFixedWidth(LABELWIDTH);
+    this->gaLabel->setFixedWidth(LABEL_WIDTH);
 	gaLayout->addWidget(this->gaLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 	this->googleAnalytics->setDisabled(true);
 	gaLayout->addWidget(this->googleAnalytics, 0, Qt::AlignVCenter | Qt::AlignRight);
@@ -122,7 +122,7 @@ void SettingsWidget::init()
 	/* LANGUAGE */
     auto languageLayout = new QHBoxLayout;
     this->languageLabel->setFont(labelFont);
-    this->languageLabel->setFixedWidth(LABELWIDTH);
+    this->languageLabel->setFixedWidth(LABEL_WIDTH);
     languageLayout->addWidget(this->languageLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
     std::vector<QString> langs;
@@ -138,9 +138,9 @@ void SettingsWidget::init()
 
     /* CSV OUTPUT */
     auto csvLayout = new QHBoxLayout;
-    this->csvLabel->setFixedWidth(LABELWIDTH);
+    this->csvLabel->setFixedWidth(LABEL_WIDTH);
     this->csvLabel->setFont(labelFont);
-    this->csvLabel->setFixedWidth(LABELWIDTH);
+    this->csvLabel->setFixedWidth(LABEL_WIDTH);
     csvLayout->addWidget(this->csvLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
     csvLayout->addWidget(this->csv, 0, Qt::AlignVCenter | Qt::AlignRight);
     layout->addLayout(csvLayout);
@@ -187,10 +187,10 @@ void SettingsWidget::connectSignals()
         QApplication::sendEvent(this->window(), &event);
         emit this->done();
 	});
-	connect(this->updates, &SettingsSwitch::clicked, [this](bool checked) { PotatoConfig().set<bool>("update_notifications", checked); });
-	connect(this->googleAnalytics, &SettingsSwitch::clicked, [this](bool checked) { PotatoConfig().set("use_ga", checked); });
-	connect(this->statsMode->btnGroup, &QButtonGroup::idClicked, [this](int id) { PotatoConfig().set<int>("stats_mode", id); });
-	connect(this->csv, &SettingsSwitch::clicked, [this](bool checked) { PotatoConfig().set<bool>("save_csv", checked); });
+	connect(this->updates, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set<bool>("update_notifications", checked); });
+	connect(this->googleAnalytics, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set("use_ga", checked); });
+	connect(this->statsMode->btnGroup, &QButtonGroup::idClicked, [](int id) { PotatoConfig().set<int>("stats_mode", id); });
+	connect(this->csv, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set<bool>("save_csv", checked); });
     connect(this->language->btnGroup, &QButtonGroup::idClicked, [this](int id) {
         PotatoConfig().set<int>("language", id);
         QEvent event(QEvent::LanguageChange);

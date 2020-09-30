@@ -19,13 +19,13 @@ StatsWidget::StatsWidget(QWidget* parent) : QWidget(parent)
 
 void StatsWidget::init()
 {
-	QVBoxLayout* vLayout = new QVBoxLayout;
+	auto vLayout = new QVBoxLayout;
 	vLayout->setContentsMargins(0, 0, 0, 10);
 	vLayout->setSpacing(0);
 
 	vLayout->addWidget(this->header);
 
-	QHBoxLayout* tableLayout = new QHBoxLayout;
+	auto tableLayout = new QHBoxLayout;
 	tableLayout->addWidget(this->left);
 	tableLayout->addWidget(this->right);
 	tableLayout->setSpacing(10);

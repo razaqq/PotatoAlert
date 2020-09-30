@@ -45,12 +45,12 @@ void StatsTable::initHeaders()
 {
 	for (int i = 0; i < this->columnCount(); i++)
 	{
-		QTableWidgetItem* item = new QTableWidgetItem;
+		auto item = new QTableWidgetItem;
 		item->setFont(QFont("Segoe UI", 11));
 		this->setHorizontalHeaderItem(i, item);
 	}
 
-	QHeaderView* headers = new QHeaderView(Qt::Horizontal, this);
+	auto headers = new QHeaderView(Qt::Horizontal, this);
 	this->setHorizontalHeader(headers);
 	headers->setSectionResizeMode(QHeaderView::Stretch);
 	headers->setSectionResizeMode(1, QHeaderView::ResizeToContents);
@@ -89,6 +89,6 @@ void StatsTable::changeEvent(QEvent* event)
     }
     else
     {
-        QWidget::changeEvent(event);
+        QTableWidget::changeEvent(event);
     }
 }

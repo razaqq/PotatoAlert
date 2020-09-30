@@ -43,8 +43,8 @@ void StatsTeamFooter::init()
 		std::vector<QLabel*>{ this->team1WrLabel, this->team1Wr, this->team1DmgLabel, this->team1Dmg, this->team1Tag, this->team1Name, this->team1RegionLabel, this->team1Region },
 		std::vector<QLabel*>{ this->team2WrLabel, this->team2Wr, this->team2DmgLabel, this->team2Dmg, this->team2Tag, this->team2Name, this->team2RegionLabel, this->team2Region }
 	};
-	for (auto side : labels)
-		for (auto label : side)
+	for (auto& side : labels)
+		for (auto& label : side)
 			label->setFont(labelFont);
 
 	// add labels

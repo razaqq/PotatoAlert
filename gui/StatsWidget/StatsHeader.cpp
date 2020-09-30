@@ -41,7 +41,7 @@ void StatsHeader::init()
 	// status icon and text
 	auto status = new QWidget(this);
 	auto statusLayout = new QHBoxLayout;
-	statusLayout->getContentsMargins(0, 0, 0, 0);
+	statusLayout->setContentsMargins(0, 0, 0, 0);
 	statusLayout->setSpacing(0);
 	status->setFixedWidth(130);
 	this->statusIcon->setFixedSize(20, 20);

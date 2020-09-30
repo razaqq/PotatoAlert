@@ -10,7 +10,7 @@
 #include <QSizePolicy>
 
 
-const int WIDGETHEIGHT = 20;
+const int WIDGET_HEIGHT = 20;
 
 using PotatoAlert::SettingsChoice;
 
@@ -23,7 +23,7 @@ SettingsChoice::SettingsChoice(QWidget* parent, const std::vector<QString>& butt
 	layout->setSpacing(0);
 
 	this->setCursor(Qt::PointingHandCursor);
-	this->setFixedHeight(WIDGETHEIGHT);
+	this->setFixedHeight(WIDGET_HEIGHT);
 	// this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 
 	this->btnGroup = new QButtonGroup(this);
@@ -41,7 +41,7 @@ SettingsChoice::SettingsChoice(QWidget* parent, const std::vector<QString>& butt
 		button->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
 		int width = button->fontMetrics().boundingRect(buttons[i]).width() + 10;
 		button->setFixedWidth(width);
-		button->setFixedHeight(WIDGETHEIGHT);
+		button->setFixedHeight(WIDGET_HEIGHT);
 		button->setFlat(true);
 		button->setCheckable(true);
 
