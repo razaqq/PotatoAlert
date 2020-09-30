@@ -37,7 +37,7 @@ bool Updater::updateAvailable()
 
     if (reply->error())
     {
-        PotatoLogger().Debug(reply->errorString().toStdString().c_str());
+        Logger::Debug(reply->errorString().toStdString().c_str());
         return false;
     }
 
@@ -58,6 +58,8 @@ bool Updater::updateAvailable()
 
 void Updater::update()
 {
+    Logger::Debug("Starting update...");
+
     auto root = fs::absolute(fs::current_path());
 
     auto temp = (root / "PotatoAlert_temp.exe").string();
