@@ -16,7 +16,7 @@ public:
 	void setClans(const std::vector<QString>& clans);
 private:
 	void init();
-	void changeEvent(QEvent* event);
+	void changeEvent(QEvent* event) override;
 
 	QLabel* team1WrLabel = new QLabel;
 	QLabel* team1DmgLabel = new QLabel;

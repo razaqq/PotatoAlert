@@ -109,6 +109,7 @@ void SettingsWidget::init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* GOOGLE ANALYTICS */
+	/*
     auto gaLayout = new QHBoxLayout;
     this->gaLabel->setFont(labelFont);
     this->gaLabel->setFixedWidth(LABEL_WIDTH);
@@ -118,6 +119,7 @@ void SettingsWidget::init()
 	layout->addLayout(gaLayout);
 
     layout->addWidget(new HorizontalLine(centralWidget));
+	*/
 
 	/* LANGUAGE */
     auto languageLayout = new QHBoxLayout;
@@ -169,7 +171,7 @@ void SettingsWidget::init()
 void SettingsWidget::load()
 {
 	this->updates->setChecked(PotatoConfig().get<bool>("update_notifications"));
-	this->googleAnalytics->setChecked(PotatoConfig().get<bool>("use_ga"));
+	// this->googleAnalytics->setChecked(PotatoConfig().get<bool>("use_ga"));
 	this->gamePathEdit->setText(QString::fromStdString(PotatoConfig().get<std::string>("game_folder")));
 	this->statsMode->btnGroup->button(PotatoConfig().get<int>("stats_mode"))->setChecked(true);
     this->language->btnGroup->button(PotatoConfig().get<int>("language"))->setChecked(true);
@@ -179,7 +181,8 @@ void SettingsWidget::load()
 void SettingsWidget::connectSignals()
 {
 	connect(this->saveButton, &QPushButton::clicked, [this]() { PotatoConfig().save(); emit this->done(); });
-	connect(this->cancelButton, &QPushButton::clicked, [this]() {
+	connect(this->cancelButton, &QPushButton::clicked, [this]()
+	{
 	    PotatoConfig().load();
 	    this->load();
 	    this->checkPath();
@@ -188,15 +191,17 @@ void SettingsWidget::connectSignals()
         emit this->done();
 	});
 	connect(this->updates, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set<bool>("update_notifications", checked); });
-	connect(this->googleAnalytics, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set("use_ga", checked); });
+	// connect(this->googleAnalytics, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set("use_ga", checked); });
 	connect(this->statsMode->btnGroup, &QButtonGroup::idClicked, [](int id) { PotatoConfig().set<int>("stats_mode", id); });
 	connect(this->csv, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set<bool>("save_csv", checked); });
-    connect(this->language->btnGroup, &QButtonGroup::idClicked, [this](int id) {
+    connect(this->language->btnGroup, &QButtonGroup::idClicked, [this](int id)
+    {
         PotatoConfig().set<int>("language", id);
         QEvent event(QEvent::LanguageChange);
         QApplication::sendEvent(this->window(), &event);
     });
-	connect(this->gamePathButton, &QToolButton::clicked, [this]() { 
+	connect(this->gamePathButton, &QToolButton::clicked, [this]()
+	{
 		QString dir = QFileDialog::getExistingDirectory(this, "Select Game Directory", "", QFileDialog::ShowDirsOnly);
 		if (dir != "")
 		{

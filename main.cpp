@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     // check if there is a new version available
     if (PotatoConfig().get<bool>("update_notifications"))
         if (Updater::updateAvailable())
-            if (nativeWindow->confirmUpdate())
+            //if (nativeWindow->confirmUpdate())
                 // Updater::update();
                 ;
 

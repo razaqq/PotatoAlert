@@ -48,7 +48,7 @@ void StatsTeamFooter::init()
 			label->setFont(labelFont);
 
 	// add labels
-	for (int side = 0; side < 2; side++)
+	for (size_t side = 0; side < 2; side++)
 	{
 		for (size_t element = 0; element < 4; element++)
 		{
@@ -62,7 +62,8 @@ void StatsTeamFooter::init()
 
 			w->setLayout(l);
 
-			if (side == 0) {
+			if (side == 0)
+			{
 				leftLayout->addWidget(w);
 				if (element == 1 || element == 2)
 					leftLayout->addStretch();
@@ -126,7 +127,6 @@ void StatsTeamFooter::setClans(const std::vector<QString>& clans)
 	}
 	else
 	{
-
 		this->team1Tag->setVisible(false);
 		this->team1Name->setVisible(false);
 		this->team1Region->setVisible(false);

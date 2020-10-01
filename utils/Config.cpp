@@ -38,6 +38,7 @@ void Config::load()
 	}
 	catch (json::exception& e)
 	{
+	    // TODO: create default
 		std::string errorText = "Cannot read config: " + std::string(e.what());
         PotatoLogger().Error(errorText.c_str());
 		exit(1);
@@ -48,7 +49,6 @@ void Config::save()
 {
 	std::ofstream file(this->filePath);
 	file << this->j;
-	// emit this->modified();
 }
 
 bool Config::exists() const

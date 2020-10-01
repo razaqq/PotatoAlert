@@ -12,7 +12,7 @@ class MenuEntry : public QWidget
 {
 public:
 	MenuEntry(QWidget* parent, const QIcon& icon);
-	QPushButton* button = new QPushButton(this);
+	QPushButton* button = new QPushButton;
 };
 
 }  // namespace PotatoAlert

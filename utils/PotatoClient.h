@@ -25,7 +25,6 @@ class PotatoClient :  public QObject
 {
 	Q_OBJECT
 public:
-	PotatoClient();
 	void init();
 	void setFolderStatus(folderStatus& status);
 private:

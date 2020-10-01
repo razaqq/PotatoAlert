@@ -33,8 +33,6 @@ MainWindow::MainWindow(PotatoClient* pc) : QMainWindow()
 
 void MainWindow::init()
 {
-	// this->setMouseTracking(true);
-
 	// central widget
 	this->setCentralWidget(this->centralW);
 
@@ -57,12 +55,10 @@ void MainWindow::init()
 
 	// set other tabs invisible
 	this->settingsWidget->setVisible(false);
-	this->helpWidget->setVisible(false);
 	this->aboutWidget->setVisible(false);
 
 	this->centralLayout->addWidget(this->statsWidget);
 	this->centralLayout->addWidget(this->settingsWidget);
-	this->centralLayout->addWidget(this->helpWidget);
 	this->centralLayout->addWidget(this->aboutWidget);
 }
 

@@ -10,8 +10,8 @@ namespace PotatoAlert {
     class Version
     {
     public:
-        Version(std::string& versionString);
-        Version(const char* versionString);
+        explicit Version(std::string& versionString);
+        explicit Version(const char* versionString);
 
         friend bool operator== (const Version& v1, const Version& v2);
         friend bool operator> (const Version& v1, const Version& v2);

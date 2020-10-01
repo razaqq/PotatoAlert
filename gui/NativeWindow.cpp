@@ -57,7 +57,7 @@ void NativeWindow::init()
     this->setWindowFlags(this->windowFlags() | Qt::Window | Qt::FramelessWindowHint | Qt::WindowSystemMenuHint);
 
     // we need to set this as event filter for titlebar and main window to draw resize cursor
-    qApp->installEventFilter(this);
+    QApplication::instance()->installEventFilter(this);
     // this->setMouseTracking(true);
 }
 

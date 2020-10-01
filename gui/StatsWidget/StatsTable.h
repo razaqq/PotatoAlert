@@ -15,12 +15,12 @@ class StatsTable : public QTableWidget
 {
 public:
 	explicit StatsTable(QWidget* parent);
-	void setWowsNumbers(const std::vector<QString>& wowsNumbers);
+	void setWowsNumbers(const std::vector<QString>& data);
 private:
 	void init();
 	void initHeaders();
-	void clickEvent(int row, int column);
-	void changeEvent(QEvent* event);
+	void clickEvent(int row);
+	void changeEvent(QEvent* event) override;
 
 	std::vector<QString> wowsNumbers;
 };

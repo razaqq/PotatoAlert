@@ -19,7 +19,7 @@ public:
 	void setStatus(int statusID, const std::string& statusText);
 private:
 	void init();
-    void changeEvent(QEvent* event);
+    void changeEvent(QEvent* event) override;
 
 	QLabel* statusIcon = new QLabel;
 	QLabel* statusText = new QLabel;

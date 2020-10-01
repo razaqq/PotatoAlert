@@ -29,7 +29,7 @@ private:
 	void load();
 	void connectSignals();
     void checkPath();
-    void changeEvent(QEvent* event);
+    void changeEvent(QEvent* event) override;
 
 	PotatoClient* pc;
 
@@ -42,7 +42,7 @@ private:
 
 	SettingsSwitch* updates = new SettingsSwitch;
 	SettingsSwitch* csv = new SettingsSwitch;
-	SettingsSwitch* googleAnalytics = new SettingsSwitch;
+	// SettingsSwitch* googleAnalytics = new SettingsSwitch;
 	
 	SettingsChoice* statsMode;
     SettingsChoice* language;

@@ -24,7 +24,6 @@ SettingsChoice::SettingsChoice(QWidget* parent, const std::vector<QString>& butt
 
 	this->setCursor(Qt::PointingHandCursor);
 	this->setFixedHeight(WIDGET_HEIGHT);
-	// this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 
 	this->btnGroup = new QButtonGroup(this);
 	this->btnGroup->setExclusive(true);

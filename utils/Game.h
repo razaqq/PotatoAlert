@@ -7,8 +7,6 @@
 #include "Logger.h"
 
 
-namespace fs = std::filesystem;
-
 namespace PotatoAlert {
 
 struct folderStatus

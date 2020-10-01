@@ -19,7 +19,7 @@ class NativeWindow : public QWidget
 {
 	Q_OBJECT
 public:
-	NativeWindow(QMainWindow* mainWindow);
+	explicit NativeWindow(QMainWindow* mainWindow);
 	bool confirmUpdate();
 private:
 	QMainWindow* mainWindow;
@@ -28,15 +28,15 @@ private:
 
 	TitleBar* titleBar = new TitleBar(this);
 
-	void closeEvent(QCloseEvent* event);
-	void showEvent(QShowEvent* event);
-	bool nativeEvent(const QByteArray& eventType, void* message, long* result);
-	void changeEvent(QEvent* event);
+	void closeEvent(QCloseEvent* event) override;
+	void showEvent(QShowEvent* event) override;
+	bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
+	void changeEvent(QEvent* event) override;
 
 	bool handleMousePressEvent(QMouseEvent* event);
 	void handleMouseMoveEvent(QMouseEvent* event);
 
-	bool eventFilter(QObject* object, QEvent* event);
+	bool eventFilter(QObject* object, QEvent* event) override;
 
 	void init();
 	Qt::Edges mouseLocation(QMouseEvent* event);

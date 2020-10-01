@@ -15,7 +15,7 @@ public:
     void updateStatus(folderStatus& status);
 private:
     void init();
-    void changeEvent(QEvent* event);
+    void changeEvent(QEvent* event) override;
 
     QLabel* statusLabel = new QLabel;
     QLabel* replaysLabel = new QLabel;

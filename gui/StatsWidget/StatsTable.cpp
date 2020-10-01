@@ -63,15 +63,15 @@ void StatsTable::initHeaders()
 	this->setCursor(Qt::PointingHandCursor);
 }
 
-void StatsTable::clickEvent(int row, int column)
+void StatsTable::clickEvent(int row)
 {
 	if (row < this->wowsNumbers.size())
 		QDesktopServices::openUrl(QUrl(wowsNumbers[row]));
 }
 
-void StatsTable::setWowsNumbers(const std::vector<QString>& wowsNumbers)
+void StatsTable::setWowsNumbers(const std::vector<QString>& data)
 {
-	this->wowsNumbers = wowsNumbers;
+	this->wowsNumbers = data;
 }
 
 void StatsTable::changeEvent(QEvent* event)

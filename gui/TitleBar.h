@@ -28,8 +28,8 @@ private:
 	QToolButton* btnClose = new QToolButton(this);
 
 	void init();
-	bool eventFilter(QObject* object, QEvent* event);
-	void mouseDoubleClickEvent(QMouseEvent* e);
+	bool eventFilter(QObject* object, QEvent* event) override;
+	void mouseDoubleClickEvent(QMouseEvent* e) override;
 	void onBtnMinimizeClicked();
 	void onBtnMaximizeClicked();
 	void onBtnRestoreClicked();

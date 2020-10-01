@@ -35,4 +35,4 @@ private:
 	static std::string floatToString(float f);
 };
 
-};  // namespace PotatoAlert
+}  // namespace PotatoAlert

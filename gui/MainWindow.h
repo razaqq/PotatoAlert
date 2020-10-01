@@ -10,7 +10,6 @@
 #include "PotatoClient.h"
 #include "StatsWidget/StatsWidget.h"
 #include "SettingsWidget/SettingsWidget.h"
-#include "HelpWidget.h"
 #include "AboutWidget.h"
 #include "MenuBar/VerticalMenuBar.h"
 
@@ -20,7 +19,7 @@ namespace PotatoAlert {
 class MainWindow : public QMainWindow
 {
 public:
-	MainWindow(PotatoClient* pc);
+	explicit MainWindow(PotatoClient* pc);
 protected:
 	void init();
 	PotatoClient* pc;
@@ -33,8 +32,7 @@ protected:
 
 	VerticalMenuBar* menuBar = new VerticalMenuBar(this);
 	StatsWidget* statsWidget = new StatsWidget(this);
-	SettingsWidget* settingsWidget;
-	HelpWidget* helpWidget = new HelpWidget(this);
+	SettingsWidget* settingsWidget{};
 	AboutWidget* aboutWidget = new AboutWidget(this);
 
 	QWidget* activeWidget = this->statsWidget;

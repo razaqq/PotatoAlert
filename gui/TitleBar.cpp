@@ -82,10 +82,13 @@ bool TitleBar::eventFilter(QObject* object, QEvent* event)
 {
 	if (event->type() == QEvent::WindowStateChange)
 	{
-		if (this->parentWindow->windowState() == Qt::WindowMaximized) {
+		if (this->parentWindow->windowState() == Qt::WindowMaximized)
+		{
 			this->btnMaximize->setVisible(false);
 			this->btnRestore->setVisible(true);
-		} else {
+		}
+		else
+		{
 			this->btnMaximize->setVisible(true);
 			this->btnRestore->setVisible(false);
 		}

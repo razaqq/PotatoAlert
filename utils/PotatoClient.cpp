@@ -14,6 +14,7 @@
 #include <QTableWidgetItem>
 #include <QString>
 #include <QColor>
+#include <QMetaObject>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -23,6 +24,7 @@
 #include "Logger.h"
 #include "Game.h"
 #include "StatsParser.h"
+
 
 // statuses
 #define STATUS_READY 0
@@ -37,12 +39,10 @@ const QUrl url("ws://www.perry-swift.de:33333");
 // const QUrl url("ws://192.168.178.36:10000");
 const std::string arenaInfoFile = "tempArenaInfo.json";
 
-PotatoClient::PotatoClient() : QObject()
-{
-}
-
 void PotatoClient::init()
 {
+    emit this->status(STATUS_READY, "Ready");
+
     // handle connection
 	connect(this->socket, &QWebSocket::connected, [this] {
         Logger::Debug("Websocket open, sending arena info...");
@@ -62,7 +62,9 @@ void PotatoClient::init()
 	connect(this->socket, &QWebSocket::textMessageReceived, this, &PotatoClient::onResponse);
 
 	connect(this->watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::onDirectoryChanged);
-	emit this->status(STATUS_READY, "Ready");
+
+	for (auto& path : this->watcher->directories())  // trigger run
+        this->onDirectoryChanged(path);
 }
 
 // sets filesystem watcher to current replays folder, triggered when config is modified
@@ -70,17 +72,12 @@ void PotatoClient::updateReplaysPath()
 {
     Logger::Debug("Updating replays path.");
 
-	if (this->watcher->directories().length() > 0)
+	if (!this->watcher->directories().isEmpty())
 		this->watcher->removePaths(this->watcher->directories());
 
 	for (auto& folder : this->fStatus.replaysPath)
-    {
-        QString newPath = QString::fromStdString(folder);
-        if (newPath != "") {
-            this->watcher->addPath(newPath);  // watch new path
-            this->onDirectoryChanged(newPath);  // trigger run
-        }
-    }
+        if (!folder.empty())
+            this->watcher->addPath(QString::fromStdString(folder));
 }
 
 // triggered whenever a file gets modified in a replays path

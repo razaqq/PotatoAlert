@@ -2,7 +2,6 @@ set(
         gui_src
 
         AboutWidget.cpp
-        HelpWidget.cpp
         MainWindow.cpp
         NativeWindow.cpp
         TitleBar.cpp
