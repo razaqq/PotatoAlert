@@ -28,7 +28,7 @@ public:
 	nlohmann::json j;
 private:
 	std::string filePath;
-	static std::string getFilePath() ;
+	static std::string getFilePath(const char* fileName);
 signals:
 	void modified();
 };

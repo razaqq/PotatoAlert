@@ -4,20 +4,24 @@
 #include "Config.h"
 #include <QDir>
 #include <QStandardPaths>
+#include <QApplication>
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <string>
 #include <nlohmann/json.hpp>
 
 
+namespace fs = std::filesystem;
+
 using PotatoAlert::Config;
 using nlohmann::json;
 
-// TODO: create default config if config cannot be parsed
+static const char* configName = "config.json";
 
 Config::Config()
 {
-	this->filePath = Config::getFilePath();
+	this->filePath = Config::getFilePath(configName);
 	if (this->exists())
 		this->load();
 	else
@@ -31,17 +35,29 @@ Config::~Config()
 
 void Config::load()
 {
-    Logger::Debug("Loading config.");
+    Logger::Debug("Trying to load config.");
 	try {
 		std::ifstream ifs(this->filePath);
 		this->j = json::parse(ifs);
+        Logger::Debug("Config loaded.");
 	}
 	catch (json::exception& e)
 	{
-	    // TODO: create default
-		std::string errorText = "Cannot read config: " + std::string(e.what());
+        std::string errorText = "Cannot read config: " + std::string(e.what());
         PotatoLogger().Error(errorText.c_str());
-		exit(1);
+        try
+        {
+            auto backupConfig = Config::getFilePath("config.json.bak");
+            if (fs::exists(backupConfig))
+                fs::remove(backupConfig);
+            fs::rename(this->filePath, backupConfig);
+            this->createDefault();
+        }
+        catch (fs::filesystem_error& e)
+        {
+            PotatoLogger().Error(e.what());
+            QApplication::exit(1);
+        }
 	}
 }
 
@@ -80,9 +96,12 @@ void Config::createDefault()
 template <typename T> T Config::get(const char* name) const
 {
 	T value;
-	try {
+	try
+	{
 		value = this->j[name].get<T>();
-	} catch (json::exception& e) {
+	}
+	catch (json::exception& e)
+	{
 		std::cerr << e.what() << std::endl;
 	}
 	return value;
@@ -101,7 +120,7 @@ template void Config::set(const char* name, bool value);
 template void Config::set(const char* name, std::string value);
 template void Config::set(const char* name, std::vector<std::string> value);
 
-std::string Config::getFilePath()
+std::string Config::getFilePath(const char* fileName)
 {
 	QString dirPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/PotatoAlert";
 
@@ -109,7 +128,7 @@ std::string Config::getFilePath()
 	d.mkpath(dirPath);
 	d.setPath(dirPath);
 
-	return d.filePath("config.json").toStdString();
+	return d.filePath(fileName).toStdString();
 }
 
 Config& PotatoAlert::PotatoConfig()
