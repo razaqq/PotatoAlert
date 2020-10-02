@@ -53,11 +53,13 @@ int main(int argc, char *argv[]) {
     QApplication::sendEvent(mainWindow, &event);
 
     // check if there is a new version available
+    /*
     if (PotatoConfig().get<bool>("update_notifications"))
         if (Updater::updateAvailable())
             //if (nativeWindow->confirmUpdate())
                 // Updater::update();
                 ;
+    */
 
 
     int exitCode = QApplication::exec();

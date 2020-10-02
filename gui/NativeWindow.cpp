@@ -63,7 +63,7 @@ void NativeWindow::init()
 
 void NativeWindow::showEvent(QShowEvent* event)
 {
-    // edit underlaying native window
+    // edit underlying native window
     HWND winid = (HWND)this->windowHandle()->winId();
 
     // edit style
@@ -135,7 +135,8 @@ bool NativeWindow::handleMousePressEvent(QMouseEvent* event)
 
 void NativeWindow::handleMouseMoveEvent(QMouseEvent* event)
 {
-    if (this->windowState() == Qt::WindowMaximized) {
+    if (this->windowState() == Qt::WindowMaximized)
+    {
         this->unsetCursor();
         return;
     }

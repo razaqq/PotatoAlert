@@ -53,36 +53,7 @@ target_link_libraries(PotatoAlert
         guilib
         )
 
-# windeployqt
-get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
-get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
-find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
-
-add_custom_command(TARGET PotatoAlert POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E
-        env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}" --no-translations
-        "$<TARGET_FILE:PotatoAlert>"
-        COMMENT "Running windeployqt..."
-        )
-
-# OpenSSL DLLS
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(SSL_DLLS
-            "${PROJECT_SOURCE_DIR}/ThirdParty/ssl/lib/libssl-1_1-x64.dll"
-            "${PROJECT_SOURCE_DIR}/ThirdParty/ssl/lib/libcrypto-1_1-x64.dll"
-            )
-elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set(SSL_DLLS
-            "${PROJECT_SOURCE_DIR}/ThirdParty/ssl/lib/libssl-1_1.dll"
-            "${PROJECT_SOURCE_DIR}/ThirdParty/ssl/lib/libcrypto-1_1.dll"
-            )
-endif()
-
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-endif()
-
-add_custom_command(TARGET PotatoAlert POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${SSL_DLLS}
-        $<TARGET_FILE_DIR:PotatoAlert>
-        COMMENT "Copying OpenSSL dlls..."
-        )
+include(packaging)
+windeployqt(PotatoAlert)
+ssllibraries(PotatoAlert)
+# makeinstaller(PotatoAlert)

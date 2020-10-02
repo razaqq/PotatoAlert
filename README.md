@@ -15,7 +15,6 @@
 - Compact layout, so should easily fit on your second monitor
 - Stats are colored based on wows-numbers.com, they are always taken from game mode "randoms"
 - Backgrounds are colored by player's overall personal rating
-- [OUTDATED] You can choose between using a central API server, or providing your own API key
 - Double clicking a player will bring up his wows-numbers.com profile
 - Support for all game modes, even clan wars with teams from different servers
 
@@ -23,3 +22,25 @@
 This tool is by no means meant for stat shaming or being toxic towards other players in general.
 Please behave yourself in chat.
 If you think you cannot follow this simple rule, then you hereby don't have my permission to use this tool.
+
+## Compiling
+#### Requirements
+- Qt >= 5.15.0
+- clang >= 10.0.0
+- cmake >= 3.16
+- python >= 3.7
+
+#### Steps
+- Get Paths
+    - Qt5 `-DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64`
+    - clang `-DCMAKE_C_COMPILER=C:\Program Files (x86)\LLVM\bin\clang-cl.exe`
+    - Qt IFW `-DCPACK_IFW_ROOT=C:/Qt/Tools/QtInstallerFramework` (only for building the installer)
+- Call cmake
+```console
+cmake -B.\build -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=C:\Program Files (x86)\LLVM\bin\clang-cl.exe -DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64 -DCPACK_IFW_ROOT=C:\Qt\Tools\QtInstallerFramework
+
+cmake --build .\build --target PotatoAlert
+
+cpack -G IFW
+```
+- You find the build output in `.\build\Release`

@@ -65,15 +65,23 @@ bool Game::getResFolderPath(folderStatus& status)
 {
     // get newest folder version inside /bin folder
     int folderVersion = -1;
-    for (const auto& entry: fs::directory_iterator(fs::path(status.gamePath) / "bin"))
+    auto binPath = fs::path(status.gamePath) / "bin";
+    if (fs::exists(binPath))
     {
-        if (entry.is_directory()) {
-            try {
-                int v = std::stoi(entry.path().filename().string());
-                if (v > folderVersion)
-                    folderVersion = v;
-            } catch (std::invalid_argument& ia) {
-                // ignore folders that aren't a valid version
+        for (const auto& entry : fs::directory_iterator(binPath))
+        {
+            if (entry.is_directory())
+            {
+                try
+                {
+                    int v = std::stoi(entry.path().filename().string());
+                    if (v > folderVersion)
+                        folderVersion = v;
+                }
+                catch (std::invalid_argument& ia)
+                {
+                    // ignore folders that aren't a valid version
+                }
             }
         }
     }
@@ -181,13 +189,16 @@ bool Game::readPreferences(folderStatus& status)
 			return false;
 		}
 
-        if (std::regex_search(pref, regionMatch, regionRegex) && regionMatch.size() > 1) {
+        if (std::regex_search(pref, regionMatch, regionRegex) && regionMatch.size() > 1)
+        {
             status.region = regionMatch.str(1);
             status.region = std::regex_replace(status.region, std::regex("WOWS "), "");  // remove 'WOWS '
             status.region = std::regex_replace(status.region, std::regex("CIS"), "RU");  // cis server to ru
             status.region.erase(std::remove(status.region.begin(), status.region.end(), '\t'), status.region.end());  // remove tabs
             std::transform(status.region.begin(), status.region.end(), status.region.begin(), ::tolower);  // to lower
-        } else {
+        }
+        else
+        {
             PotatoLogger().Error("Cannot find region string in preferences.xml.");
             return false;
         }
