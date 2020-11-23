@@ -56,16 +56,19 @@ class CentralApi:
                     t2_avg.winrate_c = match['Team2']['AvgWRC']
                     t2_avg.avg_dmg_c = match['Team2']['AvgDmgC']
 
-                t1_clan = match['Team1']['Players'][0]['Clan']
-                t2_clan = match['Team2']['Players'][0]['Clan']
-                if match['MatchGroup'] == 'clan' and t1_clan and t2_clan:
-                    c1 = (t1_clan['Name'], t1_clan['Tag'], t1_clan['Color'])
-                    c2 = (t2_clan['Name'], t2_clan['Tag'], t2_clan['Color'])
-                    self.pa.servers = (match['Region'], t2_clan['Region'])
-                    self.pa.signals.servers.emit()
-                    self.pa.clans = (c1, c2)
-                    self.pa.signals.clans.emit()
-                else:
+                clans = False
+                if match['MatchGroup'] == 'clan' and match['Team1']['Players'] and match['Team2']['Players']:
+                    t1_clan = match['Team1']['Players'][0]['Clan']
+                    t2_clan = match['Team2']['Players'][0]['Clan']
+                    if t1_clan and t2_clan:
+                        c1 = (t1_clan['Name'], t1_clan['Tag'], t1_clan['Color'])
+                        c2 = (t2_clan['Name'], t2_clan['Tag'], t2_clan['Color'])
+                        self.pa.servers = (match['Region'], t2_clan['Region'])
+                        self.pa.signals.servers.emit()
+                        self.pa.clans = (c1, c2)
+                        self.pa.signals.clans.emit()
+                        clans = True
+                if not clans:
                     self.pa.servers = (None, None)
                     self.pa.signals.servers.emit()
                     self.pa.clans = (None, None)
