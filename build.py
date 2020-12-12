@@ -33,7 +33,7 @@ if __name__ == '__main__':
     icon = os.path.join(assets, 'potato.ico')
     assets_sep = ':' if os.name == 'posix' else ';'
 
-    debug_flags = ['-F', '-y', '-d', 'imports', '-d', 'bootloader']
+    debug_flags = ['-F', '-y', '-c', '-d', 'imports', '-d', 'bootloader']
     build_flags = ['-F', '-y', '-w']
     excludes = ['--exclude-module', 'tkinter']
 
