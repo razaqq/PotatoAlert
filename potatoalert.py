@@ -117,7 +117,7 @@ class PotatoAlert:
             # prevent duplicate run on same arena info file
             file_hash = md5(open(self.arena_info_file, 'rb').read()).hexdigest()
             if file_hash == self.last_hash:
-                print('aborting run')
+                logging.debug('aborting run')
                 return
             else:
                 self.last_hash = file_hash
