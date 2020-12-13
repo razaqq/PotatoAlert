@@ -1,5 +1,9 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Config.h"
+#include "Logger.h"
+#include "Game.hpp"
+#include "StatsParser.hpp"
 #include "PotatoClient.h"
 #include <QUrl>
 #include <QDir>
@@ -9,7 +13,7 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QIODevice>
-#include <QtWebSockets>
+#include <QWebSocket>
 #include <QSizePolicy>
 #include <QTableWidgetItem>
 #include <QString>
@@ -20,10 +24,6 @@
 #include <sstream>
 #include <filesystem>
 #include <fmt/format.h>
-#include "Config.h"
-#include "Logger.h"
-#include "Game.h"
-#include "StatsParser.h"
 
 
 // statuses
@@ -35,16 +35,16 @@ using PotatoAlert::PotatoClient;
 using nlohmann::json;
 namespace fs = std::filesystem;
 
-const QUrl url("ws://www.perry-swift.de:33333");
-// const QUrl url("ws://192.168.178.36:10000");
-const std::string arenaInfoFile = "tempArenaInfo.json";
+const char* wsAddr = "ws://www.perry-swift.de:33333";
+// const char* wsAddr = "ws://192.168.178.36:10000";
 
 void PotatoClient::init()
 {
     emit this->status(STATUS_READY, "Ready");
 
     // handle connection
-	connect(this->socket, &QWebSocket::connected, [this] {
+	connect(this->socket, &QWebSocket::connected, [this]
+	{
         Logger::Debug("Websocket open, sending arena info...");
 		this->socket->sendTextMessage(this->tempArenaInfo);
 	});
@@ -52,15 +52,35 @@ void PotatoClient::init()
 	// handle error
     connect(this->socket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), [=](QAbstractSocket::SocketError error)
     {
-        if (error == QAbstractSocket::ConnectionRefusedError)
-            emit this->status(STATUS_ERROR, "Connection");
-        else
-            emit this->status(STATUS_ERROR, "Websocket Error");
-        PotatoLogger().Error(this->socket->errorString().toStdString().c_str());
+		switch (error)
+		{
+			case QAbstractSocket::ConnectionRefusedError:
+				emit this->status(STATUS_ERROR, "Connection Refused");
+				break;
+			case QAbstractSocket::SocketTimeoutError:
+				emit this->status(STATUS_ERROR, "Socket Timeout");
+				break;
+			case QAbstractSocket::HostNotFoundError:
+				emit this->status(STATUS_ERROR, "Host Not Found");
+				break;
+			case QAbstractSocket::NetworkError:
+				// TODO: this is a shit way of doing this, maybe create a Qt bug report?
+				if (this->socket->errorString().contains("timed", Qt::CaseInsensitive))
+					emit this->status(STATUS_ERROR, "Connection Timeout");
+				else
+					emit this->status(STATUS_ERROR, "Network Error");
+				break;
+			case QAbstractSocket::RemoteHostClosedError:
+				emit this->status(STATUS_ERROR, "Host Closed Conn.");
+				break;
+			default:
+				emit this->status(STATUS_ERROR, "Websocket Error");
+				break;
+		}
+        PotatoLogger().Error(this->socket->errorString().toStdString());
     });
 
 	connect(this->socket, &QWebSocket::textMessageReceived, this, &PotatoClient::onResponse);
-
 	connect(this->watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::onDirectoryChanged);
 
 	for (auto& path : this->watcher->directories())  // trigger run
@@ -85,8 +105,8 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 {
     Logger::Debug("Directory changed.");
 
-	std::string filePath = path.toStdString() + "\\" + arenaInfoFile;
-	std::string tempPath = fs::temp_directory_path().append(arenaInfoFile + ".temp").string();
+    std::string filePath = fmt::format("{}\\tempArenaInfo.json", path.toStdString());
+	std::string tempPath = fs::temp_directory_path().append("tempArenaInfo.json.temp").string();
 
 	if (fs::exists(filePath))
 	{
@@ -94,10 +114,11 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 		{
 			// read arena info from file, copy file to avoid locking it
 			std::string arenaInfo;
-			try {
+			try
+			{
 				if (!fs::copy_file(filePath, tempPath, fs::copy_options::overwrite_existing))
 				{
-                    Logger::Debug("failed to copy file");
+                    Logger::Debug("Failed to copy file");
 					return;
 				}
 
@@ -109,17 +130,38 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 
 				fs::remove(tempPath);
 			}
-			catch (fs::filesystem_error& e) {
-				std::cerr << e.what() << std::endl;
+			catch (fs::filesystem_error& e)
+			{
+				PotatoLogger().Error(e.what());
 				return;
 			}
 
-			std::string s = "ArenaInfo read from file. Content: " + arenaInfo;
-            Logger::Debug(s.c_str());
+            Logger::Debug("ArenaInfo read from file. Content: {}", arenaInfo);
 
 			// parse arenaInfo to json and add region
 			nlohmann::json j = nlohmann::json::parse(arenaInfo);
-			j["region"] = PotatoConfig().get<std::string>("region");
+			j["region"] = this->fStatus.region;
+
+			// set stats mode from config
+			switch (PotatoConfig().get<int>("stats_mode"))
+			{
+				case current:
+					if (j.contains("matchGroup"))
+						j["statsMode"] = j["matchGroup"];
+					else
+						j["statsMode"] = "pvp";
+					break;
+				case pvp:
+					j["statsMode"] = "pvp";
+					break;
+				case ranked:
+					j["statsMode"] = "ranked";
+					break;
+				case clan:
+					j["statsMode"] = "clan";
+					break;
+			}
+
 			QString newArenaInfo = QString::fromStdString(j.dump());
 
 			// make sure we dont pull the same match twice
@@ -130,13 +172,13 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 
 			emit this->status(STATUS_LOADING, "Loading");
 
-            Logger::Debug("Opening websocket.");
-			this->socket->open(url);  // starts the request cycle
+            Logger::Debug("Opening websocket...");
+
+			this->socket->open(QUrl(QString(wsAddr)));  // starts the request cycle
 		}
 		catch (nlohmann::json::parse_error& e)
 		{
-            PotatoLogger().Error("Failed to parse arenaInfoFile to json.");
-            PotatoLogger().Error(e.what());
+            PotatoLogger().Error("Failed to parse arena info file to JSON: {}", e.what());
 			emit this->status(STATUS_ERROR, "JSON Parse Error");
 		}
 	}
@@ -148,32 +190,29 @@ void PotatoClient::onResponse(const QString& message)
     Logger::Debug("Closing websocket connection.");
 	this->socket->close();
 
-	std::string d = "Received response from server: ";
-	d += message.toStdString();
-    Logger::Debug(d.c_str());
+    Logger::Debug("Received response from server: {}", message.toStdString());
 
-	json j;
-	try {
+    if (message.isNull() || message == "null")
+    {
+		emit this->status(STATUS_ERROR, "NULL Response");
+    	return;
+    }
+
+	try
+	{
+		json j;
 		j = json::parse(message.toStdString());
-	}
-	catch (json::parse_error& e) {
-        PotatoLogger().Error("ParseError while parsing server response json.");
-        PotatoLogger().Error(e.what());
-		emit this->status(STATUS_ERROR, "JSON Parse Error");
-		return;
-	}
 
-	// save match to csv file
-	if (PotatoConfig().get<bool>("save_csv"))
-	    this->csvWriter.saveMatch(message.toStdString());
+		// save match to csv file
+		if (PotatoConfig().get<bool>("save_csv"))
+			this->csvWriter.saveMatch(message.toStdString());
 
-    Logger::Debug("Updating tables.");
+		Logger::Debug("Updating tables.");
 
-	auto matchGroup = j["MatchGroup"].get<std::string>();
-	auto team1Json = j["Team1"].get<json>();
-	auto team2Json = j["Team2"].get<json>();
+		auto matchGroup = j["matchGroup"].get<std::string>();
+		auto team1Json = j["team1"].get<json>();
+		auto team2Json = j["team2"].get<json>();
 
-	try {
 		auto team1 = StatsParser::parseTeam(team1Json, matchGroup);
 		auto team2 = StatsParser::parseTeam(team2Json, matchGroup);
 		emit this->teamsReady(std::vector{ team1, team2 });
@@ -198,18 +237,18 @@ void PotatoClient::onResponse(const QString& message)
 		{
 			emit this->clansReady(std::vector<QString>{});
 		}
-		
+
 		emit this->status(STATUS_READY, "Ready");
 	}
-	catch (json::parse_error& e) {
-        PotatoLogger().Error("ParseError while parsing server response json.");
-        PotatoLogger().Error(e.what());
+	catch (json::parse_error& e)
+	{
+        PotatoLogger().Error("ParseError while parsing server response JSON: {}", e.what());
 		emit this->status(STATUS_ERROR, "JSON Parse Error");
 		return;
 	}
-	catch (json::type_error& e) {
-        PotatoLogger().Error("TypeError while parsing server response json.");
-        PotatoLogger().Error(e.what());
+	catch (json::type_error& e)
+	{
+        PotatoLogger().Error("TypeError while parsing server response JSON: {}", e.what());
 		emit this->status(STATUS_ERROR, "JSON Type Error");
 		return;
 	}

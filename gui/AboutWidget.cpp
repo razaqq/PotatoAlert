@@ -5,7 +5,7 @@
 #include <QLabel>
 #include <QApplication>
 #include <QPixmap>
-#include "AboutWidget.h"
+#include "AboutWidget.hpp"
 
 
 using PotatoAlert::AboutWidget;

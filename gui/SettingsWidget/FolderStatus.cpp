@@ -6,9 +6,9 @@
 #include <QString>
 #include <QGridLayout>
 #include <QEvent>
-#include "FolderStatus.h"
-#include "Game.h"
-#include "StringTable.h"
+#include "FolderStatus.hpp"
+#include "Game.hpp"
+#include "StringTable.hpp"
 
 
 using PotatoAlert::FolderStatus;

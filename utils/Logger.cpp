@@ -11,11 +11,6 @@
 
 using PotatoAlert::Logger;
 
-const char debugPrefix[] = " - [DEBUG] ";
-const char infoPrefix[] = " - [INFO] ";
-const char warnPrefix[] = " - [WARN] ";
-const char errorPrefix[] = " - [ERROR] ";
-
 Logger::Logger()
 {
     QString dirPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/PotatoAlert";
@@ -40,7 +35,20 @@ void Logger::Debug(const char* text)
 	#endif
 }
 
+void Logger::Debug(const std::string& text)
+{
+#ifndef NDEBUG
+	std::cout << Logger::getTimeString() << debugPrefix << text << std::endl;
+#endif
+}
+
 void Logger::Info(const char* text)
+{
+	std::cout << Logger::getTimeString() << infoPrefix << text << std::endl;
+	this->_ofs << Logger::getTimeString() << infoPrefix << text << std::endl;
+}
+
+void Logger::Info(const std::string& text)
 {
 	std::cout << Logger::getTimeString() << infoPrefix << text << std::endl;
 	this->_ofs << Logger::getTimeString() << infoPrefix << text << std::endl;
@@ -52,11 +60,31 @@ void Logger::Warn(const char* text)
 	this->_ofs << Logger::getTimeString() << warnPrefix << text << std::endl;
 }
 
+void Logger::Warn(const std::string& text)
+{
+	std::cout << Logger::getTimeString() << warnPrefix << text << std::endl;
+	this->_ofs << Logger::getTimeString() << warnPrefix << text << std::endl;
+}
+
 void Logger::Error(const char* text)
 {
 	std::cerr << Logger::getTimeString() << errorPrefix << text << std::endl;
 	this->_ofs << Logger::getTimeString() << errorPrefix << text << std::endl;
 }
+
+void Logger::Error(const std::string& text)
+{
+	std::cerr << Logger::getTimeString() << errorPrefix << text << std::endl;
+	this->_ofs << Logger::getTimeString() << errorPrefix << text << std::endl;
+}
+
+/*
+template<typename... TArgs>
+void PotatoAlert::Logger::Error(const char* format, TArgs&&... args)
+{
+	fmt::format(format, args...);
+}
+ */
 
 std::string Logger::getTimeString()
 {

@@ -7,8 +7,8 @@
 #include <QPixmap>
 #include <QDebug>
 #include <QButtonGroup>
-#include "VerticalMenuBar.h"
-#include "MenuEntry.h"
+#include "VerticalMenuBar.hpp"
+#include "MenuEntry.hpp"
 
 
 using PotatoAlert::VerticalMenuBar;

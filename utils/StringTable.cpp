@@ -1,6 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "StringTable.h"
+#include "StringTable.hpp"
 #include "Config.h"
 #include <QString>
 

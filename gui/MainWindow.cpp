@@ -16,9 +16,9 @@
 #include "Logger.h"
 #include "PotatoClient.h"
 #include "StatsWidget/StatsWidget.h"
-#include "StatsWidget/StatsHeader.h"
-#include "MenuBar/VerticalMenuBar.h"
-#include "MainWindow.h"
+#include "StatsWidget/StatsHeader.hpp"
+#include "MenuBar/VerticalMenuBar.hpp"
+#include "MainWindow.hpp"
 
 
 using PotatoAlert::MainWindow;

@@ -36,15 +36,15 @@ Config::~Config()
 void Config::load()
 {
     Logger::Debug("Trying to load config.");
-	try {
+	try
+	{
 		std::ifstream ifs(this->filePath);
 		this->j = json::parse(ifs);
         Logger::Debug("Config loaded.");
 	}
 	catch (json::exception& e)
 	{
-        std::string errorText = "Cannot read config: " + std::string(e.what());
-        PotatoLogger().Error(errorText.c_str());
+        PotatoLogger().Error("Cannot read config: {}", e.what());
         try
         {
             auto backupConfig = Config::getFilePath("config.json.bak");
@@ -77,9 +77,8 @@ void Config::createDefault()
 {
     PotatoLogger().Info("Creating default config.");
 	this->j = {
-		{"stats_mode", 1},  // "current mode", "pvp", "ranked", "clan"
+		{"stats_mode", pvp},  // "current mode", "pvp", "ranked", "clan"
 		{"update_notifications", true},
-		{"region", "eu"},
 		{"api_key", "1234567890"},
 		{"save_csv", false},
 		{"use_ga", true},

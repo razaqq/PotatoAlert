@@ -1,9 +1,10 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "Version.h"
+#include "Version.hpp"
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <iostream>
 
 
 using PotatoAlert::Version;
@@ -36,7 +37,8 @@ void Version::parse(std::string &versionString)
 
 bool PotatoAlert::operator== (const Version& v1, const Version& v2)
 {
-    if (v1.success != v2.success) return false;
+    if (v1.success != v2.success)
+    	return false;
 
     int j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
     for (int i = 0; i < j; i++)
@@ -49,35 +51,46 @@ bool PotatoAlert::operator== (const Version& v1, const Version& v2)
     return true;
 }
 
+bool PotatoAlert::operator!= (const Version& v1, const Version& v2)
+{
+	if (v1 == v2)
+		return false;
+	else
+		return true;
+}
+
 bool PotatoAlert::operator> (const Version& v1, const Version& v2)
 {
-    if (!v1.success) return false;
-    if (!v2.success) return true;
-    if (v1.versionInfo.size() != v2.versionInfo.size()) return false;
+    if (!v1.success)  // TODO: check the success cases
+    	return false;
+    if (!v2.success)
+    	return true;
 
     int j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
     for (int i = 0; i < j; i++)
     {
         int n = i < v1.versionInfo.size() ? v1.versionInfo[i] : 0;
         int m = i < v2.versionInfo.size() ? v2.versionInfo[i] : 0;
-        if (n > m)
-            return true;
+        if (n != m)
+            return n > m;
     }
     return false;
 }
 
 bool PotatoAlert::operator< (const Version& v1, const Version& v2)
 {
-    if (!v2.success) return false;
-    if (!v1.success) return true;
+    if (!v2.success)
+    	return false;
+    if (!v1.success)
+    	return true;
 
     int j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
     for (int i = 0; i < j; i++)
     {
         int n = i < v1.versionInfo.size() ? v1.versionInfo[i] : 0;
         int m = i < v2.versionInfo.size() ? v2.versionInfo[i] : 0;
-        if (n < m)
-            return true;
+        if (n != m)
+            return n < m;
     }
     return false;
 }

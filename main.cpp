@@ -10,10 +10,10 @@
 #include <string>
 #include "Config.h"
 #include "PotatoClient.h"
-#include "Palette.h"
-#include "Updater.h"
-#include "MainWindow.h"
-#include "NativeWindow.h"
+#include "Palette.hpp"
+#include "Updater.hpp"
+#include "MainWindow.hpp"
+#include "NativeWindow.hpp"
 #include "VersionInfo.h"
 
 
@@ -38,31 +38,28 @@ int main(int argc, char *argv[]) {
 
 	PotatoClient client;
 	auto mainWindow = new MainWindow(&client);
-    auto nativeWindow = new NativeWindow(mainWindow);
-    nativeWindow->show();
+	auto nativeWindow = new NativeWindow(mainWindow);
+	nativeWindow->show();
 
-    QFile file(":/style.qss");
-    file.open(QFile::ReadOnly | QFile::Text);
-    QString style = QLatin1String(file.readAll());
-    QApplication::setStyle("fusion");
-    QApplication::setPalette(dark());
-    app.setStyleSheet(style);
+	QFile file(":/style.qss");
+	file.open(QFile::ReadOnly | QFile::Text);
+	QString style = QLatin1String(file.readAll());
+	QApplication::setStyle("fusion");
+	QApplication::setPalette(dark());
+	app.setStyleSheet(style);
 
     // force update of language
-    QEvent event(QEvent::LanguageChange);
-    QApplication::sendEvent(mainWindow, &event);
+	QEvent event(QEvent::LanguageChange);
+	QApplication::sendEvent(mainWindow, &event);
 
     // check if there is a new version available
-    /*
     if (PotatoConfig().get<bool>("update_notifications"))
         if (Updater::updateAvailable())
-            //if (nativeWindow->confirmUpdate())
-                // Updater::update();
-                ;
-    */
+            if (nativeWindow->confirmUpdate())
+                Updater::update();
 
 
-    int exitCode = QApplication::exec();
-    PotatoConfig().save();
-    return exitCode;
+	int exitCode = QApplication::exec();
+	PotatoConfig().save();
+	return exitCode;
 }

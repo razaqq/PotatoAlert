@@ -7,7 +7,7 @@
 #include <vector>
 #include <variant>
 #include "StatsWidget.h"
-#include "StatsHeader.h"
+#include "StatsHeader.hpp"
 
 
 using PotatoAlert::StatsWidget;

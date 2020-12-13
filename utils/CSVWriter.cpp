@@ -6,7 +6,7 @@
 #include <QDir>
 #include <QString>
 #include <QStandardPaths>
-#include "CSVWriter.h"
+#include "CSVWriter.hpp"
 #include "Logger.h"
 
 

@@ -1,7 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "StatsHeader.h"
-#include "StringTable.h"
+#include "StatsHeader.hpp"
+#include "StringTable.hpp"
 #include "Config.h"
 #include <QWidget>
 #include <QLabel>

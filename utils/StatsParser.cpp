@@ -1,6 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "StatsParser.h"
+#include "StatsParser.hpp"
 #include <QLabel>
 #include <QTableWidgetItem>
 #include <QFont>
@@ -17,20 +17,20 @@ using nlohmann::json;
 teamType StatsParser::parseTeam(json& teamJson, std::string& matchGroup)
 {
 	teamType team;
-	auto teamID = teamJson["ID"].get<int>();
+	auto teamID = teamJson["id"].get<int>();
 
 	// skip scenario bots, there might be too many for table
 	if ((matchGroup == "pve" || matchGroup == "pve_premade") && teamID == 2)
 		return team;
 
-	for (auto& playerJson : teamJson["Players"].get<json>())
+	for (auto& playerJson : teamJson["players"].get<json>())
 	{
 		playerType player;
 
-		auto playerName = playerJson["Name"].get<std::string>();
-		auto hiddenProfile = playerJson["HiddenPro"].get<bool>();
-		auto clanJson = playerJson["Clan"].get<json>();
-		auto shipJson = playerJson["Ship"].get<json>();
+		auto playerName = playerJson["name"].get<std::string>();
+		auto hiddenProfile = playerJson["hiddenPro"].get<bool>();
+		auto clanJson = playerJson["clan"].get<json>();
+		auto shipJson = playerJson["ship"].get<json>();
 
 		// get stats & colors
 		QString ship, battles, winrate, avgDmg, battlesShip, winrateShip, avgDmgShip;
@@ -38,35 +38,42 @@ teamType StatsParser::parseTeam(json& teamJson, std::string& matchGroup)
 
 		if (!shipJson.is_null())
 		{
-			ship = QString::fromStdString(shipJson["Name"].get<std::string>());
-			shipC = shipJson["Color"].get<std::vector<int>>();
+			ship = QString::fromStdString(shipJson["name"].get<std::string>());
+			shipC = shipJson["color"].get<std::vector<int>>();
 		}
 
 		if (!hiddenProfile)
 		{
-			battles = QString::number(playerJson["Battles"].get<int>());
-			winrate = QString::fromStdString(floatToString(playerJson["WinRate"].get<float>()));
-			avgDmg = QString::number(playerJson["AvgDmg"].get<int>());
-			battlesShip = QString::number(playerJson["BattlesShip"].get<int>());
-			winrateShip = QString::fromStdString(floatToString(playerJson["WRShip"].get<float>()));
-			avgDmgShip = QString::number(playerJson["AvgDmgShip"].get<int>());
-			
-			
-			battlesC = playerJson["BattlesC"].get<std::vector<int>>();
-			winrateC = playerJson["WinRateC"].get<std::vector<int>>();
-			avgDmgC = playerJson["AvgDmgC"].get<std::vector<int>>();
-			battlesShipC = playerJson["BattlesShipC"].get<std::vector<int>>();
-			winrateShipC = playerJson["WRShipC"].get<std::vector<int>>();
-			avgDmgShipC = playerJson["AvgDmgShipC"].get<std::vector<int>>();
+			auto battlesJson = playerJson["battles"].get<json>();
+			auto winrateJson = playerJson["winrate"].get<json>();
+			auto avgDmgJson = playerJson["avgDmg"].get<json>();
+			auto battlesShipJson = playerJson["battlesShip"].get<json>();
+			auto winrateShipJson = playerJson["winrateShip"].get<json>();
+			auto avgDmgShipJson = playerJson["avgDmgShip"].get<json>();
 
-			prC = playerJson["PrC"].get<std::vector<int>>();
+			battles = QString::fromStdString(battlesJson["string"].get<std::string>());
+			winrate = QString::fromStdString(winrateJson["string"].get<std::string>());
+			avgDmg = QString::fromStdString(avgDmgJson["string"].get<std::string>());
+			battlesShip = QString::fromStdString(battlesShipJson["string"].get<std::string>());
+			winrateShip = QString::fromStdString(winrateShipJson["string"].get<std::string>());
+			avgDmgShip = QString::fromStdString(avgDmgShipJson["string"].get<std::string>());
+			
+			
+			battlesC = battlesJson["color"].get<std::vector<int>>();
+			winrateC = winrateJson["color"].get<std::vector<int>>();
+			avgDmgC = avgDmgJson["color"].get<std::vector<int>>();
+			battlesShipC = battlesShipJson["color"].get<std::vector<int>>();
+			winrateShipC = winrateShipJson["color"].get<std::vector<int>>();
+			avgDmgShipC = avgDmgShipJson["color"].get<std::vector<int>>();
+
+			prC = playerJson["prColor"].get<std::vector<int>>();
 		}
 		std::vector<QString> values = { ship, battles, winrate, avgDmg, battlesShip, winrateShip, avgDmgShip };
 		std::vector<std::vector<int>> colors = { shipC, battlesC, winrateC, avgDmgC, battlesShipC, winrateShipC, avgDmgShipC };
 		assert(values.size() == colors.size());
 
 		// get player name widget
-		if (matchGroup != "clan" && !clanJson.is_null() && !clanJson["Name"].get<std::string>().empty())
+		if (matchGroup != "clan" && !clanJson.is_null() && !clanJson["name"].get<std::string>().empty())
 			player.push_back(nameClanTag(playerName, prC, clanJson));
 		else
 			player.push_back(nameNoClanTag(playerName, prC));
@@ -109,8 +116,8 @@ teamType StatsParser::parseTeam(json& teamJson, std::string& matchGroup)
 
 fieldType StatsParser::nameClanTag(std::string& playerName, std::vector<int>& prC, json& clanJson)
 {
-	auto clanTag = clanJson["Tag"].get<std::string>();
-	auto clanC = clanJson["Color"].get<std::vector<int>>();
+	auto clanTag = clanJson["tag"].get<std::string>();
+	auto clanC = clanJson["color"].get<std::vector<int>>();
 
 	auto name = new QLabel;
 	name->setTextFormat(Qt::RichText);
@@ -165,17 +172,16 @@ bool StatsParser::validColor(const std::vector<int>& color)
 	return std::any_of(color.begin(), color.end(), [](int i){ return i != 0; });
 }
 
-std::string StatsParser::floatToString(float f)
-{
-	return fmt::format("{:.1f}", f);
-}
-
 std::vector<QString> StatsParser::parseAvg(json& teamJson)
 {
-	auto avgWr = QString::fromStdString(floatToString(teamJson["AvgWR"].get<float>())) + "%";
-	auto avgWrC = "color: " + QString::fromStdString(arrToRgbString(teamJson["AvgWRC"].get<std::vector<int>>()));
-	auto avgDmg = QString::number(teamJson["AvgDmg"].get<int>());
-	auto avgDmgC = "color: " + QString::fromStdString(arrToRgbString(teamJson["AvgDmgC"].get <std::vector<int>>()));
+	auto avgWrJson = teamJson["avgWr"].get<json>();
+	auto avgDmgJson = teamJson["avgDmg"].get<json>();
+
+	auto avgWr = QString::fromStdString(avgWrJson["string"].get<std::string>()) + "%";
+	auto avgWrC = "color: " + QString::fromStdString(arrToRgbString(avgWrJson["color"].get<std::vector<int>>()));
+
+	auto avgDmg = QString::fromStdString(avgDmgJson["string"].get<std::string>());
+	auto avgDmgC = "color: " + QString::fromStdString(arrToRgbString(avgDmgJson["color"].get<std::vector<int>>()));
 
 	return std::vector<QString>{ avgWr, avgWrC, avgDmg, avgDmgC };
 }
@@ -183,15 +189,15 @@ std::vector<QString> StatsParser::parseAvg(json& teamJson)
 std::vector<QString> StatsParser::parseClan(json& teamJson)
 {
 	json clanJson;
-	for (auto& player : teamJson["Players"].get<std::vector<json>>())
+	for (auto& player : teamJson["players"].get<std::vector<json>>())
 	{
-		clanJson = player["Clan"].get<json>();
+		clanJson = player["clan"].get<json>();
 		if (!clanJson.is_null())
 		{
-			auto tag = "[" + QString::fromStdString(clanJson["Tag"].get<std::string>()) + "] ";
-			auto color = "color: " + QString::fromStdString(arrToRgbString(clanJson["Color"].get<std::vector<int>>()));
-			auto name = QString::fromStdString(clanJson["Name"].get<std::string>());
-			auto region = QString::fromStdString(clanJson["Region"].get<std::string>());
+			auto tag = "[" + QString::fromStdString(clanJson["tag"].get<std::string>()) + "] ";
+			auto color = "color: " + QString::fromStdString(arrToRgbString(clanJson["color"].get<std::vector<int>>()));
+			auto name = QString::fromStdString(clanJson["name"].get<std::string>());
+			auto region = QString::fromStdString(clanJson["region"].get<std::string>());
 
 			return std::vector<QString>{ tag, color, name, region };
 		}
@@ -202,9 +208,9 @@ std::vector<QString> StatsParser::parseClan(json& teamJson)
 std::vector<QString> StatsParser::parseWowsNumbersProfile(json& teamJson)
 {
 	std::vector<QString> team;
-	for (auto& player : teamJson["Players"].get<std::vector<json>>())
+	for (auto& player : teamJson["players"].get<std::vector<json>>())
 	{
-		auto wowsNumbersLink = player["WowsNumbers"].get<std::string>();
+		auto wowsNumbersLink = player["wowsNumbers"].get<std::string>();
 		team.push_back(QString::fromStdString(wowsNumbersLink));
 	}
 	return team;

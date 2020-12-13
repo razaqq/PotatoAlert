@@ -2,7 +2,7 @@
 
 #include <QColor>
 #include <QPalette>
-#include "Palette.h"
+#include "Palette.hpp"
 
 
 QPalette dark()

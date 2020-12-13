@@ -7,8 +7,8 @@
 #include <QEvent>
 #include <iostream>
 #include <vector>
-#include "StatsTeamFooter.h"
-#include "StringTable.h"
+#include "StatsTeamFooter.hpp"
+#include "StringTable.hpp"
 
 
 using PotatoAlert::StatsTeamFooter;

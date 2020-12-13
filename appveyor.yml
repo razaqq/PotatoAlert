@@ -1,0 +1,48 @@
+version: '{branch}b{build}'
+
+skip_non_tags: false
+
+image: Visual Studio 2019
+
+platform:
+  - x64
+
+configuration:
+  - Debug
+  - Release
+
+environment:
+  CMAKE_OPTIONS: -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64
+  CLANG_VERSION: 10.0.0
+  APPVEYOR_SAVE_CACHE_ON_ERROR: true
+  PYTHON: "C:\\Python39-x64"
+
+init:
+  - git config --global core.autocrlf true
+
+before_build:
+  - cmake --version
+  - set PATH=%MINGW%\bin;%QT5%\bin;%PATH%
+  - "%PYTHON%\\python.exe" .\Resources\generate_translations.py
+
+build_script:
+  - echo %configuration%
+  - cmake -B.\build -DCMAKE_BUILD_TYPE=%configuration% %CMAKE_OPTIONS%
+  - cmake --build .\build --target PotatoAlert
+
+test_script:
+  - ""
+
+artifacts:
+  - path: 'build\Release\'
+    name: 'release'
+
+deploy:
+  description: ''
+  provider: GitHub
+  auth_token:
+    secure: yx3zdq/HfsztAvFdSyLIFxAXno5g1URqrLK1aiaeqgz9eY8NyOMG9SSLCNHSq93D
+  artifact: potatoalert
+  draft: true
+  on:
+    appveyor_repo_tag: true # deploy on tag push only

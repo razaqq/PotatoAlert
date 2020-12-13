@@ -15,15 +15,15 @@
 #include <QPushButton>
 #include <QApplication>
 #include "SettingsWidget.h"
-#include "Game.h"
+#include "Game.hpp"
 #include "Config.h"
 #include "Logger.h"
 #include "PotatoClient.h"
-#include "SettingsSwitch.h"
-#include "SettingsChoice.h"
-#include "HorizontalLine.h"
-#include "FolderStatus.h"
-#include "StringTable.h"
+#include "SettingsSwitch.hpp"
+#include "SettingsChoice.hpp"
+#include "HorizontalLine.hpp"
+#include "FolderStatus.hpp"
+#include "StringTable.hpp"
 
 
 const int LABEL_WIDTH = 220;

@@ -9,9 +9,9 @@
 #include <QCheckBox>
 #include <QToolButton>
 #include <QPushButton>
-#include "SettingsSwitch.h"
-#include "SettingsChoice.h"
-#include "FolderStatus.h"
+#include "SettingsSwitch.hpp"
+#include "SettingsChoice.hpp"
+#include "FolderStatus.hpp"
 #include "PotatoClient.h"
 #include "Config.h"
 #include "Logger.h"

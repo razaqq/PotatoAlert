@@ -1,27 +1,25 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "CSVWriter.hpp"
+#include "Game.hpp"
+#include <QFileSystemWatcher>
+#include <QLabel>
 #include <QObject>
 #include <QString>
-#include <QFileSystemWatcher>
-#include <QWebSocket>
-#include <QLabel>
 #include <QTableWidgetItem>
+#include <QWebSocket>
 #include <string>
-#include <vector>
 #include <variant>
-#include <nlohmann/json.hpp>
-#include "Config.h"
-#include "Game.h"
-#include "Logger.h"
-#include "CSVWriter.h"
+#include <vector>
+#include <memory>
 
 
-typedef std::vector<std::vector<std::variant<QLabel*, QTableWidgetItem*>>> teamType;
+typedef std::vector<std::vector<std::variant<QLabel *, QTableWidgetItem *>>> teamType;
 
 namespace PotatoAlert {
 
-class PotatoClient :  public QObject
+class PotatoClient : public QObject
 {
 	Q_OBJECT
 public:
@@ -33,7 +31,7 @@ private:
 	void updateReplaysPath();
 
 	QWebSocket* socket = new QWebSocket();
-	QFileSystemWatcher* watcher = new QFileSystemWatcher;
+	QFileSystemWatcher* watcher = new QFileSystemWatcher();
 
 	QString tempArenaInfo;
 	folderStatus fStatus;

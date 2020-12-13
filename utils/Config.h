@@ -10,6 +10,14 @@
 
 namespace PotatoAlert {
 
+enum statsMode
+{
+	current,
+	pvp,
+	ranked,
+	clan
+};
+
 class Config : public QObject
 {
 	Q_OBJECT

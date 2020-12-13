@@ -12,7 +12,7 @@
 #include <QPropertyAnimation>
 #include <map>
 #include <functional>
-#include "SettingsSwitch.h"
+#include "SettingsSwitch.hpp"
 
 
 using PotatoAlert::SettingsSwitch;

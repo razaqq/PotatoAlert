@@ -1,8 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "Updater.h"
+#include "Updater.hpp"
 #include "Logger.h"
-#include "Version.h"
+#include "Version.hpp"
 #include <windows.h>
 #include <string>
 #include <sstream>
@@ -26,10 +26,11 @@ const char* updateURL = "";
 const char* versionURL = "https://api.github.com/repos/razaqq/PotatoAlert/releases/latest";
 
 
+// makes a request to the github api and checks if there is a new version available
 bool Updater::updateAvailable()
 {
     QEventLoop loop;
-    auto manager = new QNetworkAccessManager;
+    auto manager = new QNetworkAccessManager();
 
     QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(versionURL)));
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
@@ -37,43 +38,58 @@ bool Updater::updateAvailable()
 
     if (reply->error())
     {
-        Logger::Debug(reply->errorString().toStdString().c_str());
+        Logger::Debug(reply->errorString().toStdString());
         return false;
     }
 
     json j;
-    try {
+    try
+    {
         j = json::parse(reply->readAll().toStdString());
     }
-    catch (json::parse_error& e) {
-        PotatoLogger().Error("Failed to parse github api response as json.");
+    catch (json::parse_error& e)
+    {
+        PotatoLogger().Error("Failed to parse github api response as JSON: {}", e.what());
         return false;
     }
+    catch (json::type_error& e)
+	{
+		PotatoLogger().Error("{}", e.what());
+		return false;
+	}
 
     auto remoteVersion = j["tag_name"].get<std::string>();
     auto localVersion = QApplication::applicationVersion().toStdString();
 
-    return Version(remoteVersion) > Version(localVersion);
+    // return Version(remoteVersion) > Version(localVersion);
+	return true;
 }
 
 void Updater::update()
 {
     Logger::Debug("Starting update...");
 
-    auto root = fs::absolute(fs::current_path());
+    const fs::path root = fs::absolute(fs::current_path());
+	const fs::path temp = (root / "PotatoAlert_temp.exe");
+	const fs::path src = (root / "PotatoAlert_new.exe");
+	const fs::path dst = (root / "PotatoAlert.exe");
 
-    auto temp = (root / "PotatoAlert_temp.exe").string();
-    remove(temp.c_str()); // ignore return code
+    try
+	{
+		if (fs::exists(temp))
+			fs::remove(temp);
+    	if (fs::exists(dst))  // i mean this should always be true, but...
+    		fs::rename(dst, temp);
+    	if (Updater::download(dst))
+			fs::copy(src, dst);
+	}
+    catch (fs::filesystem_error& e)
+	{
+    	PotatoLogger().Error("Failed to update: {}", e.what());
+	}
 
-    auto src = (root / "PotatoAlert_new.exe").string();
-    auto dst = (root / "PotatoAlert.exe").string();
-
-    rename(dst.c_str(), temp.c_str());
-    CopyFile(src.c_str(), dst.c_str(), false);
-    static char buffer[512];
-    strcpy(buffer, dst.c_str());  // DEPRECATED
-
-    /* CreateProcess API initialization */
+	/*
+    // CreateProcess API initialization
     STARTUPINFO siStartupInfo;
     PROCESS_INFORMATION piProcessInfo;
     memset(&siStartupInfo, 0, sizeof(siStartupInfo));
@@ -96,9 +112,11 @@ void Updater::update()
     ::ExitProcess(0); // exit this process
 
     // this does not return.
+    */
 }
 
-void Updater::download()
+bool Updater::download(const fs::path& targetFile)
 {
     // connect(reply, &QNetworkReply::downloadProgress, progressDialog, &ProgressDialog::networkReplyProgress);
+    return true;
 }

@@ -12,8 +12,8 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include "StatsTable.h"
-#include "StringTable.h"
+#include "StatsTable.hpp"
+#include "StringTable.hpp"
 
 
 using PotatoAlert::StatsTable;

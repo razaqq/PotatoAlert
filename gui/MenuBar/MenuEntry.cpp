@@ -7,7 +7,7 @@
 #include <QSize>
 #include <QVBoxLayout>
 #include <QDebug>
-#include "MenuEntry.h"
+#include "MenuEntry.hpp"
 
 
 using PotatoAlert::MenuEntry;

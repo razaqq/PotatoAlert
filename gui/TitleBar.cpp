@@ -10,7 +10,7 @@
 #include <QSizePolicy>
 #include <QToolButton>
 #include <QMouseEvent>
-#include "TitleBar.h"
+#include "TitleBar.hpp"
 
 
 using PotatoAlert::TitleBar;

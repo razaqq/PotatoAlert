@@ -3,7 +3,7 @@
 
 [![version](https://img.shields.io/github/v/release/razaqq/PotatoAlert.svg?style=flat-square)](https://github.com/razaqq/PotatoAlert/releases) 
 [![Github all releases](https://img.shields.io/github/downloads/razaqq/PotatoAlert/total.svg?style=flat-square)](https://github.com/razaqq/PotatoAlert/releases)
-[![appveyor build status](https://img.shields.io/appveyor/build/razaqq/PotatoAlert?style=flat-square&logo=appveyor)](https://ci.appveyor.com/project/razaqq/PotatoAlert)
+[![appveyor build status](https://img.shields.io/appveyor/build/razaqq/PotatoAlert2?style=flat-square&logo=appveyor)](https://ci.appveyor.com/project/razaqq/PotatoAlert2)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Discord Chat](https://img.shields.io/discord/711953820745203815.svg?&logo=discord&logoColor=ffffff&style=flat-square)](https://discord.gg/Ut8t8PA)
 
@@ -33,7 +33,7 @@ If you think you cannot follow this simple rule, then you hereby don't have my p
 #### Steps
 - Get Paths
     - Qt5 `-DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64`
-    - clang `-DCMAKE_C_COMPILER=C:\Program Files (x86)\LLVM\bin\clang-cl.exe`
+    - clang `-DCMAKE_C_COMPILER="C:\Program Files (x86)\LLVM\bin\clang-cl.exe"` and `-DCMAKE_CXX_COMPILER="C:\Program Files (x86)\LLVM\bin\clang-cl.exe"`
     - Qt IFW `-DCPACK_IFW_ROOT=C:/Qt/Tools/QtInstallerFramework` (only for building the installer)
 - Call cmake
 ```console

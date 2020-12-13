@@ -1,6 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "SettingsChoice.h"
+#include "SettingsChoice.hpp"
 #include <QWidget>
 #include <QString>
 #include <QFont>

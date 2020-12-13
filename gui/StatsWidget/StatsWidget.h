@@ -7,9 +7,9 @@
 #include <QString>
 #include <vector>
 #include <variant>
-#include "StatsTable.h"
-#include "StatsHeader.h"
-#include "StatsTeamFooter.h"
+#include "StatsTable.hpp"
+#include "StatsHeader.hpp"
+#include "StatsTeamFooter.hpp"
 
 typedef std::vector<std::vector<std::variant<QLabel*, QTableWidgetItem*>>> teamType;
 

@@ -2,7 +2,7 @@
 
 #include <QWidget>
 #include <QFrame>
-#include "HorizontalLine.h"
+#include "HorizontalLine.hpp"
 
 
 using PotatoAlert::HorizontalLine;

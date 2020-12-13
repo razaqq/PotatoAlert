@@ -11,14 +11,14 @@
 #include <QShowEvent>
 #include <QPaintEvent>
 #include <QApplication>
-#include "NativeWindow.h"
-#include "TitleBar.h"
+#include "NativeWindow.hpp"
+#include "TitleBar.hpp"
 #include "Config.h"
 #include <atlstr.h>
 
 #include <Windows.h>  // windows only
 #include <dwmapi.h>
-#include <gdiplus.h>
+// #include <gdiplus.h>
 #include <Dwmapi.h>
 #pragma comment (lib, "Dwmapi.lib")
 
