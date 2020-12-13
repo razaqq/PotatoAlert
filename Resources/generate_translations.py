@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import xml.etree.ElementTree as ET
+import os
+import xml.etree.ElementTree as et
 
 
 if __name__ == '__main__':
@@ -8,14 +9,16 @@ if __name__ == '__main__':
     keys = []
     translations = {}
 
-    tree = ET.parse('stringtable.xml')
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+
+    tree = et.parse(os.path.join(cur_dir, 'stringtable.xml'))
     root = tree.getroot()
 
     # generate languages enum
     for lang in root[0]:
         languages.append(lang.tag)
         translations[lang.tag] = []
-    with open('StringTableLanguages.i', 'w') as f:
+    with open(os.path.join(cur_dir, 'StringTableLanguages.i'), 'w') as f:
         f.write(','.join([f'"{l}"' for l in languages]))
 
     # generate strings
@@ -26,9 +29,9 @@ if __name__ == '__main__':
     strings = []
     for lang in languages:
         strings.append('{' + ','.join([f'"{t}"' for t in translations[lang]]) + '}')
-    with open('StringTableStrings.i', 'w') as f:
+    with open(os.path.join(cur_dir, 'StringTableStrings.i'), 'w') as f:
         f.write(','.join(strings))
 
     # generate keys
-    with open('StringTableKeys.i', 'w') as f:
+    with open(os.path.join(cur_dir, 'StringTableKeys.i'), 'w') as f:
         f.write(','.join(keys))
