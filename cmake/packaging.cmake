@@ -27,9 +27,25 @@ function(windeployqt target)
             --no-translations
             --dir "${CMAKE_CURRENT_BINARY_DIR}/package/"
             $<TARGET_FILE:${target}>
-            COMMENT "Deploying Qt..."
+            COMMENT "Deploying Qt to /package..."
             )
     install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/package/" DESTINATION bin)
+
+    add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E
+            env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
+            ${WINDEPLOYQT_ARGS}
+            --verbose 0
+            --no-compiler-runtime
+            --no-angle
+            --no-opengl-sw
+            --no-translations
+            --dir "${CMAKE_CURRENT_BINARY_DIR}/"
+            $<TARGET_FILE:${target}>
+            COMMENT "Deploying Qt..."
+            )
+    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/" DESTINATION bin)
+
     set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
     include(InstallRequiredSystemLibraries)
 endfunction()
@@ -51,6 +67,12 @@ function(ssllibraries target)
     add_custom_command(TARGET ${target} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${SSL_DLLS}
             $<TARGET_FILE_DIR:${target}>/package
+            COMMENT "Copying OpenSSL dlls to /package..."
+            )
+
+    add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${SSL_DLLS}
+            $<TARGET_FILE_DIR:${target}>
             COMMENT "Copying OpenSSL dlls..."
             )
 endfunction()

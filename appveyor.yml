@@ -2,40 +2,45 @@ version: '{branch}b{build}'
 
 skip_non_tags: false
 
-image: Visual Studio 2019
-
 platform:
   - x64
 
-configuration:
-  - Debug
-  - Release
-
 environment:
-  CMAKE_OPTIONS: -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64
-  CLANG_VERSION: 10.0.0
-  APPVEYOR_SAVE_CACHE_ON_ERROR: true
-  PYTHON: "C:\\Python39-x64"
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      CMAKE_OPTIONS: -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_PREFIX_PATH=C:\Qt\5.15.1\msvc2019_64
+      MSVC_SETUP_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat
+      MSVC_SETUP_ARG: amd64
+      CC: clang
+      CXX: clang++
+      PYTHON: "C:\\Python39-x64"
 
 init:
   - git config --global core.autocrlf true
 
 before_build:
   - cmake --version
-  - set PATH=%MINGW%\bin;%QT5%\bin;%PATH%
-  - "%PYTHON%\\python.exe" .\Resources\generate_translations.py
+  - clang-cl --version
+  - if DEFINED MSVC_SETUP_PATH call "%MSVC_SETUP_PATH%" %MSVC_SETUP_ARG%
+  - "%PYTHON%\\python.exe .\\Resources\\generate_translations.py"
 
 build_script:
-  - echo %configuration%
-  - cmake -B.\build -DCMAKE_BUILD_TYPE=%configuration% %CMAKE_OPTIONS%
-  - cmake --build .\build --target PotatoAlert
+  - cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja -DCMAKE_PREFIX_PATH=C:\Qt\5.15.1\msvc2019_64
+    -DCPACK_IFW_ROOT=E:/Qt/Tools/QtInstallerFramework -DCMAKE_RC_COMPILER=RC
+  - cmake --build build --target PotatoAlert
+  - cmake --build build --target PotatoTest
+
+after_build:
+  - cd %APPVEYOR_BUILD_FOLDER%\build
+  - 7z a PotatoAlert.zip -r .\PotatoAlert.exe .\package\*
 
 test_script:
-  - ""
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%\build\test
+  - cmd: PotatoTest.exe
 
 artifacts:
-  - path: 'build\Release\'
-    name: 'release'
+  - path: 'build\PotatoAlert.zip'
+    name: 'potatoalert'
 
 deploy:
   description: ''

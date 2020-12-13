@@ -26,21 +26,24 @@ If you think you cannot follow this simple rule, then you hereby don't have my p
 ## Compiling
 #### Requirements
 - Qt >= 5.15.0
-- clang >= 10.0.0
+- clang >= 11.0.0
+- ninja >= 1.10.2
 - cmake >= 3.16
+- Visual Studio 2019
+- Windows SDK >= 10
 - python >= 3.7
 
 #### Steps
 - Get Paths
     - Qt5 `-DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64`
-    - clang `-DCMAKE_C_COMPILER="C:\Program Files (x86)\LLVM\bin\clang-cl.exe"` and `-DCMAKE_CXX_COMPILER="C:\Program Files (x86)\LLVM\bin\clang-cl.exe"`
+    - add clang to PATH 
+      - `set CC=clang`
+      - `set CXX=clang++`
     - Qt IFW `-DCPACK_IFW_ROOT=C:/Qt/Tools/QtInstallerFramework` (only for building the installer)
 - Call cmake
 ```console
-cmake -B.\build -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=C:\Program Files (x86)\LLVM\bin\clang-cl.exe -DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64 -DCPACK_IFW_ROOT=C:\Qt\Tools\QtInstallerFramework
-
-cmake --build .\build --target PotatoAlert
-
+cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja -DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64 -DCPACK_IFW_ROOT=C:/Qt/Tools/QtInstallerFramework -DCMAKE_RC_COMPILER=RC
+cmake --build build --target PotatoAlert
 cpack -G IFW
 ```
 - You find the build output in `.\build\Release`
