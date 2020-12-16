@@ -12,9 +12,9 @@
 #include "SettingsSwitch.hpp"
 #include "SettingsChoice.hpp"
 #include "FolderStatus.hpp"
-#include "PotatoClient.h"
-#include "Config.h"
-#include "Logger.h"
+#include "PotatoClient.hpp"
+#include "Config.hpp"
+#include "Logger.hpp"
 
 
 namespace PotatoAlert {

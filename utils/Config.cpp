@@ -1,7 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "Logger.h"
-#include "Config.h"
+#include "Logger.hpp"
+#include "Config.hpp"
 #include <QDir>
 #include <QStandardPaths>
 #include <QApplication>
@@ -17,11 +17,9 @@ namespace fs = std::filesystem;
 using PotatoAlert::Config;
 using nlohmann::json;
 
-static const char* configName = "config.json";
-
-Config::Config()
+Config::Config(const char* fileName)
 {
-	this->filePath = Config::getFilePath(configName);
+	this->filePath = Config::getFilePath(fileName);
 	if (this->exists())
 		this->load();
 	else
@@ -44,10 +42,10 @@ void Config::load()
 	}
 	catch (json::exception& e)
 	{
-        PotatoLogger().Error("Cannot read config: {}", e.what());
+		Logger::Error("Cannot read config: {}", e.what());
         try
         {
-            auto backupConfig = Config::getFilePath("config.json.bak");
+            std::string backupConfig = this->filePath.append(".bak");
             if (fs::exists(backupConfig))
                 fs::remove(backupConfig);
             fs::rename(this->filePath, backupConfig);
@@ -55,7 +53,7 @@ void Config::load()
         }
         catch (fs::filesystem_error& e)
         {
-            PotatoLogger().Error(e.what());
+			Logger::Error(e.what());
             QApplication::exit(1);
         }
 	}
@@ -75,7 +73,7 @@ bool Config::exists() const
 
 void Config::createDefault()
 {
-    PotatoLogger().Info("Creating default config.");
+	Logger::Info("Creating default config.");
 	this->j = {
 		{"stats_mode", pvp},  // "current mode", "pvp", "ranked", "clan"
 		{"update_notifications", true},
@@ -132,6 +130,6 @@ std::string Config::getFilePath(const char* fileName)
 
 Config& PotatoAlert::PotatoConfig()
 {
-    static Config p;
+    static Config p("config.json");
     return p;
 }

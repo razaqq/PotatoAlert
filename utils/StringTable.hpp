@@ -7,19 +7,21 @@
 
 namespace PotatoAlert {
 
-enum class Keys
+enum StringKeys
 {
 #include "StringTableKeys.i"
 };
 
-static const std::string_view Languages[] = {
+static const std::string_view Languages[] =
+{
 #include "StringTableLanguages.i"
 };
 
-static const std::string_view Strings[][100] = {  // TODO: size of array
+static const std::string_view Strings[][100] =
+{  // TODO: size of array
 #include "StringTableStrings.i"
 };
 
-QString GetString(Keys key);
+QString GetString(StringKeys key);
 
 }  // namespace PotatoAlert

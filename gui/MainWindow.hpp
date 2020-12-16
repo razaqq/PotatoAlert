@@ -5,11 +5,12 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include "Config.h"
-#include "Logger.h"
-#include "PotatoClient.h"
+#include "Config.hpp"
+#include "Logger.hpp"
+#include "Updater.hpp"
+#include "PotatoClient.hpp"
 #include "StatsWidget/StatsWidget.h"
-#include "SettingsWidget/SettingsWidget.h"
+#include "SettingsWidget/SettingsWidget.hpp"
 #include "AboutWidget.hpp"
 #include "MenuBar/VerticalMenuBar.hpp"
 
@@ -20,6 +21,9 @@ class MainWindow : public QMainWindow
 {
 public:
 	explicit MainWindow(PotatoClient* pc);
+	int confirmUpdate();
+	void updateProgress(qint64 bytesReceived, qint64 bytesTotal);
+	void startUpdate(Updater* updater);
 protected:
 	void init();
 	PotatoClient* pc;

@@ -9,7 +9,7 @@
 #include <QEvent>
 #include <QByteArray>
 #include <QPaintEvent>
-#include "Config.h"
+#include "Config.hpp"
 #include "TitleBar.hpp"
 
 
@@ -20,11 +20,10 @@ class NativeWindow : public QWidget
 	Q_OBJECT
 public:
 	explicit NativeWindow(QMainWindow* mainWindow);
-	bool confirmUpdate();
 private:
 	QMainWindow* mainWindow;
 
-	int borderWidth = 4;
+	static const int borderWidth = 4;
 
 	TitleBar* titleBar = new TitleBar(this);
 

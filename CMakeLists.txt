@@ -51,6 +51,7 @@ target_link_libraries(PotatoAlert
         Qt5::Gui
         utilslib
         guilib
+        Dwmapi
         )
 
 include(packaging)

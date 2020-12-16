@@ -1,10 +1,10 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "Config.h"
-#include "Logger.h"
+#include "Config.hpp"
+#include "Logger.hpp"
 #include "Game.hpp"
 #include "StatsParser.hpp"
-#include "PotatoClient.h"
+#include "PotatoClient.hpp"
 #include <QUrl>
 #include <QDir>
 #include <QObject>
@@ -72,12 +72,12 @@ void PotatoClient::init()
 				break;
 			case QAbstractSocket::RemoteHostClosedError:
 				emit this->status(STATUS_ERROR, "Host Closed Conn.");
-				break;
+				return;
 			default:
 				emit this->status(STATUS_ERROR, "Websocket Error");
 				break;
 		}
-        PotatoLogger().Error(this->socket->errorString().toStdString());
+        Logger::Error(this->socket->errorString().toStdString());
     });
 
 	connect(this->socket, &QWebSocket::textMessageReceived, this, &PotatoClient::onResponse);
@@ -132,7 +132,7 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 			}
 			catch (fs::filesystem_error& e)
 			{
-				PotatoLogger().Error(e.what());
+				Logger::Error(e.what());
 				return;
 			}
 
@@ -178,7 +178,7 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 		}
 		catch (nlohmann::json::parse_error& e)
 		{
-            PotatoLogger().Error("Failed to parse arena info file to JSON: {}", e.what());
+			Logger::Error("Failed to parse arena info file to JSON: {}", e.what());
 			emit this->status(STATUS_ERROR, "JSON Parse Error");
 		}
 	}
@@ -242,13 +242,13 @@ void PotatoClient::onResponse(const QString& message)
 	}
 	catch (json::parse_error& e)
 	{
-        PotatoLogger().Error("ParseError while parsing server response JSON: {}", e.what());
+		Logger::Error("ParseError while parsing server response JSON: {}", e.what());
 		emit this->status(STATUS_ERROR, "JSON Parse Error");
 		return;
 	}
 	catch (json::type_error& e)
 	{
-        PotatoLogger().Error("TypeError while parsing server response JSON: {}", e.what());
+		Logger::Error("TypeError while parsing server response JSON: {}", e.what());
 		emit this->status(STATUS_ERROR, "JSON Type Error");
 		return;
 	}

@@ -1,117 +1,140 @@
+<?xml version = "1.0" encoding = "UTF-8" standalone = "no" ?>
 <Package name="Translations">
     <!-- SETTINGS -->
     <Key ID="SETTINGS_REPLAYSFOLDER_STATUS">
         <English>Status:</English>
-        <German>Status:</German>
+        <Deutsch>Status:</Deutsch>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_FOLDERS">
         <English>Replays Folders:</English>
-        <German>Replays Ordner:</German>
+        <Deutsch>Replays Ordner:</Deutsch>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_REGION">
         <English>Region:</English>
-        <German>Region:</German>
+        <Deutsch>Region:</Deutsch>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_GAMEVERSION">
         <English>Game Version:</English>
-        <German>Spielversion:</German>
+        <Deutsch>Spielversion:</Deutsch>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_STEAM">
         <English>Steam:</English>
-        <German>Steam:</German>
+        <Deutsch>Steam:</Deutsch>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_VERSIONED">
         <English>Versioned Replays:</English>
-        <German>Versioned Replays:</German>
+        <Deutsch>Versioned Replays:</Deutsch>
     </Key>
 
     <Key ID="SETTINGS_UPDATES">
         <English>Update Notifications</English>
-        <German>Update Benachrichtigungen</German>
+        <Deutsch>Update Benachrichtigungen</Deutsch>
     </Key>
     <Key ID="SETTINGS_SAVE_CSV">
         <English>Save Match As CSV</English>
-        <German>Gefechte Als CSV Speichern</German>
+        <Deutsch>Gefechte Als CSV Speichern</Deutsch>
     </Key>
     <Key ID="SETTINGS_GAME_DIRECTORY">
         <English>Game Directory</English>
-        <German>Spiel Verzeichnis</German>
+        <Deutsch>Spiel Verzeichnis</Deutsch>
     </Key>
     <Key ID="SETTINGS_STATS_MODE">
         <English>Stats Mode</English>
-        <German>Statistik Modus</German>
+        <Deutsch>Statistik Modus</Deutsch>
     </Key>
     <Key ID="SETTINGS_GA">
         <English>Allow Google Analytics</English>
-        <German>Google Analytics Erlauben</German>
+        <Deutsch>Google Analytics Erlauben</Deutsch>
     </Key>
     <Key ID="SETTINGS_LANGUAGE">
         <English>Language</English>
-        <German>Sprache</German>
+        <Deutsch>Sprache</Deutsch>
     </Key>
     <Key ID="SETTINGS_SAVE">
         <English>Save</English>
-        <German>Speichern</German>
+        <Deutsch>Speichern</Deutsch>
     </Key>
     <Key ID="SETTINGS_CANCEL">
         <English>Cancel</English>
-        <German>Abbrechen</German>
+        <Deutsch>Abbrechen</Deutsch>
     </Key>
 
 
     <!-- STATS TABLES -->
     <Key ID="LABEL_WINRATE">
         <English>WR: </English>
-        <German>WR: </German>
+        <Deutsch>WR: </Deutsch>
     </Key>
     <Key ID="LABEL_DAMAGE">
         <English>DMG: </English>
-        <German>DMG: </German>
+        <Deutsch>DMG: </Deutsch>
     </Key>
     <Key ID="LABEL_REGION">
         <English>Region: </English>
-        <German>Region: </German>
+        <Deutsch>Region: </Deutsch>
     </Key>
 
     <Key ID="LABEL_MYTEAM">
         <English>My Team</English>
-        <German>Mein Team</German>
+        <Deutsch>Mein Team</Deutsch>
     </Key>
     <Key ID="LABEL_ENEMYTEAM">
         <English>Enemy Team</English>
-        <German>Gegnerteam</German>
+        <Deutsch>Gegnerteam</Deutsch>
     </Key>
 
     <Key ID="COLUMN_PLAYER">
         <English>Player</English>
-        <German>Spieler</German>
+        <Deutsch>Spieler</Deutsch>
     </Key>
     <Key ID="COLUMN_SHIP">
         <English>Ship</English>
-        <German>Schiff</German>
+        <Deutsch>Schiff</Deutsch>
     </Key>
     <Key ID="COLUMN_MATCHES">
         <English>Matches</English>
-        <German>Gefechte</German>
+        <Deutsch>Gefechte</Deutsch>
     </Key>
     <Key ID="COLUMN_WINRATE">
         <English>Winrate</English>
-        <German>Winrate</German>
+        <Deutsch>Winrate</Deutsch>
     </Key>
     <Key ID="COLUMN_AVERAGE_DAMAGE">
         <English>Avg DMG</English>
-        <German>Avg DMG</German>
+        <Deutsch>Avg DMG</Deutsch>
     </Key>
     <Key ID="COLUMN_MATCHES_SHIP">
         <English>M Ship</English>
-        <German>Gef. Schiff</German>
+        <Deutsch>Gef. Schiff</Deutsch>
     </Key>
     <Key ID="COLUMN_WINRATE_SHIP">
         <English>WR Ship</English>
-        <German>WR Schiff</German>
+        <Deutsch>WR Schiff</Deutsch>
     </Key>
     <Key ID="COLUMN_AVERAGE_DAMAGE_SHIP">
         <English>DMG Ship</English>
-        <German>DMG Schiff</German>
+        <Deutsch>DMG Schiff</Deutsch>
+    </Key>
+
+    <!-- UPDATER -->
+    <Key ID="UPDATE_QUESTION">
+        <English>There is a new version available. Would you like to update now?</English>
+        <Deutsch>Es ist eine neue Version verfügbar, jetzt aktualisieren?</Deutsch>
+    </Key>
+    <Key ID="YES">
+        <English>Yes</English>
+        <Deutsch>Ja</Deutsch>
+    </Key>
+    <Key ID="NO">
+        <English>No</English>
+        <Deutsch>Nein</Deutsch>
+    </Key>
+    <Key ID="OK">
+        <English>Ok</English>
+        <Deutsch>Ok</Deutsch>
+    </Key>
+    <Key ID="UPDATE_FAILED">
+        <English>Update failed: </English>
+        <Deutsch>Das Update ist fehlgeschlagen: </Deutsch>
     </Key>
 </Package>

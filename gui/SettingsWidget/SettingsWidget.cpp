@@ -14,11 +14,11 @@
 #include <QToolButton>
 #include <QPushButton>
 #include <QApplication>
-#include "SettingsWidget.h"
+#include "SettingsWidget.hpp"
 #include "Game.hpp"
-#include "Config.h"
-#include "Logger.h"
-#include "PotatoClient.h"
+#include "Config.hpp"
+#include "Logger.hpp"
+#include "PotatoClient.hpp"
 #include "SettingsSwitch.hpp"
 #include "SettingsChoice.hpp"
 #include "HorizontalLine.hpp"
@@ -26,9 +26,8 @@
 #include "StringTable.hpp"
 
 
-const int LABEL_WIDTH = 220;
-const int ROW_HEIGHT = 20;
-const int ROW_WIDTH = 520;
+static const int LABEL_WIDTH = 220;
+static const int ROW_HEIGHT = 20;
 
 using PotatoAlert::SettingsWidget;
 using PotatoAlert::SettingsChoice;
@@ -46,7 +45,7 @@ void SettingsWidget::init()
 {
 	this->folderStatusGui = new FolderStatus(this);
 
-    auto horLayout = new QHBoxLayout;
+    auto horLayout = new QHBoxLayout();
 	horLayout->setContentsMargins(10, 10, 10, 10);
 	horLayout->setSpacing(0);
     auto centralWidget = new QWidget(this);
@@ -58,10 +57,10 @@ void SettingsWidget::init()
 	QFont labelFont("Helvetica Neue", 13, QFont::Bold);
 	labelFont.setStyleStrategy(QFont::PreferAntialias);
 
-    auto layout = new QVBoxLayout;
+    auto layout = new QVBoxLayout();
 	
 	/* UPDATE NOTIFICATIONS */
-    auto updateLayout = new QHBoxLayout;
+    auto updateLayout = new QHBoxLayout();
 	this->updateLabel->setFont(labelFont);
     this->updateLabel->setFixedWidth(LABEL_WIDTH);
 	updateLayout->addWidget(this->updateLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -71,7 +70,7 @@ void SettingsWidget::init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* SELECTOR FOR GAME FOLDER */
-    auto gamePathLayout = new QHBoxLayout;
+    auto gamePathLayout = new QHBoxLayout();
     this->gamePathLabel->setFont(labelFont);
     this->gamePathLabel->setFixedWidth(LABEL_WIDTH);
 	gamePathLayout->addWidget(this->gamePathLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -97,7 +96,7 @@ void SettingsWidget::init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* DISPLAYED STATS MODE */
-    auto statsModeLayout = new QHBoxLayout;
+    auto statsModeLayout = new QHBoxLayout();
     this->statsModeLabel->setFont(labelFont);
     this->statsModeLabel->setFixedWidth(LABEL_WIDTH);
 	statsModeLayout->addWidget(this->statsModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -139,7 +138,7 @@ void SettingsWidget::init()
     layout->addWidget(new HorizontalLine(centralWidget));
 
     /* CSV OUTPUT */
-    auto csvLayout = new QHBoxLayout;
+    auto csvLayout = new QHBoxLayout();
     this->csvLabel->setFixedWidth(LABEL_WIDTH);
     this->csvLabel->setFont(labelFont);
     this->csvLabel->setFixedWidth(LABEL_WIDTH);
@@ -150,12 +149,15 @@ void SettingsWidget::init()
 	layout->addStretch();
 
 	/* SAVE & CANCEL BUTTON */
-	// TODO: rework buttons
-    auto confirmLayout = new QHBoxLayout;
-	this->saveButton = new QPushButton;
+    auto confirmLayout = new QHBoxLayout();
+	this->saveButton = new QPushButton();
 	this->saveButton->setFixedWidth(100);
-	this->cancelButton = new QPushButton;
+	this->saveButton->setObjectName("settingsButton");
+
+	this->cancelButton = new QPushButton();
     this->cancelButton->setFixedWidth(100);
+	this->cancelButton->setObjectName("settingsButton");
+
     confirmLayout->addStretch();
 	confirmLayout->addWidget(this->saveButton);
 	confirmLayout->addWidget(this->cancelButton);
@@ -224,14 +226,14 @@ void SettingsWidget::changeEvent(QEvent* event)
 {
     if (event->type() == QEvent::LanguageChange)
     {
-        this->updateLabel->setText(GetString(Keys::SETTINGS_UPDATES));
-        this->csvLabel->setText(GetString(Keys::SETTINGS_SAVE_CSV));
-        this->gamePathLabel->setText(GetString(Keys::SETTINGS_GAME_DIRECTORY));
-        this->statsModeLabel->setText(GetString(Keys::SETTINGS_STATS_MODE));
-        this->gaLabel->setText(GetString(Keys::SETTINGS_GA));
-        this->languageLabel->setText(GetString(Keys::SETTINGS_LANGUAGE));
-        this->saveButton->setText(GetString(Keys::SETTINGS_SAVE));
-        this->cancelButton->setText(GetString(Keys::SETTINGS_CANCEL));
+        this->updateLabel->setText(GetString(StringKeys::SETTINGS_UPDATES));
+        this->csvLabel->setText(GetString(StringKeys::SETTINGS_SAVE_CSV));
+        this->gamePathLabel->setText(GetString(StringKeys::SETTINGS_GAME_DIRECTORY));
+        this->statsModeLabel->setText(GetString(StringKeys::SETTINGS_STATS_MODE));
+        this->gaLabel->setText(GetString(StringKeys::SETTINGS_GA));
+        this->languageLabel->setText(GetString(StringKeys::SETTINGS_LANGUAGE));
+        this->saveButton->setText(GetString(StringKeys::SETTINGS_SAVE));
+        this->cancelButton->setText(GetString(StringKeys::SETTINGS_CANCEL));
     }
     else
     {

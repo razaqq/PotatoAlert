@@ -12,7 +12,6 @@
 #include <string>
 #include <variant>
 #include <vector>
-#include <memory>
 
 
 typedef std::vector<std::vector<std::variant<QLabel *, QTableWidgetItem *>>> teamType;

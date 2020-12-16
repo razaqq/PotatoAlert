@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
-#include "Logger.h"
+#include "Logger.hpp"
 
 
 namespace PotatoAlert {

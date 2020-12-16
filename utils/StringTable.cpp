@@ -1,12 +1,12 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "StringTable.hpp"
-#include "Config.h"
+#include "Config.hpp"
 #include <QString>
 
 
-QString PotatoAlert::GetString(Keys key)
+QString PotatoAlert::GetString(StringKeys key)
 {
     auto lang = PotatoConfig().get<int>("language");
-    return QString::fromStdString(std::string(Strings[lang][(int)(Keys)key]));
+    return QString::fromStdString(std::string(Strings[lang][key]));
 }

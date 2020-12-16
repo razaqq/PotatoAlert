@@ -46,4 +46,4 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja -DCMAKE_PREFIX_PATH=C:\Qt\5.1
 cmake --build build --target PotatoAlert
 cpack -G IFW
 ```
-- You find the build output in `.\build\Release`
+- You find the build output in `.\build\`

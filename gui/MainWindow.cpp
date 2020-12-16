@@ -12,12 +12,18 @@
 #include <QWindow>
 #include <QButtonGroup>
 #include <QDesktopServices>
-#include "Config.h"
-#include "Logger.h"
-#include "PotatoClient.h"
+#include <QPushButton>
+#include <QDialogButtonBox>
+#include <QApplication>
+#include "Config.hpp"
+#include "Logger.hpp"
+#include "Updater.hpp"
+#include "PotatoClient.hpp"
+#include "FramelessDialog.hpp"
 #include "StatsWidget/StatsWidget.h"
 #include "StatsWidget/StatsHeader.hpp"
 #include "MenuBar/VerticalMenuBar.hpp"
+#include "StringTable.hpp"
 #include "MainWindow.hpp"
 
 
@@ -103,4 +109,92 @@ void MainWindow::connectSignals()
 	connect(this->pc, &PotatoClient::wowsNumbersReady, this->statsWidget, &StatsWidget::setWowsNumbers);
 
 	connect(this->settingsWidget, &SettingsWidget::done,[this](){ this->switchTab(0); this->menuBar->btnGroup->button(0)->setChecked(true); });
+}
+
+int MainWindow::confirmUpdate()
+{
+	auto dialog = new FramelessDialog(this);
+
+	/*
+	 * TODO: FIX WARNING
+	 * QWindowsWindow::setGeometry: Unable to set geometry
+	*/
+
+	auto buttonBox = new QDialogButtonBox();
+	buttonBox->setAttribute(Qt::WA_TranslucentBackground);
+
+	auto yesButton = new QPushButton(PotatoAlert::GetString(PotatoAlert::StringKeys::YES), buttonBox);
+	yesButton->setObjectName("confirmButton");
+
+	auto noButton = new QPushButton(PotatoAlert::GetString(PotatoAlert::StringKeys::NO), buttonBox);
+	noButton->setObjectName("confirmButton");
+
+	connect(yesButton, &QPushButton::clicked, [dialog](int button) { dialog->done(QDialog::Accepted); });
+	connect(noButton, &QPushButton::clicked, [dialog](int button) { dialog->done(QDialog::Rejected); });
+
+	buttonBox->addButton(yesButton, QDialogButtonBox::ActionRole);
+	buttonBox->addButton(noButton, QDialogButtonBox::ActionRole);
+	buttonBox->setCenterButtons(true);
+
+	auto textField = new QLabel(PotatoAlert::GetString(PotatoAlert::StringKeys::UPDATE_QUESTION));
+	textField->setWordWrap(true);
+
+	auto icon = new QIcon(QApplication::style()->standardIcon(QStyle::SP_MessageBoxQuestion));
+	auto iconLabel = new QLabel();
+	iconLabel->setPixmap(icon->pixmap(100, 100));
+
+	auto layout = new QVBoxLayout();
+	layout->setContentsMargins(15, 15, 15, 10);
+
+	auto textLayout = new QHBoxLayout();
+	textLayout->addWidget(iconLabel, 0, Qt::AlignRight);
+	textLayout->addWidget(textField, 0, Qt::AlignLeft);
+
+	layout->addLayout(textLayout);
+	layout->addWidget(buttonBox,0, Qt::AlignHCenter);
+
+	dialog->setLayout(layout);
+
+	dialog->show();
+
+	return dialog->exec();
+}
+
+void MainWindow::startUpdate(Updater* updater)
+{
+	assert(updater != nullptr);
+	auto dialog = new FramelessDialog(this);
+
+	auto vLayout = new QVBoxLayout();
+
+	connect(updater, &Updater::downloadProgress, [](qint64 bytesReceived, qint64 bytesTotal)
+	{
+		std::cout << "UPDATE; " << bytesReceived << "/" << bytesTotal << std::endl;
+	});
+
+	connect(updater, &Updater::errorOccurred, [dialog](QString& text)
+	{
+		auto errorLabel = new QLabel(PotatoAlert::GetString(PotatoAlert::StringKeys::UPDATE_FAILED) + text);
+		errorLabel->setWordWrap(true);
+
+		auto errorIcon = new QLabel();
+		auto errorPix = QPixmap(":/error.png").scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+		errorIcon->setPixmap(errorPix);
+
+		auto hLayout = new QHBoxLayout();
+		hLayout->addWidget(errorIcon);
+		hLayout->addWidget(errorLabel);
+
+		auto okButton = new QPushButton(PotatoAlert::GetString(PotatoAlert::StringKeys::OK));
+		okButton->setObjectName("confirmButton");
+		connect(okButton, &QPushButton::clicked, [dialog]() { dialog->close(); });
+
+		auto vLayout = new QVBoxLayout();
+		vLayout->addLayout(hLayout);
+		vLayout->addWidget(okButton);
+
+		dialog->setLayout(vLayout);
+	});
+
+	dialog->exec();
 }

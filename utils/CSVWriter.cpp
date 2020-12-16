@@ -7,7 +7,7 @@
 #include <QString>
 #include <QStandardPaths>
 #include "CSVWriter.hpp"
-#include "Logger.h"
+#include "Logger.hpp"
 
 
 using PotatoAlert::CSVWriter;
@@ -16,7 +16,7 @@ CSVWriter::CSVWriter()
 {
     this->file.open(CSVWriter::getFilePath(), std::ios::out | std::ios::app);
     if (!this->file.is_open())
-        PotatoLogger().Error("Failed to open file to save matches.");
+		Logger::Error("Failed to open file to save matches.");
 }
 
 CSVWriter::~CSVWriter()

@@ -76,12 +76,12 @@ void FolderStatus::changeEvent(QEvent* event)
 {
     if (event->type() == QEvent::LanguageChange)
     {
-        this->statusLabel->setText(GetString(PotatoAlert::Keys::SETTINGS_REPLAYSFOLDER_STATUS));
-        this->replaysLabel->setText(GetString(PotatoAlert::Keys::SETTINGS_REPLAYSFOLDER_FOLDERS));
-        this->regionLabel->setText(GetString(PotatoAlert::Keys::SETTINGS_REPLAYSFOLDER_REGION));
-        this->versionLabel->setText(GetString(PotatoAlert::Keys::SETTINGS_REPLAYSFOLDER_GAMEVERSION));
-        this->steamLabel->setText(GetString(PotatoAlert::Keys::SETTINGS_REPLAYSFOLDER_STEAM));
-        this->versionedLabel->setText(GetString(PotatoAlert::Keys::SETTINGS_REPLAYSFOLDER_VERSIONED));
+        this->statusLabel->setText(GetString(PotatoAlert::StringKeys::SETTINGS_REPLAYSFOLDER_STATUS));
+        this->replaysLabel->setText(GetString(PotatoAlert::StringKeys::SETTINGS_REPLAYSFOLDER_FOLDERS));
+        this->regionLabel->setText(GetString(PotatoAlert::StringKeys::SETTINGS_REPLAYSFOLDER_REGION));
+        this->versionLabel->setText(GetString(PotatoAlert::StringKeys::SETTINGS_REPLAYSFOLDER_GAMEVERSION));
+        this->steamLabel->setText(GetString(PotatoAlert::StringKeys::SETTINGS_REPLAYSFOLDER_STEAM));
+        this->versionedLabel->setText(GetString(PotatoAlert::StringKeys::SETTINGS_REPLAYSFOLDER_VERSIONED));
     }
     else
     {

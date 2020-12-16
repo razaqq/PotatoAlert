@@ -7,7 +7,7 @@
 #include <regex>
 #include <vector>
 #include <algorithm>
-#include "Logger.h"
+#include "Logger.hpp"
 #include "Game.hpp"
 #include <tinyxml2.h>
 
@@ -91,7 +91,7 @@ bool Game::getResFolderPath(folderStatus& status)
     }
     else
     {
-        PotatoLogger().Error("Could not find a valid res folder!");
+		Logger::Error("Could not find a valid res folder!");
         return false;
     }
 }
@@ -198,7 +198,7 @@ bool Game::readPreferences(folderStatus& status)
 		}
 		else
 		{
-            PotatoLogger().Error("Cannot find version string in preferences.xml.");
+			Logger::Error("Cannot find version string in preferences.xml.");
 			return false;
 		}
 
@@ -212,7 +212,7 @@ bool Game::readPreferences(folderStatus& status)
         }
         else
         {
-            PotatoLogger().Error("Cannot find region string in preferences.xml.");
+			Logger::Error("Cannot find region string in preferences.xml.");
             return false;
         }
 
@@ -220,7 +220,7 @@ bool Game::readPreferences(folderStatus& status)
 	}
 	else
 	{
-        PotatoLogger().Error("Cannot find preferences.xml for reading in path: {}", preferencesPath);
+		Logger::Error("Cannot find preferences.xml for reading in path: {}", preferencesPath);
 		return false;
 	}
 }

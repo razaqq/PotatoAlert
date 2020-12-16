@@ -6,21 +6,20 @@
 #include <QVBoxLayout>
 #include <QMainWindow>
 #include <QWindow>
+#include <QStyle>
 #include <QEvent>
 #include <QMouseEvent>
 #include <QShowEvent>
 #include <QPaintEvent>
 #include <QApplication>
+
 #include "NativeWindow.hpp"
 #include "TitleBar.hpp"
-#include "Config.h"
+#include "Config.hpp"
 #include <atlstr.h>
 
-#include <Windows.h>  // windows only
+#include <Windows.h>
 #include <dwmapi.h>
-// #include <gdiplus.h>
-#include <Dwmapi.h>
-#pragma comment (lib, "Dwmapi.lib")
 
 
 using PotatoAlert::NativeWindow;
@@ -64,7 +63,7 @@ void NativeWindow::init()
 void NativeWindow::showEvent(QShowEvent* event)
 {
     // edit underlying native window
-    HWND winid = (HWND)this->windowHandle()->winId();
+    HWND winid = reinterpret_cast<HWND>(this->windowHandle()->winId());
 
     // edit style
     DWORD style = ::GetWindowLong(winid, GWL_STYLE);
@@ -72,7 +71,7 @@ void NativeWindow::showEvent(QShowEvent* event)
 
     // add shadow
     const MARGINS shadow = { 1, 1, 1, 1 };
-    DwmExtendFrameIntoClientArea(HWND(winId()), &shadow);
+    DwmExtendFrameIntoClientArea(winid, &shadow);
 
     QWidget::showEvent(event);
 }
@@ -116,7 +115,7 @@ bool NativeWindow::handleMousePressEvent(QMouseEvent* event)
     if (event->button() == Qt::LeftButton)
     {
         Qt::Edges e = this->mouseLocation(event);
-        if (e != 0x00000 && this->windowState() != Qt::WindowMaximized)
+        if (e != 0 && this->windowState() != Qt::WindowMaximized)
         {
             this->windowHandle()->startSystemResize(e);
             return true;
@@ -170,13 +169,13 @@ Qt::Edges NativeWindow::mouseLocation(QMouseEvent* event)
     int y = event->globalY() - this->y();
 
     Qt::Edges e;
-    if (this->width() - x < this->borderWidth)
+    if (this->width() - x < NativeWindow::borderWidth)
         e |= Qt::RightEdge;
-    if (x < this->borderWidth)
+    if (x < NativeWindow::borderWidth)
         e |= Qt::LeftEdge;
-    if (this->height() - y < this->borderWidth)
+    if (this->height() - y < NativeWindow::borderWidth)
         e |= Qt::BottomEdge;
-    if (y < this->borderWidth)
+    if (y < NativeWindow::borderWidth)
         e |= Qt::TopEdge;
     return e;
 }
@@ -190,9 +189,4 @@ void NativeWindow::changeEvent(QEvent* event)
         else
             this->setContentsMargins(0, 0, 0, 0);
     }
-}
-
-bool NativeWindow::confirmUpdate()
-{
-    return QMessageBox::question(this, "title", "text");  // TODO
 }

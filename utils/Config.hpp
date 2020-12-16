@@ -1,7 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "Logger.h"
+#include "Logger.hpp"
 #include <QString>
 #include <QObject>
 #include <string>
@@ -22,7 +22,7 @@ class Config : public QObject
 {
 	Q_OBJECT
 public:
-	explicit Config();
+	explicit Config(const char* fileName);
 	~Config() override;
 
 	void load();

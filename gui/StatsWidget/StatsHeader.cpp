@@ -2,7 +2,7 @@
 
 #include "StatsHeader.hpp"
 #include "StringTable.hpp"
-#include "Config.h"
+#include "Config.hpp"
 #include <QWidget>
 #include <QLabel>
 #include <QFont>
@@ -81,8 +81,8 @@ void StatsHeader::changeEvent(QEvent* event)
 {
     if (event->type() == QEvent::LanguageChange)
     {
-        this->team1Label->setText(GetString(PotatoAlert::Keys::LABEL_MYTEAM));
-        this->team2Label->setText(GetString(PotatoAlert::Keys::LABEL_ENEMYTEAM));
+        this->team1Label->setText(GetString(PotatoAlert::StringKeys::LABEL_MYTEAM));
+        this->team2Label->setText(GetString(PotatoAlert::StringKeys::LABEL_ENEMYTEAM));
     }
     else
     {

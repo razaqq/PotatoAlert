@@ -1,6 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "Logger.h"
+#include "Logger.hpp"
 #include <QDir>
 #include <QStandardPaths>
 #include <string>
@@ -19,7 +19,7 @@ Logger::Logger()
 	d.mkpath(dirPath);
 	d.setPath(dirPath);
 
-	_ofs.open(d.filePath("PotatoAlert.log").toStdString(), std::ofstream::out | std::ofstream::ate | std::ofstream::app);
+	this->_ofs.open(d.filePath("PotatoAlert.log").toStdString(), std::ofstream::out | std::ofstream::ate | std::ofstream::app);
 }
 
 Logger::~Logger()
@@ -42,49 +42,41 @@ void Logger::Debug(const std::string& text)
 #endif
 }
 
-void Logger::Info(const char* text)
+void Logger::IInfo(const char* text)
 {
-	std::cout << Logger::getTimeString() << infoPrefix << text << std::endl;
-	this->_ofs << Logger::getTimeString() << infoPrefix << text << std::endl;
+	std::cout << getTimeString() << infoPrefix << text << std::endl;
+	this->_ofs << getTimeString() << infoPrefix << text << std::endl;
 }
 
-void Logger::Info(const std::string& text)
+void Logger::IInfo(const std::string& text)
 {
-	std::cout << Logger::getTimeString() << infoPrefix << text << std::endl;
-	this->_ofs << Logger::getTimeString() << infoPrefix << text << std::endl;
+	std::cout << getTimeString() << infoPrefix << text << std::endl;
+	this->_ofs << getTimeString() << infoPrefix << text << std::endl;
 }
 
-void Logger::Warn(const char* text)
+void Logger::IWarn(const char* text)
 {
-	std::cout << Logger::getTimeString() << warnPrefix << text << std::endl;
-	this->_ofs << Logger::getTimeString() << warnPrefix << text << std::endl;
+	std::cout << getTimeString() << warnPrefix << text << std::endl;
+	this->_ofs << getTimeString() << warnPrefix << text << std::endl;
 }
 
-void Logger::Warn(const std::string& text)
+void Logger::IWarn(const std::string& text)
 {
-	std::cout << Logger::getTimeString() << warnPrefix << text << std::endl;
-	this->_ofs << Logger::getTimeString() << warnPrefix << text << std::endl;
+	std::cout << getTimeString() << warnPrefix << text << std::endl;
+	this->_ofs << getTimeString() << warnPrefix << text << std::endl;
 }
 
-void Logger::Error(const char* text)
+void Logger::IError(const char* text)
 {
-	std::cerr << Logger::getTimeString() << errorPrefix << text << std::endl;
-	this->_ofs << Logger::getTimeString() << errorPrefix << text << std::endl;
+	std::cerr << getTimeString() << errorPrefix << text << std::endl;
+	this->_ofs << getTimeString() << errorPrefix << text << std::endl;
 }
 
-void Logger::Error(const std::string& text)
+void Logger::IError(const std::string& text)
 {
-	std::cerr << Logger::getTimeString() << errorPrefix << text << std::endl;
-	this->_ofs << Logger::getTimeString() << errorPrefix << text << std::endl;
+	std::cerr << getTimeString() << errorPrefix << text << std::endl;
+	this->_ofs << getTimeString() << errorPrefix << text << std::endl;
 }
-
-/*
-template<typename... TArgs>
-void PotatoAlert::Logger::Error(const char* format, TArgs&&... args)
-{
-	fmt::format(format, args...);
-}
- */
 
 std::string Logger::getTimeString()
 {
@@ -96,10 +88,4 @@ std::string Logger::getTimeString()
 	strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", &localTime);
 
 	return std::string(buffer);
-}
-
-Logger& PotatoAlert::PotatoLogger()
-{
-    static Logger l;
-    return l;
 }
