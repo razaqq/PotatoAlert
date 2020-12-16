@@ -25,7 +25,7 @@ before_build:
   - "%PYTHON%\\python.exe .\\Resources\\generate_translations.py"
 
 build_script:
-  - cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja -DCMAKE_PREFIX_PATH=C:\Qt\5.15.1\msvc2019_64
+  - cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja -DCMAKE_PREFIX_PATH=C:\Qt\5.15.2\msvc2019_64
     -DCPACK_IFW_ROOT=E:/Qt/Tools/QtInstallerFramework -DCMAKE_RC_COMPILER=RC
   - cmake --build build --target PotatoAlert
   - cmake --build build --target PotatoTest
