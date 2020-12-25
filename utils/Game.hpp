@@ -19,6 +19,7 @@ struct folderStatus
 	std::string replaysPathBase;
 	std::string replaysDirPath;
 	std::vector<std::string> replaysPath;
+	std::string overrideReplaysPath;
 	std::string region;
 	bool versionedReplays;
 	bool steamVersion;
@@ -29,7 +30,7 @@ struct folderStatus
 class Game
 {
 public:
-	static folderStatus checkPath(const std::string& selectedPath);
+	static folderStatus checkPath();
 	static bool getResFolderPath(folderStatus& status);
 	static bool readEngineConfig(folderStatus& status, const char* resFolder);
 	static bool readPreferences(folderStatus& status);

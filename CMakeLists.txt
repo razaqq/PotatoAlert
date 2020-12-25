@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.17)
 project(PotatoAlert)
 
 set(CMAKE_CXX_STANDARD 17)
-# set(CMAKE_CXX_FLAGS "/EHa")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 set(CMAKE_AUTOMOC ON)
@@ -28,16 +27,19 @@ find_package(Qt5 COMPONENTS Widgets Core Gui WebSockets REQUIRED)
 include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2/include)
 include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/nlohmann_json/include)
 include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/fmt/include)
+include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/zip/src)
 
-include_directories(utils)
-include_directories(gui)
-include_directories(Resources)
+include_directories(${PROJECT_SOURCE_DIR}/utils)
+include_directories(${PROJECT_SOURCE_DIR}/gui)
+include_directories(${PROJECT_SOURCE_DIR}/Resources)
 
-add_subdirectory(ThirdParty/tinyxml2)
-add_subdirectory(ThirdParty/fmt)
-add_subdirectory(utils)
-add_subdirectory(gui)
-add_subdirectory(test)
+add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2)
+add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/fmt)
+add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/zip)
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/utils)
+add_subdirectory(${PROJECT_SOURCE_DIR}/gui)
+add_subdirectory(${PROJECT_SOURCE_DIR}/test)
 
 add_executable(PotatoAlert main.cpp Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
 

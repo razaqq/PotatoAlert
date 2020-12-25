@@ -54,7 +54,6 @@ int runMain(QApplication& app)
 	QEvent event(QEvent::LanguageChange);
 	QApplication::sendEvent(mainWindow, &event);
 
-	/*
 	// check if there is a new version available
 	Updater u;
 	if (PotatoConfig().get<bool>("update_notifications"))
@@ -64,7 +63,6 @@ int runMain(QApplication& app)
 				u.start();
 				mainWindow->startUpdate(&u);
 			}
-	*/
 
 	int exitCode = QApplication::exec();
 	PotatoConfig().save();

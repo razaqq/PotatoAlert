@@ -3,8 +3,8 @@
 #include "Config.hpp"
 #include "Logger.hpp"
 #include "Game.hpp"
-#include "StatsParser.hpp"
-#include "PotatoClient.hpp"
+#include <StatsParser.hpp>
+#include <PotatoClient.hpp>
 #include <QUrl>
 #include <QDir>
 #include <QObject>
@@ -95,9 +95,19 @@ void PotatoClient::updateReplaysPath()
 	if (!this->watcher->directories().isEmpty())
 		this->watcher->removePaths(this->watcher->directories());
 
-	for (auto& folder : this->fStatus.replaysPath)
-        if (!folder.empty())
-            this->watcher->addPath(QString::fromStdString(folder));
+	if (PotatoConfig().get<bool>("override_replays_folder"))
+	{
+		this->watcher->addPath(QString::fromStdString(this->fStatus.overrideReplaysPath));
+	}
+	else
+	{
+		for (auto& folder : this->fStatus.replaysPath)
+			if (!folder.empty())
+				this->watcher->addPath(QString::fromStdString(folder));
+	}
+
+	for (auto& path : this->watcher->directories())  // trigger run
+		this->onDirectoryChanged(path);
 }
 
 // triggered whenever a file gets modified in a replays path

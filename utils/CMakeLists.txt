@@ -18,6 +18,7 @@ target_link_libraries(
         utilslib
         fmt::fmt-header-only
         tinyxml2
+        zip
         Qt5::Core
         Qt5::WebSockets
         Qt5::Widgets)

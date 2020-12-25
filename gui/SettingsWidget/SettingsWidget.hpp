@@ -33,16 +33,18 @@ private:
 
 	PotatoClient* pc;
 
-    QLabel* updateLabel = new QLabel;
-    QLabel* csvLabel = new QLabel;
-    QLabel* gamePathLabel = new QLabel;
-    QLabel* statsModeLabel = new QLabel;
-    QLabel* gaLabel = new QLabel;
-    QLabel* languageLabel = new QLabel;
+    QLabel* updateLabel = new QLabel();
+    QLabel* csvLabel = new QLabel();
+    QLabel* gamePathLabel = new QLabel();
+    QLabel* replaysFolderLabel = new QLabel();
+	QLabel* replaysFolderDesc = new QLabel();
+    QLabel* statsModeLabel = new QLabel();
+    QLabel* gaLabel = new QLabel();
+    QLabel* languageLabel = new QLabel();
 
-	SettingsSwitch* updates = new SettingsSwitch;
-	SettingsSwitch* csv = new SettingsSwitch;
-	// SettingsSwitch* googleAnalytics = new SettingsSwitch;
+	SettingsSwitch* updates = new SettingsSwitch();
+	SettingsSwitch* csv = new SettingsSwitch();
+	SettingsSwitch* overrideReplaysFolder = new SettingsSwitch();
 	
 	SettingsChoice* statsMode;
     SettingsChoice* language;
@@ -51,9 +53,14 @@ private:
 	QPushButton* cancelButton;
 
 	// game directory selection
-	QLineEdit* gamePathEdit;
-	QToolButton* gamePathButton;
+	QLineEdit* gamePathEdit = new QLineEdit();
+	QToolButton* gamePathButton = new QToolButton();
 	FolderStatus* folderStatusGui;
+
+	// manual replays folder
+	QLineEdit* replaysFolderEdit = new QLineEdit();
+	QToolButton* replaysFolderButton = new QToolButton();
+	std::function<void(bool)> toggleReplaysFolderOverride;
 signals:
     void done();
 };

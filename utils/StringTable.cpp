@@ -8,5 +8,5 @@
 QString PotatoAlert::GetString(StringKeys key)
 {
     auto lang = PotatoConfig().get<int>("language");
-    return QString::fromStdString(std::string(Strings[lang][key]));
+    return QString::fromUtf8(Strings[lang][key].data());
 }

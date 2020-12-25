@@ -28,6 +28,7 @@ public:
 	void load();
 	void save();
 	void createDefault();
+	void addMissingKeys();
 	[[nodiscard]] bool exists() const;
 
 	template <typename T> T get(const char* name) const;

@@ -22,10 +22,12 @@ public:
 private:
 	// static bool getAdmin();
 	// static void restart();
-	bool download(const std::string& targetFile);
+	bool download(const std::string& targetFile, const std::string& dest, const std::string& exeFile);
+	static bool unpack(const char* file, const char* dest);
+	static void restart(const char* exeFile, const char* args);
 signals:
 	void errorOccurred(QString& text);
-	void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+	void downloadProgress(int percent, QString& progress, QString& speed);
 };
 
 }  // namespace PotatoAlert

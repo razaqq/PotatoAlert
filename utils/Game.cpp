@@ -9,6 +9,7 @@
 #include <algorithm>
 #include "Logger.hpp"
 #include "Game.hpp"
+#include "Config.hpp"
 #include <tinyxml2.h>
 
 
@@ -16,13 +17,20 @@ using PotatoAlert::Game;
 using PotatoAlert::folderStatus;
 namespace fs = std::filesystem;
 
-folderStatus Game::checkPath(const std::string& selectedPath)
+folderStatus Game::checkPath()
 {
 	folderStatus status;
-	status.gamePath = selectedPath;
 
-	fs::path gamePath(selectedPath);
-	if (selectedPath.empty() || !fs::exists(gamePath))
+	// check for replays folder override
+	if (PotatoConfig().get<bool>("override_replays_folder"))
+	{
+		status.overrideReplaysPath = { PotatoConfig().get<std::string>("replays_folder") };
+	}
+
+	status.gamePath = PotatoConfig().get<std::string>("game_folder");
+
+	fs::path gamePath(status.gamePath);
+	if (status.gamePath.empty() || !fs::exists(gamePath))
 		return status;
 
 	status.steamVersion = fs::exists(gamePath / "bin" / "clientrunner");

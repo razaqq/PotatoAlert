@@ -15,6 +15,7 @@
 #include <QPushButton>
 #include <QDialogButtonBox>
 #include <QApplication>
+#include <QProgressBar>
 #include "Config.hpp"
 #include "Logger.hpp"
 #include "Updater.hpp"
@@ -108,7 +109,10 @@ void MainWindow::connectSignals()
 	connect(this->pc, &PotatoClient::clansReady, this->statsWidget, &StatsWidget::setClans);
 	connect(this->pc, &PotatoClient::wowsNumbersReady, this->statsWidget, &StatsWidget::setWowsNumbers);
 
-	connect(this->settingsWidget, &SettingsWidget::done,[this](){ this->switchTab(0); this->menuBar->btnGroup->button(0)->setChecked(true); });
+	connect(this->settingsWidget, &SettingsWidget::done,[this](){
+		this->switchTab(0);
+		this->menuBar->btnGroup->button(0)->setChecked(true);
+	});
 }
 
 int MainWindow::confirmUpdate()
@@ -162,18 +166,44 @@ int MainWindow::confirmUpdate()
 
 void MainWindow::startUpdate(Updater* updater)
 {
-	assert(updater != nullptr);
 	auto dialog = new FramelessDialog(this);
 
 	auto vLayout = new QVBoxLayout();
 
-	connect(updater, &Updater::downloadProgress, [](qint64 bytesReceived, qint64 bytesTotal)
+	auto waitLabel = new QLabel(PotatoAlert::GetString(PotatoAlert::StringKeys::UPDATE_DOWNLOADING));
+
+	auto progressBar = new QProgressBar();
+	progressBar->setValue(0);
+	progressBar->setMaximum(100);
+
+	auto progressLayout = new QHBoxLayout();
+	auto progressLabel = new QLabel();
+	auto speedLabel = new QLabel();
+	progressLayout->addStretch();
+	progressLayout->addWidget(progressLabel);
+	progressLayout->addStretch();
+	progressLayout->addWidget(speedLabel);
+	progressLayout->addStretch();
+
+	vLayout->addWidget(waitLabel, 0, Qt::AlignHCenter);
+	vLayout->addWidget(progressBar);
+	vLayout->addLayout(progressLayout);
+	dialog->setLayout(vLayout);
+
+	connect(updater, &Updater::downloadProgress,
+	[progressBar, progressLabel, speedLabel](int percent, QString& progress, QString& speed)
 	{
-		std::cout << "UPDATE; " << bytesReceived << "/" << bytesTotal << std::endl;
+		progressBar->setValue(percent);
+		progressLabel->setText(progress);
+		speedLabel->setText(speed);
 	});
 
 	connect(updater, &Updater::errorOccurred, [dialog](QString& text)
 	{
+		// clear dialog from progress
+		qDeleteAll(dialog->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
+		delete dialog->layout();
+
 		auto errorLabel = new QLabel(PotatoAlert::GetString(PotatoAlert::StringKeys::UPDATE_FAILED) + text);
 		errorLabel->setWordWrap(true);
 
@@ -182,8 +212,11 @@ void MainWindow::startUpdate(Updater* updater)
 		errorIcon->setPixmap(errorPix);
 
 		auto hLayout = new QHBoxLayout();
+		hLayout->addStretch();
 		hLayout->addWidget(errorIcon);
+		hLayout->addStretch();
 		hLayout->addWidget(errorLabel);
+		hLayout->addStretch();
 
 		auto okButton = new QPushButton(PotatoAlert::GetString(PotatoAlert::StringKeys::OK));
 		okButton->setObjectName("confirmButton");

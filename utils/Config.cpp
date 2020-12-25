@@ -17,13 +17,36 @@ namespace fs = std::filesystem;
 using PotatoAlert::Config;
 using nlohmann::json;
 
+
+static json g_defaultConfig;
+
 Config::Config(const char* fileName)
 {
+	g_defaultConfig = {
+			{"stats_mode", pvp},  // "current mode", "pvp", "ranked", "clan"
+			{"update_notifications", true},
+			{"api_key", "1234567890"},
+			{"save_csv", false},
+			{"use_ga", true},
+			{"window_height", 450},
+			{"window_width", 1500},
+			{"window_x", 0},
+			{"window_y", 0},
+			{"game_folder", ""},
+			{"override_replays_folder", false},
+			{"replays_folder", ""},
+			{"language", 0}
+	};
 	this->filePath = Config::getFilePath(fileName);
 	if (this->exists())
+	{
 		this->load();
+		this->addMissingKeys();
+	}
 	else
+	{
 		this->createDefault();
+	}
 }
 
 Config::~Config()
@@ -74,20 +97,20 @@ bool Config::exists() const
 void Config::createDefault()
 {
 	Logger::Info("Creating default config.");
-	this->j = {
-		{"stats_mode", pvp},  // "current mode", "pvp", "ranked", "clan"
-		{"update_notifications", true},
-		{"api_key", "1234567890"},
-		{"save_csv", false},
-		{"use_ga", true},
-		{"window_height", 450},
-		{"window_width", 1500},
-		{"window_x", 0},
-		{"window_y", 0},
-		{"game_folder", ""},
-        {"language", 0}
-	};
+	this->j = g_defaultConfig;
 	this->save();
+}
+
+void Config::addMissingKeys()
+{
+	for (auto it = g_defaultConfig.begin(); it != g_defaultConfig.end(); ++it)
+	{
+		if (!this->j.contains(it.key()))
+		{
+			Logger::Debug("Adding missing key {} to config.", it.key());
+			this->j[it.key()] = it.value();
+		}
+	}
 }
 
 template <typename T> T Config::get(const char* name) const

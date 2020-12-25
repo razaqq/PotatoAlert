@@ -66,6 +66,7 @@ void SettingsWidget::init()
 	updateLayout->addWidget(this->updateLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 	updateLayout->addWidget(this->updates, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(updateLayout);
+	/* UPDATE NOTIFICATIONS */
 
 	layout->addWidget(new HorizontalLine(centralWidget));
 
@@ -77,13 +78,11 @@ void SettingsWidget::init()
 
 	gamePathLayout->addStretch();
 
-	this->gamePathEdit = new QLineEdit(centralWidget);
 	this->gamePathEdit->setFixedSize(278, ROW_HEIGHT);
 	this->gamePathEdit->setReadOnly(true);
 	this->gamePathEdit->setFocusPolicy(Qt::NoFocus);
 	gamePathLayout->addWidget(this->gamePathEdit, 0, Qt::AlignVCenter | Qt::AlignRight);
 
-	this->gamePathButton = new QToolButton(this);
 	this->gamePathButton->setIcon(QIcon(QPixmap(":/folder.svg")));
 	this->gamePathButton->setIconSize(QSize(ROW_HEIGHT, ROW_HEIGHT));
 	this->gamePathButton->setCursor(Qt::PointingHandCursor);
@@ -92,6 +91,7 @@ void SettingsWidget::init()
 
 	this->folderStatusGui = new FolderStatus(this);
     layout->addWidget(this->folderStatusGui);
+	/* SELECTOR FOR GAME FOLDER */
 
 	layout->addWidget(new HorizontalLine(centralWidget));
 
@@ -104,21 +104,9 @@ void SettingsWidget::init()
 	this->statsMode = new SettingsChoice(this, std::vector<QString>{"current mode", "pvp", "ranked", "clan"});  // TODO: localize
 	statsModeLayout->addWidget(this->statsMode, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(statsModeLayout);
+	/* DISPLAYED STATS MODE */
 
 	layout->addWidget(new HorizontalLine(centralWidget));
-
-	/* GOOGLE ANALYTICS */
-	/*
-    auto gaLayout = new QHBoxLayout;
-    this->gaLabel->setFont(labelFont);
-    this->gaLabel->setFixedWidth(LABEL_WIDTH);
-	gaLayout->addWidget(this->gaLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
-	this->googleAnalytics->setDisabled(true);
-	gaLayout->addWidget(this->googleAnalytics, 0, Qt::AlignVCenter | Qt::AlignRight);
-	layout->addLayout(gaLayout);
-
-    layout->addWidget(new HorizontalLine(centralWidget));
-	*/
 
 	/* LANGUAGE */
     auto languageLayout = new QHBoxLayout;
@@ -129,11 +117,12 @@ void SettingsWidget::init()
     std::vector<QString> langs;
     for (auto& lang : Languages)
     {
-        langs.push_back(QString::fromStdString(std::string(lang)));
+        langs.push_back(QString::fromUtf8(lang.data()));
     }
     this->language = new SettingsChoice(this, langs);
     languageLayout->addWidget(this->language, 0, Qt::AlignVCenter | Qt::AlignRight);
     layout->addLayout(languageLayout);
+	/* LANGUAGE */
 
     layout->addWidget(new HorizontalLine(centralWidget));
 
@@ -145,6 +134,54 @@ void SettingsWidget::init()
     csvLayout->addWidget(this->csvLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
     csvLayout->addWidget(this->csv, 0, Qt::AlignVCenter | Qt::AlignRight);
     layout->addLayout(csvLayout);
+	/* CSV OUTPUT */
+
+	layout->addWidget(new HorizontalLine(centralWidget));
+
+	/* MANUAL REPLAYS FOLDER */
+	this->toggleReplaysFolderOverride = [this](bool override)
+	{
+		this->replaysFolderLabel->setEnabled(override);
+		this->replaysFolderDesc->setEnabled(override);
+		this->replaysFolderButton->setEnabled(override);
+		this->replaysFolderEdit->setEnabled(override);
+
+		this->gamePathButton->setDisabled(override);
+		this->gamePathEdit->setDisabled(override);
+		this->gamePathLabel->setDisabled(override);
+		this->folderStatusGui->setDisabled(override);
+	};
+
+	auto replaysFolderVLayout = new QVBoxLayout();
+
+	auto replaysFolderFirstRowLayout = new QHBoxLayout();
+	replaysFolderFirstRowLayout->setContentsMargins(0, 0, 0, 0);
+	this->replaysFolderLabel->setFont(labelFont);
+	this->replaysFolderLabel->setFixedWidth(LABEL_WIDTH);
+	replaysFolderFirstRowLayout->addWidget(this->replaysFolderLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+	replaysFolderFirstRowLayout->addWidget(this->overrideReplaysFolder, 0, Qt::AlignVCenter | Qt::AlignRight);
+
+	auto replaysFolderSecondRowLayout = new QHBoxLayout();
+	replaysFolderSecondRowLayout->setContentsMargins(0, 0, 0, 0);
+
+	replaysFolderSecondRowLayout->addWidget(this->replaysFolderDesc, 0, Qt::AlignVCenter | Qt::AlignLeft);
+	replaysFolderSecondRowLayout->addStretch();
+
+	this->replaysFolderEdit->setFixedSize(278, ROW_HEIGHT);
+	this->replaysFolderEdit->setReadOnly(true);
+	this->replaysFolderEdit->setFocusPolicy(Qt::NoFocus);
+	replaysFolderSecondRowLayout->addWidget(this->replaysFolderEdit, 0, Qt::AlignVCenter | Qt::AlignRight);
+
+	this->replaysFolderButton = new QToolButton(this);
+	this->replaysFolderButton->setIcon(QIcon(QPixmap(":/folder.svg")));
+	this->replaysFolderButton->setIconSize(QSize(ROW_HEIGHT, ROW_HEIGHT));
+	this->replaysFolderButton->setCursor(Qt::PointingHandCursor);
+	replaysFolderSecondRowLayout->addWidget(this->replaysFolderButton, 0, Qt::AlignVCenter | Qt::AlignRight);
+
+	replaysFolderVLayout->addLayout(replaysFolderFirstRowLayout);
+	replaysFolderVLayout->addLayout(replaysFolderSecondRowLayout);
+
+	layout->addLayout(replaysFolderVLayout);
 
 	layout->addStretch();
 
@@ -178,11 +215,20 @@ void SettingsWidget::load()
 	this->statsMode->btnGroup->button(PotatoConfig().get<int>("stats_mode"))->setChecked(true);
     this->language->btnGroup->button(PotatoConfig().get<int>("language"))->setChecked(true);
     this->csv->setChecked(PotatoConfig().get<bool>("save_csv"));
+
+	this->replaysFolderEdit->setText(QString::fromStdString(PotatoConfig().get<std::string>("replays_folder")));
+    bool manualReplays = PotatoConfig().get<bool>("override_replays_folder");
+    this->overrideReplaysFolder->setChecked(manualReplays);
+	toggleReplaysFolderOverride.operator()(manualReplays);
 }
 
 void SettingsWidget::connectSignals()
 {
-	connect(this->saveButton, &QPushButton::clicked, [this]() { PotatoConfig().save(); emit this->done(); });
+	connect(this->saveButton, &QPushButton::clicked, [this]() {
+		PotatoConfig().save();
+		this->checkPath();
+		emit this->done();
+	});
 	connect(this->cancelButton, &QPushButton::clicked, [this]()
 	{
 	    PotatoConfig().load();
@@ -212,12 +258,25 @@ void SettingsWidget::connectSignals()
 			this->checkPath();
 		}
 	});
+	connect(this->replaysFolderButton, &QToolButton::clicked, [this]()
+	{
+		QString dir = QFileDialog::getExistingDirectory(this, "Select Replays Folder", "", QFileDialog::ShowDirsOnly);
+		if (dir != "")
+		{
+			this->replaysFolderEdit->setText(dir);
+			PotatoConfig().set("replays_folder", dir.toStdString());
+		}
+	});
+	connect(this->overrideReplaysFolder, &SettingsSwitch::clicked, [this](bool checked)
+	{
+		PotatoConfig().set<bool>("override_replays_folder", checked);
+		this->toggleReplaysFolderOverride(checked);
+	});
 }
 
 void SettingsWidget::checkPath()
 {
-    auto path = PotatoConfig().get<std::string>("game_folder");
-    folderStatus status = Game::checkPath(path);
+    folderStatus status = Game::checkPath();
     this->folderStatusGui->updateStatus(status);
     this->pc->setFolderStatus(status);
 }
@@ -229,6 +288,8 @@ void SettingsWidget::changeEvent(QEvent* event)
         this->updateLabel->setText(GetString(StringKeys::SETTINGS_UPDATES));
         this->csvLabel->setText(GetString(StringKeys::SETTINGS_SAVE_CSV));
         this->gamePathLabel->setText(GetString(StringKeys::SETTINGS_GAME_DIRECTORY));
+		this->replaysFolderLabel->setText(GetString(StringKeys::SETTINGS_MANUAL_REPLAYS));
+		this->replaysFolderDesc->setText(GetString(StringKeys::SETTINGS_MANUAL_REPLAYS_DESC));
         this->statsModeLabel->setText(GetString(StringKeys::SETTINGS_STATS_MODE));
         this->gaLabel->setText(GetString(StringKeys::SETTINGS_GA));
         this->languageLabel->setText(GetString(StringKeys::SETTINGS_LANGUAGE));

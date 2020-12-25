@@ -22,7 +22,6 @@ class MainWindow : public QMainWindow
 public:
 	explicit MainWindow(PotatoClient* pc);
 	int confirmUpdate();
-	void updateProgress(qint64 bytesReceived, qint64 bytesTotal);
 	void startUpdate(Updater* updater);
 protected:
 	void init();

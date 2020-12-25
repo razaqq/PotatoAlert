@@ -38,6 +38,14 @@
         <English>Game Directory</English>
         <Deutsch>Spiel Verzeichnis</Deutsch>
     </Key>
+    <Key ID="SETTINGS_MANUAL_REPLAYS">
+        <English>Override Replays Folder</English>
+        <Deutsch>Replays Ordner überschreiben</Deutsch>
+    </Key>
+    <Key ID="SETTINGS_MANUAL_REPLAYS_DESC">
+        <English>Game Directory setting will be ignored!\nOnly use if auto-detection does not work.</English>
+        <Deutsch>Spielverzeichnis Einstellung wird ignoriert!\nNur benutzen falls auto-Erkennung nicht funktioniert.</Deutsch>
+    </Key>
     <Key ID="SETTINGS_STATS_MODE">
         <English>Stats Mode</English>
         <Deutsch>Statistik Modus</Deutsch>
@@ -136,5 +144,9 @@
     <Key ID="UPDATE_FAILED">
         <English>Update failed: </English>
         <Deutsch>Das Update ist fehlgeschlagen: </Deutsch>
+    </Key>
+    <Key ID="UPDATE_DOWNLOADING">
+        <English>Downloading update, please wait...</English>
+        <Deutsch>Update wird heruntergeladen, bitte warten...</Deutsch>
     </Key>
 </Package>

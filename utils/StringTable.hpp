@@ -17,7 +17,7 @@ static const std::string_view Languages[] =
 #include "StringTableLanguages.i"
 };
 
-static const std::string_view Strings[][100] =
+static const std::string_view Strings[][200] =
 {  // TODO: size of array
 #include "StringTableStrings.i"
 };
