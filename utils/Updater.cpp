@@ -1,8 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include <Updater.hpp>
-#include <Logger.hpp>
-#include <Version.hpp>
+#include "Updater.hpp"
+#include "Logger.hpp"
+#include "Version.hpp"
 #include <windows.h>
 #include <string>
 #include <sstream>
@@ -66,8 +66,8 @@ bool Updater::updateAvailable()
     auto remoteVersion = j["tag_name"].get<std::string>();
     auto localVersion = QApplication::applicationVersion().toStdString();
 
-    return Version(remoteVersion) > Version(localVersion);
-	// return true;
+    // return Version(remoteVersion) > Version(localVersion);
+	return true;
 }
 
 void Updater::start()
