@@ -139,7 +139,7 @@ bool Updater::download(const std::string& targetFile, const std::string& dest, c
 
 	QNetworkRequest request;
 	request.setUrl(QUrl(updateURL));
-	request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 	auto reply = manager->get(request);
 
 	typedef std::chrono::high_resolution_clock clock;
