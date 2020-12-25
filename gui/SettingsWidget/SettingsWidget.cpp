@@ -276,7 +276,7 @@ void SettingsWidget::connectSignals()
 
 void SettingsWidget::checkPath()
 {
-    folderStatus status = Game::checkPath();
+    folderStatus status = Game::checkPath(PotatoConfig().get<std::string>("game_folder"));
     this->folderStatusGui->updateStatus(status);
     this->pc->setFolderStatus(status);
 }

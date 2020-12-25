@@ -17,17 +17,15 @@ using PotatoAlert::Game;
 using PotatoAlert::folderStatus;
 namespace fs = std::filesystem;
 
-folderStatus Game::checkPath()
+folderStatus Game::checkPath(const std::string& selectedPath)
 {
-	folderStatus status;
+	folderStatus status{.gamePath = selectedPath};
 
 	// check for replays folder override
 	if (PotatoConfig().get<bool>("override_replays_folder"))
 	{
 		status.overrideReplaysPath = { PotatoConfig().get<std::string>("replays_folder") };
 	}
-
-	status.gamePath = PotatoConfig().get<std::string>("game_folder");
 
 	fs::path gamePath(status.gamePath);
 	if (status.gamePath.empty() || !fs::exists(gamePath))

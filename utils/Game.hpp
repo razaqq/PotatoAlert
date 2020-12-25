@@ -30,7 +30,7 @@ struct folderStatus
 class Game
 {
 public:
-	static folderStatus checkPath();
+	static folderStatus checkPath(const std::string& selectedPath);
 	static bool getResFolderPath(folderStatus& status);
 	static bool readEngineConfig(folderStatus& status, const char* resFolder);
 	static bool readPreferences(folderStatus& status);
