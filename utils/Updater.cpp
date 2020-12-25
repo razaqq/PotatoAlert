@@ -36,7 +36,7 @@ bool Updater::updateAvailable()
 
     QNetworkRequest request;
     request.setUrl(QUrl(versionURL));
-	request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
     QNetworkReply* reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     loop.exec();
@@ -66,8 +66,8 @@ bool Updater::updateAvailable()
     auto remoteVersion = j["tag_name"].get<std::string>();
     auto localVersion = QApplication::applicationVersion().toStdString();
 
-    // return Version(remoteVersion) > Version(localVersion);
-	return true;
+    return Version(remoteVersion) > Version(localVersion);
+	// return true;
 }
 
 void Updater::start()
@@ -79,7 +79,7 @@ void Updater::start()
 	const fs::path dest = (root / "new");
 	const fs::path exeFile = (root / "PotatoAlert.exe").string();  // TODO: get this dynamically, otherwise renaming can cause it to fail
 
-	Updater::restart(exeFile.string().c_str(), "");
+	// Updater::restart(exeFile.string().c_str(), "");
 
     try
 	{
