@@ -81,7 +81,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 {
 	Q_INIT_RESOURCE(PotatoAlert);
 	int argc = 1;
-	char* argv[] = {strdup(""), nullptr};
+	char* argv[] = {_strdup(""), nullptr};  // TODO: parse command line args properly
 	QApplication app(argc, reinterpret_cast<char **>(&argv));
 	return runMain(app);
 }

@@ -51,8 +51,8 @@ void SettingsSwitch::init()
 		{false, this->palette().dark().color()}
 	};
 	this->thumbText = {
-		{true, u8"\u2714"},
-		{false, u8"\u2715"}
+		{true, QString::fromUtf8("\u2714")},
+		{false, QString::fromUtf8("\u2715")}
 	};
 
 	this->setFixedSize(this->sizeHint());
