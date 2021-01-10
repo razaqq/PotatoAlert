@@ -47,7 +47,7 @@ int runMain(QApplication& app)
 	file.open(QFile::ReadOnly | QFile::Text);
 	QString style = QLatin1String(file.readAll());
 	QApplication::setStyle("fusion");
-	QApplication::setPalette(dark());
+	QApplication::setPalette(PotatoAlert::dark());
 	app.setStyleSheet(style);
 
 	// force update of language

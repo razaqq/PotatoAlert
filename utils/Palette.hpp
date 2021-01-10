@@ -3,9 +3,9 @@
 
 #include <QPalette>
 
-//namespace PotatoAlert {
+namespace PotatoAlert {
 
 QPalette dark();
 QPalette light();
 
-//};
+} // namespace PotatoAlert
