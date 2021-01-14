@@ -21,7 +21,7 @@
 #include "Updater.hpp"
 #include "PotatoClient.hpp"
 #include "FramelessDialog.hpp"
-#include "StatsWidget/StatsWidget.h"
+#include "StatsWidget/StatsWidget.hpp"
 #include "StatsWidget/StatsHeader.hpp"
 #include "MenuBar/VerticalMenuBar.hpp"
 #include "StringTable.hpp"
@@ -109,7 +109,8 @@ void MainWindow::connectSignals()
 	connect(this->pc, &PotatoClient::clansReady, this->statsWidget, &StatsWidget::setClans);
 	connect(this->pc, &PotatoClient::wowsNumbersReady, this->statsWidget, &StatsWidget::setWowsNumbers);
 
-	connect(this->settingsWidget, &SettingsWidget::done,[this](){
+	connect(this->settingsWidget, &SettingsWidget::done,[this]()
+	{
 		this->switchTab(0);
 		this->menuBar->btnGroup->button(0)->setChecked(true);
 	});

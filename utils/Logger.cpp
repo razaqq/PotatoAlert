@@ -83,8 +83,8 @@ std::string Logger::getTimeString()
 	std::time_t time = std::time(nullptr);
 
 	char buffer[80];
-    struct tm localTime{};
-    localtime_s(&localTime, &time);
+	struct tm localTime{};
+	localtime_s(&localTime, &time);
 	strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", &localTime);
 
 	return std::string(buffer);

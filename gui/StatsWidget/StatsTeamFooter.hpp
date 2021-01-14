@@ -38,4 +38,4 @@ private:
 	QLabel* team2Region = new QLabel;
 };
 
-}  // namespace PotatoAlert
+} // namespace PotatoAlert

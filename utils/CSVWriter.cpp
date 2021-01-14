@@ -14,32 +14,32 @@ using PotatoAlert::CSVWriter;
 
 CSVWriter::CSVWriter()
 {
-    this->file.open(CSVWriter::getFilePath(), std::ios::out | std::ios::app);
-    if (!this->file.is_open())
+	this->file.open(CSVWriter::getFilePath(), std::ios::out | std::ios::app);
+	if (!this->file.is_open())
 		Logger::Error("Failed to open file to save matches.");
 }
 
 CSVWriter::~CSVWriter()
 {
-    this->file.close();
+	this->file.close();
 }
 
 void CSVWriter::saveMatch(const std::string& jsonObj)
 {
-    if (this->file.is_open())
-    {
-        this->file << jsonObj + ";";
-        Logger::Debug("Appending match to csv log.");
-    }
+	if (this->file.is_open())
+	{
+		this->file << jsonObj + ";";
+		Logger::Debug("Appending match to csv log.");
+	}
 }
 
 std::string CSVWriter::getFilePath()
 {
-    QString dirPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/PotatoAlert";
+	QString dirPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/PotatoAlert";
 
-    QDir d;
-    d.mkpath(dirPath);
-    d.setPath(dirPath);
+	QDir d;
+	d.mkpath(dirPath);
+	d.setPath(dirPath);
 
-    return d.filePath("matches.csv").toStdString();
+	return d.filePath("matches.csv").toStdString();
 }

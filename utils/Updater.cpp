@@ -3,7 +3,6 @@
 #include "Updater.hpp"
 #include "Logger.hpp"
 #include "Version.hpp"
-#include <windows.h>
 #include <string>
 #include <sstream>
 #include <chrono>
@@ -13,10 +12,40 @@
 #include <QFile>
 #include <QApplication>
 #include <QEventLoop>
+#include <windows.h>
+#include <shellapi.h>
 #include <nlohmann/json.hpp>
 #include <fmt/format.h>
 #include <zip.h>
 
+bool IsElevationPossible()
+{
+	TOKEN_ELEVATION_TYPE tokenElevationType;
+	DWORD size;
+	if (!GetTokenInformation(
+			GetCurrentProcessToken(),
+			TokenElevationType,
+			&tokenElevationType,
+			sizeof(tokenElevationType),
+			&size))
+	{
+		// Log Error
+
+		return false;
+	}
+
+	return tokenElevationType == TokenElevationTypeLimited;
+}
+
+void elevate()
+{
+	WCHAR path[MAX_PATH];
+	if (GetModuleFileNameW(nullptr, path, RTL_NUMBER_OF(path)))
+	{
+		SHELLEXECUTEINFOW sei = { sizeof(sei), 0, nullptr, L"runas", path };
+		ShellExecuteExW(&sei);
+	}
+}
 
 using nlohmann::json;
 using PotatoAlert::Updater;
@@ -31,57 +60,58 @@ const char* versionURL = "https://api.github.com/repos/razaqq/PotatoAlert/releas
 // makes a request to the github api and checks if there is a new version available
 bool Updater::updateAvailable()
 {
-    QEventLoop loop;
-    auto manager = new QNetworkAccessManager();
+	QEventLoop loop;
+	auto manager = new QNetworkAccessManager();
 
-    QNetworkRequest request;
-    request.setUrl(QUrl(versionURL));
+	QNetworkRequest request;
+	request.setUrl(QUrl(versionURL));
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
-    QNetworkReply* reply = manager->get(request);
-    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    loop.exec();
+	QNetworkReply* reply = manager->get(request);
+	connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+	loop.exec();
 
-    if (reply->error())
-    {
-        Logger::Debug(reply->errorString().toStdString());
-        return false;
-    }
+	if (reply->error())
+	{
+		Logger::Debug(reply->errorString().toStdString());
+		return false;
+	}
 
-    json j;
-    try
-    {
-        j = json::parse(reply->readAll().toStdString());
-    }
-    catch (json::parse_error& e)
-    {
+	json j;
+	try
+	{
+		j = json::parse(reply->readAll().toStdString());
+	}
+	catch (json::parse_error& e)
+	{
 		Logger::Error("Failed to parse github api response as JSON: {}", e.what());
-        return false;
-    }
-    catch (json::type_error& e)
+		return false;
+	}
+	catch (json::type_error& e)
 	{
 		Logger::Error("{}", e.what());
 		return false;
 	}
 
-    auto remoteVersion = j["tag_name"].get<std::string>();
-    auto localVersion = QApplication::applicationVersion().toStdString();
+	auto remoteVersion = j["tag_name"].get<std::string>();
+	auto localVersion = QApplication::applicationVersion().toStdString();
 
-    return Version(remoteVersion) > Version(localVersion);
-	// return true;
+	// return Version(remoteVersion) > Version(localVersion);
+	return true;
 }
 
 void Updater::start()
 {
-    Logger::Debug("Starting update...");
+	Logger::Debug("Starting update...");
 
-    const fs::path root = fs::absolute(fs::current_path());
+	const fs::path root = fs::absolute(fs::current_path());
 	const fs::path zipFile = (root / "PotatoAlert.zip");
 	const fs::path dest = (root / "new");
 	const fs::path exeFile = (root / "PotatoAlert.exe").string();  // TODO: get this dynamically, otherwise renaming can cause it to fail
 
 	// Updater::restart(exeFile.string().c_str(), "");
+	elevate();
 
-    try
+	try
 	{
 		if (fs::exists(zipFile))
 			fs::remove(zipFile);
@@ -153,7 +183,7 @@ bool Updater::download(const std::string& targetFile, const std::string& dest, c
 		float timeDelta = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - startTime).count() / 1e3f;
 		if (timeDelta == 0)  // make sure we dont get zero division
 			timeDelta = 1;
-		float downloadSpeed = bytesReceived / 1e6f / timeDelta;
+		float downloadSpeed = bytesReceived / 1e6f / timeDelta;  // TODO: make this based on the last second
 
 		QString progress = fmt::format("{:.1f}/{:.1f} MB", bytesReceived/1e6f, bytesTotal/1e6f).c_str();
 		QString speed = fmt::format("{:.1f} MB/s", downloadSpeed).c_str();

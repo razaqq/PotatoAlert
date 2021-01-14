@@ -8,4 +8,4 @@ namespace PotatoAlert {
 QPalette dark();
 QPalette light();
 
-} // namespace PotatoAlert
+}  // namespace PotatoAlert

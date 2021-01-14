@@ -32,7 +32,6 @@ private:
 	// helpers
 	static std::string arrToRgbString(const std::vector<int>& a);
 	static bool validColor(const std::vector<int>& color);
-	static std::string floatToString(float f);
 };
 
 }  // namespace PotatoAlert

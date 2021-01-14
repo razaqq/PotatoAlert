@@ -101,4 +101,4 @@ private:
 	static std::string getTimeString();
 };
 
-} // namespace PotatoAlert
+}  // namespace PotatoAlert

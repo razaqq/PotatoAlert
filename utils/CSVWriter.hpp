@@ -11,12 +11,12 @@ namespace PotatoAlert {
 class CSVWriter
 {
 public:
-    CSVWriter();
-    ~CSVWriter();
-    void saveMatch(const std::string& jsonObj);
+	CSVWriter();
+	~CSVWriter();
+	void saveMatch(const std::string& jsonObj);
 private:
-    std::ofstream file;
-    static std::string getFilePath();
+	std::ofstream file;
+	static std::string getFilePath();
 };
 
-} // namespace PotatoAlert
+}  // namespace PotatoAlert

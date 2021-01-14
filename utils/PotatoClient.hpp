@@ -10,9 +10,11 @@
 #include <QTableWidgetItem>
 #include <QWebSocket>
 #include <string>
+#include <tuple>
 #include <variant>
 #include <vector>
 
+using PotatoAlert::Game::folderStatus;
 
 typedef std::vector<std::vector<std::variant<QLabel *, QTableWidgetItem *>>> teamType;
 
@@ -22,12 +24,15 @@ class PotatoClient : public QObject
 {
 	Q_OBJECT
 public:
+	PotatoClient() = default;
+	PotatoClient(const PotatoClient&) = delete;
 	void init();
 	void setFolderStatus(folderStatus& status);
 private:
 	void onResponse(const QString& message);
 	void onDirectoryChanged(const QString& path);
 	void updateReplaysPath();
+	static std::tuple<bool, std::string> readArenaInfo(const std::string& filePath);
 
 	QWebSocket* socket = new QWebSocket();
 	QFileSystemWatcher* watcher = new QFileSystemWatcher();
@@ -40,7 +45,7 @@ signals:
 	void avgReady(std::vector<QString> avgs);
 	void clansReady(std::vector<QString> clans);
 	void wowsNumbersReady(std::vector<std::vector<QString>> wowsNumbers);
-	void status(int statusID, const std::string& statusText);
+	void status(const int statusID, const std::string& statusText);
 };
 
 }  // namespace PotatoAlert

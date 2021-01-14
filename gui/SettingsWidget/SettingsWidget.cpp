@@ -31,7 +31,6 @@ static const int ROW_HEIGHT = 20;
 
 using PotatoAlert::SettingsWidget;
 using PotatoAlert::SettingsChoice;
-using PotatoAlert::Game;
 
 SettingsWidget::SettingsWidget(QWidget* parent, PotatoClient* pc) : QWidget(parent)
 {
@@ -45,10 +44,10 @@ void SettingsWidget::init()
 {
 	this->folderStatusGui = new FolderStatus(this);
 
-    auto horLayout = new QHBoxLayout();
+	auto horLayout = new QHBoxLayout();
 	horLayout->setContentsMargins(10, 10, 10, 10);
 	horLayout->setSpacing(0);
-    auto centralWidget = new QWidget(this);
+	auto centralWidget = new QWidget(this);
 	centralWidget->setObjectName("settingsWidget");
 	horLayout->addStretch();
 	horLayout->addWidget(centralWidget);
@@ -57,12 +56,12 @@ void SettingsWidget::init()
 	QFont labelFont("Helvetica Neue", 13, QFont::Bold);
 	labelFont.setStyleStrategy(QFont::PreferAntialias);
 
-    auto layout = new QVBoxLayout();
+	auto layout = new QVBoxLayout();
 	
 	/* UPDATE NOTIFICATIONS */
-    auto updateLayout = new QHBoxLayout();
+	auto updateLayout = new QHBoxLayout();
 	this->updateLabel->setFont(labelFont);
-    this->updateLabel->setFixedWidth(LABEL_WIDTH);
+	this->updateLabel->setFixedWidth(LABEL_WIDTH);
 	updateLayout->addWidget(this->updateLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 	updateLayout->addWidget(this->updates, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(updateLayout);
@@ -71,9 +70,9 @@ void SettingsWidget::init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* SELECTOR FOR GAME FOLDER */
-    auto gamePathLayout = new QHBoxLayout();
-    this->gamePathLabel->setFont(labelFont);
-    this->gamePathLabel->setFixedWidth(LABEL_WIDTH);
+	auto gamePathLayout = new QHBoxLayout();
+	this->gamePathLabel->setFont(labelFont);
+	this->gamePathLabel->setFixedWidth(LABEL_WIDTH);
 	gamePathLayout->addWidget(this->gamePathLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
 	gamePathLayout->addStretch();
@@ -90,15 +89,15 @@ void SettingsWidget::init()
 	layout->addLayout(gamePathLayout);
 
 	this->folderStatusGui = new FolderStatus(this);
-    layout->addWidget(this->folderStatusGui);
+	layout->addWidget(this->folderStatusGui);
 	/* SELECTOR FOR GAME FOLDER */
 
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* DISPLAYED STATS MODE */
-    auto statsModeLayout = new QHBoxLayout();
-    this->statsModeLabel->setFont(labelFont);
-    this->statsModeLabel->setFixedWidth(LABEL_WIDTH);
+	auto statsModeLayout = new QHBoxLayout();
+	this->statsModeLabel->setFont(labelFont);
+	this->statsModeLabel->setFixedWidth(LABEL_WIDTH);
 	statsModeLayout->addWidget(this->statsModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
 	this->statsMode = new SettingsChoice(this, std::vector<QString>{"current mode", "pvp", "ranked", "clan"});  // TODO: localize
@@ -109,31 +108,31 @@ void SettingsWidget::init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* LANGUAGE */
-    auto languageLayout = new QHBoxLayout;
-    this->languageLabel->setFont(labelFont);
-    this->languageLabel->setFixedWidth(LABEL_WIDTH);
-    languageLayout->addWidget(this->languageLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+	auto languageLayout = new QHBoxLayout;
+	this->languageLabel->setFont(labelFont);
+	this->languageLabel->setFixedWidth(LABEL_WIDTH);
+	languageLayout->addWidget(this->languageLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
-    std::vector<QString> langs;
-    for (auto& lang : Languages)
-    {
-        langs.push_back(QString::fromUtf8(lang.data()));
-    }
-    this->language = new SettingsChoice(this, langs);
-    languageLayout->addWidget(this->language, 0, Qt::AlignVCenter | Qt::AlignRight);
-    layout->addLayout(languageLayout);
+	std::vector<QString> langs;
+	for (auto& lang : Languages)
+	{
+		langs.push_back(QString::fromUtf8(lang.data()));
+	}
+	this->language = new SettingsChoice(this, langs);
+	languageLayout->addWidget(this->language, 0, Qt::AlignVCenter | Qt::AlignRight);
+	layout->addLayout(languageLayout);
 	/* LANGUAGE */
 
-    layout->addWidget(new HorizontalLine(centralWidget));
+	layout->addWidget(new HorizontalLine(centralWidget));
 
-    /* CSV OUTPUT */
-    auto csvLayout = new QHBoxLayout();
-    this->csvLabel->setFixedWidth(LABEL_WIDTH);
-    this->csvLabel->setFont(labelFont);
-    this->csvLabel->setFixedWidth(LABEL_WIDTH);
-    csvLayout->addWidget(this->csvLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
-    csvLayout->addWidget(this->csv, 0, Qt::AlignVCenter | Qt::AlignRight);
-    layout->addLayout(csvLayout);
+	/* CSV OUTPUT */
+	auto csvLayout = new QHBoxLayout();
+	this->csvLabel->setFixedWidth(LABEL_WIDTH);
+	this->csvLabel->setFont(labelFont);
+	this->csvLabel->setFixedWidth(LABEL_WIDTH);
+	csvLayout->addWidget(this->csvLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+	csvLayout->addWidget(this->csv, 0, Qt::AlignVCenter | Qt::AlignRight);
+	layout->addLayout(csvLayout);
 	/* CSV OUTPUT */
 
 	layout->addWidget(new HorizontalLine(centralWidget));
@@ -186,19 +185,19 @@ void SettingsWidget::init()
 	layout->addStretch();
 
 	/* SAVE & CANCEL BUTTON */
-    auto confirmLayout = new QHBoxLayout();
+	auto confirmLayout = new QHBoxLayout();
 	this->saveButton = new QPushButton();
 	this->saveButton->setFixedWidth(100);
 	this->saveButton->setObjectName("settingsButton");
 
 	this->cancelButton = new QPushButton();
-    this->cancelButton->setFixedWidth(100);
+	this->cancelButton->setFixedWidth(100);
 	this->cancelButton->setObjectName("settingsButton");
 
-    confirmLayout->addStretch();
+	confirmLayout->addStretch();
 	confirmLayout->addWidget(this->saveButton);
 	confirmLayout->addWidget(this->cancelButton);
-    confirmLayout->addStretch();
+	confirmLayout->addStretch();
 	layout->addLayout(confirmLayout);
 
 	centralWidget->setLayout(layout);
@@ -213,12 +212,12 @@ void SettingsWidget::load()
 	// this->googleAnalytics->setChecked(PotatoConfig().get<bool>("use_ga"));
 	this->gamePathEdit->setText(QString::fromStdString(PotatoConfig().get<std::string>("game_folder")));
 	this->statsMode->btnGroup->button(PotatoConfig().get<int>("stats_mode"))->setChecked(true);
-    this->language->btnGroup->button(PotatoConfig().get<int>("language"))->setChecked(true);
-    this->csv->setChecked(PotatoConfig().get<bool>("save_csv"));
+	this->language->btnGroup->button(PotatoConfig().get<int>("language"))->setChecked(true);
+	this->csv->setChecked(PotatoConfig().get<bool>("save_csv"));
 
 	this->replaysFolderEdit->setText(QString::fromStdString(PotatoConfig().get<std::string>("replays_folder")));
-    bool manualReplays = PotatoConfig().get<bool>("override_replays_folder");
-    this->overrideReplaysFolder->setChecked(manualReplays);
+	bool manualReplays = PotatoConfig().get<bool>("override_replays_folder");
+	this->overrideReplaysFolder->setChecked(manualReplays);
 	toggleReplaysFolderOverride.operator()(manualReplays);
 }
 
@@ -231,30 +230,30 @@ void SettingsWidget::connectSignals()
 	});
 	connect(this->cancelButton, &QPushButton::clicked, [this]()
 	{
-	    PotatoConfig().load();
-	    this->load();
-	    this->checkPath();
-        QEvent event(QEvent::LanguageChange);
-        QApplication::sendEvent(this->window(), &event);
-        emit this->done();
+		PotatoConfig().load();
+		this->load();
+		this->checkPath();
+		QEvent event(QEvent::LanguageChange);
+		QApplication::sendEvent(this->window(), &event);
+		emit this->done();
 	});
 	connect(this->updates, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set<bool>("update_notifications", checked); });
 	// connect(this->googleAnalytics, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set("use_ga", checked); });
 	connect(this->statsMode->btnGroup, &QButtonGroup::idClicked, [](int id) { PotatoConfig().set<int>("stats_mode", id); });
 	connect(this->csv, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set<bool>("save_csv", checked); });
-    connect(this->language->btnGroup, &QButtonGroup::idClicked, [this](int id)
-    {
-        PotatoConfig().set<int>("language", id);
-        QEvent event(QEvent::LanguageChange);
-        QApplication::sendEvent(this->window(), &event);
-    });
+	connect(this->language->btnGroup, &QButtonGroup::idClicked, [this](int id)
+	{
+		PotatoConfig().set<int>("language", id);
+		QEvent event(QEvent::LanguageChange);
+		QApplication::sendEvent(this->window(), &event);
+	});
 	connect(this->gamePathButton, &QToolButton::clicked, [this]()
 	{
 		QString dir = QFileDialog::getExistingDirectory(this, "Select Game Directory", "", QFileDialog::ShowDirsOnly);
 		if (dir != "")
 		{
 			this->gamePathEdit->setText(dir);
-            PotatoConfig().set("game_folder", dir.toStdString());
+			PotatoConfig().set("game_folder", dir.toStdString());
 			this->checkPath();
 		}
 	});
@@ -276,28 +275,28 @@ void SettingsWidget::connectSignals()
 
 void SettingsWidget::checkPath()
 {
-    folderStatus status = Game::checkPath(PotatoConfig().get<std::string>("game_folder"));
-    this->folderStatusGui->updateStatus(status);
-    this->pc->setFolderStatus(status);
+	folderStatus status = Game::checkPath(PotatoConfig().get<std::string>("game_folder"));
+	this->folderStatusGui->updateStatus(status);
+	this->pc->setFolderStatus(status);
 }
 
 void SettingsWidget::changeEvent(QEvent* event)
 {
-    if (event->type() == QEvent::LanguageChange)
-    {
-        this->updateLabel->setText(GetString(StringKeys::SETTINGS_UPDATES));
-        this->csvLabel->setText(GetString(StringKeys::SETTINGS_SAVE_CSV));
-        this->gamePathLabel->setText(GetString(StringKeys::SETTINGS_GAME_DIRECTORY));
+	if (event->type() == QEvent::LanguageChange)
+	{
+		this->updateLabel->setText(GetString(StringKeys::SETTINGS_UPDATES));
+		this->csvLabel->setText(GetString(StringKeys::SETTINGS_SAVE_CSV));
+		this->gamePathLabel->setText(GetString(StringKeys::SETTINGS_GAME_DIRECTORY));
 		this->replaysFolderLabel->setText(GetString(StringKeys::SETTINGS_MANUAL_REPLAYS));
 		this->replaysFolderDesc->setText(GetString(StringKeys::SETTINGS_MANUAL_REPLAYS_DESC));
-        this->statsModeLabel->setText(GetString(StringKeys::SETTINGS_STATS_MODE));
-        this->gaLabel->setText(GetString(StringKeys::SETTINGS_GA));
-        this->languageLabel->setText(GetString(StringKeys::SETTINGS_LANGUAGE));
-        this->saveButton->setText(GetString(StringKeys::SETTINGS_SAVE));
-        this->cancelButton->setText(GetString(StringKeys::SETTINGS_CANCEL));
-    }
-    else
-    {
-        QWidget::changeEvent(event);
-    }
+		this->statsModeLabel->setText(GetString(StringKeys::SETTINGS_STATS_MODE));
+		this->gaLabel->setText(GetString(StringKeys::SETTINGS_GA));
+		this->languageLabel->setText(GetString(StringKeys::SETTINGS_LANGUAGE));
+		this->saveButton->setText(GetString(StringKeys::SETTINGS_SAVE));
+		this->cancelButton->setText(GetString(StringKeys::SETTINGS_CANCEL));
+	}
+	else
+	{
+		QWidget::changeEvent(event);
+	}
 }

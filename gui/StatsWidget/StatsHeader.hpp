@@ -32,4 +32,4 @@ private:
 	QPixmap error = QPixmap(":/error.png");
 };
 
-}  // namespace PotatoAlert
+} // namespace PotatoAlert

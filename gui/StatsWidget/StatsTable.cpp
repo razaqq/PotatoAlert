@@ -76,19 +76,19 @@ void StatsTable::setWowsNumbers(const std::vector<QString>& data)
 
 void StatsTable::changeEvent(QEvent* event)
 {
-    if (event->type() == QEvent::LanguageChange)
-    {
-        this->horizontalHeaderItem(0)->setText(GetString(StringKeys::COLUMN_PLAYER));
-        this->horizontalHeaderItem(1)->setText(GetString(StringKeys::COLUMN_SHIP));
-        this->horizontalHeaderItem(2)->setText(GetString(StringKeys::COLUMN_MATCHES));
-        this->horizontalHeaderItem(3)->setText(GetString(StringKeys::COLUMN_WINRATE));
-        this->horizontalHeaderItem(4)->setText(GetString(StringKeys::COLUMN_AVERAGE_DAMAGE));
-        this->horizontalHeaderItem(5)->setText(GetString(StringKeys::COLUMN_MATCHES_SHIP));
-        this->horizontalHeaderItem(6)->setText(GetString(StringKeys::COLUMN_WINRATE_SHIP));
-        this->horizontalHeaderItem(7)->setText(GetString(StringKeys::COLUMN_AVERAGE_DAMAGE_SHIP));
-    }
-    else
-    {
-        QTableWidget::changeEvent(event);
-    }
+	if (event->type() == QEvent::LanguageChange)
+	{
+		this->horizontalHeaderItem(0)->setText(GetString(StringKeys::COLUMN_PLAYER));
+		this->horizontalHeaderItem(1)->setText(GetString(StringKeys::COLUMN_SHIP));
+		this->horizontalHeaderItem(2)->setText(GetString(StringKeys::COLUMN_MATCHES));
+		this->horizontalHeaderItem(3)->setText(GetString(StringKeys::COLUMN_WINRATE));
+		this->horizontalHeaderItem(4)->setText(GetString(StringKeys::COLUMN_AVERAGE_DAMAGE));
+		this->horizontalHeaderItem(5)->setText(GetString(StringKeys::COLUMN_MATCHES_SHIP));
+		this->horizontalHeaderItem(6)->setText(GetString(StringKeys::COLUMN_WINRATE_SHIP));
+		this->horizontalHeaderItem(7)->setText(GetString(StringKeys::COLUMN_AVERAGE_DAMAGE_SHIP));
+	}
+	else
+	{
+		QTableWidget::changeEvent(event);
+	}
 }

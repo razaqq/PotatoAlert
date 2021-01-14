@@ -141,17 +141,17 @@ void StatsTeamFooter::setClans(const std::vector<QString>& clans)
 
 void StatsTeamFooter::changeEvent(QEvent* event)
 {
-    if (event->type() == QEvent::LanguageChange)
-    {
-        this->team1WrLabel->setText(GetString(StringKeys::LABEL_WINRATE));
-        this->team1DmgLabel->setText(GetString(StringKeys::LABEL_DAMAGE));
-        this->team1RegionLabel->setText(GetString(StringKeys::LABEL_REGION));
-        this->team2WrLabel->setText(GetString(StringKeys::LABEL_WINRATE));
-        this->team2DmgLabel->setText(GetString(StringKeys::LABEL_DAMAGE));
-        this->team2RegionLabel->setText(GetString(StringKeys::LABEL_REGION));
-    }
-    else
-    {
-        QWidget::changeEvent(event);
-    }
+	if (event->type() == QEvent::LanguageChange)
+	{
+		this->team1WrLabel->setText(GetString(StringKeys::LABEL_WINRATE));
+		this->team1DmgLabel->setText(GetString(StringKeys::LABEL_DAMAGE));
+		this->team1RegionLabel->setText(GetString(StringKeys::LABEL_REGION));
+		this->team2WrLabel->setText(GetString(StringKeys::LABEL_WINRATE));
+		this->team2DmgLabel->setText(GetString(StringKeys::LABEL_DAMAGE));
+		this->team2RegionLabel->setText(GetString(StringKeys::LABEL_REGION));
+	}
+	else
+	{
+		QWidget::changeEvent(event);
+	}
 }

@@ -56,7 +56,7 @@ Config::~Config()
 
 void Config::load()
 {
-    Logger::Debug("Trying to load config.");
+	Logger::Debug("Trying to load config.");
 	try
 	{
 		std::ifstream ifs(this->filePath);
@@ -66,19 +66,19 @@ void Config::load()
 	catch (json::exception& e)
 	{
 		Logger::Error("Cannot read config: {}", e.what());
-        try
-        {
-            std::string backupConfig = this->filePath.append(".bak");
-            if (fs::exists(backupConfig))
-                fs::remove(backupConfig);
-            fs::rename(this->filePath, backupConfig);
-            this->createDefault();
-        }
-        catch (fs::filesystem_error& e)
-        {
+		try
+		{
+			std::string backupConfig = this->filePath.append(".bak");
+			if (fs::exists(backupConfig))
+				fs::remove(backupConfig);
+			fs::rename(this->filePath, backupConfig);
+			this->createDefault();
+		}
+		catch (fs::filesystem_error& e)
+		{
 			Logger::Error(e.what());
-            QApplication::exit(1);
-        }
+			QApplication::exit(1);
+		}
 	}
 }
 
@@ -153,6 +153,6 @@ std::string Config::getFilePath(const char* fileName)
 
 Config& PotatoAlert::PotatoConfig()
 {
-    static Config p("config.json");
-    return p;
+	static Config p("config.json");
+	return p;
 }

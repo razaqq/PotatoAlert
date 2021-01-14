@@ -6,7 +6,7 @@
 #include <QTableWidgetItem>
 #include <vector>
 #include <variant>
-#include "StatsWidget.h"
+#include "StatsWidget.hpp"
 #include "StatsHeader.hpp"
 
 
@@ -70,7 +70,7 @@ void StatsWidget::fillTables(std::vector<teamType> teams)
 	}
 }
 
-void StatsWidget::setStatus(int statusID, const std::string& statusText)
+void StatsWidget::setStatus(const int statusID, const std::string& statusText)
 {
 	this->header->setStatus(statusID, statusText);
 }

@@ -22,8 +22,12 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <tuple>
+// #include <thread>
+// #include <chrono>
 #include <filesystem>
 #include <fmt/format.h>
+#include <fileapi.h>
 
 
 // statuses
@@ -40,17 +44,17 @@ const char* wsAddr = "ws://www.perry-swift.de:33333";
 
 void PotatoClient::init()
 {
-    emit this->status(STATUS_READY, "Ready");
+	emit this->status(STATUS_READY, "Ready");
 
-    // handle connection
+	// handle connection
 	connect(this->socket, &QWebSocket::connected, [this]
 	{
-        Logger::Debug("Websocket open, sending arena info...");
+		Logger::Debug("Websocket open, sending arena info...");
 		this->socket->sendTextMessage(this->tempArenaInfo);
 	});
 
 	// handle error
-    connect(this->socket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), [=](QAbstractSocket::SocketError error)
+	connect(this->socket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), [=](QAbstractSocket::SocketError error)
     {
 		switch (error)
 		{
@@ -84,13 +88,13 @@ void PotatoClient::init()
 	connect(this->watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::onDirectoryChanged);
 
 	for (auto& path : this->watcher->directories())  // trigger run
-        this->onDirectoryChanged(path);
+		this->onDirectoryChanged(path);
 }
 
 // sets filesystem watcher to current replays folder, triggered when config is modified
 void PotatoClient::updateReplaysPath()
 {
-    Logger::Debug("Updating replays path.");
+	Logger::Debug("Updating replays path.");
 
 	if (!this->watcher->directories().isEmpty())
 		this->watcher->removePaths(this->watcher->directories());
@@ -105,108 +109,95 @@ void PotatoClient::updateReplaysPath()
 			if (!folder.empty())
 				this->watcher->addPath(QString::fromStdString(folder));
 	}
-
-	for (auto& path : this->watcher->directories())  // trigger run
-		this->onDirectoryChanged(path);
 }
 
 // triggered whenever a file gets modified in a replays path
 void PotatoClient::onDirectoryChanged(const QString& path)
 {
-    Logger::Debug("Directory changed.");
+	Logger::Debug("Directory changed.");
 
-    std::string filePath = fmt::format("{}\\tempArenaInfo.json", path.toStdString());
-	std::string tempPath = fs::temp_directory_path().append("tempArenaInfo.json.temp").string();
+	std::string filePath = fmt::format("{}\\tempArenaInfo.json", path.toStdString());
 
 	if (fs::exists(filePath))
 	{
+		// using namespace std::chrono_literals;
+		// std::this_thread::sleep_for(500ms);
+		// read arena info from file
+		auto arenaInfo = PotatoClient::readArenaInfo(filePath);
+		if (!std::get<0>(arenaInfo))
+		{
+			Logger::Error("Failed to read arena info from file.");
+			emit this->status(STATUS_ERROR, "Reading ArenaInfo");
+			return;
+		}
+
+		Logger::Debug(std::get<1>(arenaInfo));
+
+		nlohmann::json j;
 		try
 		{
-			// read arena info from file, copy file to avoid locking it
-			std::string arenaInfo;
-			try
-			{
-				if (!fs::copy_file(filePath, tempPath, fs::copy_options::overwrite_existing))
-				{
-                    Logger::Debug("Failed to copy file");
-					return;
-				}
-
-				std::ifstream fs(tempPath);
-				std::stringstream buffer;
-				buffer << fs.rdbuf();
-				arenaInfo = buffer.str();
-				fs.close();
-
-				fs::remove(tempPath);
-			}
-			catch (fs::filesystem_error& e)
-			{
-				Logger::Error(e.what());
-				return;
-			}
-
-            Logger::Debug("ArenaInfo read from file. Content: {}", arenaInfo);
-
-			// parse arenaInfo to json and add region
-			nlohmann::json j = nlohmann::json::parse(arenaInfo);
-			j["region"] = this->fStatus.region;
-
-			// set stats mode from config
-			switch (PotatoConfig().get<int>("stats_mode"))
-			{
-				case current:
-					if (j.contains("matchGroup"))
-						j["statsMode"] = j["matchGroup"];
-					else
-						j["statsMode"] = "pvp";
-					break;
-				case pvp:
-					j["statsMode"] = "pvp";
-					break;
-				case ranked:
-					j["statsMode"] = "ranked";
-					break;
-				case clan:
-					j["statsMode"] = "clan";
-					break;
-			}
-
-			QString newArenaInfo = QString::fromStdString(j.dump());
-
-			// make sure we dont pull the same match twice
-			if (newArenaInfo != this->tempArenaInfo)
-				this->tempArenaInfo = newArenaInfo;
-			else
-				return;
-
-			emit this->status(STATUS_LOADING, "Loading");
-
-            Logger::Debug("Opening websocket...");
-
-			this->socket->open(QUrl(QString(wsAddr)));  // starts the request cycle
+			j = nlohmann::json::parse(std::get<1>(arenaInfo));
 		}
 		catch (nlohmann::json::parse_error& e)
 		{
 			Logger::Error("Failed to parse arena info file to JSON: {}", e.what());
 			emit this->status(STATUS_ERROR, "JSON Parse Error");
+			return;
 		}
+
+		Logger::Debug("ArenaInfo read from file. Content: {}", j.dump());
+
+		// add region
+		j["region"] = this->fStatus.region;
+
+		// set stats mode from config
+		switch (PotatoConfig().get<int>("stats_mode"))
+		{
+			case current:
+				if (j.contains("matchGroup"))
+					j["statsMode"] = j["matchGroup"];
+				else
+					j["statsMode"] = "pvp";
+				break;
+			case pvp:
+				j["statsMode"] = "pvp";
+				break;
+			case ranked:
+				j["statsMode"] = "ranked";
+				break;
+			case clan:
+				j["statsMode"] = "clan";
+				break;
+		}
+
+		QString newArenaInfo = QString::fromStdString(j.dump());
+
+		// make sure we dont pull the same match twice
+		if (newArenaInfo != this->tempArenaInfo)
+			this->tempArenaInfo = newArenaInfo;
+		else
+			return;
+
+		emit this->status(STATUS_LOADING, "Loading");
+		Logger::Debug("Opening websocket...");
+
+		this->socket->open(QUrl(QString(wsAddr)));  // starts the request cycle
 	}
 }
 
 // triggered when server response is received. processes the response, updates gui tables
 void PotatoClient::onResponse(const QString& message)
 {
-    Logger::Debug("Closing websocket connection.");
+	Logger::Debug("Closing websocket connection.");
 	this->socket->close();
 
-    Logger::Debug("Received response from server: {}", message.toStdString());
+	Logger::Debug("Received response from server: {}", message.toStdString());
 
-    if (message.isNull() || message == "null")
-    {
+	if (message.isNull() || message == "null")
+	{
 		emit this->status(STATUS_ERROR, "NULL Response");
-    	return;
-    }
+		return;
+	}
 
 	try
 	{
@@ -267,6 +258,60 @@ void PotatoClient::onResponse(const QString& message)
 // sets the folder status and triggers a new match run
 void PotatoClient::setFolderStatus(folderStatus& status)
 {
-    this->fStatus = status;
-    this->updateReplaysPath();
+	this->fStatus = status;
+	this->updateReplaysPath();
+}
+
+// opens and reads a file
+std::tuple<bool, std::string> PotatoClient::readArenaInfo(const std::string& filePath)
+{
+	Logger::Debug("Reading arena info from: {}", filePath);
+
+	HANDLE handle = CreateFile(
+			filePath.c_str(),
+			GENERIC_READ,
+			FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE,
+			nullptr,
+			OPEN_EXISTING,
+			FILE_ATTRIBUTE_NORMAL,
+			nullptr
+	);
+
+	if (handle == INVALID_HANDLE_VALUE)
+	{
+		DWORD err = GetLastError();
+		LPSTR lpMsgBuf;
+		FormatMessage(
+				FORMAT_MESSAGE_ALLOCATE_BUFFER |
+				FORMAT_MESSAGE_FROM_SYSTEM |
+				FORMAT_MESSAGE_IGNORE_INSERTS,
+				nullptr,
+				err,
+				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				(LPTSTR) &lpMsgBuf,
+				0, nullptr
+		);
+		// auto str = reinterpret_cast<std::string*>(lpMsgBuf);
+		Logger::Error("Failed to read arena info: {}", lpMsgBuf);
+		CloseHandle(handle);
+		return std::tuple<bool, std::string>{false, ""};
+	}
+
+	DWORD dwBytesRead;
+	static const size_t size = 16384;
+	static char buff[size];
+	std::tuple<bool, std::string> out;
+
+	if (ReadFile(handle, buff, size, &dwBytesRead, nullptr))
+	{
+		buff[dwBytesRead] = '\0';  // add null termination
+		out = {true, std::string(buff)};
+	}
+	else
+	{
+		out = {false, ""};
+	}
+
+	CloseHandle(handle);
+	return out;
 }

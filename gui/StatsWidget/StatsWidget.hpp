@@ -32,4 +32,4 @@ private:
 	StatsHeader* header = new StatsHeader(this);
 };
 
-}  // namespace PotatoAlert
+} // namespace PotatoAlert

@@ -25,4 +25,4 @@ private:
 	std::vector<QString> wowsNumbers;
 };
 
-}  // namespace PotatoAlert
+} // namespace PotatoAlert

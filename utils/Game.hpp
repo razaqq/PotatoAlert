@@ -7,7 +7,7 @@
 #include "Logger.hpp"
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Game {
 
 struct folderStatus
 {
@@ -27,14 +27,10 @@ struct folderStatus
 	bool found = false;
 };
 
-class Game
-{
-public:
-	static folderStatus checkPath(const std::string& selectedPath);
-	static bool getResFolderPath(folderStatus& status);
-	static bool readEngineConfig(folderStatus& status, const char* resFolder);
-	static bool readPreferences(folderStatus& status);
-	static void setReplaysFolder(folderStatus& status);
-};
+folderStatus checkPath(const std::string& selectedPath);
+bool getResFolderPath(folderStatus& status);
+bool readEngineConfig(folderStatus& status, const char* resFolder);
+bool readPreferences(folderStatus& status);
+void setReplaysFolder(folderStatus& status);
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Game

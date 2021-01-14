@@ -79,15 +79,15 @@ void StatsHeader::init()
 
 void StatsHeader::changeEvent(QEvent* event)
 {
-    if (event->type() == QEvent::LanguageChange)
-    {
-        this->team1Label->setText(GetString(PotatoAlert::StringKeys::LABEL_MYTEAM));
-        this->team2Label->setText(GetString(PotatoAlert::StringKeys::LABEL_ENEMYTEAM));
-    }
-    else
-    {
-        QWidget::changeEvent(event);
-    }
+	if (event->type() == QEvent::LanguageChange)
+	{
+		this->team1Label->setText(GetString(PotatoAlert::StringKeys::LABEL_MYTEAM));
+		this->team2Label->setText(GetString(PotatoAlert::StringKeys::LABEL_ENEMYTEAM));
+	}
+	else
+	{
+		QWidget::changeEvent(event);
+	}
 }
 
 void StatsHeader::setStatus(int statusID, const std::string& text)

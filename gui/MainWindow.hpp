@@ -9,7 +9,7 @@
 #include "Logger.hpp"
 #include "Updater.hpp"
 #include "PotatoClient.hpp"
-#include "StatsWidget/StatsWidget.h"
+#include "StatsWidget/StatsWidget.hpp"
 #include "SettingsWidget/SettingsWidget.hpp"
 #include "AboutWidget.hpp"
 #include "MenuBar/VerticalMenuBar.hpp"

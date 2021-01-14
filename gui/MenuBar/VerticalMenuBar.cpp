@@ -22,7 +22,7 @@ void VerticalMenuBar::init()
 {
 	this->setObjectName("menuBar");
 
-    auto layout = new QVBoxLayout;
+	auto layout = new QVBoxLayout;
 	layout->setContentsMargins(0, 10, 0, 10);
 	layout->setSpacing(0);
 
@@ -30,12 +30,12 @@ void VerticalMenuBar::init()
 	this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 
 	auto table = new MenuEntry(this, QIcon(QPixmap(":/table.svg")));
-    auto settings = new MenuEntry(this, QIcon(QPixmap(":/settings.svg")));
+	auto settings = new MenuEntry(this, QIcon(QPixmap(":/settings.svg")));
 
-    auto discord = new MenuEntry(this, QIcon(QPixmap(":/discord.svg")));
-    auto log = new MenuEntry(this, QIcon(QPixmap(":/log.svg")));
-    auto github = new MenuEntry(this, QIcon(QPixmap(":/github.svg")));
-    auto about = new MenuEntry(this, QIcon(QPixmap(":/about.svg")));
+	auto discord = new MenuEntry(this, QIcon(QPixmap(":/discord.svg")));
+	auto log = new MenuEntry(this, QIcon(QPixmap(":/log.svg")));
+	auto github = new MenuEntry(this, QIcon(QPixmap(":/github.svg")));
+	auto about = new MenuEntry(this, QIcon(QPixmap(":/about.svg")));
 
 	table->button->setChecked(true);
 	discord->button->setCheckable(false);
