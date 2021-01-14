@@ -96,7 +96,7 @@ bool Updater::updateAvailable()
 	auto localVersion = QApplication::applicationVersion().toStdString();
 
 	// return Version(remoteVersion) > Version(localVersion);
-	return true;
+	return false;
 }
 
 void Updater::start()
