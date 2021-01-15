@@ -23,11 +23,12 @@
 #include <string>
 #include <sstream>
 #include <tuple>
-// #include <thread>
-// #include <chrono>
+#include <thread>
+#include <chrono>
 #include <filesystem>
 #include <fmt/format.h>
 #include <fileapi.h>
+#include <winnt.h>
 
 
 // statuses
@@ -120,8 +121,6 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 
 	if (fs::exists(filePath))
 	{
-		// using namespace std::chrono_literals;
-		// std::this_thread::sleep_for(500ms);
 		// read arena info from file
 		auto arenaInfo = PotatoClient::readArenaInfo(filePath);
 		if (!std::get<0>(arenaInfo))
@@ -277,7 +276,7 @@ std::tuple<bool, std::string> PotatoClient::readArenaInfo(const std::string& fil
 			nullptr
 	);
 
-	if (handle == INVALID_HANDLE_VALUE)
+	static auto fail = [&handle]()
 	{
 		DWORD err = GetLastError();
 		LPSTR lpMsgBuf;
@@ -291,12 +290,36 @@ std::tuple<bool, std::string> PotatoClient::readArenaInfo(const std::string& fil
 				(LPTSTR) &lpMsgBuf,
 				0, nullptr
 		);
-		// auto str = reinterpret_cast<std::string*>(lpMsgBuf);
 		Logger::Error("Failed to read arena info: {}", lpMsgBuf);
 		CloseHandle(handle);
 		return std::tuple<bool, std::string>{false, ""};
+	};
+
+	if (handle == INVALID_HANDLE_VALUE)
+	{
+		fail();
 	}
 
+	// try to wait for 1s for the file to get written to
+	using namespace std::chrono_literals;
+	LARGE_INTEGER fileSize;
+	auto startTime = std::chrono::high_resolution_clock::now();
+	auto now = std::chrono::high_resolution_clock::now();
+
+	while (std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime) < 1000ms)
+	{
+		if (!GetFileSizeEx(handle, &fileSize))
+			fail();
+		if (fileSize.QuadPart > 0)
+			break;
+		std::this_thread::sleep_for(100ms);
+		now = std::chrono::high_resolution_clock::now();
+	}
+
+	if (fileSize.QuadPart == 0)
+		fail();
+
+	// read the file
 	DWORD dwBytesRead;
 	static const size_t size = 16384;
 	static char buff[size];
