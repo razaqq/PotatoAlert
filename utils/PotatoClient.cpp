@@ -27,8 +27,7 @@
 #include <chrono>
 #include <filesystem>
 #include <fmt/format.h>
-#include <fileapi.h>
-#include <winnt.h>
+#include <windows.h>
 
 
 // statuses
@@ -122,20 +121,20 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 	if (fs::exists(filePath))
 	{
 		// read arena info from file
-		auto arenaInfo = PotatoClient::readArenaInfo(filePath);
-		if (!std::get<0>(arenaInfo))
+		auto&& [success, arenaInfo] = PotatoClient::readArenaInfo(filePath);
+		if (!success)
 		{
 			Logger::Error("Failed to read arena info from file.");
 			emit this->status(STATUS_ERROR, "Reading ArenaInfo");
 			return;
 		}
 
-		Logger::Debug(std::get<1>(arenaInfo));
+		Logger::Debug(arenaInfo);
 
 		nlohmann::json j;
 		try
 		{
-			j = nlohmann::json::parse(std::get<1>(arenaInfo));
+			j = nlohmann::json::parse(arenaInfo);
 		}
 		catch (nlohmann::json::parse_error& e)
 		{

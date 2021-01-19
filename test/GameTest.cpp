@@ -58,7 +58,7 @@ TEST_CASE( "GameTest_ReadPreferencesTest" )
 			"", "", "cwd", "", "", "", {},
 			"", "", false, false
 	};
-	REQUIRE( readPreferences(status) );
+	REQUIRE( readPreferences(status, status.gamePath) );
 	REQUIRE( status.gameVersion == "0.9.4.0" );
 	REQUIRE( status.region == "eu" );
 }

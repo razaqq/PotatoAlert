@@ -30,7 +30,7 @@ struct folderStatus
 folderStatus checkPath(const std::string& selectedPath);
 bool getResFolderPath(folderStatus& status);
 bool readEngineConfig(folderStatus& status, const char* resFolder);
-bool readPreferences(folderStatus& status);
+bool readPreferences(folderStatus& status, const std::string& basePath);
 void setReplaysFolder(folderStatus& status);
 
 }  // namespace PotatoAlert::Game

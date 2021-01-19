@@ -11,6 +11,7 @@
 #include "Game.hpp"
 #include "Config.hpp"
 #include <tinyxml2.h>
+#include <winver.h>
 
 
 using PotatoAlert::Game::folderStatus;
@@ -18,29 +19,86 @@ namespace fs = std::filesystem;
 
 namespace PotatoAlert::Game {
 
+// reads version number from a file
+std::pair<bool, std::string> getFileVersion(const std::string& file)
+{
+	DWORD size = GetFileVersionInfoSize(file.c_str(), nullptr);
+	if (size == 0)
+		return {false, ""};
+
+	char* versionInfo = new char[size];
+	if (!GetFileVersionInfo(file.c_str(), 0, 255, versionInfo))
+	{
+		delete[] versionInfo;
+		return {false, ""};
+	}
+
+	VS_FIXEDFILEINFO* out;
+	UINT outSize = 0;
+	if (!VerQueryValue(&versionInfo[0], "\\", (LPVOID*)&out, &outSize) && outSize > 0)
+	{
+		delete[] versionInfo;
+		return {false, ""};
+	}
+
+	std::string version = fmt::format("{}.{}.{}.{}",
+									  ( out->dwFileVersionMS >> 16 ) & 0xff,
+									  ( out->dwFileVersionMS >>  0 ) & 0xff,
+									  ( out->dwFileVersionLS >> 16 ) & 0xff,
+									  ( out->dwFileVersionLS >>  0 ) & 0xff
+									  );
+	delete[] versionInfo;
+	return {true, version};
+}
+
 // finds the res folder path in the currently selected directory
 bool getResFolderPath(folderStatus& status)
 {
 	// get newest folder version inside /bin folder
-	int folderVersion = -1;
-	auto binPath = fs::path(status.gamePath) / "bin";
-	if (fs::exists(binPath))
+
+	const fs::path binPath = fs::path(status.gamePath) / "bin";
+	if (!fs::exists(binPath))
 	{
-		for (const auto& entry : fs::directory_iterator(binPath))
+		Logger::Error("Bin folder does not exist: {}", binPath.string());
+		return false;
+	}
+
+	// try to find matching exe version to game version
+	for (const auto& entry : fs::directory_iterator(binPath))
+	{
+		if (!entry.is_directory())
+			continue;
+
+		const fs::path exe = (entry.path() / "bin32" / "WorldOfWarships32.exe");
+
+		auto&& [success, version] = getFileVersion(exe.string());
+		if (!success)
+			continue;
+
+		if (version == status.gameVersion)
 		{
-			if (entry.is_directory())
-			{
-				try
-				{
-					int v = std::stoi(entry.path().filename().string());
-					if (v > folderVersion)
-						folderVersion = v;
-				}
-				catch (std::invalid_argument& ia)
-				{
-					// ignore folders that aren't a valid version
-				}
-			}
+			status.folderVersion = entry.path().filename().string();
+			status.resFolderPath = (fs::path(status.gamePath) / "bin" / status.folderVersion).string();
+			return fs::exists(status.resFolderPath);
+		}
+	}
+
+	// fallback, take biggest version number
+	int folderVersion = -1;
+	for (const auto& entry : fs::directory_iterator(binPath))
+	{
+		if (!entry.is_directory())
+			continue;
+
+		try
+		{
+			const int v = std::stoi(entry.path().filename().string());
+			if (v > folderVersion)
+				folderVersion = v;
+		}
+		catch (const std::invalid_argument& ia)
+		{
+			// ignore folders that aren't a valid version
 		}
 	}
 
@@ -50,11 +108,9 @@ bool getResFolderPath(folderStatus& status)
 		status.resFolderPath = (fs::path(status.gamePath) / "bin" / status.folderVersion).string();
 		return fs::exists(status.resFolderPath);
 	}
-	else
-	{
-		Logger::Error("Could not find a valid res folder!");
-		return false;
-	}
+
+	Logger::Error("Could not find a valid res folder!");
+	return false;
 }
 
 // reads the engine config and sets values
@@ -127,18 +183,20 @@ bool readEngineConfig(folderStatus& status, const char* resFolder)
 }
 
 // reads game version and region from preferences.xml
-bool readPreferences(folderStatus& status)
+bool readPreferences(folderStatus& status, const std::string& basePath)
 {
 	// For some reason preferences.xml is not valid xml and so we have to parse it with regex instead of xml
-	std::string preferencesPath;
+	std::string preferencesPath = (fs::path(basePath) / "preferences.xml").string();
+	/*
 	if (status.preferencesPathBase == "cwd")
 		preferencesPath = (fs::path(status.gamePath) / "preferences.xml").string();
 	else if (status.preferencesPathBase == "exe_path")
 		preferencesPath = (fs::path(status.gamePath) / "bin" / status.folderVersion / "preferences.xml").string();
+	 */
 
 	if (!fs::exists(fs::path(preferencesPath)))
 	{
-		Logger::Error("Cannot find preferences.xml for reading in path: {}", preferencesPath);
+		Logger::Debug("Cannot find preferences.xml for reading in path: {}", preferencesPath);
 		return false;
 	}
 
@@ -211,7 +269,7 @@ void setReplaysFolder(folderStatus& status)
 
 folderStatus checkPath(const std::string& selectedPath)
 {
-	folderStatus status{.gamePath = selectedPath};
+	folderStatus status{.gamePath = fs::path(selectedPath).make_preferred().string()};
 
 	// check for replays folder override
 	if (PotatoConfig().get<bool>("override_replays_folder"))
@@ -225,6 +283,7 @@ folderStatus checkPath(const std::string& selectedPath)
 
 	status.steamVersion = fs::exists(gamePath / "bin" / "clientrunner");
 
+	readPreferences(status, status.gamePath);
 	if (!getResFolderPath(status))
 	{
 		status.statusText = "Failed to get res folder path";
@@ -234,12 +293,6 @@ folderStatus checkPath(const std::string& selectedPath)
 	if (!readEngineConfig(status, "res"))
 	{
 		status.statusText = "Failed to read engine config";
-		return status;
-	}
-
-	if (!readPreferences(status))
-	{
-		status.statusText = "Failed to read preferences";
 		return status;
 	}
 
