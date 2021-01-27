@@ -5,8 +5,11 @@
 #include <QString>
 #include <QObject>
 #include <string>
+#include <filesystem>
 #include <nlohmann/json.hpp>
 
+
+namespace fs = std::filesystem;
 
 namespace PotatoAlert {
 
@@ -26,9 +29,8 @@ public:
 	~Config() override;
 
 	void load();
-	void save();
-	void createDefault();
-	void addMissingKeys();
+	bool save();
+
 	[[nodiscard]] bool exists() const;
 
 	template <typename T> T get(const char* name) const;
@@ -36,8 +38,10 @@ public:
 
 	nlohmann::json j;
 private:
-	std::string filePath;
-	static std::string getFilePath(const char* fileName);
+	fs::path filePath;
+	static fs::path getFilePath(const char* fileName);
+	void addMissingKeys();
+	bool createDefault();
 signals:
 	void modified();
 };

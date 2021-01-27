@@ -64,9 +64,7 @@ int runMain(QApplication& app)
 				mainWindow->startUpdate(&u);
 			}
 
-	int exitCode = QApplication::exec();
-	PotatoConfig().save();
-	return exitCode;
+	return QApplication::exec();
 }
 
 #ifndef NDEBUG

@@ -38,15 +38,8 @@ Config::Config(const char* fileName)
 			{"language", 0}
 	};
 	this->filePath = Config::getFilePath(fileName);
-	if (this->exists())
-	{
-		this->load();
-		this->addMissingKeys();
-	}
-	else
-	{
-		this->createDefault();
-	}
+	this->load();
+	this->addMissingKeys();
 }
 
 Config::~Config()
@@ -56,49 +49,91 @@ Config::~Config()
 
 void Config::load()
 {
-	Logger::Debug("Trying to load config.");
+	Logger::Debug("Trying to load config...");
 	try
 	{
-		std::ifstream ifs(this->filePath);
-		this->j = json::parse(ifs);
-        Logger::Debug("Config loaded.");
+		if (!this->exists())
+		{
+			if (!this->createDefault())
+			{
+				Logger::Error("Failed to create default config.");
+				QApplication::exit(1);
+			}
+		}
+
+		std::ifstream file(this->filePath);
+		if (!file.is_open())
+		{
+			Logger::Error("Failed to open config file for reading.");
+			QApplication::exit(1);
+		}
+		this->j = json::parse(file);
+		file.close();
+		Logger::Debug("Config loaded.");
 	}
 	catch (json::exception& e)
 	{
-		Logger::Error("Cannot read config: {}", e.what());
-		try
-		{
-			std::string backupConfig = this->filePath.append(".bak");
-			if (fs::exists(backupConfig))
-				fs::remove(backupConfig);
-			fs::rename(this->filePath, backupConfig);
-			this->createDefault();
-		}
-		catch (fs::filesystem_error& e)
-		{
-			Logger::Error(e.what());
+		Logger::Error("Cannot parse config: {}", e.what());
+
+		if (this->createDefault())
+			this->load();
+		else
 			QApplication::exit(1);
-		}
 	}
 }
 
-void Config::save()
+bool Config::save()
 {
 	std::ofstream file(this->filePath);
+	if (!file.is_open())
+	{
+		Logger::Error("Failed to open config file for writing.");
+		return false;
+	}
 	file << this->j;
+	file.close();
+	return true;
 }
 
 bool Config::exists() const
 {
-	QDir d;
-	return d.exists(QString::fromStdString(this->filePath));
+	try
+	{
+		return fs::exists(this->filePath) && fs::is_regular_file(this->filePath);
+	}
+	catch (fs::filesystem_error& e)
+	{
+		// TODO: this is a bit wonky
+		Logger::Error("Error while checking config existence: {}", e.what());
+		return false;
+	}
 }
 
-void Config::createDefault()
+bool Config::createDefault()
 {
-	Logger::Info("Creating default config.");
-	this->j = g_defaultConfig;
-	this->save();
+	try
+	{
+		Logger::Info("Creating new default config.");
+		if (!this->exists())
+		{
+			this->j = g_defaultConfig;
+			return this->save();
+		}
+
+		Logger::Info("Creating backup of old config.");
+		fs::path backupConfig(this->filePath.string() + ".bak");  // TODO
+		if (fs::exists(backupConfig))
+			fs::remove(backupConfig);
+
+		fs::rename(this->filePath, backupConfig);
+		this->j = g_defaultConfig;
+		return this->save();
+	}
+	catch (fs::filesystem_error& e)
+	{
+		Logger::Error("Failed to create default config: {}", e.what());
+		return false;
+	}
 }
 
 void Config::addMissingKeys()
@@ -107,23 +142,42 @@ void Config::addMissingKeys()
 	{
 		if (!this->j.contains(it.key()))
 		{
-			Logger::Debug("Adding missing key {} to config.", it.key());
+			Logger::Info("Adding missing key '{}' to config.", it.key());
 			this->j[it.key()] = it.value();
 		}
 	}
 }
 
-template <typename T> T Config::get(const char* name) const
+fs::path Config::getFilePath(const char* fileName)
 {
-	T value;
+	const std::string root = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).toStdString();
+	const fs::path configPath = fs::path(root) / "PotatoAlert";
+
 	try
 	{
-		value = this->j[name].get<T>();
+		if (!fs::exists(configPath))
+			fs::create_directories(configPath);
+	}
+	catch (fs::filesystem_error& e)
+	{
+		Logger::Error("Can't create config dir: {}", e.what());
+	}
+
+	return (configPath / fileName);
+}
+
+template <typename T>
+T Config::get(const char* name) const
+{
+	try
+	{
+		return this->j[name].get<T>();
 	}
 	catch (json::exception& e)
 	{
-		std::cerr << e.what() << std::endl;
+		Logger::Error("Can't get key '{}' from config: {}", name, e.what());
 	}
+	T value;
 	return value;
 }
 template int Config::get(const char* name) const;
@@ -139,17 +193,6 @@ template void Config::set(const char* name, int value);
 template void Config::set(const char* name, bool value);
 template void Config::set(const char* name, std::string value);
 template void Config::set(const char* name, std::vector<std::string> value);
-
-std::string Config::getFilePath(const char* fileName)
-{
-	QString dirPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/PotatoAlert";
-
-	QDir d;
-	d.mkpath(dirPath);
-	d.setPath(dirPath);
-
-	return d.filePath(fileName).toStdString();
-}
 
 Config& PotatoAlert::PotatoConfig()
 {
