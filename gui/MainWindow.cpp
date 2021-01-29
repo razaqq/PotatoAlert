@@ -5,7 +5,6 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QSizeGrip>
-#include <QDockWidget>
 #include <QIcon>
 #include <QUrl>
 #include <QSettings>
@@ -50,13 +49,13 @@ void MainWindow::init()
 	this->centralW->setLayout(centralLayout);
 
 	// menubar dock widget
-	auto dock = new QDockWidget(this);
-	dock->setTitleBarWidget(new QWidget(this));
-	dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-	dock->setFeatures(QDockWidget::DockWidgetMovable);
-	dock->setMinimumHeight(100);
-	dock->setWidget(this->menuBar);
-	this->addDockWidget(Qt::LeftDockWidgetArea, dock);
+	const bool leftSide = PotatoConfig().get<bool>("menubar_leftside");
+	const auto side = leftSide ? Qt::DockWidgetArea::LeftDockWidgetArea : Qt::DockWidgetArea::RightDockWidgetArea;
+	this->addDockWidget(side, this->menuBar);
+	connect(this->menuBar, &VerticalMenuBar::dockLocationChanged, [](Qt::DockWidgetArea area)
+	{
+		PotatoConfig().set<bool>("menubar_leftside", area == Qt::DockWidgetArea::LeftDockWidgetArea);
+	});
 
 	this->settingsWidget = new SettingsWidget(this, this->pc);
 
@@ -75,20 +74,20 @@ void MainWindow::switchTab(int i)
 	switch (i)
 	{
 	case 0:  // stats table
-        this->activeWidget = this->statsWidget;
-        break;
+		this->activeWidget = this->statsWidget;
+		break;
 	case 1:  // settings
 		this->activeWidget = this->settingsWidget;
 		break;
 	case 2:  // discord
-        QDesktopServices::openUrl(QUrl("https://discord.gg/Ut8t8PA"));
-        return;
-    case 3:  // log
-        QDesktopServices::openUrl(QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/PotatoAlert"));
-        return;
-    case 4:  // github
-        QDesktopServices::openUrl(QUrl("https://github.com/razaqq/PotatoAlert"));
-        return;
+		QDesktopServices::openUrl(QUrl("https://discord.gg/Ut8t8PA"));
+		return;
+		case 3:  // log
+		QDesktopServices::openUrl(QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/PotatoAlert"));
+		return;
+		case 4:  // github
+		QDesktopServices::openUrl(QUrl("https://github.com/razaqq/PotatoAlert"));
+		return;
 	case 5:  // about
 		this->activeWidget = this->aboutWidget;
 		break;

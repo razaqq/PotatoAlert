@@ -2,12 +2,13 @@
 #pragma once
 
 #include <QWidget>
+#include <QDockWidget>
 #include <QButtonGroup>
 
 
 namespace PotatoAlert {
 
-class VerticalMenuBar : public QWidget
+class VerticalMenuBar : public QDockWidget
 {
 public:
 	explicit VerticalMenuBar(QWidget* parent);

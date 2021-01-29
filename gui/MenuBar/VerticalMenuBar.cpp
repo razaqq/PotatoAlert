@@ -7,20 +7,28 @@
 #include <QPixmap>
 #include <QDebug>
 #include <QButtonGroup>
+#include <QDockWidget>
 #include "VerticalMenuBar.hpp"
 #include "MenuEntry.hpp"
 
 
 using PotatoAlert::VerticalMenuBar;
 
-VerticalMenuBar::VerticalMenuBar(QWidget* parent) : QWidget(parent)
+VerticalMenuBar::VerticalMenuBar(QWidget* parent) : QDockWidget(parent)
 {
 	this->init();
 }
 
 void VerticalMenuBar::init()
 {
+	this->setAttribute(Qt::WA_StyledBackground, true);
 	this->setObjectName("menuBar");
+
+	this->setTitleBarWidget(new QWidget());
+
+	this->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+	this->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetVerticalTitleBar);
+	this->setMinimumHeight(100);
 
 	auto layout = new QVBoxLayout;
 	layout->setContentsMargins(0, 10, 0, 10);
@@ -64,5 +72,5 @@ void VerticalMenuBar::init()
 	layout->addWidget(github, 0, Qt::AlignBottom | Qt::AlignHCenter);
 	layout->addWidget(about, 0, Qt::AlignBottom | Qt::AlignHCenter);
 
-	this->setLayout(layout);
+	this->titleBarWidget()->setLayout(layout);
 }

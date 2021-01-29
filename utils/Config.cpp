@@ -35,7 +35,8 @@ Config::Config(const char* fileName)
 			{"game_folder", ""},
 			{"override_replays_folder", false},
 			{"replays_folder", ""},
-			{"language", 0}
+			{"language", 0},
+			{"menubar_leftside", true}
 	};
 	this->filePath = Config::getFilePath(fileName);
 	this->load();
