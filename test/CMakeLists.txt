@@ -11,7 +11,7 @@ enable_testing()
 add_executable(PotatoTest GameTest.cpp VersionTest.cpp)
 
 target_link_libraries(PotatoTest
-        utilslib
+        utils_lib
         Catch2::Test
         )
 
