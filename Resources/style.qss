@@ -147,6 +147,25 @@ QTableView
 {
   background-color: palette(link-visited);
   alternate-background-color: palette(midlight);
+  border-style: none;
+}
+
+QTableWidget
+{
+  border-left: 1px solid palette(alternate-base);
+}
+
+QHeaderView::section:horizontal
+{
+  border-top: 1px solid palette(alternate-base);
+}
+
+QHeaderView::section
+{
+  background-color: #323232;
+  border-style: none;
+  border-bottom: 1px solid palette(alternate-base);
+  border-right: 1px solid palette(alternate-base);
 }
 
 QMainWindow::separator
@@ -220,7 +239,7 @@ QMainWindow::separator
 #menuBar
 {
   /* border-radius: 15px; */
-  background-color: palette(base); /* base */
+  background-color: palette(base);
 }
 
 #settingsWidget, #aboutWidget
