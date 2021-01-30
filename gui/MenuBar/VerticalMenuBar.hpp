@@ -12,7 +12,7 @@ class VerticalMenuBar : public QDockWidget
 {
 public:
 	explicit VerticalMenuBar(QWidget* parent);
-	QButtonGroup* btnGroup = new QButtonGroup(this);
+	QButtonGroup* btnGroup = new QButtonGroup();
 private:
 	void init();
 };

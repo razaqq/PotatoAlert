@@ -51,8 +51,8 @@ target_link_libraries(PotatoAlert
         Qt5::Widgets
         Qt5::Core
         Qt5::Gui
-        utilslib
-        guilib
+        utils_lib
+        gui_lib
         Dwmapi
         )
 

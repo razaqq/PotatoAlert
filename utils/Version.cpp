@@ -9,7 +9,7 @@
 
 using PotatoAlert::Version;
 
-Version::Version(std::string &versionString)
+Version::Version(std::string& versionString)
 {
 	this->parse(versionString);
 }
@@ -25,7 +25,7 @@ void Version::parse(std::string &versionString)
 	std::istringstream ss1(versionString);
 	std::string token;
 	while (std::getline(ss1, token, '.'))
-		{
+	{
 		std::istringstream ss2(token);
 		int val;
 		ss2 >> val;
@@ -40,7 +40,7 @@ bool PotatoAlert::operator== (const Version& v1, const Version& v2)
 	if (v1.success != v2.success)
 		return false;
 
-	int j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
+	const int j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
 	for (int i = 0; i < j; i++)
 	{
 		int n = i < v1.versionInfo.size() ? v1.versionInfo[i] : 0;

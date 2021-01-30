@@ -22,8 +22,8 @@ private:
 	QLabel* team1DmgLabel = new QLabel;
 	QLabel* team2WrLabel = new QLabel;
 	QLabel* team2DmgLabel = new QLabel;
-    QLabel* team1RegionLabel = new QLabel;
-    QLabel* team2RegionLabel = new QLabel;
+	QLabel* team1RegionLabel = new QLabel;
+	QLabel* team2RegionLabel = new QLabel;
 
 	QLabel* team1Wr = new QLabel;
 	QLabel* team1Dmg = new QLabel;
@@ -38,4 +38,4 @@ private:
 	QLabel* team2Region = new QLabel;
 };
 
-} // namespace PotatoAlert
+}  // namespace PotatoAlert

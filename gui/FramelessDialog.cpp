@@ -27,7 +27,7 @@ void FramelessDialog::showEvent(QShowEvent* event)
 	HWND winId = reinterpret_cast<HWND>(this->windowHandle()->winId());
 
 	// edit style
-	DWORD style = GetWindowLong(winId, GWL_STYLE);
+	LONG style = GetWindowLong(winId, GWL_STYLE);
 	SetWindowLongPtr(winId, GWL_STYLE, style | WS_MAXIMIZEBOX | WS_THICKFRAME | WS_CAPTION);
 
 	// add shadow

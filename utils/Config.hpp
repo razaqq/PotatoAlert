@@ -43,7 +43,10 @@ private:
 	void addMissingKeys();
 	bool createDefault();
 signals:
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "NotImplementedFunctions"
 	void modified();
+#pragma clang diagnostic pop
 };
 
 Config& PotatoConfig();

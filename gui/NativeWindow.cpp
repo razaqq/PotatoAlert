@@ -67,7 +67,7 @@ void NativeWindow::showEvent(QShowEvent* event)
 	HWND winid = reinterpret_cast<HWND>(this->windowHandle()->winId());
 
 	// edit style
-	DWORD style = ::GetWindowLong(winid, GWL_STYLE);
+	LONG style = GetWindowLong(winid, GWL_STYLE);
 	SetWindowLongPtr(winid, GWL_STYLE, style | WS_MAXIMIZEBOX | WS_THICKFRAME | WS_CAPTION);
 
 	// add shadow

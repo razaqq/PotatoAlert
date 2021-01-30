@@ -13,9 +13,9 @@ set(
         Version.cpp
 )
 
-add_library(utilslib STATIC ${utils_src})
+add_library(utils_lib STATIC ${utils_src})
 target_link_libraries(
-        utilslib
+        utils_lib
         fmt::fmt-header-only
         tinyxml2
         zip

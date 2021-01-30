@@ -20,5 +20,5 @@ set(
         StatsWidget/StatsWidget.cpp
         FramelessDialog.cpp)
 
-add_library(guilib STATIC ${gui_src})
-target_link_libraries(guilib utilslib Qt5::Widgets)
+add_library(gui_lib STATIC ${gui_src})
+target_link_libraries(gui_lib utils_lib Qt5::Widgets)

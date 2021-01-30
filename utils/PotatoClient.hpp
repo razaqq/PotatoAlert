@@ -41,11 +41,14 @@ private:
 	folderStatus fStatus;
 	CSVWriter csvWriter;
 signals:
-	void teamsReady(std::vector<teamType> team1);
-	void avgReady(std::vector<QString> avgs);
-	void clansReady(std::vector<QString> clans);
-	void wowsNumbersReady(std::vector<std::vector<QString>> wowsNumbers);
-	void status(const int statusID, const std::string& statusText);
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "NotImplementedFunctions"
+	void teamsReady(const std::vector<teamType>& team1);
+	void avgReady(const std::vector<QString>& avgs);
+	void clansReady(const std::vector<QString>& clans);
+	void wowsNumbersReady(const std::vector<std::vector<QString>>& wowsNumbers);
+	void status(int statusID, const std::string& statusText);
+#pragma clang diagnostic pop
 };
 
 }  // namespace PotatoAlert

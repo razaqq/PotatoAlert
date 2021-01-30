@@ -191,14 +191,14 @@ void MainWindow::startUpdate(Updater* updater)
 	dialog->setLayout(vLayout);
 
 	connect(updater, &Updater::downloadProgress,
-	[progressBar, progressLabel, speedLabel](int percent, QString& progress, QString& speed)
+	[progressBar, progressLabel, speedLabel](int percent, const QString& progress, const QString& speed)
 	{
 		progressBar->setValue(percent);
 		progressLabel->setText(progress);
 		speedLabel->setText(speed);
 	});
 
-	connect(updater, &Updater::errorOccurred, [dialog](QString& text)
+	connect(updater, &Updater::errorOccurred, [dialog](const QString& text)
 	{
 		// clear dialog from progress
 		qDeleteAll(dialog->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));

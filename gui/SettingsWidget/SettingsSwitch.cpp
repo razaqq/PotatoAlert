@@ -58,7 +58,7 @@ void SettingsSwitch::init()
 	this->setFixedSize(this->sizeHint());
 }
 
-void SettingsSwitch::paintEvent(QPaintEvent* event)
+void SettingsSwitch::paintEvent(QPaintEvent*)
 {
 	auto p = new QPainter(this);
 	p->setRenderHint(QPainter::Antialiasing, true); 

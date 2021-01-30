@@ -119,7 +119,7 @@ void TitleBar::onBtnRestoreClicked()
 	this->btnRestore->setVisible(false);
 }
 
-void TitleBar::mouseDoubleClickEvent(QMouseEvent* e)
+void TitleBar::mouseDoubleClickEvent(QMouseEvent*)
 {
 	if (this->parentWindow->windowState() == Qt::WindowMaximized)
 		this->onBtnRestoreClicked();

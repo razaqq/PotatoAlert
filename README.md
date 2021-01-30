@@ -9,7 +9,7 @@
 
 ## Screenshots
 
-![default](https://i.imgur.com/ra4l1Kd.png)
+![default](.github/potatoalert.png)
 
 ## Features
 - Compact layout, so should easily fit on your second monitor

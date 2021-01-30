@@ -62,7 +62,10 @@ private:
 	QToolButton* replaysFolderButton = new QToolButton();
 	std::function<void(bool)> toggleReplaysFolderOverride;
 signals:
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "NotImplementedFunctions"
 	void done();
+#pragma clang diagnostic pop
 };
 
 }  // namespace PotatoAlert
