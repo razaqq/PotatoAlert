@@ -55,7 +55,7 @@ void PotatoClient::init()
 
 	// handle error
 	connect(this->socket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), [=](QAbstractSocket::SocketError error)
-    {
+	{
 		switch (error)
 		{
 			case QAbstractSocket::ConnectionRefusedError:
@@ -81,8 +81,8 @@ void PotatoClient::init()
 				emit this->status(STATUS_ERROR, "Websocket Error");
 				break;
 		}
-        Logger::Error(this->socket->errorString().toStdString());
-    });
+		Logger::Error(this->socket->errorString().toStdString());
+	});
 
 	connect(this->socket, &QWebSocket::textMessageReceived, this, &PotatoClient::onResponse);
 	connect(this->watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::onDirectoryChanged);
