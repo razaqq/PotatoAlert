@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package>
-    <DisplayName>The root component</DisplayName>
+    <DisplayName>PotatoAlert</DisplayName>
     <Description>Install this example.</Description>
     <Version>0.1.0-1</Version>
     <ReleaseDate>2010-09-21</ReleaseDate>

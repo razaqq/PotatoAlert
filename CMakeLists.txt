@@ -15,7 +15,7 @@ generate_product_version(
         NAME ${PROJECT_NAME}
         FILE_DESCRIPTION "Stats tool for World of Warships"
         COMPANY_NAME github.com/razaqq
-        ICON Resources/potato.ico
+        ICON ${PROJECT_SOURCE_DIR}/Resources/potato.ico
         VERSION_MAJOR 3
         VERSION_MINOR 0
         VERSION_PATCH ${BUILD_COUNTER}
@@ -29,7 +29,7 @@ include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/nlohmann_json/include)
 include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/fmt/include)
 include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/zip/src)
 
-include_directories(${PROJECT_SOURCE_DIR}/utils)
+include_directories(${PROJECT_SOURCE_DIR}/util)
 include_directories(${PROJECT_SOURCE_DIR}/gui)
 include_directories(${PROJECT_SOURCE_DIR}/Resources)
 
@@ -37,9 +37,10 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2)
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/fmt)
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/zip)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/utils)
+add_subdirectory(${PROJECT_SOURCE_DIR}/util)
 add_subdirectory(${PROJECT_SOURCE_DIR}/gui)
 add_subdirectory(${PROJECT_SOURCE_DIR}/test)
+add_subdirectory(${PROJECT_SOURCE_DIR}/updater)
 
 add_executable(PotatoAlert main.cpp Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
 
@@ -51,8 +52,8 @@ target_link_libraries(PotatoAlert
         Qt5::Widgets
         Qt5::Core
         Qt5::Gui
-        utils_lib
-        gui_lib
+        util
+        gui
         Dwmapi
         )
 

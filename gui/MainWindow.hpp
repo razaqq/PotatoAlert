@@ -7,7 +7,6 @@
 #include <QHBoxLayout>
 #include "Config.hpp"
 #include "Logger.hpp"
-#include "Updater.hpp"
 #include "PotatoClient.hpp"
 #include "StatsWidget/StatsWidget.hpp"
 #include "SettingsWidget/SettingsWidget.hpp"
@@ -22,7 +21,6 @@ class MainWindow : public QMainWindow
 public:
 	explicit MainWindow(PotatoClient* pc);
 	int confirmUpdate();
-	void startUpdate(Updater* updater);
 protected:
 	void init();
 	PotatoClient* pc;

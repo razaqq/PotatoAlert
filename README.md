@@ -43,7 +43,7 @@ If you think you cannot follow this simple rule, then you hereby don't have my p
 - Call cmake
 ```console
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64 -DCPACK_IFW_ROOT=C:/Qt/Tools/QtInstallerFramework -DCMAKE_RC_COMPILER=RC
-cmake --build build --target PotatoAlert
+cmake --build build --target PotatoAlert PotatoUpdater
 cpack -G IFW
 ```
 - You find the build output in `.\build\`

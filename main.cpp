@@ -11,7 +11,7 @@
 #include "Config.hpp"
 #include "PotatoClient.hpp"
 #include "Palette.hpp"
-#include "Updater.hpp"
+#include "updater/Updater.hpp"
 #include "MainWindow.hpp"
 #include "NativeWindow.hpp"
 #include "VersionInfo.h"
@@ -26,7 +26,7 @@ using PotatoAlert::NativeWindow;
 using PotatoAlert::PotatoClient;
 using PotatoAlert::Logger;
 using PotatoAlert::Config;
-using PotatoAlert::Updater;
+using PotatoUpdater::Updater;
 using PotatoAlert::PotatoConfig;
 
 int runMain(QApplication& app)
@@ -55,14 +55,14 @@ int runMain(QApplication& app)
 	QApplication::sendEvent(mainWindow, &event);
 
 	// check if there is a new version available
-	Updater u;
 	if (PotatoConfig().get<bool>("update_notifications"))
 		if (Updater::updateAvailable())
 			if (mainWindow->confirmUpdate())
-			{
-				u.start();
-				mainWindow->startUpdate(&u);
-			}
+				if (Updater::createProcess())
+					ExitProcess(0);
+
+	if (QApplication::arguments().contains("--changelog"))
+		;  // TODO: add changelog window
 
 	return QApplication::exec();
 }
@@ -78,9 +78,7 @@ int main(int argc, char* argv[])
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	Q_INIT_RESOURCE(PotatoAlert);
-	int argc = 1;
-	char* argv[] = {_strdup(""), nullptr};  // TODO: parse command line args properly
-	QApplication app(argc, reinterpret_cast<char **>(&argv));
+	QApplication app(__argc, __argv);
 	return runMain(app);
 }
 #endif

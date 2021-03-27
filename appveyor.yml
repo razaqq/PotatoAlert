@@ -27,12 +27,12 @@ before_build:
 build_script:
   - cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja -DCMAKE_PREFIX_PATH=C:\Qt\5.15\msvc2019_64
     -DCPACK_IFW_ROOT=E:/Qt/Tools/QtInstallerFramework -DCMAKE_RC_COMPILER=RC
-  - cmake --build build --target PotatoAlert
-  - cmake --build build --target PotatoTest
+  - cmake --build build --target PotatoAlert PotatoUpdater PotatoTest
 
 after_build:
   - cd %APPVEYOR_BUILD_FOLDER%\build
-  - 7z a PotatoAlert.zip -r .\PotatoAlert.exe .\package\*
+  - copy updater\PotatoUpdater.exe .
+  - 7z a PotatoAlert.zip -r .\PotatoAlert.exe .\PotatoUpdater.exe .\package\*
 
 test_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build\test

@@ -18,7 +18,7 @@ set(
         StatsWidget/StatsTable.cpp
         StatsWidget/StatsTeamFooter.cpp
         StatsWidget/StatsWidget.cpp
-        FramelessDialog.cpp)
+        FramelessDialog.cpp ../updater/UpdaterGui.cpp ../updater/UpdaterGui.hpp)
 
-add_library(gui_lib STATIC ${gui_src})
-target_link_libraries(gui_lib utils_lib Qt5::Widgets)
+add_library(gui STATIC ${gui_src})
+target_link_libraries(gui util Qt5::Widgets)
