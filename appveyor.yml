@@ -31,7 +31,7 @@ build_script:
 
 after_build:
   - cd %APPVEYOR_BUILD_FOLDER%\build
-  - copy updater\PotatoUpdater.exe .
+  - mv updater\PotatoUpdater.exe .
   - 7z a PotatoAlert.zip -r .\PotatoAlert.exe .\PotatoUpdater.exe .\package\*
 
 test_script:
