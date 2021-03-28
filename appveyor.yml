@@ -8,7 +8,7 @@ platform:
 environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      CMAKE_OPTIONS: -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_PREFIX_PATH=C:\Qt\5.15.1\msvc2019_64
+      CMAKE_OPTIONS: -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe
       MSVC_SETUP_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat
       MSVC_SETUP_ARG: amd64
       CC: clang
