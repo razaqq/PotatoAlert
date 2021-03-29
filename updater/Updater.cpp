@@ -21,8 +21,6 @@
 #include <zip.h>
 
 
-#include <QtDebug>
-
 using nlohmann::json;
 using PotatoUpdater::Updater;
 using PotatoAlert::Version;

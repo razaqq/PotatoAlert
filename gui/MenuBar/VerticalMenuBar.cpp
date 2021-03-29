@@ -5,7 +5,6 @@
 #include <QSizePolicy>
 #include <QIcon>
 #include <QPixmap>
-#include <QDebug>
 #include <QButtonGroup>
 #include <QDockWidget>
 #include "VerticalMenuBar.hpp"

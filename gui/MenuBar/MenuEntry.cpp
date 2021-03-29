@@ -6,7 +6,6 @@
 #include <QLayout>
 #include <QSize>
 #include <QVBoxLayout>
-#include <QDebug>
 #include "MenuEntry.hpp"
 
 
