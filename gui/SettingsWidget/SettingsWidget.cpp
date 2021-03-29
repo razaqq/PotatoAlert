@@ -26,7 +26,7 @@
 #include "StringTable.hpp"
 
 
-static const int LABEL_WIDTH = 220;
+static const int LABEL_WIDTH = 280;
 static const int ROW_HEIGHT = 20;
 
 using PotatoAlert::SettingsWidget;
