@@ -15,6 +15,7 @@
 #include "MainWindow.hpp"
 #include "NativeWindow.hpp"
 #include "VersionInfo.h"
+#include "FramelessWindowsManager.hpp"
 #include <Windows.h>
 #include <shellapi.h>
 #include <io.h>
@@ -29,10 +30,17 @@ using PotatoAlert::Config;
 using PotatoUpdater::Updater;
 using PotatoAlert::PotatoConfig;
 
-int runMain(QApplication& app)
+int runMain(int argc, char* argv[])
 {
+	Q_INIT_RESOURCE(PotatoAlert);
+
 	QApplication::setOrganizationName(PRODUCT_COMPANY_NAME);
 	QApplication::setApplicationVersion(PRODUCT_VERSION_FULL_STR);
+
+	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
+	QApplication app(argc, argv);
 
 	QFont font = QApplication::font();
 	font.setStyleStrategy(QFont::PreferAntialias);
@@ -70,15 +78,11 @@ int runMain(QApplication& app)
 #ifndef NDEBUG
 int main(int argc, char* argv[])
 {
-	Q_INIT_RESOURCE(PotatoAlert);
-	QApplication app(argc, argv);
-	return runMain(app);
+	return runMain(argc, argv);
 }
 #else
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	Q_INIT_RESOURCE(PotatoAlert);
-	QApplication app(__argc, __argv);
-	return runMain(app);
+	return runMain(__argc, __argv);
 }
 #endif

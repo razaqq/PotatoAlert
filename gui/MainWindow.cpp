@@ -43,6 +43,7 @@ void MainWindow::init()
 
 	this->layout()->setContentsMargins(0, 0, 0, 0);
 	this->layout()->setSpacing(0);
+
 	this->centralLayout->setContentsMargins(0, 0, 0, 0);
 	this->centralLayout->setSpacing(0);
 	this->centralW->setLayout(centralLayout);

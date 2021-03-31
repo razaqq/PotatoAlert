@@ -17,6 +17,7 @@ class TitleBar : public QWidget
 public:
 	explicit TitleBar(QWidget* parent);
 	int btnStartX();
+	[[nodiscard]] QObjectList getIgnores() const { return ignore; };
 private:
 	QWidget* parentWindow;
 
@@ -33,6 +34,7 @@ private:
 	void onBtnMinimizeClicked();
 	void onBtnMaximizeClicked();
 	void onBtnRestoreClicked();
+	QObjectList ignore = { btnClose, btnMaximize, btnMinimize, btnRestore };
 };
 
 }  // namespace PotatoAlert

@@ -13,8 +13,11 @@ using PotatoUpdater::Updater;
 using PotatoUpdater::UpdaterGui;
 
 
-int runMain(QApplication& app)
+int runMain(int argc, char* argv[])
 {
+	Q_INIT_RESOURCE(PotatoAlert);
+	QApplication app(argc, argv);
+
 	if (QApplication::arguments().contains("--clear"))
 	{
 		Updater::removeTrash();
@@ -37,15 +40,11 @@ int runMain(QApplication& app)
 #ifndef NDEBUG
 int main(int argc, char* argv[])
 {
-	Q_INIT_RESOURCE(PotatoAlert);
-	QApplication app(argc, argv);
-	return runMain(app);
+	return runMain(argc, argv);
 }
 #else
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	Q_INIT_RESOURCE(PotatoAlert);
-	QApplication app(__argc, __argv);
-	return runMain(app);
+	return runMain(__argc, __argv);
 }
 #endif

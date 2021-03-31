@@ -18,7 +18,7 @@ generate_product_version(
         ICON ${PROJECT_SOURCE_DIR}/Resources/potato.ico
         VERSION_MAJOR 3
         VERSION_MINOR 0
-        VERSION_PATCH 0
+        VERSION_PATCH 1
         VERSION_REVISION ${BUILD_REVISION}
 )
 
@@ -32,6 +32,7 @@ include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/zip/src)
 include_directories(${PROJECT_SOURCE_DIR}/util)
 include_directories(${PROJECT_SOURCE_DIR}/gui)
 include_directories(${PROJECT_SOURCE_DIR}/Resources)
+include_directories(${PROJECT_SOURCE_DIR}/framelessHelper)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2)
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/fmt)
@@ -41,6 +42,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/util)
 add_subdirectory(${PROJECT_SOURCE_DIR}/gui)
 add_subdirectory(${PROJECT_SOURCE_DIR}/test)
 add_subdirectory(${PROJECT_SOURCE_DIR}/updater)
+add_subdirectory(${PROJECT_SOURCE_DIR}/framelessHelper)
 
 add_executable(PotatoAlert main.cpp Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
 
@@ -54,7 +56,6 @@ target_link_libraries(PotatoAlert
         Qt5::Gui
         util
         gui
-        Dwmapi
         )
 
 include(packaging)
