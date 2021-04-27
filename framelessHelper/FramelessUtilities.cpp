@@ -153,7 +153,7 @@ static inline void expblur(QImage &img, const qreal radius, const bool improvedQ
 		}
 	}
 
-	QImage temp(img.width(), img.height(), img.format());
+	QImage temp(img.height(), img.width(), img.format());
 	temp.setDevicePixelRatio(img.devicePixelRatio());
 
 	if (transposed >= 0)
