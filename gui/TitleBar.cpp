@@ -126,8 +126,3 @@ void TitleBar::mouseDoubleClickEvent(QMouseEvent*)
 	else
 		this->onBtnMaximizeClicked();
 }
-
-int TitleBar::btnStartX()
-{
-	return this->btnMinimize->x();
-}

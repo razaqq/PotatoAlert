@@ -8,6 +8,7 @@
 #include <variant>
 #include "StatsWidget.hpp"
 #include "StatsHeader.hpp"
+#include "PotatoClient.hpp"
 
 
 using PotatoAlert::StatsWidget;
@@ -70,9 +71,9 @@ void StatsWidget::fillTables(std::vector<teamType> teams)
 	}
 }
 
-void StatsWidget::setStatus(const int statusID, const std::string& statusText)
+void StatsWidget::setStatus(Status status, const std::string& statusText)
 {
-	this->header->setStatus(statusID, statusText);
+	this->header->setStatus(status, statusText);
 }
 
 void StatsWidget::setAverages(const std::vector<QString>& avg)

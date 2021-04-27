@@ -16,7 +16,6 @@ class TitleBar : public QWidget
 	Q_OBJECT
 public:
 	explicit TitleBar(QWidget* parent);
-	int btnStartX();
 	[[nodiscard]] QObjectList getIgnores() const { return ignore; };
 private:
 	QWidget* parentWindow;

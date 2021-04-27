@@ -10,6 +10,7 @@
 #include "StatsTable.hpp"
 #include "StatsHeader.hpp"
 #include "StatsTeamFooter.hpp"
+#include "PotatoClient.hpp"
 
 typedef std::vector<std::vector<std::variant<QLabel*, QTableWidgetItem*>>> teamType;
 
@@ -20,7 +21,7 @@ class StatsWidget : public QWidget
 public:
 	explicit StatsWidget(QWidget* parent);
 	void fillTables(std::vector<teamType> teams);
-	void setStatus(int statusID, const std::string& statusText);
+	void setStatus(Status status, const std::string& statusText);
 	void setAverages(const std::vector<QString>& avg = { "0.0%", "", "0", "", "0.0%", "", "0", "" });
 	void setClans(const std::vector<QString>& clans = {});
 	void setWowsNumbers(const std::vector<std::vector<QString>>& wowsNumbers);

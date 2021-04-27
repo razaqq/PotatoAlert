@@ -1,6 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "PotatoClient.hpp"
 #include <QWidget>
 #include <QLabel>
 #include <QMovie>
@@ -16,7 +17,7 @@ class StatsHeader : public QWidget
 	Q_OBJECT
 public:
 	explicit StatsHeader(QWidget* parent);
-	void setStatus(int statusID, const std::string& statusText);
+	void setStatus(Status status, const std::string& statusText);
 private:
 	void init();
 	void changeEvent(QEvent* event) override;

@@ -2,6 +2,7 @@
 
 #include "StatsHeader.hpp"
 #include "StringTable.hpp"
+#include "PotatoClient.hpp"
 #include "Config.hpp"
 #include <QWidget>
 #include <QLabel>
@@ -11,11 +12,6 @@
 
 
 using PotatoAlert::StatsHeader;
-
-// statuses
-#define STATUS_READY 0
-#define STATUS_LOADING 1
-#define STATUS_ERROR 2
 
 StatsHeader::StatsHeader(QWidget* parent) : QWidget(parent)
 {
@@ -90,22 +86,22 @@ void StatsHeader::changeEvent(QEvent* event)
 	}
 }
 
-void StatsHeader::setStatus(int statusID, const std::string& text)
+void StatsHeader::setStatus(Status status, const std::string& text)
 {
 	this->statusText->setText(QString::fromStdString(text));
 	this->statusIcon->clear();
 
-	switch (statusID)
+	switch (status)
 	{
-	case STATUS_READY:
+	case Ready:
 		loading->stop();
 		this->statusIcon->setPixmap(this->ready);
 		break;
-	case STATUS_LOADING:
+	case Loading:
 		this->statusIcon->setMovie(this->loading);
 		loading->start();
 		break;
-	case STATUS_ERROR:
+	case Error:
 		loading->stop();
 		this->statusIcon->setPixmap(this->error);
 		break;

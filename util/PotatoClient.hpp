@@ -20,6 +20,13 @@ typedef std::vector<std::vector<std::variant<QLabel *, QTableWidgetItem *>>> tea
 
 namespace PotatoAlert {
 
+enum Status
+{
+	Ready,
+	Loading,
+	Error
+};
+
 class PotatoClient : public QObject
 {
 	Q_OBJECT
@@ -47,7 +54,7 @@ signals:
 	void avgReady(const std::vector<QString>& avgs);
 	void clansReady(const std::vector<QString>& clans);
 	void wowsNumbersReady(const std::vector<std::vector<QString>>& wowsNumbers);
-	void status(int statusID, const std::string& statusText);
+	void status(PotatoAlert::Status status, const std::string& statusText);
 #pragma clang diagnostic pop
 };
 
