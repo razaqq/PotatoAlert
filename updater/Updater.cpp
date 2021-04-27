@@ -28,7 +28,6 @@ using PotatoAlert::Logger;
 namespace fs = std::filesystem;
 
 // needs libssl-1_1-x64.dll and libcrypto-1_1-x64.dll from OpenSSL
-// static std::string_view updateURL = "https://ci.appveyor.com/api/projects/razaqq/potatoalert2/artifacts/build/PotatoAlert.zip";
 static std::string_view updateURL = "https://github.com/razaqq/PotatoAlert/releases/latest/download/PotatoAlert.zip";
 static std::string_view versionURL = "https://api.github.com/repos/razaqq/PotatoAlert/releases/latest";
 

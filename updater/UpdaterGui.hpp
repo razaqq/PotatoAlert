@@ -13,7 +13,6 @@ class UpdaterGui : FramelessDialog
 {
 public:
 	explicit UpdaterGui(Updater* updater);
-
 };
 
 }  // namespace PotatoAlert
