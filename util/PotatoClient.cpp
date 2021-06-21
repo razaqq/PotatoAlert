@@ -1,31 +1,36 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "PotatoClient.hpp"
 #include "Config.hpp"
-#include "Logger.hpp"
 #include "Game.hpp"
-#include <StatsParser.hpp>
-#include <PotatoClient.hpp>
-#include <QUrl>
+#include "Json.hpp"
+#include "Logger.hpp"
+#include "StatsParser.hpp"
+#include <QColor>
 #include <QDir>
-#include <QObject>
-#include <QLabel>
-#include <QFileSystemWatcher>
 #include <QFileInfo>
-#include <QTextStream>
+#include <QFileSystemWatcher>
 #include <QIODevice>
-#include <QWebSocket>
+#include <QLabel>
+#include <QObject>
 #include <QSizePolicy>
+#include <QString>
 #include <QTableWidgetItem>
+#include <QTextStream>
+#include <QUrl>
+#include <QWebSocket>
+#include <Windows.h>
+#include <chrono>
+#include <filesystem>
 #include <format>
 #include <iostream>
-#include <string>
+#include <optional>
 #include <sstream>
-#include <tuple>
+#include <string>
 #include <thread>
 
 
 using PotatoAlert::PotatoClient;
-using nlohmann::json;
 namespace fs = std::filesystem;
 
 const char* wsAddr = "ws://www.perry-swift.de:33333";
@@ -120,14 +125,11 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 
 		Logger::Debug(arenaInfo.value());
 
-		nlohmann::json j;
-		try
+		json j;
+		sax_no_exception sax(j);
+		if (!json::sax_parse(arenaInfo.value(), &sax))
 		{
-			j = nlohmann::json::parse(arenaInfo);
-		}
-		catch (nlohmann::json::parse_error& e)
-		{
-			Logger::Error("Failed to parse arena info file to JSON: {}", e.what());
+			Logger::Error("Failed to Parse arena info file as JSON.");
 			emit this->status(Error, "JSON Parse Error");
 			return;
 		}

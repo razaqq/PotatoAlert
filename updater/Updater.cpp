@@ -3,6 +3,7 @@
 #include "Updater.hpp"
 #include "Logger.hpp"
 #include "Version.hpp"
+#include "Json.hpp"
 #include <chrono>
 #include <filesystem>
 #include <format>
@@ -54,18 +55,10 @@ bool Updater::UpdateAvailable()
 	}
 
 	json j;
-	try
+	sax_no_exception sax(j);
+	if (!json::sax_parse(reply->readAll().toStdString(), &sax))
 	{
-		j = json::parse(reply->readAll().toStdString());
-	}
-	catch (json::parse_error& e)
-	{
-		Logger::Error("Failed to parse github api response as JSON: {}", e.what());
-		return false;
-	}
-	catch (json::type_error& e)
-	{
-		Logger::Error("{}", e.what());
+		Logger::Error("ParseError while parsing github api response as JSON.");
 		return false;
 	}
 

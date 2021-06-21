@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Logger.hpp"
+#include "Json.hpp"
 #include <QString>
 #include <QObject>
 #include <string>

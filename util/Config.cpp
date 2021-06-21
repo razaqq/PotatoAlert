@@ -2,7 +2,7 @@
 
 #include "Config.hpp"
 #include "Logger.hpp"
-#include "Config.hpp"
+#include "Json.hpp"
 #include <QDir>
 #include <QStandardPaths>
 #include <QApplication>
@@ -10,13 +10,11 @@
 #include <fstream>
 #include <filesystem>
 #include <string>
-#include <nlohmann/json.hpp>
 
 
 namespace fs = std::filesystem;
 
 using PotatoAlert::Config;
-using nlohmann::json;
 
 
 static json g_defaultConfig;
@@ -79,13 +77,11 @@ void Config::Load()
 		Logger::Error("Failed to open config file for reading.");
 		QApplication::exit(1);
 	}
-		this->j = json::parse(file);
-		file.close();
-		Logger::Debug("Config loaded.");
-	}
-	catch (json::exception& e)
+
+	sax_no_exception sax(this->j);
+	if (!json::sax_parse(file, &sax))
 	{
-		Logger::Error("Cannot parse config: {}", e.what());
+		Logger::Error("Failed to Parse config as json.");
 
 		if (this->CreateDefault())
 			this->Load();
@@ -112,16 +108,20 @@ bool Config::Save()
 
 bool Config::Exists() const noexcept
 {
-	try
+	std::error_code ec;
+	bool exists = fs::exists(this->filePath, ec);
+	if (ec)
 	{
-		return fs::exists(this->filePath) && fs::is_regular_file(this->filePath);
-	}
-	catch (fs::filesystem_error& e)
-	{
-		// TODO: this is a bit wonky
-		Logger::Error("Error while checking config existence: {}", e.what());
+		Logger::Error("Error while checking config existence: {}", ec.message());
 		return false;
 	}
+	bool regularFile = fs::is_regular_file(this->filePath, ec);
+	if (ec)
+	{
+		Logger::Error("Error while checking config existence: {}", ec.message());
+		return false;
+	}
+	return exists && regularFile;
 }
 
 bool Config::CreateDefault() noexcept
@@ -136,15 +136,37 @@ bool Config::CreateDefault() noexcept
 	Logger::Info("Creating backup of old config.");
 	fs::path backupConfig(this->filePath.string() + ".bak");  // TODO
 
-		fs::rename(this->filePath, backupConfig);
-		this->j = g_defaultConfig;
-		return this->save();
-	}
-	catch (fs::filesystem_error& e)
+	std::error_code ec;
+
+	// check if backup exists
+	bool exists = fs::exists(backupConfig, ec);
+	if (ec)
 	{
-		Logger::Error("Failed to create default config: {}", e.what());
+		Logger::Error("Failed to check for config backup: {}", ec.message());
 		return false;
 	}
+
+	// remove backup if it exists
+	if (!exists)
+	{
+		fs::remove(backupConfig, ec);
+		if (ec)
+		{
+			Logger::Error("Failed to remove config backup: {}", ec.message());
+			return false;
+		}
+	}
+
+	// create backup
+	fs::rename(this->filePath, backupConfig, ec);
+	if (ec)
+	{
+		Logger::Error("Failed to create config backup: {}", ec.message());
+		return false;
+	}
+
+	this->j = g_defaultConfig;
+	return this->Save();
 }
 
 void Config::AddMissingKeys()
@@ -186,10 +208,6 @@ std::optional<fs::path> Config::GetPath(const char* fileName)
 
 	return (configPath / fileName);
 }
-template void Config::set(const char* name, int value);
-template void Config::set(const char* name, bool value);
-template void Config::set(const char* name, std::string value);
-template void Config::set(const char* name, std::vector<std::string> value);
 
 Config& PotatoAlert::PotatoConfig()
 {
