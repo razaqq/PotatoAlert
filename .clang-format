@@ -17,7 +17,7 @@ AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: false
 BinPackParameters: true
-BreakBeforeBraces: Custom
+BreakBeforeBraces: Allman
 BraceWrapping:
   AfterCaseLabel: true
   AfterClass: true
@@ -26,11 +26,13 @@ BraceWrapping:
   AfterExternBlock: true
   AfterFunction: true
   AfterNamespace: false
+  AfterStruct: true
+  AfterObjCDeclaration: true
   AfterUnion: true
   BeforeCatch: true
   BeforeElse: true
   BeforeLambdaBody: true
-  IndentBraces: false
+  IndentBraces: true
   SplitEmptyFunction: true
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
