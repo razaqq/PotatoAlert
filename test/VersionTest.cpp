@@ -9,7 +9,7 @@ using PotatoAlert::Version;
 
 TEST_CASE( "VersionTest" )
 {
-	REQUIRE(Version("2.5.9").getVersionInfo() == std::vector{2, 5, 9});
+	REQUIRE(Version("2.5.9").GetVersionInfo() == std::vector{2, 5, 9});
 	REQUIRE(Version("3.7.8.0") == Version("3.7.8.0"));
 	REQUIRE(Version("3.7.8.0") == Version("3.7.8"));
 	REQUIRE_FALSE(Version("3.7.8.0") < Version("3.7.8"));

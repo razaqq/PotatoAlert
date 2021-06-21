@@ -9,18 +9,18 @@
 
 using PotatoAlert::Version;
 
-Version::Version(std::string& versionString)
+Version::Version(const std::string& versionString)
 {
-	this->parse(versionString);
+	this->Parse(versionString);
 }
 
 Version::Version(const char* versionString)
 {
 	std::string str(versionString);
-	this->parse(str);
+	this->Parse(str);
 }
 
-void Version::parse(std::string &versionString)
+void Version::Parse(const std::string &versionString)
 {
 	std::istringstream ss1(versionString);
 	std::string token;
@@ -30,8 +30,11 @@ void Version::parse(std::string &versionString)
 		int val;
 		ss2 >> val;
 		if (ss2.fail())
+		{
 			this->success = false;
-		versionInfo.push_back(val);
+			return;
+		}
+		this->versionInfo.push_back(val);
 	}
 }
 
@@ -40,8 +43,8 @@ bool PotatoAlert::operator== (const Version& v1, const Version& v2)
 	if (v1.success != v2.success)
 		return false;
 
-	const int j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
-	for (int i = 0; i < j; i++)
+	const size_t j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
+	for (size_t i = 0; i < j; i++)
 	{
 		int n = i < v1.versionInfo.size() ? v1.versionInfo[i] : 0;
 		int m = i < v2.versionInfo.size() ? v2.versionInfo[i] : 0;
@@ -66,8 +69,8 @@ bool PotatoAlert::operator> (const Version& v1, const Version& v2)
 	if (!v2.success)
 		return true;
 
-	int j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
-	for (int i = 0; i < j; i++)
+	const size_t j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
+	for (size_t i = 0; i < j; i++)
 	{
 		int n = i < v1.versionInfo.size() ? v1.versionInfo[i] : 0;
 		int m = i < v2.versionInfo.size() ? v2.versionInfo[i] : 0;
@@ -84,8 +87,8 @@ bool PotatoAlert::operator< (const Version& v1, const Version& v2)
 	if (!v1.success)
 		return true;
 
-	int j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
-	for (int i = 0; i < j; i++)
+	const size_t j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
+	for (size_t i = 0; i < j; i++)
 	{
 		int n = i < v1.versionInfo.size() ? v1.versionInfo[i] : 0;
 		int m = i < v2.versionInfo.size() ? v2.versionInfo[i] : 0;
