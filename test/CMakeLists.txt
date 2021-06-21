@@ -3,7 +3,14 @@ cmake_minimum_required(VERSION 3.17)
 project(catch2_unit_test)
 set(CMAKE_CXX_STANDARD 17)
 
+if (MSVC)
+    add_compile_options(/W4 /WX /EHsc)
+else()
+    add_compile_options(-Wall -Wextra -pedantic -Werror -fno-exceptions)
+endif()
+
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/catch2)
+include_directories(${PROJECT_SOURCE_DIR}/util)
 
 # enable CTest testing
 enable_testing()

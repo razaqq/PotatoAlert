@@ -4,6 +4,14 @@ project(PotatoAlert)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
+if (MSVC)
+    add_compile_options(/W4 /WX /EHsc)
+else()
+    add_compile_options(-Wall -pedantic -Werror -fno-exceptions -Wno-unknown-pragmas)
+    add_definitions(-D_HAS_EXCEPTIONS=0)
+endif()
+
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
@@ -13,7 +21,7 @@ include(generate_product_version)
 generate_product_version(
         VersionFilesOutputVariable
         NAME ${PROJECT_NAME}
-        FILE_DESCRIPTION "Stats tool for World of Warships"
+        FILE_DESCRIPTION "Stats Tool For World of Warships"
         COMPANY_NAME github.com/razaqq
         ICON ${PROJECT_SOURCE_DIR}/Resources/potato.ico
         VERSION_MAJOR 3

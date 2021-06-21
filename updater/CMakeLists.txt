@@ -1,6 +1,12 @@
 # project(PotatoUpdater)
 set(CMAKE_CXX_STANDARD 20)
 
+if (MSVC)
+    add_compile_options(/W4 /WX /EHsc)
+else()
+    add_compile_options(-Wall -Wextra -pedantic -Werror -fno-exceptions)
+endif()
+
 find_package(Qt5 COMPONENTS Widgets Core Gui WebSockets REQUIRED)
 
 add_executable(PotatoUpdater main.cpp ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
