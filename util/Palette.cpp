@@ -5,7 +5,7 @@
 #include "Palette.hpp"
 
 
-QPalette PotatoAlert::dark()
+QPalette PotatoAlert::DarkPalette()
 {
 	QPalette p;
 
@@ -38,7 +38,7 @@ QPalette PotatoAlert::dark()
 	return p;
 }
 
-QPalette PotatoAlert::light()
+[[maybe_unused]] QPalette PotatoAlert::LightPalette()
 {
 	QPalette p;
 

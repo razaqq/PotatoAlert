@@ -17,9 +17,9 @@ class StatsHeader : public QWidget
 	Q_OBJECT
 public:
 	explicit StatsHeader(QWidget* parent);
-	void setStatus(Status status, const std::string& statusText);
+	void SetStatus(Status status, const std::string& statusText);
 private:
-	void init();
+	void Init();
 	void changeEvent(QEvent* event) override;
 
 	QLabel* statusIcon = new QLabel;

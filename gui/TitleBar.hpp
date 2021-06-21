@@ -16,7 +16,7 @@ class TitleBar : public QWidget
 	Q_OBJECT
 public:
 	explicit TitleBar(QWidget* parent);
-	[[nodiscard]] QObjectList getIgnores() const { return ignore; };
+	[[nodiscard]] QObjectList GetIgnores() const { return ignore; };
 private:
 	QWidget* parentWindow;
 
@@ -27,12 +27,12 @@ private:
 	QToolButton* btnRestore = new QToolButton(this);
 	QToolButton* btnClose = new QToolButton(this);
 
-	void init();
+	void Init();
 	bool eventFilter(QObject* object, QEvent* event) override;
 	void mouseDoubleClickEvent(QMouseEvent* e) override;
-	void onBtnMinimizeClicked();
-	void onBtnMaximizeClicked();
-	void onBtnRestoreClicked();
+	void OnBtnMinimizeClicked();
+	void OnBtnMaximizeClicked();
+	void OnBtnRestoreClicked();
 	QObjectList ignore = { btnClose, btnMaximize, btnMinimize, btnRestore };
 };
 

@@ -35,15 +35,13 @@ using PotatoAlert::SettingsChoice;
 SettingsWidget::SettingsWidget(QWidget* parent, PotatoClient* pc) : QWidget(parent)
 {
 	this->pc = pc;
-	this->init();
-	this->connectSignals();
-	this->checkPath();
+	this->Init();
+	this->ConnectSignals();
+	this->CheckPath();
 }
 
-void SettingsWidget::init()
+void SettingsWidget::Init()
 {
-	this->folderStatusGui = new FolderStatus(this);
-
 	auto horLayout = new QHBoxLayout();
 	horLayout->setContentsMargins(10, 10, 10, 10);
 	horLayout->setSpacing(0);
@@ -88,7 +86,6 @@ void SettingsWidget::init()
 	gamePathLayout->addWidget(this->gamePathButton, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(gamePathLayout);
 
-	this->folderStatusGui = new FolderStatus(this);
 	layout->addWidget(this->folderStatusGui);
 	/* SELECTOR FOR GAME FOLDER */
 
@@ -101,6 +98,7 @@ void SettingsWidget::init()
 	statsModeLayout->addWidget(this->statsModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
 	this->statsMode = new SettingsChoice(this, std::vector<QString>{"current mode", "pvp", "ranked", "clan"});  // TODO: localize
+	this->statsMode->setEnabled(false);  // TODO: implement this on the backend
 	statsModeLayout->addWidget(this->statsMode, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(statsModeLayout);
 	/* DISPLAYED STATS MODE */
@@ -203,47 +201,50 @@ void SettingsWidget::init()
 	centralWidget->setLayout(layout);
 	this->setLayout(horLayout);
 
-	this->load();
+	this->Load();
 }
 
-void SettingsWidget::load()
+void SettingsWidget::Load()
 {
-	this->updates->setChecked(PotatoConfig().get<bool>("update_notifications"));
+	this->updates->setChecked(PotatoConfig().Get<bool>("update_notifications"));
 	// this->googleAnalytics->setChecked(PotatoConfig().get<bool>("use_ga"));
-	this->gamePathEdit->setText(QString::fromStdString(PotatoConfig().get<std::string>("game_folder")));
-	this->statsMode->btnGroup->button(PotatoConfig().get<int>("stats_mode"))->setChecked(true);
-	this->language->btnGroup->button(PotatoConfig().get<int>("language"))->setChecked(true);
-	this->csv->setChecked(PotatoConfig().get<bool>("save_csv"));
+	this->gamePathEdit->setText(QString::fromStdString(
+			PotatoConfig().Get<std::string>("game_folder")));
+	this->statsMode->btnGroup->button(PotatoConfig().Get<int>("stats_mode"))->setChecked(true);
+	this->language->btnGroup->button(PotatoConfig().Get<int>("language"))->setChecked(true);
+	this->csv->setChecked(PotatoConfig().Get<bool>("save_csv"));
 
-	this->replaysFolderEdit->setText(QString::fromStdString(PotatoConfig().get<std::string>("replays_folder")));
-	bool manualReplays = PotatoConfig().get<bool>("override_replays_folder");
+	this->replaysFolderEdit->setText(QString::fromStdString(
+			PotatoConfig().Get<std::string>("replays_folder")));
+	bool manualReplays = PotatoConfig().Get<bool>("override_replays_folder");
 	this->overrideReplaysFolder->setChecked(manualReplays);
 	toggleReplaysFolderOverride.operator()(manualReplays);
 }
 
-void SettingsWidget::connectSignals()
+void SettingsWidget::ConnectSignals()
 {
-	connect(this->saveButton, &QPushButton::clicked, [this]() {
-		PotatoConfig().save();
-		this->checkPath();
+	connect(this->saveButton, &QPushButton::clicked, [this]()
+	{
+		PotatoConfig().Save();
+		this->CheckPath();
 		emit this->done();
 	});
 	connect(this->cancelButton, &QPushButton::clicked, [this]()
 	{
-		PotatoConfig().load();
-		this->load();
-		this->checkPath();
+		PotatoConfig().Load();
+		this->Load();
+		this->CheckPath();
 		QEvent event(QEvent::LanguageChange);
 		QApplication::sendEvent(this->window(), &event);
 		emit this->done();
 	});
-	connect(this->updates, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set<bool>("update_notifications", checked); });
+	connect(this->updates, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<bool>("update_notifications", checked); });
 	// connect(this->googleAnalytics, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set("use_ga", checked); });
-	connect(this->statsMode->btnGroup, &QButtonGroup::idClicked, [](int id) { PotatoConfig().set<int>("stats_mode", id); });
-	connect(this->csv, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set<bool>("save_csv", checked); });
+	connect(this->statsMode->btnGroup, &QButtonGroup::idClicked, [](int id) { PotatoConfig().Set<int>("stats_mode", id); });
+	connect(this->csv, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<bool>("save_csv", checked); });
 	connect(this->language->btnGroup, &QButtonGroup::idClicked, [this](int id)
 	{
-		PotatoConfig().set<int>("language", id);
+		PotatoConfig().Set<int>("language", id);
 		QEvent event(QEvent::LanguageChange);
 		QApplication::sendEvent(this->window(), &event);
 	});
@@ -253,8 +254,8 @@ void SettingsWidget::connectSignals()
 		if (dir != "")
 		{
 			this->gamePathEdit->setText(dir);
-			PotatoConfig().set("game_folder", dir.toStdString());
-			this->checkPath();
+			PotatoConfig().Set("game_folder", dir.toStdString());
+			this->CheckPath();
 		}
 	});
 	connect(this->replaysFolderButton, &QToolButton::clicked, [this]()
@@ -263,21 +264,25 @@ void SettingsWidget::connectSignals()
 		if (dir != "")
 		{
 			this->replaysFolderEdit->setText(dir);
-			PotatoConfig().set("replays_folder", dir.toStdString());
+			PotatoConfig().Set("replays_folder", dir.toStdString());
 		}
 	});
 	connect(this->overrideReplaysFolder, &SettingsSwitch::clicked, [this](bool checked)
 	{
-		PotatoConfig().set<bool>("override_replays_folder", checked);
+		PotatoConfig().Set<bool>("override_replays_folder", checked);
 		this->toggleReplaysFolderOverride(checked);
 	});
 }
 
-void SettingsWidget::checkPath()
+void SettingsWidget::CheckPath()
 {
-	folderStatus status = Game::checkPath(PotatoConfig().get<std::string>("game_folder"));
+	FolderStatus status;
+	if (!Game::CheckPath(PotatoConfig().Get<std::string>("game_folder"), status))
+	{
+		// TODO: handle
+	}
 	this->folderStatusGui->updateStatus(status);
-	this->pc->setFolderStatus(status);
+	this->pc->SetFolderStatus(status);
 }
 
 void SettingsWidget::changeEvent(QEvent* event)

@@ -7,6 +7,7 @@
 
 QString PotatoAlert::GetString(StringKeys key)
 {
-	auto lang = PotatoConfig().get<int>("language");
+	auto lang = PotatoConfig().Get<int>("language");
+	// TODO: this is pretty terrible, make this std::unordered_map or smth
 	return QString::fromUtf8(Strings[lang][key].data());
 }

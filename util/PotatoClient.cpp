@@ -79,22 +79,22 @@ void PotatoClient::init()
 		Logger::Error(this->socket->errorString().toStdString());
 	});
 
-	connect(this->socket, &QWebSocket::textMessageReceived, this, &PotatoClient::onResponse);
-	connect(this->watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::onDirectoryChanged);
+	connect(this->socket, &QWebSocket::textMessageReceived, this, &PotatoClient::OnResponse);
+	connect(this->watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::OnDirectoryChanged);
 
 	for (auto& path : this->watcher->directories())  // trigger run
-		this->onDirectoryChanged(path);
+		this->OnDirectoryChanged(path);
 }
 
 // sets filesystem watcher to current replays folder, triggered when config is modified
-void PotatoClient::updateReplaysPath()
+void PotatoClient::UpdateReplaysPath()
 {
 	Logger::Debug("Updating replays path.");
 
 	if (!this->watcher->directories().isEmpty())
 		this->watcher->removePaths(this->watcher->directories());
 
-	if (PotatoConfig().get<bool>("override_replays_folder"))
+	if (PotatoConfig().Get<bool>("override_replays_folder"))
 	{
 		this->watcher->addPath(QString::fromStdString(this->fStatus.overrideReplaysPath));
 	}
@@ -107,7 +107,7 @@ void PotatoClient::updateReplaysPath()
 }
 
 // triggered whenever a file gets modified in a replays path
-void PotatoClient::onDirectoryChanged(const QString& path)
+void PotatoClient::OnDirectoryChanged(const QString& path)
 {
 	Logger::Debug("Directory changed.");
 
@@ -116,15 +116,15 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 	if (fs::exists(filePath))
 	{
 		// read arena info from file
-		auto&& [success, arenaInfo] = PotatoClient::readArenaInfo(filePath);
-		if (!success)
+		auto arenaInfo = PotatoClient::ReadArenaInfo(filePath);
+		if (!arenaInfo.has_value())
 		{
 			Logger::Error("Failed to read arena info from file.");
 			emit this->status(Error, "Reading ArenaInfo");
 			return;
 		}
 
-		Logger::Debug(arenaInfo);
+		Logger::Debug(arenaInfo.value());
 
 		nlohmann::json j;
 		try
@@ -144,22 +144,22 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 		j["region"] = this->fStatus.region;
 
 		// set stats mode from config
-		switch (PotatoConfig().get<int>("stats_mode"))
+		switch (PotatoConfig().Get<int>("stats_mode"))
 		{
 			case current:
 				if (j.contains("matchGroup"))
-					j["statsMode"] = j["matchGroup"];
+					j["StatsMode"] = j["matchGroup"];
 				else
-					j["statsMode"] = "pvp";
+					j["StatsMode"] = "pvp";
 				break;
 			case pvp:
-				j["statsMode"] = "pvp";
+				j["StatsMode"] = "pvp";
 				break;
 			case ranked:
-				j["statsMode"] = "ranked";
+				j["StatsMode"] = "ranked";
 				break;
 			case clan:
-				j["statsMode"] = "clan";
+				j["StatsMode"] = "clan";
 				break;
 		}
 
@@ -179,7 +179,7 @@ void PotatoClient::onDirectoryChanged(const QString& path)
 }
 
 // triggered when server response is received. processes the response, updates gui tables
-void PotatoClient::onResponse(const QString& message)
+void PotatoClient::OnResponse(const QString& message)
 {
 	Logger::Debug("Closing websocket connection.");
 	this->socket->close();
@@ -249,14 +249,14 @@ void PotatoClient::onResponse(const QString& message)
 }
 
 // sets the folder status and triggers a new match run
-void PotatoClient::setFolderStatus(folderStatus& status)
+void PotatoClient::SetFolderStatus(const FolderStatus& status)
 {
 	this->fStatus = status;
-	this->updateReplaysPath();
+	this->UpdateReplaysPath();
 }
 
 // opens and reads a file
-std::tuple<bool, std::string> PotatoClient::readArenaInfo(const std::string& filePath)
+std::optional<std::string> PotatoClient::ReadArenaInfo(const std::string& filePath)
 {
 	Logger::Debug("Reading arena info from: {}", filePath);
 
@@ -286,12 +286,12 @@ std::tuple<bool, std::string> PotatoClient::readArenaInfo(const std::string& fil
 		);
 		Logger::Error("Failed to read arena info: {}", lpMsgBuf);
 		CloseHandle(handle);
-		return std::tuple<bool, std::string>{false, ""};
 	};
 
 	if (handle == INVALID_HANDLE_VALUE)
 	{
 		fail();
+		return {};
 	}
 
 	// try to wait for 1s for the file to get written to
@@ -303,7 +303,10 @@ std::tuple<bool, std::string> PotatoClient::readArenaInfo(const std::string& fil
 	while (std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime) < 1000ms)
 	{
 		if (!GetFileSizeEx(handle, &fileSize))
+		{
 			fail();
+			return {};
+		}
 		if (fileSize.QuadPart > 0)
 			break;
 		std::this_thread::sleep_for(100ms);
@@ -311,24 +314,26 @@ std::tuple<bool, std::string> PotatoClient::readArenaInfo(const std::string& fil
 	}
 
 	if (fileSize.QuadPart == 0)
+	{
 		fail();
+		return {};
+	}
 
 	// read the file
 	DWORD dwBytesRead;
 	static const size_t size = 16384;
 	static char buff[size];
-	std::tuple<bool, std::string> out;
+	std::string arenaInfo;
 
 	if (ReadFile(handle, buff, size, &dwBytesRead, nullptr))
 	{
 		buff[dwBytesRead] = '\0';  // add null termination
-		out = {true, std::string(buff)};
+		CloseHandle(handle);
+		return std::string(buff);
 	}
 	else
 	{
-		out = {false, ""};
+		CloseHandle(handle);
+		return {};
 	}
-
-	CloseHandle(handle);
-	return out;
 }

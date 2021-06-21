@@ -3,6 +3,8 @@
 #include "Updater.hpp"
 #include "Logger.hpp"
 #include "Version.hpp"
+#include <chrono>
+#include <filesystem>
 #include <string>
 #include <sstream>
 #include <chrono>
@@ -32,7 +34,7 @@ static std::string_view updateURL = "https://github.com/razaqq/PotatoAlert/relea
 static std::string_view versionURL = "https://api.github.com/repos/razaqq/PotatoAlert/releases/latest";
 
 // makes a request to the github api and checks if there is a new version available
-bool Updater::updateAvailable()
+bool Updater::UpdateAvailable()
 {
 	QEventLoop loop;
 	auto manager = new QNetworkAccessManager();
@@ -77,72 +79,75 @@ bool Updater::updateAvailable()
 }
 
 // starts the update process
-void Updater::run()
+void Updater::Run()
 {
 	Logger::Debug("Starting update...");
 
-	if (!Updater::elevationType().first)
+	if (!Updater::ElevationInfo().first)
 	{
 		Logger::Error("Updater needs to be started with admin privileges.");
-		Updater::end(false);
+		Updater::End(false);
 	}
 
 	Logger::Debug("Starting download...");
-	QNetworkReply* reply = this->download();
+	QNetworkReply* reply = this->Download();
 	// TODO: get updateURL dynamically from repo
 	// TODO: maybe do some checksum check on the downloaded archive
 
-	connect(reply, &QNetworkReply::finished, [this, reply]()
+	connect(reply, &QNetworkReply::finished, [reply]()
 	{
 		// check if there was an error with the download
 		if (reply->error() != QNetworkReply::NoError)
 		{
 			Logger::Error("Failed to download update: {}", reply->errorString().toStdString());
-			Updater::end(false);
+			Updater::End(false);
 		}
 
 		Logger::Debug("Update downloaded successfully.");
 
-		const std::string archive = Updater::updateArchive().string();
-		const std::string dest = Updater::updateDest().string();
+		const std::string archive = Updater::UpdateArchive().string();
+		const std::string dest = Updater::UpdateDest().string();
 
-		// save reply to file
+		// Save reply to file
 		auto file = new QFile(QString::fromStdString(archive));
 		if (file->open(QFile::WriteOnly))
 		{
 			file->write(reply->readAll());
 			file->flush();
 			file->close();
-			Logger::Debug("Update archive saved successfully in {}", Updater::updateArchive().string());
+			Logger::Debug("Update archive saved successfully in {}",
+					Updater::UpdateArchive().string());
 		}
 		else
 		{
-			Logger::Error("Failed to save update reply to file.");
-			Updater::end(false);
+			Logger::Error("Failed to Save update reply to file.");
+			Updater::End(false);
 		}
 
 		// make backup
-		if (!Updater::createBackup())
-			Updater::end(false);
+		if (!Updater::CreateBackup()) Updater::End(false);
 
 		// rename exe/dll to trash
-		if (!Updater::renameToTrash())
-			Updater::end(false, true);
-
-		// unpack archive
-		Logger::Debug("Extracting archive to: {}", dest);
-		if (!Updater::unpack(archive.c_str(), dest.c_str()))
+		if (!Updater::RenameToTrash())
 		{
-			Logger::Error("Failed to unpack archive.");
-			Updater::end(false, true);
+			Logger::Error("Failed to rename exe/dll to trash.");
+			Updater::End(false, true);
 		}
 
-		Updater::end(true);
+		// Unpack archive
+		Logger::Debug("Extracting archive to: {}", dest);
+		if (!Updater::Unpack(archive.c_str(), dest.c_str()))
+		{
+			Logger::Error("Failed to Unpack archive.");
+			Updater::End(false, true);
+		}
+
+		Updater::End(true);
 	});
 }
 
 // unpacks an archive into a folder
-bool Updater::unpack(const char* file, const char* dest)
+bool Updater::Unpack(const char* file, const char* dest)
 {
 	Logger::Info("Extracting zip archive: {}", file);
 
@@ -168,7 +173,7 @@ bool Updater::unpack(const char* file, const char* dest)
 }
 
 // downloads the update archive
-QNetworkReply* Updater::download()
+QNetworkReply* Updater::Download()
 {
 	auto manager = new QNetworkAccessManager();
 
@@ -231,8 +236,8 @@ QNetworkReply* Updater::download()
 		if (p)
 			p->update(bytesReceived);
 
-		QString progress = fmt::format("{:.1f}/{:.1f} MB", bytesReceived/1e6f, bytesTotal/1e6f).c_str();
-		QString speedStr = fmt::format("{:.1f} {}", p->speed, p->unit).c_str();
+		QString progress = std::format("{:.1f}/{:.1f} MB", bytesReceived/1e6f, bytesTotal/1e6f).c_str();
+		QString speedStr = std::format("{:.1f} {}", p->speed, p->unit).c_str();
 		emit this->downloadProgress(static_cast<int>(bytesReceived * 100 / bytesTotal), progress, speedStr);
 	});
 
@@ -241,37 +246,37 @@ QNetworkReply* Updater::download()
 		delete p;
 	});
 
-	connect(reply, &QNetworkReply::sslErrors, [reply](const QList<QSslError>& errors)
+	connect(reply, &QNetworkReply::sslErrors, [reply](const QList<QSslError>&)
 	{
 		Logger::Error(reply->errorString().toStdString());
-		Updater::end(false);
+		Updater::End(false);
 	});
 
-	connect(reply, &QNetworkReply::errorOccurred, [reply](QNetworkReply::NetworkError error)
+	connect(reply, &QNetworkReply::errorOccurred, [reply](QNetworkReply::NetworkError)
 	{
 		Logger::Error(reply->errorString().toStdString());
-		Updater::end(false);
+		Updater::End(false);
 	});
 
 	return reply;
 }
 
 // restarts the application
-void Updater::end(bool success, bool revert)
+void Updater::End(bool success, bool revert)
 {
 	if (revert)
-		Updater::revertBackup();
-	Updater::removeBackup();
+		RevertBackup();
+	RemoveBackup();
 
 	if (success)
-		Updater::createProcess(updaterBinary, "--clear");
+		StartUpdater("--clear");
 	else
-		Updater::createProcess(mainBinary);
+		StartMain();
 	ExitProcess(0); // exit this process
 }
 
 // gets info about the elevation state {bool isElevated, bool canElevate}
-std::pair<bool, bool> Updater::elevationType()
+std::pair<bool, bool> Updater::ElevationInfo()
 {
 	HANDLE hToken;
 	if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
@@ -289,90 +294,141 @@ std::pair<bool, bool> Updater::elevationType()
 	return {false, false};
 }
 
-bool Updater::createBackup()
+bool Updater::CreateBackup()
 {
-	try
+	std::error_code ec;
+
+	// check if old backup exists and remove it
+	bool exists = fs::exists(Updater::BackupDest(), ec);
+	if (ec)
 	{
-		if (fs::exists(Updater::backupDest()))
-			fs::remove_all(Updater::backupDest());
-		fs::copy(Updater::updateDest(), Updater::backupDest(), fs::copy_options::recursive);
-		fs::permissions(Updater::backupDest(), fs::perms::all);
-		return true;
-	}
-	catch (fs::filesystem_error& e)
-	{
-		Logger::Error("Failed to create backup: {}", e.what());
+		Logger::Error("Failed to check if backup exists: {}", ec.message());
 		return false;
 	}
+
+	if (exists)
+	{
+		fs::remove_all(Updater::BackupDest(), ec);
+		if (ec)
+		{
+			Logger::Error("Failed to remove old backup: {}", ec.message());
+			return false;
+		}
+	}
+
+	// copy new backup
+	fs::copy(Updater::UpdateDest(), Updater::BackupDest(), fs::copy_options::recursive, ec);
+	if (ec)
+	{
+		Logger::Error("Failed to copy backup to backup dest: {}", ec.message());
+		return false;
+	}
+
+	// fix permissions
+	fs::permissions(Updater::BackupDest(), fs::perms::all, ec);
+	if (ec)
+	{
+		Logger::Error("Failed to change permissions of backup: {}", ec.message());
+		return false;
+	}
+	return true;
 }
 
-bool Updater::removeBackup()
+bool Updater::RemoveBackup()
 {
-	try
+	std::error_code ec;
+	fs::remove_all(Updater::BackupDest(), ec);
+
+	if (ec)
 	{
-		fs::remove_all(Updater::backupDest());
-		return true;
-	}
-	catch (fs::filesystem_error& e)
-	{
-		Logger::Error("Failed to delete backup: {}", e.what());
+		Logger::Error("Failed to delete backup: {}", ec.message());
 		return false;
 	}
+	return true;
 }
 
-bool Updater::revertBackup()
+bool Updater::RevertBackup()
 {
-	try
+	std::error_code ec;
+	fs::copy(Updater::BackupDest(),Updater::UpdateDest(),
+			fs::copy_options::recursive | fs::copy_options::overwrite_existing,
+			ec);
+
+	if (ec)
 	{
-		fs::copy(Updater::backupDest(), Updater::updateDest(), fs::copy_options::recursive | fs::copy_options::overwrite_existing);
-		return true;
-	}
-	catch (fs::filesystem_error& e)
-	{
-		Logger::Error("Failed to revert backup: {}", e.what());
+		Logger::Error("Failed to revert backup: {}", ec.message());
 		return false;
 	}
+	return true;
 }
 
 // renames all exe/dll files to .trash
-bool Updater::renameToTrash()
+bool Updater::RenameToTrash()
 {
-	try
+	std::error_code ec;
+
+	auto it = fs::recursive_directory_iterator(Updater::UpdateDest(), ec);
+	if (ec)
 	{
-		for (auto& p : fs::recursive_directory_iterator(Updater::updateDest()))
-		{
-			const std::string ext = p.path().extension().string();
-			if (p.is_regular_file() && (ext == ".dll" || ext == ".exe"))
-				fs::rename(p, p.path().string() + ".trash");
-		}
-		return true;
-	}
-	catch (fs::filesystem_error& e)
-	{
-		Logger::Error("Failed to rename exe/dll to trash: {}", e.what());
+		Logger::Error("Failed to get directory iterator: {}", ec.message());
 		return false;
 	}
+
+	for (auto& p : it)
+	{
+		const std::string ext = p.path().extension().string();
+
+		bool regularFile = p.is_regular_file(ec);
+		if (ec)
+		{
+			Logger::Error("Failed to check if {} is regular file: {}", p.path().string(), ec.message());
+			return false;
+		}
+
+		if (regularFile && (ext == ".dll" || ext == ".exe"))
+		{
+			std::string newName = p.path().string() + ".trash";
+			fs::rename(p, newName, ec);
+			if (ec)
+			{
+				Logger::Error("Failed to rename {} to {}: {}", p.path().string(), newName, ec.message());
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 // deletes all .trash files
-void Updater::removeTrash()
+void Updater::RemoveTrash()
 {
-	for (auto& p : fs::recursive_directory_iterator(Updater::updateDest()))
+	std::error_code ec;
+
+	auto it = fs::recursive_directory_iterator(Updater::UpdateDest(), ec);
+	if (ec)
 	{
-		try
+		Logger::Error("Failed to get directory iterator: {}", ec.message());
+		return;
+	}
+
+	for (auto& p : it)
+	{
+		const std::string ext = p.path().extension().string();
+
+		bool regularFile = p.is_regular_file(ec);
+		if (ec)
+			Logger::Error("Failed to check if {} is regular file: {}", p.path().string(), ec.message());
+
+		if (regularFile && (ext == ".trash"))
 		{
-			const std::string ext = p.path().extension().string();
-			if (p.is_regular_file() && (ext == ".trash"))
-				fs::remove(p);
-		}
-		catch (fs::filesystem_error& e)
-		{
-			Logger::Error("Failed to remove trash: {}", e.what());
+			fs::remove(p, ec);
+			if (ec)
+				Logger::Error("Failed to remove file {}: {}", p.path().string(), ec.message());
 		}
 	}
 }
 
-bool Updater::createProcess(std::string_view path, std::string_view args, bool elevated)
+bool Updater::CreateNewProcess(std::string_view path, std::string_view args, bool elevated)
 {
 	const char* lpVerb = elevated ? "runas" : "open";
 	std::string pathStr = std::string(path);

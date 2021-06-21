@@ -1,22 +1,23 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "CSVWriter.hpp"
 #include "Game.hpp"
+#include "StatsParser.hpp"
 #include <QFileSystemWatcher>
 #include <QLabel>
 #include <QObject>
 #include <QString>
 #include <QTableWidgetItem>
 #include <QWebSocket>
+#include <array>
+#include <optional>
 #include <string>
-#include <tuple>
 #include <variant>
 #include <vector>
 
-using PotatoAlert::Game::folderStatus;
 
-typedef std::vector<std::vector<std::variant<QLabel *, QTableWidgetItem *>>> teamType;
+using PotatoAlert::Game::FolderStatus;
+using namespace PotatoAlert::StatsParser;
 
 namespace PotatoAlert {
 
@@ -34,19 +35,18 @@ public:
 	PotatoClient() = default;
 	PotatoClient(const PotatoClient&) = delete;
 	void init();
-	void setFolderStatus(folderStatus& status);
+	void SetFolderStatus(const FolderStatus& status);
 private:
-	void onResponse(const QString& message);
-	void onDirectoryChanged(const QString& path);
-	void updateReplaysPath();
-	static std::tuple<bool, std::string> readArenaInfo(const std::string& filePath);
+	void OnResponse(const QString& message);
+	void OnDirectoryChanged(const QString& path);
+	void UpdateReplaysPath();
+	static std::optional<std::string> ReadArenaInfo(const std::string& filePath);
 
 	QWebSocket* socket = new QWebSocket();
 	QFileSystemWatcher* watcher = new QFileSystemWatcher();
 
 	QString tempArenaInfo;
-	folderStatus fStatus;
-	CSVWriter csvWriter;
+	FolderStatus fStatus;
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"

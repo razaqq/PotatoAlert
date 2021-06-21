@@ -28,7 +28,7 @@ class SettingsSwitch : public QAbstractButton
 public:
 	explicit SettingsSwitch(QWidget* parent = nullptr);
 public:
-	void init();
+	void Init();
 	void paintEvent(QPaintEvent* event) override;
 	void mouseReleaseEvent(QMouseEvent* event) override;
 	void resizeEvent(QResizeEvent* event) override;

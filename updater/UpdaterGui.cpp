@@ -75,6 +75,6 @@ UpdaterGui::UpdaterGui(Updater* updater) : FramelessDialog(nullptr)
 	});
 	*/
 
-	updater->run();
+	updater->Run();
 	this->exec();
 }

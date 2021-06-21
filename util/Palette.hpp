@@ -5,7 +5,7 @@
 
 namespace PotatoAlert {
 
-QPalette dark();
-QPalette light();
+[[maybe_unused]] QPalette DarkPalette();
+[[maybe_unused]] QPalette LightPalette();
 
 }  // namespace PotatoAlert

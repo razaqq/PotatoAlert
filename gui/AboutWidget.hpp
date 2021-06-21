@@ -11,7 +11,7 @@ class AboutWidget : public QWidget
 public:
 	explicit AboutWidget(QWidget* parent);
 private:
-	void init();
+	void Init();
 };
 
 }  // namespace PotatoAlert

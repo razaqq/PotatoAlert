@@ -1,17 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include <QMouseEvent>
 #include <QTableWidgetItem>
-#include <QFont>
 #include <QEvent>
-#include <QString>
-#include <QAbstractItemView>
 #include <QHeaderView>
-#include <QModelIndex>
-#include <QDesktopServices>
-#include <string>
-#include <vector>
-#include <iostream>
 #include "StatsTable.hpp"
 #include "StringTable.hpp"
 
@@ -20,11 +11,11 @@ using PotatoAlert::StatsTable;
 
 StatsTable::StatsTable(QWidget* parent) : QTableWidget(parent)
 {
-	init();
-	initHeaders();
+	Init();
+	InitHeaders();
 }
 
-void StatsTable::init()
+void StatsTable::Init()
 {
 	this->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	this->setSelectionMode(QAbstractItemView::NoSelection);
@@ -38,10 +29,9 @@ void StatsTable::init()
 	this->setSortingEnabled(false);
 	this->setContentsMargins(0, 0, 0, 0);
 	this->setCursor(Qt::PointingHandCursor);
-	connect(this, &StatsTable::cellDoubleClicked, this, &StatsTable::clickEvent);
 }
 
-void StatsTable::initHeaders()
+void StatsTable::InitHeaders()
 {
 	for (int i = 0; i < this->columnCount(); i++)
 	{
@@ -61,17 +51,6 @@ void StatsTable::initHeaders()
 	this->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	this->resizeColumnsToContents();
 	this->setCursor(Qt::PointingHandCursor);
-}
-
-void StatsTable::clickEvent(int row)
-{
-	if (row < this->wowsNumbers.size())
-		QDesktopServices::openUrl(QUrl(wowsNumbers[row]));
-}
-
-void StatsTable::setWowsNumbers(const std::vector<QString>& data)
-{
-	this->wowsNumbers = data;
 }
 
 void StatsTable::changeEvent(QEvent* event)

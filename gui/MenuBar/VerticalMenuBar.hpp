@@ -14,7 +14,7 @@ public:
 	explicit VerticalMenuBar(QWidget* parent);
 	QButtonGroup* btnGroup = new QButtonGroup();
 private:
-	void init();
+	void Init();
 };
 
 }  // namespace PotatoAlert

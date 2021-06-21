@@ -20,13 +20,13 @@ class MainWindow : public QMainWindow
 {
 public:
 	explicit MainWindow(PotatoClient* pc);
-	int confirmUpdate();
+	bool ConfirmUpdate();
 protected:
-	void init();
+	void Init();
 	PotatoClient* pc;
 
-	void switchTab(int i);
-	void connectSignals();
+	void SwitchTab(int i);
+	void ConnectSignals();
 
 	QWidget* centralW = new QWidget(this);
 	QVBoxLayout* centralLayout = new QVBoxLayout;

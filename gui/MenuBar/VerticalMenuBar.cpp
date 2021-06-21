@@ -15,10 +15,10 @@ using PotatoAlert::VerticalMenuBar;
 
 VerticalMenuBar::VerticalMenuBar(QWidget* parent) : QDockWidget(parent)
 {
-	this->init();
+	this->Init();
 }
 
-void VerticalMenuBar::init()
+void VerticalMenuBar::Init()
 {
 	this->setAttribute(Qt::WA_StyledBackground, true);
 	this->setObjectName("menuBar");

@@ -18,10 +18,10 @@ using PotatoAlert::TitleBar;
 TitleBar::TitleBar(QWidget* parent) : QWidget(parent)
 {
 	this->parentWindow = parent;
-	this->init();
+	this->Init();
 }
 
-void TitleBar::init()
+void TitleBar::Init()
 {
 	this->setAttribute(Qt::WA_StyledBackground, true);
 	this->setObjectName("titleBar");
@@ -62,9 +62,9 @@ void TitleBar::init()
 	this->btnRestore->setVisible(false);
 
 	connect(this->btnClose, &QToolButton::clicked, this->parentWindow, &QWidget::close);
-	connect(this->btnMinimize, &QToolButton::clicked, this, &TitleBar::onBtnMinimizeClicked);
-	connect(this->btnMaximize, &QToolButton::clicked, this, &TitleBar::onBtnMaximizeClicked);
-	connect(this->btnRestore, &QToolButton::clicked, this, &TitleBar::onBtnRestoreClicked);
+	connect(this->btnMinimize, &QToolButton::clicked, this, &TitleBar::OnBtnMinimizeClicked);
+	connect(this->btnMaximize, &QToolButton::clicked, this, &TitleBar::OnBtnMaximizeClicked);
+	connect(this->btnRestore, &QToolButton::clicked, this, &TitleBar::OnBtnRestoreClicked);
 
 	hLayout->addWidget(this->appIcon);
 	hLayout->addSpacing(5);
@@ -100,19 +100,19 @@ bool TitleBar::eventFilter(QObject* object, QEvent* event)
 	return false;
 }
 
-void TitleBar::onBtnMinimizeClicked()
+void TitleBar::OnBtnMinimizeClicked()
 {
 	this->parentWindow->setWindowState(Qt::WindowMinimized);
 }
 
-void TitleBar::onBtnMaximizeClicked()
+void TitleBar::OnBtnMaximizeClicked()
 {
 	this->parentWindow->setWindowState(Qt::WindowMaximized);
 	this->btnMaximize->setVisible(false);
 	this->btnRestore->setVisible(true);
 }
 
-void TitleBar::onBtnRestoreClicked()
+void TitleBar::OnBtnRestoreClicked()
 {
 	this->parentWindow->setWindowState(Qt::WindowNoState);
 	this->btnMaximize->setVisible(true);
@@ -122,7 +122,7 @@ void TitleBar::onBtnRestoreClicked()
 void TitleBar::mouseDoubleClickEvent(QMouseEvent*)
 {
 	if (this->parentWindow->windowState() == Qt::WindowMaximized)
-		this->onBtnRestoreClicked();
+		this->OnBtnRestoreClicked();
 	else
-		this->onBtnMaximizeClicked();
+		this->OnBtnMaximizeClicked();
 }

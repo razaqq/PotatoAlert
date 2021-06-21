@@ -17,26 +17,26 @@ NativeWindow::NativeWindow(QMainWindow* mainWindow) : QWidget()
 {
 	this->mainWindow = mainWindow;
 	this->mainWindow->setParent(this);
-	this->init();
+	this->Init();
 }
 
 void NativeWindow::closeEvent(QCloseEvent* event)
 {
-	PotatoConfig().set<int>("window_height", this->height());
-	PotatoConfig().set<int>("window_width", this->width());
-	PotatoConfig().set<int>("window_x", this->x());
-	PotatoConfig().set<int>("window_y", this->y());
+	PotatoConfig().Set<int>("window_height", this->height());
+	PotatoConfig().Set<int>("window_width", this->width());
+	PotatoConfig().Set<int>("window_x", this->x());
+	PotatoConfig().Set<int>("window_y", this->y());
 	QWidget::closeEvent(event);
 }
 
-void NativeWindow::init()
+void NativeWindow::Init()
 {
 	this->createWinId();
 	QWindow* w = this->windowHandle();
 
 	this->titleBar->setFixedHeight(23);
 
-	for (auto& o : this->titleBar->getIgnores())
+	for (auto& o : this->titleBar->GetIgnores())
 		FramelessWindowsManager::addIgnoreObject(w, o);
 
 	FramelessWindowsManager::addWindow(w);
@@ -53,6 +53,6 @@ void NativeWindow::init()
 
 	this->setLayout(layout);
 
-	this->resize(PotatoConfig().get<int>("window_width"), PotatoConfig().get<int>("window_height"));
-	this->move(PotatoConfig().get<int>("window_x"), PotatoConfig().get<int>("window_y"));
+	this->resize(PotatoConfig().Get<int>("window_width"), PotatoConfig().Get<int>("window_height"));
+	this->move(PotatoConfig().Get<int>("window_x"), PotatoConfig().Get<int>("window_y"));
 }

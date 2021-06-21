@@ -1,10 +1,10 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include <fmt/format.h>
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <QString>
 
 
 namespace PotatoAlert {
@@ -19,6 +19,8 @@ class Logger
 public:
 	Logger(const Logger&) = delete;
 	Logger& operator= (const Logger) = delete;
+
+	static QString GetDir();
 
 	// DEBUG
 	static void Debug(const char* text);
@@ -53,6 +55,11 @@ public:
 private:
 	Logger();
 	~Logger();
+
+	static constexpr std::string_view debugPrefix = " - [DEBUG] ";
+	static constexpr std::string_view infoPrefix = " - [INFO] ";
+	static constexpr std::string_view warnPrefix = " - [WARN] ";
+	static constexpr std::string_view errorPrefix = " - [ERROR] ";
 
 	static Logger& Get()
 	{

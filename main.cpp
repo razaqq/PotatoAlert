@@ -17,9 +17,6 @@
 #include "VersionInfo.h"
 #include "FramelessWindowsManager.hpp"
 #include <Windows.h>
-#include <shellapi.h>
-#include <io.h>
-#include <fcntl.h>
 
 
 using PotatoAlert::MainWindow;
@@ -55,7 +52,7 @@ int runMain(int argc, char* argv[])
 	file.open(QFile::ReadOnly | QFile::Text);
 	QString style = QLatin1String(file.readAll());
 	QApplication::setStyle("fusion");
-	QApplication::setPalette(PotatoAlert::dark());
+	QApplication::setPalette(PotatoAlert::DarkPalette());
 	app.setStyleSheet(style);
 
 	// force update of language
@@ -63,10 +60,10 @@ int runMain(int argc, char* argv[])
 	QApplication::sendEvent(mainWindow, &event);
 
 	// check if there is a new version available
-	if (PotatoConfig().get<bool>("update_notifications"))
-		if (Updater::updateAvailable())
-			if (mainWindow->confirmUpdate())
-				if (Updater::createProcess())
+	if (PotatoConfig().Get<bool>("update_notifications"))
+		if (Updater::UpdateAvailable())
+			if (mainWindow->ConfirmUpdate())
+				if (Updater::StartUpdater())
 					ExitProcess(0);
 
 	if (QApplication::arguments().contains("--changelog"))

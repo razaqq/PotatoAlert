@@ -5,15 +5,15 @@
 #include <QString>
 #include <QObject>
 #include <string>
+#include <optional>
 #include <filesystem>
-#include <nlohmann/json.hpp>
 
 
 namespace fs = std::filesystem;
 
 namespace PotatoAlert {
 
-enum statsMode
+enum StatsMode
 {
 	current,
 	pvp,
@@ -28,20 +28,31 @@ public:
 	explicit Config(const char* fileName);
 	~Config() override;
 
-	void load();
-	bool save();
+	void Load();
+	bool Save();
 
-	[[nodiscard]] bool exists() const;
+	template <typename T>
+	T Get(const char* name) const
+	{
+		// we technically dont have to check, since we check for keys on init
+		if (this->j.contains(name))
+			return this->j.at(name).get<T>();
+		return {};
+	}
 
-	template <typename T> T get(const char* name) const;
-	template <typename T> void set(const char* name, T value);
+	template <typename T>
+	void Set(const char* name, T value)
+	{
+		this->j.at(name) = value;
+	}
 
-	nlohmann::json j;
+	json j;
 private:
 	fs::path filePath;
-	static fs::path getFilePath(const char* fileName);
-	void addMissingKeys();
-	bool createDefault();
+	static std::optional<fs::path> GetPath(const char* fileName);
+	void AddMissingKeys();
+	bool CreateDefault() noexcept;
+	[[nodiscard]] bool Exists() const noexcept;
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"

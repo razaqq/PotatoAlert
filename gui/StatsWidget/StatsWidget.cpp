@@ -15,10 +15,10 @@ using PotatoAlert::StatsWidget;
 
 StatsWidget::StatsWidget(QWidget* parent) : QWidget(parent)
 {
-	this->init();
+	this->Init();
 }
 
-void StatsWidget::init()
+void StatsWidget::Init()
 {
 	auto vLayout = new QVBoxLayout;
 	vLayout->setContentsMargins(0, 0, 0, 10);
@@ -41,7 +41,7 @@ void StatsWidget::init()
 	this->setClans();
 }
 
-void StatsWidget::fillTables(std::vector<teamType> teams)
+void StatsWidget::Update(const Match& match)
 {
 	this->left->clearContents();
 	this->right->clearContents();

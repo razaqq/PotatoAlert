@@ -11,14 +11,15 @@
 #include "StringTable.hpp"
 
 
-using PotatoAlert::FolderStatus;
+using PotatoAlert::FolderStatusGui;
+using PotatoAlert::Game::FolderStatus;
 
-FolderStatus::FolderStatus(QWidget *parent) : QWidget(parent)
+FolderStatusGui::FolderStatusGui(QWidget *parent) : QWidget(parent)
 {
 	this->init();
 }
 
-void FolderStatus::init()
+void FolderStatusGui::init()
 {
 	auto gridLayout = new QGridLayout;
 	gridLayout->setContentsMargins(10, 0, 10, 0);
@@ -39,10 +40,6 @@ void FolderStatus::init()
 	gridLayout->addWidget(this->versionLabel, 3, 0);
 	gridLayout->addWidget(this->gameVersion, 3, 1);
 
-	this->steamLabel->setBuddy(this->steamVersion);
-	gridLayout->addWidget(this->steamLabel, 4, 0);
-	gridLayout->addWidget(this->steamVersion, 4, 1);
-
 	this->versionLabel->setBuddy(this->versionedReplays);
 	gridLayout->addWidget(this->versionedLabel, 5, 0);
 	gridLayout->addWidget(this->versionedReplays, 5, 1);
@@ -50,7 +47,7 @@ void FolderStatus::init()
 	this->setLayout(gridLayout);
 }
 
-void FolderStatus::updateStatus(Game::folderStatus &status)
+void FolderStatusGui::updateStatus(const FolderStatus& status)
 {
 	this->statusText->setText(QString::fromStdString(status.statusText));
 	if (status.found)
@@ -60,10 +57,10 @@ void FolderStatus::updateStatus(Game::folderStatus &status)
 
 	this->region->setText(QString::fromStdString(status.region));
 	this->gameVersion->setText(QString::fromStdString(status.gameVersion));
-	status.steamVersion ? this->steamVersion->setText("yes") : this->steamVersion->setText("no");
 	status.versionedReplays ? this->versionedReplays->setText("yes") : this->versionedReplays->setText("no");
 
 	this->replaysFolders->clear();
+
 	if (status.replaysPath.size() == 1)
 		this->replaysFolders->setText(QString::fromStdString(status.replaysPath[0]));
 	else if (status.replaysPath.size() == 2)
@@ -72,7 +69,7 @@ void FolderStatus::updateStatus(Game::folderStatus &status)
 				);
 }
 
-void FolderStatus::changeEvent(QEvent* event)
+void FolderStatusGui::changeEvent(QEvent* event)
 {
 	if (event->type() == QEvent::LanguageChange)
 	{

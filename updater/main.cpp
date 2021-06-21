@@ -20,8 +20,8 @@ int runMain(int argc, char* argv[])
 
 	if (QApplication::arguments().contains("--clear"))
 	{
-		Updater::removeTrash();
-		Updater::createProcess(Updater::mainBinary, "--changelog");
+		Updater::RemoveTrash();
+		Updater::StartMain("--changelog");
 		return 0;
 	}
 
@@ -29,7 +29,7 @@ int runMain(int argc, char* argv[])
 	file.open(QFile::ReadOnly | QFile::Text);
 	QString style = QLatin1String(file.readAll());
 	QApplication::setStyle("fusion");
-	QApplication::setPalette(PotatoAlert::dark());
+	QApplication::setPalette(PotatoAlert::DarkPalette());
 	app.setStyleSheet(style);
 
 	Updater u;

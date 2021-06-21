@@ -20,13 +20,11 @@ class StatsWidget : public QWidget
 {
 public:
 	explicit StatsWidget(QWidget* parent);
-	void fillTables(std::vector<teamType> teams);
-	void setStatus(Status status, const std::string& statusText);
-	void setAverages(const std::vector<QString>& avg = { "0.0%", "", "0", "", "0.0%", "", "0", "" });
-	void setClans(const std::vector<QString>& clans = {});
-	void setWowsNumbers(const std::vector<std::vector<QString>>& wowsNumbers);
+
+	void Update(const Match& match);
+	void SetStatus(Status status, const std::string& statusText);
 private:
-	void init();
+	void Init();
 	StatsTable* left = new StatsTable(this);
 	StatsTable* right = new StatsTable(this);
 	StatsTeamFooter* footer = new StatsTeamFooter(this);

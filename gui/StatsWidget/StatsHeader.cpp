@@ -14,11 +14,10 @@
 using PotatoAlert::StatsHeader;
 
 StatsHeader::StatsHeader(QWidget* parent) : QWidget(parent)
-{
-	this->init();
+{ this->Init();
 }
 
-void StatsHeader::init()
+void StatsHeader::Init()
 {
 	this->loading->setSpeed(1000);
 	this->loading->setScaledSize(QSize(20, 20));
@@ -86,7 +85,7 @@ void StatsHeader::changeEvent(QEvent* event)
 	}
 }
 
-void StatsHeader::setStatus(Status status, const std::string& text)
+void StatsHeader::SetStatus(Status status, const std::string& text)
 {
 	this->statusText->setText(QString::fromStdString(text));
 	this->statusIcon->clear();

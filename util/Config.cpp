@@ -1,5 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Config.hpp"
 #include "Logger.hpp"
 #include "Config.hpp"
 #include <QDir>
@@ -38,36 +39,46 @@ Config::Config(const char* fileName)
 			{"language", 0},
 			{"menubar_leftside", true}
 	};
-	this->filePath = Config::getFilePath(fileName);
-	this->load();
-	this->addMissingKeys();
+
+	auto path = Config::GetPath(fileName);
+	if (path.has_value())
+	{
+		this->filePath = path.value();
+	}
+	else
+	{
+		Logger::Error("Failed to get config path.");
+		QApplication::exit(1);
+	}
+
+	this->Load();
+	this->AddMissingKeys();
 }
 
 Config::~Config()
 {
-	this->save();
+	this->Save();
 }
 
-void Config::load()
+void Config::Load()
 {
-	Logger::Debug("Trying to load config...");
-	try
-	{
-		if (!this->exists())
-		{
-			if (!this->createDefault())
-			{
-				Logger::Error("Failed to create default config.");
-				QApplication::exit(1);
-			}
-		}
+	Logger::Debug("Trying to Load config...");
 
-		std::ifstream file(this->filePath);
-		if (!file.is_open())
+	if (!this->Exists())
+	{
+		if (!this->CreateDefault())
 		{
-			Logger::Error("Failed to open config file for reading.");
+			Logger::Error("Failed to create default config.");
 			QApplication::exit(1);
 		}
+	}
+
+	std::ifstream file(this->filePath);
+	if (!file.is_open())
+	{
+		Logger::Error("Failed to open config file for reading.");
+		QApplication::exit(1);
+	}
 		this->j = json::parse(file);
 		file.close();
 		Logger::Debug("Config loaded.");
@@ -76,11 +87,14 @@ void Config::load()
 	{
 		Logger::Error("Cannot parse config: {}", e.what());
 
-		if (this->createDefault())
-			this->load();
+		if (this->CreateDefault())
+			this->Load();
 		else
 			QApplication::exit(1);
 	}
+
+	file.close();
+	Logger::Debug("Config loaded.");
 }
 
 bool Config::save()
@@ -96,7 +110,7 @@ bool Config::save()
 	return true;
 }
 
-bool Config::exists() const
+bool Config::Exists() const noexcept
 {
 	try
 	{
@@ -110,21 +124,17 @@ bool Config::exists() const
 	}
 }
 
-bool Config::createDefault()
+bool Config::CreateDefault() noexcept
 {
-	try
+	Logger::Info("Creating new default config.");
+	if (!this->Exists())
 	{
-		Logger::Info("Creating new default config.");
-		if (!this->exists())
-		{
-			this->j = g_defaultConfig;
-			return this->save();
-		}
+		this->j = g_defaultConfig;
+		return this->Save();
+	}
 
-		Logger::Info("Creating backup of old config.");
-		fs::path backupConfig(this->filePath.string() + ".bak");  // TODO
-		if (fs::exists(backupConfig))
-			fs::remove(backupConfig);
+	Logger::Info("Creating backup of old config.");
+	fs::path backupConfig(this->filePath.string() + ".bak");  // TODO
 
 		fs::rename(this->filePath, backupConfig);
 		this->j = g_defaultConfig;
@@ -137,7 +147,7 @@ bool Config::createDefault()
 	}
 }
 
-void Config::addMissingKeys()
+void Config::AddMissingKeys()
 {
 	for (auto it = g_defaultConfig.begin(); it != g_defaultConfig.end(); ++it)
 	{
@@ -149,46 +159,32 @@ void Config::addMissingKeys()
 	}
 }
 
-fs::path Config::getFilePath(const char* fileName)
+std::optional<fs::path> Config::GetPath(const char* fileName)
 {
 	const std::string root = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).toStdString();
 	const fs::path configPath = fs::path(root) / "PotatoAlert";
 
-	try
+	std::error_code ec;
+
+	// check if path exists
+	bool exists = fs::exists(configPath, ec);
+	if (ec)
 	{
-		if (!fs::exists(configPath))
-			fs::create_directories(configPath);
+		Logger::Error("Failed to check for config path: {}", ec.message());
+		return {};
 	}
-	catch (fs::filesystem_error& e)
+
+	if (!exists)
 	{
-		Logger::Error("Can't create config dir: {}", e.what());
+		fs::create_directories(configPath, ec);
+		if (ec)
+		{
+			Logger::Error("Failed to create dirs for config path: {}", ec.message());
+			return {};
+		}
 	}
 
 	return (configPath / fileName);
-}
-
-template <typename T>
-T Config::get(const char* name) const
-{
-	try
-	{
-		return this->j[name].get<T>();
-	}
-	catch (json::exception& e)
-	{
-		Logger::Error("Can't get key '{}' from config: {}", name, e.what());
-	}
-	T value;
-	return value;
-}
-template int Config::get(const char* name) const;
-template bool Config::get(const char* name) const;
-template std::string Config::get(const char* name) const;
-template std::vector<std::string> Config::get(const char* name) const;
-
-template <typename T> void Config::set(const char* name, T value)
-{
-	this->j[name] = value;
 }
 template void Config::set(const char* name, int value);
 template void Config::set(const char* name, bool value);

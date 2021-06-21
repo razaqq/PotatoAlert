@@ -15,7 +15,7 @@ class NativeWindow : public QWidget
 public:
 	explicit NativeWindow(QMainWindow* mainWindow);
 private:
-	void init();
+	void Init();
 	QMainWindow* mainWindow;
 
 	static const int borderWidth = 4;

@@ -15,10 +15,10 @@ using PotatoAlert::StatsTeamFooter;
 
 StatsTeamFooter::StatsTeamFooter(QWidget* parent) : QWidget(parent)
 {
-	this->init();
+	this->Init();
 }
 
-void StatsTeamFooter::init()
+void StatsTeamFooter::Init()
 {
 	auto layout = new QHBoxLayout;
 	layout->setContentsMargins(10, 0, 10, 0);
@@ -84,7 +84,7 @@ void StatsTeamFooter::init()
 	this->setLayout(layout);
 }
 
-void StatsTeamFooter::setAverages(const std::vector<QString>& avg)
+void StatsTeamFooter::Update(const Match& match)
 {
 	// t1Wr, t1WrStyle, t1Dmg, t1DmgStyle, t2Wr, t2WrStyle, t2Dmg, t2DmgStyle
 	this->team1Wr->setText(avg[0]);

@@ -1,11 +1,14 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include <algorithm>
 #include <string>
 #include <filesystem>
 #include <iostream>
 #include <sstream>
 #include <regex>
 #include <vector>
+#include <charconv>
+#include <optional>
 #include <algorithm>
 #include "Logger.hpp"
 #include "Game.hpp"
@@ -14,23 +17,23 @@
 #include <winver.h>
 
 
-using PotatoAlert::Game::folderStatus;
+using PotatoAlert::Game::FolderStatus;
 namespace fs = std::filesystem;
 
 namespace PotatoAlert::Game {
 
 // reads version number from a file
-std::pair<bool, std::string> getFileVersion(const std::string& file)
+std::optional<std::string> GetFileVersion(const std::string& file)
 {
 	DWORD size = GetFileVersionInfoSize(file.c_str(), nullptr);
 	if (size == 0)
-		return {false, ""};
+		return {};
 
 	char* versionInfo = new char[size];
 	if (!GetFileVersionInfo(file.c_str(), 0, 255, versionInfo))
 	{
 		delete[] versionInfo;
-		return {false, ""};
+		return {};
 	}
 
 	VS_FIXEDFILEINFO* out;
@@ -38,7 +41,7 @@ std::pair<bool, std::string> getFileVersion(const std::string& file)
 	if (!VerQueryValue(&versionInfo[0], "\\", (LPVOID*)&out, &outSize) && outSize > 0)
 	{
 		delete[] versionInfo;
-		return {false, ""};
+		return {};
 	}
 
 	std::string version = fmt::format("{}.{}.{}.{}",
@@ -48,11 +51,17 @@ std::pair<bool, std::string> getFileVersion(const std::string& file)
 									  ( out->dwFileVersionLS >>  0 ) & 0xff
 									  );
 	delete[] versionInfo;
-	return {true, version};
+	return version;
+}
+
+bool AsInteger(const std::string& src, int& value)
+{
+	auto [ptr, ec] = std::from_chars(src.data(), src.data()+src.size(), value);
+	return ec == std::errc();
 }
 
 // finds the res folder path in the currently selected directory
-bool getResFolderPath(folderStatus& status)
+bool GetResFolderPath(FolderStatus& status)
 {
 	// get newest folder version inside /bin folder
 
@@ -71,11 +80,11 @@ bool getResFolderPath(folderStatus& status)
 
 		const fs::path exe = (entry.path() / "bin32" / "WorldOfWarships32.exe");
 
-		auto&& [success, version] = getFileVersion(exe.string());
-		if (!success)
+		auto version = GetFileVersion(exe.string());
+		if (!version.has_value())
 			continue;
 
-		if (version == status.gameVersion)
+		if (version.value() == status.gameVersion)
 		{
 			status.folderVersion = entry.path().filename().string();
 			status.resFolderPath = (fs::path(status.gamePath) / "bin" / status.folderVersion).string();
@@ -90,16 +99,12 @@ bool getResFolderPath(folderStatus& status)
 		if (!entry.is_directory())
 			continue;
 
-		try
-		{
-			const int v = std::stoi(entry.path().filename().string());
+		std::string fileName = entry.path().filename().string();
+		int v = 0;
+
+		if (AsInteger(fileName, v))
 			if (v > folderVersion)
 				folderVersion = v;
-		}
-		catch (const std::invalid_argument& ia)
-		{
-			// ignore folders that aren't a valid version
-		}
 	}
 
 	if (folderVersion != -1)
@@ -114,7 +119,7 @@ bool getResFolderPath(folderStatus& status)
 }
 
 // reads the engine config and sets values
-bool readEngineConfig(folderStatus& status, const char* resFolder)
+bool ReadEngineConfig(FolderStatus& status, const char* resFolder)
 {
 	fs::path engineConfig(status.resFolderPath / fs::path(resFolder) / "engine_config.xml");
 	if (!fs::exists(engineConfig))
@@ -183,7 +188,7 @@ bool readEngineConfig(folderStatus& status, const char* resFolder)
 }
 
 // reads game version and region from preferences.xml
-bool readPreferences(folderStatus& status, const std::string& basePath)
+bool ReadPreferences(FolderStatus& status, const std::string& basePath)
 {
 	// For some reason preferences.xml is not valid xml and so we have to parse it with regex instead of xml
 	std::string preferencesPath = (fs::path(basePath) / "preferences.xml").string();
@@ -243,7 +248,7 @@ bool readPreferences(folderStatus& status, const std::string& basePath)
 }
 
 // sets the replays folder
-void setReplaysFolder(folderStatus& status)
+void SetReplaysFolder(FolderStatus& status)
 {
 	if (status.replaysPathBase == "cwd")
 	{
@@ -267,47 +272,57 @@ void setReplaysFolder(folderStatus& status)
 	}
 }
 
-folderStatus checkPath(const std::string& selectedPath)
+bool CheckPath(const std::string& selectedPath, FolderStatus& status)
 {
-	folderStatus status{.gamePath = fs::path(selectedPath).make_preferred().string()};
+	fs::path gamePath = fs::path(selectedPath).make_preferred();
+	status.gamePath = gamePath.string();
 
 	// check for replays folder override
-	if (PotatoConfig().get<bool>("override_replays_folder"))
+	if (PotatoConfig().Get<bool>("override_replays_folder"))
 	{
-		status.overrideReplaysPath = { PotatoConfig().get<std::string>("replays_folder") };
+		status.overrideReplaysPath = PotatoConfig().Get<std::string>("replays_folder");
 	}
 
-	fs::path gamePath(status.gamePath);
-	if (status.gamePath.empty() || !fs::exists(gamePath))
-		return status;
+	// check that the game path exists
+	std::error_code ec;
+	bool exists = fs::exists(gamePath, ec);
+	if (ec)
+	{
+		Logger::Error("Failed to check if game path exists: {}", ec.message());
+		return false;
+	}
+	if (gamePath.empty() || !exists)
+		return false;
 
-	status.steamVersion = fs::exists(gamePath / "bin" / "clientrunner");
-
-	readPreferences(status, status.gamePath);
-	if (!getResFolderPath(status))
+	ReadPreferences(status, status.gamePath);
+	if (!GetResFolderPath(status))
 	{
 		status.statusText = "Failed to get res folder path";
-		return status;
+		return false;
 	}
 
-	if (!readEngineConfig(status, "res"))
+	if (!ReadEngineConfig(status, "res"))
 	{
 		status.statusText = "Failed to read engine config";
-		return status;
+		return false;
 	}
 
 	std::string resModsFolder = fs::path(fs::path(status.resFolderPath) / "res_mods").string();
-	readEngineConfig(status, resModsFolder.c_str());
-	setReplaysFolder(status);
-	bool found = true;
-	for (auto& replaysPath : status.replaysPath)
-	{
-		if (!fs::exists(replaysPath))
-			found = false;
-	}
-	status.statusText = found ? "Found" : "Replays folder doesn't exist";
-	status.found = found;
-	return status;
+	ReadEngineConfig(status, resModsFolder.c_str());
+	SetReplaysFolder(status);
+
+
+	// get rid of all replays folders that dont exist
+	status.replaysPath.erase(std::remove_if(status.replaysPath.begin(), status.replaysPath.end(), [](const std::string& p)
+			{
+				return !fs::exists(p);
+			}), status.replaysPath.end());
+
+	status.found = !status.replaysPath.empty();
+	// TODO: localize
+	status.statusText = status.found ? "Found" : "Replays folder doesn't exist";
+
+	return true;
 }
 
-} // namespace Game
+}  // namespace Game

@@ -8,11 +8,11 @@
 
 namespace PotatoAlert {
 
-class FolderStatus : public QWidget
+class FolderStatusGui : public QWidget
 {
 public:
-	explicit FolderStatus(QWidget* parent);
-	void updateStatus(Game::folderStatus& status);
+	explicit FolderStatusGui(QWidget* parent);
+	void updateStatus(const Game::FolderStatus& status);
 private:
 	void init();
 	void changeEvent(QEvent* event) override;
@@ -27,7 +27,6 @@ private:
 	QLabel* region = new QLabel;
 	QLabel* gameVersion = new QLabel;
 	QLabel* found = new QLabel;
-	QLabel* steamVersion = new QLabel;
 	QLabel* replaysFolders  = new QLabel;
 	QLabel* versionedReplays = new QLabel;
 	QLabel* statusText = new QLabel;

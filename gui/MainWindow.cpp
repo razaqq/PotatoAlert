@@ -1,5 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "MainWindow.hpp"
 #include <QMainWindow>
 #include <QWidget>
 #include <QVBoxLayout>
@@ -31,12 +32,12 @@ using PotatoAlert::MainWindow;
 MainWindow::MainWindow(PotatoClient* pc) : QMainWindow()
 {
 	this->pc = pc;
-	this->init();
-	this->connectSignals();
+	this->Init();
+	this->ConnectSignals();
 	this->pc->init();
 }
 
-void MainWindow::init()
+void MainWindow::Init()
 {
 	// central widget
 	this->setCentralWidget(this->centralW);
@@ -49,12 +50,12 @@ void MainWindow::init()
 	this->centralW->setLayout(centralLayout);
 
 	// menubar dock widget
-	const bool leftSide = PotatoConfig().get<bool>("menubar_leftside");
+	const bool leftSide = PotatoConfig().Get<bool>("menubar_leftside");
 	const auto side = leftSide ? Qt::DockWidgetArea::LeftDockWidgetArea : Qt::DockWidgetArea::RightDockWidgetArea;
 	this->addDockWidget(side, this->menuBar);
 	connect(this->menuBar, &VerticalMenuBar::dockLocationChanged, [](Qt::DockWidgetArea area)
 	{
-		PotatoConfig().set<bool>("menubar_leftside", area == Qt::DockWidgetArea::LeftDockWidgetArea);
+		PotatoConfig().Set<bool>("menubar_leftside",area == Qt::DockWidgetArea::LeftDockWidgetArea);
 	});
 
 	this->settingsWidget = new SettingsWidget(this, this->pc);
@@ -68,7 +69,7 @@ void MainWindow::init()
 	this->centralLayout->addWidget(this->aboutWidget);
 }
 
-void MainWindow::switchTab(int i)
+void MainWindow::SwitchTab(int i)
 {
 	QWidget* oldWidget = this->activeWidget;
 	switch (i)
@@ -98,24 +99,21 @@ void MainWindow::switchTab(int i)
 	this->activeWidget->setVisible(true);
 }
 
-void MainWindow::connectSignals()
+void MainWindow::ConnectSignals()
 {
-	connect(this->menuBar->btnGroup, &QButtonGroup::idClicked, this, &MainWindow::switchTab);
+	connect(this->menuBar->btnGroup, &QButtonGroup::idClicked, this, &MainWindow::SwitchTab);
 
-	connect(this->pc, &PotatoClient::status, this->statsWidget, &StatsWidget::setStatus);
-	connect(this->pc, &PotatoClient::teamsReady, this->statsWidget, &StatsWidget::fillTables);
-	connect(this->pc, &PotatoClient::avgReady, this->statsWidget, &StatsWidget::setAverages);
-	connect(this->pc, &PotatoClient::clansReady, this->statsWidget, &StatsWidget::setClans);
-	connect(this->pc, &PotatoClient::wowsNumbersReady, this->statsWidget, &StatsWidget::setWowsNumbers);
+	connect(this->pc, &PotatoClient::status, this->statsWidget, &StatsWidget::SetStatus);
+	connect(this->pc, &PotatoClient::matchReady, this->statsWidget, &StatsWidget::Update);
 
 	connect(this->settingsWidget, &SettingsWidget::done,[this]()
 	{
-		this->switchTab(0);
+		this->SwitchTab(0);
 		this->menuBar->btnGroup->button(0)->setChecked(true);
 	});
 }
 
-int MainWindow::confirmUpdate()
+bool MainWindow::ConfirmUpdate()
 {
 	auto dialog = new FramelessDialog(this);
 

@@ -17,34 +17,46 @@ class Updater : public QWidget
 {
 	Q_OBJECT
 public:
-	// functions called from PotatoAlert
-	static bool updateAvailable();
+	static bool UpdateAvailable();
 
-	void run();
-	static void end(bool success = true, bool revert = false);
+	void Run();
 
-	static bool unpack(const char* file, const char* dest);
-	static std::pair<bool, bool> elevationType();
+	// functions to start updater/main binary
+	static inline bool StartUpdater(std::string_view args = "")
+	{
+		return CreateNewProcess(updaterBinary, args, true);
+	}
+	static inline bool StartMain(std::string_view args = "")
+	{
+		return CreateNewProcess(mainBinary, args, false);
+	}
 
-	// functions for paths
-	static inline fs::path updateDest() { return fs::absolute(fs::current_path()); };
-	static inline fs::path backupDest() { return fs::path(fs::temp_directory_path() / "PotatoAlertBackup"); };
-	static inline fs::path updateArchive() { return fs::path(fs::temp_directory_path() / "PotatoAlert.zip"); };
+	static void RemoveTrash();
+private:
+	QNetworkReply* Download();
+
+	static void End(bool success = true, bool revert = false);
 
 	// functions to handle backup
-	static bool createBackup();
-	static bool removeBackup();
-	static bool revertBackup();
+	static bool CreateBackup();
+	static bool RemoveBackup();
+	static bool RevertBackup();
 
 	// functions for executable/library renaming
-	static bool renameToTrash();
-	static void removeTrash();
+	static bool RenameToTrash();
 
-	static bool createProcess(std::string_view path = updaterBinary, std::string_view args = "", bool elevated = true);
+	// functions for paths
+	static inline fs::path UpdateDest() { return fs::absolute(fs::current_path()); };
+	static inline fs::path BackupDest() { return fs::path(fs::temp_directory_path() / "PotatoAlertBackup"); };
+	static inline fs::path UpdateArchive() { return fs::path(fs::temp_directory_path() / "PotatoAlert.zip"); };
+
+	static bool CreateNewProcess(std::string_view path, std::string_view args, bool elevated);
+
+	static bool Unpack(const char* file, const char* dest);
+	static std::pair<bool, bool> ElevationInfo();
+
 	constexpr static std::string_view updaterBinary = "PotatoUpdater.exe";
 	constexpr static std::string_view mainBinary = "PotatoAlert.exe";
-private:
-	QNetworkReply* download();
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"

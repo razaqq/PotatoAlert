@@ -11,11 +11,10 @@
 using PotatoAlert::AboutWidget;
 
 AboutWidget::AboutWidget(QWidget* parent) : QWidget(parent)
-{
-	this->init();
+{ this->Init();
 }
 
-void AboutWidget::init()
+void AboutWidget::Init()
 {
 	QFont labelFont;
 	labelFont.setPointSize(10);

@@ -22,10 +22,10 @@ SettingsSwitch::SettingsSwitch(QWidget* parent) : QAbstractButton(parent)
 	this->trackRadius = 10;
 	this->thumbRadius = 8;
 	this->_offset = this->trackRadius;
-	this->init();
+	this->Init();
 }
 
-void SettingsSwitch::init()
+void SettingsSwitch::Init()
 {
 	this->setCheckable(true);
 	this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);

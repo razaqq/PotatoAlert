@@ -25,10 +25,10 @@ class SettingsWidget : public QWidget
 public:
 	SettingsWidget(QWidget* parent, PotatoClient* pc);
 private:
-	void init();
-	void load();
-	void connectSignals();
-	void checkPath();
+	void Init();
+	void Load();
+	void ConnectSignals();
+	void CheckPath();
 	void changeEvent(QEvent* event) override;
 
 	PotatoClient* pc;
@@ -55,7 +55,7 @@ private:
 	// game directory selection
 	QLineEdit* gamePathEdit = new QLineEdit();
 	QToolButton* gamePathButton = new QToolButton();
-	FolderStatus* folderStatusGui;
+	FolderStatusGui* folderStatusGui = new FolderStatusGui(this);
 
 	// manual replays folder
 	QLineEdit* replaysFolderEdit = new QLineEdit();

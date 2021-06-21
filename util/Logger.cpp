@@ -2,6 +2,7 @@
 
 #include "Logger.hpp"
 #include <QDir>
+#include <QString>
 #include <QStandardPaths>
 #include <string>
 #include <iostream>
@@ -11,13 +12,18 @@
 
 using PotatoAlert::Logger;
 
+QString Logger::GetDir()
+{
+	return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert");
+}
+
 Logger::Logger()
 {
-    QString dirPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/PotatoAlert";
+	auto dir = Logger::GetDir();
 
 	QDir d;
-	d.mkpath(dirPath);
-	d.setPath(dirPath);
+	d.mkpath(dir);
+	d.setPath(dir);
 
 	this->_ofs.open(d.filePath("PotatoAlert.log").toStdString(), std::ofstream::out | std::ofstream::ate | std::ofstream::app);
 }

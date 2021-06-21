@@ -9,7 +9,7 @@
 
 namespace PotatoAlert::Game {
 
-struct folderStatus
+struct FolderStatus
 {
 	std::string gamePath;
 	std::string gameVersion;
@@ -22,15 +22,14 @@ struct folderStatus
 	std::string overrideReplaysPath;
 	std::string region;
 	bool versionedReplays;
-	bool steamVersion;
 	std::string statusText;
 	bool found = false;
 };
 
-folderStatus checkPath(const std::string& selectedPath);
-bool getResFolderPath(folderStatus& status);
-bool readEngineConfig(folderStatus& status, const char* resFolder);
-bool readPreferences(folderStatus& status, const std::string& basePath);
-void setReplaysFolder(folderStatus& status);
+bool CheckPath(const std::string& selectedPath, FolderStatus& status);
+bool GetResFolderPath(FolderStatus& status);
+bool ReadEngineConfig(FolderStatus& status, const char* resFolder);
+bool ReadPreferences(FolderStatus& status, const std::string& basePath);
+void SetReplaysFolder(FolderStatus& status);
 
 }  // namespace PotatoAlert::Game
