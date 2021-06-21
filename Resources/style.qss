@@ -265,6 +265,13 @@ QFrame#hLine
   color: white;
 }
 
+#settingsChoiceButton:checked:disabled
+{
+  background: palette(midlight);
+  border-radius: 10px;
+  color: white;
+}
+
 #settingsChoiceButton:hover:!checked
 {
   background: palette(midlight);
