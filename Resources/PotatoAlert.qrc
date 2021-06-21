@@ -6,6 +6,7 @@
         <file alias="github.svg">menuicons/github.svg</file>
         <file alias="help.svg">menuicons/help.svg</file>
         <file alias="log.svg">menuicons/log.svg</file>
+        <file alias="csv.svg">menuicons/csv.svg</file>
         <file alias="maximize.svg">menuicons/maximize.svg</file>
         <file alias="minimize.svg">menuicons/minimize.svg</file>
         <file alias="settings.svg">menuicons/settings.svg</file>
