@@ -97,7 +97,7 @@ void Config::Load()
 	Logger::Debug("Config loaded.");
 }
 
-bool Config::save()
+bool Config::Save()
 {
 	std::ofstream file(this->filePath);
 	if (!file.is_open())

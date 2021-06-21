@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <string>
 #include <filesystem>
+#include <format>
 #include <iostream>
 #include <sstream>
 #include <regex>
@@ -44,7 +45,7 @@ std::optional<std::string> GetFileVersion(const std::string& file)
 		return {};
 	}
 
-	std::string version = fmt::format("{}.{}.{}.{}",
+	std::string version = std::format("{}.{}.{}.{}",
 									  ( out->dwFileVersionMS >> 16 ) & 0xff,
 									  ( out->dwFileVersionMS >>  0 ) & 0xff,
 									  ( out->dwFileVersionLS >> 16 ) & 0xff,

@@ -26,7 +26,6 @@ find_package(Qt5 COMPONENTS Widgets Core Gui WebSockets REQUIRED)
 
 include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2/include)
 include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/nlohmann_json/include)
-include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/fmt/include)
 include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/zip/src)
 
 include_directories(${PROJECT_SOURCE_DIR}/util)
@@ -35,7 +34,6 @@ include_directories(${PROJECT_SOURCE_DIR}/Resources)
 include_directories(${PROJECT_SOURCE_DIR}/framelessHelper)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2)
-add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/fmt)
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/zip)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/util)

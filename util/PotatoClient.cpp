@@ -16,18 +16,12 @@
 #include <QWebSocket>
 #include <QSizePolicy>
 #include <QTableWidgetItem>
-#include <QString>
-#include <QColor>
-#include <QMetaObject>
+#include <format>
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <tuple>
 #include <thread>
-#include <chrono>
-#include <filesystem>
-#include <fmt/format.h>
-#include <windows.h>
 
 
 using PotatoAlert::PotatoClient;
@@ -111,7 +105,7 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 {
 	Logger::Debug("Directory changed.");
 
-	std::string filePath = fmt::format("{}\\tempArenaInfo.json", path.toStdString());
+	std::string filePath = std::format("{}\\tempArenaInfo.json", path.toStdString());
 
 	if (fs::exists(filePath))
 	{

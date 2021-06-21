@@ -5,6 +5,7 @@
 #include "Version.hpp"
 #include <chrono>
 #include <filesystem>
+#include <format>
 #include <string>
 #include <sstream>
 #include <chrono>

@@ -4,15 +4,11 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <format>
 #include <QString>
 
 
 namespace PotatoAlert {
-
-const char debugPrefix[] = " - [DEBUG] ";
-const char infoPrefix[] = " - [INFO] ";
-const char warnPrefix[] = " - [WARN] ";
-const char errorPrefix[] = " - [ERROR] ";
 
 class Logger
 {
@@ -30,7 +26,7 @@ public:
 	static void Debug(const char* format, TArgs&&... args)
 	{
 	#ifndef NDEBUG
-			auto text = fmt::format(format, args...);
+			auto text = std::format(format, args...);
 			std::cout << getTimeString() << debugPrefix << text << std::endl;
 	#endif
 	}
@@ -74,7 +70,7 @@ private:
 	template<typename... TArgs>
 	void IInfo(const char* format, TArgs&&... args)
 	{
-		auto text = fmt::format(format, args...);
+		auto text = std::format(format, args...);
 		std::cout << getTimeString() << infoPrefix << text << std::endl;
 		this->_ofs << getTimeString() << infoPrefix << text << std::endl;
 
@@ -87,7 +83,7 @@ private:
 	template<typename... TArgs>
 	void IWarn(const char* format, TArgs&&... args)
 	{
-		auto text = fmt::format(format, args...);
+		auto text = std::format(format, args...);
 		std::cout << getTimeString() << warnPrefix << text << std::endl;
 		this->_ofs << getTimeString() << warnPrefix << text << std::endl;
 	}
@@ -99,7 +95,7 @@ private:
 	template<typename... TArgs>
 	void IError(const char* format, TArgs&&... args)
 	{
-		auto text = fmt::format(format, args...);
+		auto text = std::format(format, args...);
 		std::cerr << getTimeString() << errorPrefix << text << std::endl;
 		this->_ofs << getTimeString() << errorPrefix << text << std::endl;
 	}
