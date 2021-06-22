@@ -1,12 +1,15 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Time.hpp"
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <format>
 #include <QString>
 
+
+using namespace PotatoAlert::Time;
 
 namespace PotatoAlert {
 
@@ -27,7 +30,7 @@ public:
 	{
 	#ifndef NDEBUG
 			auto text = std::format(format, args...);
-			std::cout << getTimeString() << debugPrefix << text << std::endl;
+			std::cout << GetTimeStamp(timeFormat) << debugPrefix << text << std::endl;
 	#endif
 	}
 
@@ -52,6 +55,7 @@ private:
 	Logger();
 	~Logger();
 
+	static constexpr std::string_view timeFormat = "%d-%m-%Y %H:%M:%S";
 	static constexpr std::string_view debugPrefix = " - [DEBUG] ";
 	static constexpr std::string_view infoPrefix = " - [INFO] ";
 	static constexpr std::string_view warnPrefix = " - [WARN] ";
@@ -71,8 +75,8 @@ private:
 	void IInfo(const char* format, TArgs&&... args)
 	{
 		auto text = std::format(format, args...);
-		std::cout << getTimeString() << infoPrefix << text << std::endl;
-		this->_ofs << getTimeString() << infoPrefix << text << std::endl;
+		std::cout << GetTimeStamp(timeFormat) << infoPrefix << text << std::endl;
+		this->_ofs << GetTimeStamp(timeFormat) << infoPrefix << text << std::endl;
 
 	}
 
@@ -84,8 +88,8 @@ private:
 	void IWarn(const char* format, TArgs&&... args)
 	{
 		auto text = std::format(format, args...);
-		std::cout << getTimeString() << warnPrefix << text << std::endl;
-		this->_ofs << getTimeString() << warnPrefix << text << std::endl;
+		std::cout << GetTimeStamp(timeFormat) << warnPrefix << text << std::endl;
+		this->_ofs << GetTimeStamp(timeFormat) << warnPrefix << text << std::endl;
 	}
 
 	// ERROR
@@ -96,12 +100,11 @@ private:
 	void IError(const char* format, TArgs&&... args)
 	{
 		auto text = std::format(format, args...);
-		std::cerr << getTimeString() << errorPrefix << text << std::endl;
-		this->_ofs << getTimeString() << errorPrefix << text << std::endl;
+		std::cerr << GetTimeStamp(timeFormat) << errorPrefix << text << std::endl;
+		this->_ofs << GetTimeStamp(timeFormat) << errorPrefix << text << std::endl;
 	}
 
 	std::ofstream _ofs;
-	static std::string getTimeString();
 };
 
 }  // namespace PotatoAlert
