@@ -1,9 +1,10 @@
 # Generated from CLion C/C++ Code Style settings
 BasedOnStyle: LLVM
 AccessModifierOffset: -4
-AlignAfterOpenBracket: DontAlign
-AlignConsecutiveAssignments: false
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: None
 AlignOperands: Align
+AlignTrailingComments: false
 AllowAllArgumentsOnNextLine: false
 AllowAllConstructorInitializersOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
@@ -15,9 +16,9 @@ AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: true
 AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: Yes
-BinPackArguments: false
+BinPackArguments: true
 BinPackParameters: true
-BreakBeforeBraces: Allman
+BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel: true
   AfterClass: true
@@ -26,25 +27,38 @@ BraceWrapping:
   AfterExternBlock: true
   AfterFunction: true
   AfterNamespace: false
-  AfterStruct: true
-  AfterObjCDeclaration: true
-  AfterUnion: true
-  BeforeCatch: true
+  AfterUnion: false
+  BeforeCatch: false
   BeforeElse: true
   BeforeLambdaBody: true
-  IndentBraces: true
-  SplitEmptyFunction: true
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: false
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
 BreakBeforeBinaryOperators: None
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
-ColumnLimit: 80
+ColumnLimit: 0
 CompactNamespaces: false
 ContinuationIndentWidth: 8
+Cpp11BracedListStyle: false
 FixNamespaceComments: true
-IncludeBlocks: Merge
+IncludeBlocks: Regroup
+IncludeCategories:
+  # Headers in <> without extension.
+  - Regex:           '<([A-Za-z0-9\/-_])+>'
+    Priority:        4
+  # Headers in <> from specific external libraries.
+  - Regex:           '<(nlohmann_json|tinyxml2|zip|win32)\/([A-Za-z0-9.\/-_])+>'
+    Priority:        3
+  # Headers in <> with extension.
+  - Regex:           '<([A-Za-z0-9.\/-_])+>'
+    Priority:        2
+  # Headers in "" with extension.
+  - Regex:           '"([A-Za-z0-9.\/-_])+"'
+    Priority:        1
 IndentCaseLabels: true
 IndentPPDirectives: None
 IndentWidth: 4
@@ -55,8 +69,9 @@ ObjCSpaceAfterProperty: false
 ObjCSpaceBeforeProtocolList: true
 PointerAlignment: Left
 ReflowComments: false
+# SortIncludes: CaseInsensitive
 SortIncludes: true
-SpaceAfterCStyleCast: true
+SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
@@ -66,7 +81,7 @@ SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements
 SpaceBeforeRangeBasedForLoopColon: true
 SpaceInEmptyParentheses: false
-SpacesBeforeTrailingComments: 0
+SpacesBeforeTrailingComments: 2
 SpacesInAngles: false
 SpacesInCStyleCastParentheses: false
 SpacesInContainerLiterals: false
