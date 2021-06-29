@@ -6,12 +6,10 @@
 #include <QLayout>
 #include <QSize>
 #include <QVBoxLayout>
-#include "MenuEntry.hpp"
+#include "MenuEntryButton.hpp"
 
 
-using PotatoAlert::MenuEntry;
-
-MenuEntry::MenuEntry(QWidget* parent, const QIcon& icon) : QWidget(parent)
+PotatoAlert::MenuEntryButton::MenuEntryButton(QWidget* parent, const QIcon& icon, bool checkable) : QWidget(parent)
 {
 	this->setObjectName("menuEntry");
 
@@ -25,7 +23,7 @@ MenuEntry::MenuEntry(QWidget* parent, const QIcon& icon) : QWidget(parent)
 	int width = this->width() - 2 * layout->spacing();
 	this->button->setIconSize(QSize(width, width));
 	this->button->setCursor(Qt::PointingHandCursor);
-	this->button->setCheckable(true);
+	this->button->setCheckable(checkable);
 	this->button->setFlat(true);
 	layout->addWidget(this->button);
 
