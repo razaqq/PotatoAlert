@@ -9,23 +9,17 @@
 #include <format>
 #include <string>
 #include <sstream>
-#include <chrono>
 #include <utility>
-#include <filesystem>
 #include <QtNetwork>
 #include <QUrl>
 #include <QFile>
 #include <QApplication>
 #include <QEventLoop>
 #include <QElapsedTimer>
-#include <Windows.h>
-#include <shellapi.h>
-#include <nlohmann/json.hpp>
-#include <fmt/format.h>
 #include <zip.h>
+#include "win32.h"
 
 
-using nlohmann::json;
 using PotatoUpdater::Updater;
 using PotatoAlert::Version;
 using PotatoAlert::Logger;
