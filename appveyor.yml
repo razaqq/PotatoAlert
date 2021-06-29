@@ -20,7 +20,7 @@ init:
 
 before_build:
   - cmake --version
-  - clang-cl --version
+  - clang --version
   - if DEFINED MSVC_SETUP_PATH call "%MSVC_SETUP_PATH%" %MSVC_SETUP_ARG%
   - "%PYTHON%\\python.exe .\\Resources\\generate_translations.py"
 
