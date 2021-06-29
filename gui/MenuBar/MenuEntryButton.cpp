@@ -19,13 +19,13 @@ PotatoAlert::MenuEntryButton::MenuEntryButton(QWidget* parent, const QIcon& icon
 
 	this->setFixedWidth(parent->width());
 
-	this->button->setIcon(icon);
+	this->m_button->setIcon(icon);
 	int width = this->width() - 2 * layout->spacing();
-	this->button->setIconSize(QSize(width, width));
-	this->button->setCursor(Qt::PointingHandCursor);
-	this->button->setCheckable(checkable);
-	this->button->setFlat(true);
-	layout->addWidget(this->button);
+	this->m_button->setIconSize(QSize(width, width));
+	this->m_button->setCursor(Qt::PointingHandCursor);
+	this->m_button->setCheckable(checkable);
+	this->m_button->setFlat(true);
+	layout->addWidget(this->m_button);
 
 	this->setLayout(layout);
 }

@@ -31,36 +31,36 @@ private:
 	void CheckPath();
 	void changeEvent(QEvent* event) override;
 
-	PotatoClient* pc;
+	PotatoClient* m_pc;
 
-	QLabel* updateLabel = new QLabel();
-	QLabel* csvLabel = new QLabel();
-	QLabel* gamePathLabel = new QLabel();
-	QLabel* replaysFolderLabel = new QLabel();
-	QLabel* replaysFolderDesc = new QLabel();
-	QLabel* statsModeLabel = new QLabel();
-	QLabel* gaLabel = new QLabel();
-	QLabel* languageLabel = new QLabel();
+	QLabel* m_updateLabel = new QLabel();
+	QLabel* m_csvLabel = new QLabel();
+	QLabel* m_gamePathLabel = new QLabel();
+	QLabel* m_replaysFolderLabel = new QLabel();
+	QLabel* m_replaysFolderDesc = new QLabel();
+	QLabel* m_statsModeLabel = new QLabel();
+	QLabel* m_gaLabel = new QLabel();
+	QLabel* m_languageLabel = new QLabel();
 
-	SettingsSwitch* updates = new SettingsSwitch();
-	SettingsSwitch* csv = new SettingsSwitch();
-	SettingsSwitch* overrideReplaysFolder = new SettingsSwitch();
+	SettingsSwitch* m_updates = new SettingsSwitch();
+	SettingsSwitch* m_csv = new SettingsSwitch();
+	SettingsSwitch* m_overrideReplaysFolder = new SettingsSwitch();
 	
-	SettingsChoice* statsMode;
-	SettingsChoice* language;
+	SettingsChoice* m_statsMode;
+	SettingsChoice* m_language;
 
-	QPushButton* saveButton;
-	QPushButton* cancelButton;
+	QPushButton* m_saveButton;
+	QPushButton* m_cancelButton;
 
 	// game directory selection
-	QLineEdit* gamePathEdit = new QLineEdit();
-	QToolButton* gamePathButton = new QToolButton();
-	FolderStatusGui* folderStatusGui = new FolderStatusGui(this);
+	QLineEdit* m_gamePathEdit = new QLineEdit();
+	QToolButton* m_gamePathButton = new QToolButton();
+	FolderStatusGui* m_folderStatusGui = new FolderStatusGui(this);
 
 	// manual replays folder
-	QLineEdit* replaysFolderEdit = new QLineEdit();
-	QToolButton* replaysFolderButton = new QToolButton();
-	std::function<void(bool)> toggleReplaysFolderOverride;
+	QLineEdit* m_replaysFolderEdit = new QLineEdit();
+	QToolButton* m_replaysFolderButton = new QToolButton();
+	std::function<void(bool)> m_toggleReplaysFolderOverride;
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"

@@ -12,7 +12,7 @@ class SettingsChoice : public QWidget
 {
 public:
 	SettingsChoice(QWidget* parent, const std::vector<QString>& buttons);
-	QButtonGroup* btnGroup;
+	QButtonGroup* m_btnGroup;
 };
 
 }  // namespace PotatoAlert

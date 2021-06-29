@@ -19,10 +19,10 @@ StatsHeader::StatsHeader(QWidget* parent) : QWidget(parent)
 
 void StatsHeader::Init()
 {
-	this->loading->setSpeed(1000);
-	this->loading->setScaledSize(QSize(20, 20));
-	this->ready = this->ready.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-	this->error = this->error.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	this->m_loading->setSpeed(1000);
+	this->m_loading->setScaledSize(QSize(20, 20));
+	this->m_ready = this->m_ready.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	this->m_error = this->m_error.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
 	auto layout = new QHBoxLayout;
 	layout->setContentsMargins(10, 0, 10, 0);
@@ -39,18 +39,18 @@ void StatsHeader::Init()
 	statusLayout->setContentsMargins(0, 0, 0, 0);
 	statusLayout->setSpacing(0);
 	status->setFixedWidth(130);
-	this->statusIcon->setFixedSize(20, 20);
-	statusLayout->addWidget(this->statusIcon);
+	this->m_statusIcon->setFixedSize(20, 20);
+	statusLayout->addWidget(this->m_statusIcon);
 	statusLayout->addSpacing(5);
-	this->statusText->setAlignment(Qt::AlignCenter);
-	this->statusText->setStyleSheet("font-size: 10px;");
-	statusLayout->addWidget(this->statusText);
+	this->m_statusText->setAlignment(Qt::AlignCenter);
+	this->m_statusText->setStyleSheet("font-size: 10px;");
+	statusLayout->addWidget(this->m_statusText);
 	statusLayout->addStretch();
 	status->setLayout(statusLayout);
 
 	// team labels
-	this->team1Label->setFont(labelFont);
-	this->team2Label->setFont(labelFont);
+	this->m_team1Label->setFont(labelFont);
+	this->m_team2Label->setFont(labelFont);
 
 	// dummy with same width as status
 	auto dummy = new QWidget;
@@ -59,12 +59,12 @@ void StatsHeader::Init()
 	// add to layouts
 	leftLayout->addWidget(status);
 	leftLayout->addStretch();
-	leftLayout->addWidget(this->team1Label);
+	leftLayout->addWidget(this->m_team1Label);
 	leftLayout->addStretch();
 	leftLayout->addWidget(dummy);
 
 	rightLayout->addStretch();
-	rightLayout->addWidget(this->team2Label);
+	rightLayout->addWidget(this->m_team2Label);
 	rightLayout->addStretch();
 
 	layout->addLayout(leftLayout);
@@ -76,8 +76,8 @@ void StatsHeader::changeEvent(QEvent* event)
 {
 	if (event->type() == QEvent::LanguageChange)
 	{
-		this->team1Label->setText(GetString(PotatoAlert::StringKeys::LABEL_MYTEAM));
-		this->team2Label->setText(GetString(PotatoAlert::StringKeys::LABEL_ENEMYTEAM));
+		this->m_team1Label->setText(GetString(PotatoAlert::StringKeys::LABEL_MYTEAM));
+		this->m_team2Label->setText(GetString(PotatoAlert::StringKeys::LABEL_ENEMYTEAM));
 	}
 	else
 	{
@@ -87,22 +87,22 @@ void StatsHeader::changeEvent(QEvent* event)
 
 void StatsHeader::SetStatus(Status status, const std::string& text)
 {
-	this->statusText->setText(QString::fromStdString(text));
-	this->statusIcon->clear();
+	this->m_statusText->setText(QString::fromStdString(text));
+	this->m_statusIcon->clear();
 
 	switch (status)
 	{
 	case Status::Ready:
-		loading->stop();
-		this->statusIcon->setPixmap(this->ready);
+		m_loading->stop();
+		this->m_statusIcon->setPixmap(this->m_ready);
 		break;
 	case Status::Loading:
-		this->statusIcon->setMovie(this->loading);
-		loading->start();
+		this->m_statusIcon->setMovie(this->m_loading);
+		m_loading->start();
 		break;
 	case Status::Error:
-		loading->stop();
-		this->statusIcon->setPixmap(this->error);
+		m_loading->stop();
+		this->m_statusIcon->setPixmap(this->m_error);
 		break;
 	}
 }

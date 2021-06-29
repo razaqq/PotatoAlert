@@ -25,8 +25,8 @@ SettingsChoice::SettingsChoice(QWidget* parent, const std::vector<QString>& butt
 	this->setCursor(Qt::PointingHandCursor);
 	this->setFixedHeight(WIDGET_HEIGHT);
 
-	this->btnGroup = new QButtonGroup(this);
-	this->btnGroup->setExclusive(true);
+	this->m_btnGroup = new QButtonGroup(this);
+	this->m_btnGroup->setExclusive(true);
 
 	QFont btnFont("Helvetica Neue", 10, QFont::DemiBold);
 	btnFont.setStyleStrategy(QFont::PreferAntialias);
@@ -44,7 +44,7 @@ SettingsChoice::SettingsChoice(QWidget* parent, const std::vector<QString>& butt
 		button->setFlat(true);
 		button->setCheckable(true);
 
-		this->btnGroup->addButton(button, i);
+		this->m_btnGroup->addButton(button, i);
 		layout->addWidget(button);
 	}
 	this->setLayout(layout);

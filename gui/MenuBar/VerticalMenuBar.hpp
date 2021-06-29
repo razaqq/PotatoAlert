@@ -27,8 +27,8 @@ public:
 	explicit VerticalMenuBar(QWidget* parent);
 	void SetChecked(MenuEntry entry);
 private:
-	std::array<MenuEntryButton*, 7> menuEntries;
-	QButtonGroup* btnGroup = new QButtonGroup();
+	std::array<MenuEntryButton*, 7> m_menuEntries;
+	QButtonGroup* m_btnGroup = new QButtonGroup();
 	void Init();
 signals:
 #pragma clang diagnostic push

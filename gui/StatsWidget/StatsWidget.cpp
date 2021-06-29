@@ -28,27 +28,27 @@ void StatsWidget::Init()
 	vLayout->setContentsMargins(0, 0, 0, 10);
 	vLayout->setSpacing(0);
 
-	vLayout->addWidget(this->header);
+	vLayout->addWidget(this->m_header);
 
 	auto tableLayout = new QHBoxLayout;
-	tableLayout->addWidget(this->left);
-	tableLayout->addWidget(this->right);
+	tableLayout->addWidget(this->m_leftTable);
+	tableLayout->addWidget(this->m_rightTable);
 	tableLayout->setSpacing(10);
 	tableLayout->setContentsMargins(10, 0, 10, 0);
 	vLayout->addLayout(tableLayout);
 
-	vLayout->addWidget(this->footer);
+	vLayout->addWidget(this->m_footer);
 
 	this->setLayout(vLayout);
 }
 
 void StatsWidget::Update(const Match& match)
 {
-	this->lastMatch = match;
+	this->m_lastMatch = match;
 
 	// update the tables
-	this->left->clearContents();
-	this->right->clearContents();
+	this->m_leftTable->clearContents();
+	this->m_rightTable->clearContents();
 
 	auto fillTable = [](QTableWidget* table, const TeamType& team)
 	{
@@ -68,11 +68,11 @@ void StatsWidget::Update(const Match& match)
 		}
 	};
 
-	fillTable(this->left, match.team1.table);
-	fillTable(this->right, match.team2.table);
+	fillTable(this->m_leftTable, match.team1.table);
+	fillTable(this->m_rightTable, match.team2.table);
 
 	// update the footer
-	this->footer->Update(match);
+	this->m_footer->Update(match);
 
 	// add hooks to open wows-numbers link when double clicking cell
 	auto openWowsNumbers = [](int row, const Team& team)
@@ -86,17 +86,17 @@ void StatsWidget::Update(const Match& match)
 				QDesktopServices::openUrl(url);
 		}
 	};
-	connect(this->left, &StatsTable::cellDoubleClicked, [&](int row, int column)
+	connect(this->m_leftTable, &StatsTable::cellDoubleClicked, [&](int row, int column)
 	{
-		openWowsNumbers(row, this->lastMatch.team1);
+		openWowsNumbers(row, this->m_lastMatch.team1);
 	});
-	connect(this->right, &StatsTable::cellDoubleClicked, [&](int row, int column)
+	connect(this->m_rightTable, &StatsTable::cellDoubleClicked, [&](int row, int column)
 	{
-		openWowsNumbers(row, this->lastMatch.team2);
+		openWowsNumbers(row, this->m_lastMatch.team2);
 	});
 }
 
 void StatsWidget::SetStatus(Status status, const std::string& statusText)
 {
-	this->header->SetStatus(status, statusText);
+	this->m_header->SetStatus(status, statusText);
 }

@@ -16,11 +16,11 @@ public:
 	explicit NativeWindow(QMainWindow* mainWindow);
 private:
 	void Init();
-	QMainWindow* mainWindow;
+	QMainWindow* m_mainWindow;
 
-	static const int borderWidth = 4;
+	static const int m_borderWidth = 4;
 
-	TitleBar* titleBar = new TitleBar(this);
+	TitleBar* m_titleBar = new TitleBar(this);
 
 	void closeEvent(QCloseEvent* event) override;
 };

@@ -15,8 +15,8 @@ using PotatoAlert::NativeWindow;
 
 NativeWindow::NativeWindow(QMainWindow* mainWindow) : QWidget()
 {
-	this->mainWindow = mainWindow;
-	this->mainWindow->setParent(this);
+	this->m_mainWindow = mainWindow;
+	this->m_mainWindow->setParent(this);
 	this->Init();
 }
 
@@ -34,22 +34,22 @@ void NativeWindow::Init()
 	this->createWinId();
 	QWindow* w = this->windowHandle();
 
-	this->titleBar->setFixedHeight(23);
+	this->m_titleBar->setFixedHeight(23);
 
-	for (auto& o : this->titleBar->GetIgnores())
+	for (auto& o : this->m_titleBar->GetIgnores())
 		FramelessWindowsManager::addIgnoreObject(w, o);
 
 	FramelessWindowsManager::addWindow(w);
-	FramelessWindowsManager::setBorderWidth(w, borderWidth);
-	FramelessWindowsManager::setBorderHeight(w, borderWidth);
-	FramelessWindowsManager::setTitleBarHeight(w, this->titleBar->height());
+	FramelessWindowsManager::setBorderWidth(w, m_borderWidth);
+	FramelessWindowsManager::setBorderHeight(w, m_borderWidth);
+	FramelessWindowsManager::setTitleBarHeight(w, this->m_titleBar->height());
 
 	auto layout = new QVBoxLayout;
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(0);
 
-	layout->addWidget(this->titleBar);
-	layout->addWidget(this->mainWindow);
+	layout->addWidget(this->m_titleBar);
+	layout->addWidget(this->m_mainWindow);
 
 	this->setLayout(layout);
 

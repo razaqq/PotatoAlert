@@ -24,11 +24,11 @@ public:
 	// functions to start updater/main binary
 	static inline bool StartUpdater(std::string_view args = "")
 	{
-		return CreateNewProcess(updaterBinary, args, true);
+		return CreateNewProcess(m_updaterBinary, args, true);
 	}
 	static inline bool StartMain(std::string_view args = "")
 	{
-		return CreateNewProcess(mainBinary, args, false);
+		return CreateNewProcess(m_mainBinary, args, false);
 	}
 
 	static void RemoveTrash();
@@ -55,8 +55,8 @@ private:
 	static bool Unpack(const char* file, const char* dest);
 	static std::pair<bool, bool> ElevationInfo();
 
-	constexpr static std::string_view updaterBinary = "PotatoUpdater.exe";
-	constexpr static std::string_view mainBinary = "PotatoAlert.exe";
+	constexpr static std::string_view m_updaterBinary = "PotatoUpdater.exe";
+	constexpr static std::string_view m_mainBinary = "PotatoAlert.exe";
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"

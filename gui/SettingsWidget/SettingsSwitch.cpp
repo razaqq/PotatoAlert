@@ -19,9 +19,9 @@ using PotatoAlert::SettingsSwitch;
 
 SettingsSwitch::SettingsSwitch(QWidget* parent) : QAbstractButton(parent)
 {
-	this->trackRadius = 10;
-	this->thumbRadius = 8;
-	this->_offset = this->trackRadius;
+	this->m_trackRadius = 10;
+	this->m_thumbRadius = 8;
+	this->m_offset = this->m_trackRadius;
 	this->Init();
 }
 
@@ -31,28 +31,28 @@ void SettingsSwitch::Init()
 	this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	this->setCursor(Qt::PointingHandCursor);
 
-	std::function<int()> f1 = [this]() { return this->width() - this->trackRadius; };
-	std::function<int()> f2 = [this]() { return this->trackRadius; };
-	this->endOffset = {
-		{true, f1 },
-		{false, f2 }
+	std::function<int()> f1 = [this]() { return this->width() - this->m_trackRadius; };
+	std::function<int()> f2 = [this]() { return this->m_trackRadius; };
+	this->m_endOffset = {
+		{ true, f1 },
+		{ false, f2 }
 	};
 	
-	this->thumbColor = {
-		{true, this->palette().highlightedText()},
-		{false, this->palette().light()}
+	this->m_thumbColor = {
+		{ true, this->palette().highlightedText() },
+		{ false, this->palette().light() }
 	};
-	this->trackColor = {
-		{true, this->palette().highlight()},
-		{false, this->palette().dark()}
+	this->m_trackColor = {
+		{ true, this->palette().highlight() },
+		{ false, this->palette().dark() }
 	};
-	this->textColor = {
-		{true, this->palette().highlight().color()},
-		{false, this->palette().dark().color()}
+	this->m_textColor = {
+		{ true, this->palette().highlight().color() },
+		{ false, this->palette().dark().color() }
 	};
-	this->thumbText = {
-		{true, QString::fromUtf8("\u2714")},
-		{false, QString::fromUtf8("\u2715")}
+	this->m_thumbText = {
+		{ true, QString::fromUtf8("\u2714") },
+		{ false, QString::fromUtf8("\u2715") }
 	};
 
 	this->setFixedSize(this->sizeHint());
@@ -69,11 +69,14 @@ void SettingsSwitch::paintEvent(QPaintEvent*)
 	QColor textC;
 	float trackOpacity = 1.0;
 
-	if (this->isEnabled()) {
-		trackB = this->trackColor[this->isChecked()];
-		thumbB = this->thumbColor[this->isChecked()];
-		textC = this->textColor[this->isChecked()];
-	} else {
+	if (this->isEnabled())
+	{
+		trackB = this->m_trackColor[this->isChecked()];
+		thumbB = this->m_thumbColor[this->isChecked()];
+		textC = this->m_textColor[this->isChecked()];
+	}
+	else
+	{
 		trackB = this->palette().shadow();
 		thumbB = this->palette().mid();
 		textC = this->palette().shadow().color();
@@ -85,32 +88,29 @@ void SettingsSwitch::paintEvent(QPaintEvent*)
 	p->drawRoundedRect(
 		0, 0,
 		this->width(), this->height(),
-		this->trackRadius, this->trackRadius
-	);
+		this->m_trackRadius, this->m_trackRadius);
 
 	p->setBrush(thumbB);
 	p->setOpacity(1.0);
 	p->drawEllipse(
-		this->getOffset() - this->thumbRadius,
-		this->trackRadius - this->thumbRadius,
-		2 * this->thumbRadius,
-		2 * this->thumbRadius
-	);
+			this->GetOffset() - this->m_thumbRadius,
+		this->m_trackRadius - this->m_thumbRadius,
+		2 * this->m_thumbRadius,
+		2 * this->m_thumbRadius);
 
 	p->setPen(textC);
 	QFont font = p->font();
 	font.setStyleStrategy(QFont::PreferAntialias);
-	font.setPixelSize(static_cast<int>(1.5 * this->thumbRadius));
+	font.setPixelSize(static_cast<int>(1.5 * this->m_thumbRadius));
 	p->setFont(font);
 	p->drawText(
 		QRectF(
-			(double)this->getOffset() - this->thumbRadius,
-			(double)this->trackRadius - this->thumbRadius,
-			2 * (double)this->thumbRadius,
-			2 * (double)this->thumbRadius
-		),
+			(double)this->GetOffset() - this->m_thumbRadius,
+			(double)this->m_trackRadius - this->m_thumbRadius,
+			2 * (double)this->m_thumbRadius,
+			2 * (double)this->m_thumbRadius),
 		Qt::AlignCenter,
-		thumbText[this->isChecked()]
+			m_thumbText[this->isChecked()]
 	);
 
 	p->end();
@@ -118,7 +118,7 @@ void SettingsSwitch::paintEvent(QPaintEvent*)
 
 QSize SettingsSwitch::sizeHint() const
 {
-	return QSize(4 * this->trackRadius, 2 * this->trackRadius);
+	return QSize(4 * this->m_trackRadius, 2 * this->m_trackRadius);
 }
 
 void SettingsSwitch::mouseReleaseEvent(QMouseEvent* event)
@@ -128,31 +128,31 @@ void SettingsSwitch::mouseReleaseEvent(QMouseEvent* event)
 	{
 		auto anim = new QPropertyAnimation(this, "offset", this);
 		anim->setDuration(120);
-		anim->setStartValue(this->getOffset());
-		anim->setEndValue(this->endOffset[this->isChecked()]());
+		anim->setStartValue(this->GetOffset());
+		anim->setEndValue(this->m_endOffset[this->isChecked()]());
 		anim->start();
 	}
 }
 
 void SettingsSwitch::resizeEvent(QResizeEvent* event)
 {
-	this->setOffset(this->endOffset[this->isChecked()]());
+	this->SetOffset(this->m_endOffset[this->isChecked()]());
 	QAbstractButton::resizeEvent(event);
 }
 
 void SettingsSwitch::setChecked(bool checked)
 {
-	this->setOffset(this->endOffset[checked]());
+	this->SetOffset(this->m_endOffset[checked]());
 	QAbstractButton::setChecked(checked);
 }
 
-void SettingsSwitch::setOffset(int value)
+void SettingsSwitch::SetOffset(int value)
 {
-	this->_offset = value;
+	this->m_offset = value;
 	this->update();
 }
 
-int SettingsSwitch::getOffset() const
+int SettingsSwitch::GetOffset() const
 {
-	return this->_offset;
+	return this->m_offset;
 }

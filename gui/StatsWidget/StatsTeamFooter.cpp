@@ -41,8 +41,8 @@ void StatsTeamFooter::Init()
 
 	// set font on all labels
 	std::vector<std::vector<QLabel*>> labels{
-		std::vector<QLabel*>{ this->team1WrLabel, this->team1Wr, this->team1DmgLabel, this->team1Dmg, this->team1Tag, this->team1Name, this->team1RegionLabel, this->team1Region },
-		std::vector<QLabel*>{ this->team2WrLabel, this->team2Wr, this->team2DmgLabel, this->team2Dmg, this->team2Tag, this->team2Name, this->team2RegionLabel, this->team2Region }
+		std::vector<QLabel*>{ this->m_team1WrLabel, this->m_team1Wr, this->m_team1DmgLabel, this->m_team1Dmg, this->m_team1Tag, this->m_team1Name, this->m_team1RegionLabel, this->m_team1Region },
+		std::vector<QLabel*>{ this->m_team2WrLabel, this->m_team2Wr, this->m_team2DmgLabel, this->m_team2Dmg, this->m_team2Tag, this->m_team2Name, this->m_team2RegionLabel, this->m_team2Region }
 	};
 	for (auto& side : labels)
 		for (auto& label : side)
@@ -78,8 +78,8 @@ void StatsTeamFooter::Init()
 		}
 	}
 
-	this->team1RegionLabel->setVisible(false);
-	this->team2RegionLabel->setVisible(false);
+	this->m_team1RegionLabel->setVisible(false);
+	this->m_team2RegionLabel->setVisible(false);
 
 	leftWidget->setLayout(leftLayout);
 	rightWidget->setLayout(rightLayout);
@@ -91,47 +91,47 @@ void StatsTeamFooter::Init()
 void StatsTeamFooter::Update(const Match& match)
 {
 	// set average stats per team
-	match.team1.winrate.UpdateLabel(this->team1Wr);
-	match.team1.avgDmg.UpdateLabel(this->team1Dmg);
-	match.team2.winrate.UpdateLabel(this->team2Wr);
-	match.team2.avgDmg.UpdateLabel(this->team2Dmg);
+	match.team1.winrate.UpdateLabel(this->m_team1Wr);
+	match.team1.avgDmg.UpdateLabel(this->m_team1Dmg);
+	match.team2.winrate.UpdateLabel(this->m_team2Wr);
+	match.team2.avgDmg.UpdateLabel(this->m_team2Dmg);
 
 	// set clan battle stuff
 	bool show1 = match.team1.clan.show;
 	if (show1)
 	{
-		match.team1.clan.tag.UpdateLabel(this->team1Tag);
-		match.team1.clan.name.UpdateLabel(this->team1Name);
-		match.team1.clan.region.UpdateLabel(this->team1Region);
+		match.team1.clan.tag.UpdateLabel(this->m_team1Tag);
+		match.team1.clan.name.UpdateLabel(this->m_team1Name);
+		match.team1.clan.region.UpdateLabel(this->m_team1Region);
 	}
-	this->team1Tag->setVisible(show1);
-	this->team1Name->setVisible(show1);
-	this->team1Region->setVisible(show1);
-	this->team1RegionLabel->setVisible(show1);
+	this->m_team1Tag->setVisible(show1);
+	this->m_team1Name->setVisible(show1);
+	this->m_team1Region->setVisible(show1);
+	this->m_team1RegionLabel->setVisible(show1);
 
 	bool show2 = match.team1.clan.show;
 	if (show2)
 	{
-		match.team2.clan.tag.UpdateLabel(this->team2Tag);
-		match.team2.clan.name.UpdateLabel(this->team2Name);
-		match.team2.clan.region.UpdateLabel(this->team2Region);
+		match.team2.clan.tag.UpdateLabel(this->m_team2Tag);
+		match.team2.clan.name.UpdateLabel(this->m_team2Name);
+		match.team2.clan.region.UpdateLabel(this->m_team2Region);
 	}
-	this->team2Tag->setVisible(show2);
-	this->team2Name->setVisible(show2);
-	this->team2Region->setVisible(show2);
-	this->team2RegionLabel->setVisible(show2);
+	this->m_team2Tag->setVisible(show2);
+	this->m_team2Name->setVisible(show2);
+	this->m_team2Region->setVisible(show2);
+	this->m_team2RegionLabel->setVisible(show2);
 }
 
 void StatsTeamFooter::changeEvent(QEvent* event)
 {
 	if (event->type() == QEvent::LanguageChange)
 	{
-		this->team1WrLabel->setText(GetString(StringKeys::LABEL_WINRATE));
-		this->team1DmgLabel->setText(GetString(StringKeys::LABEL_DAMAGE));
-		this->team1RegionLabel->setText(GetString(StringKeys::LABEL_REGION));
-		this->team2WrLabel->setText(GetString(StringKeys::LABEL_WINRATE));
-		this->team2DmgLabel->setText(GetString(StringKeys::LABEL_DAMAGE));
-		this->team2RegionLabel->setText(GetString(StringKeys::LABEL_REGION));
+		this->m_team1WrLabel->setText(GetString(StringKeys::LABEL_WINRATE));
+		this->m_team1DmgLabel->setText(GetString(StringKeys::LABEL_DAMAGE));
+		this->m_team1RegionLabel->setText(GetString(StringKeys::LABEL_REGION));
+		this->m_team2WrLabel->setText(GetString(StringKeys::LABEL_WINRATE));
+		this->m_team2DmgLabel->setText(GetString(StringKeys::LABEL_DAMAGE));
+		this->m_team2RegionLabel->setText(GetString(StringKeys::LABEL_REGION));
 	}
 	else
 	{

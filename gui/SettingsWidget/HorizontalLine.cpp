@@ -1,8 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include <QWidget>
-#include <QFrame>
 #include "HorizontalLine.hpp"
+#include <QFrame>
+#include <QWidget>
 
 
 using PotatoAlert::HorizontalLine;

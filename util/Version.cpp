@@ -31,23 +31,23 @@ void Version::Parse(const std::string &versionString)
 		ss2 >> val;
 		if (ss2.fail())
 		{
-			this->success = false;
+			this->m_success = false;
 			return;
 		}
-		this->versionInfo.push_back(val);
+		this->m_versionInfo.push_back(val);
 	}
 }
 
 bool PotatoAlert::operator==(const Version& v1, const Version& v2)
 {
-	if (v1.success != v2.success)
+	if (v1.m_success != v2.m_success)
 		return false;
 
-	const size_t j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
+	const size_t j = std::max(v1.m_versionInfo.size(), v2.m_versionInfo.size());
 	for (size_t i = 0; i < j; i++)
 	{
-		int n = i < v1.versionInfo.size() ? v1.versionInfo[i] : 0;
-		int m = i < v2.versionInfo.size() ? v2.versionInfo[i] : 0;
+		int n = i < v1.m_versionInfo.size() ? v1.m_versionInfo[i] : 0;
+		int m = i < v2.m_versionInfo.size() ? v2.m_versionInfo[i] : 0;
 		if (n != m)
 			return false;
 	}
@@ -64,16 +64,16 @@ bool PotatoAlert::operator!=(const Version& v1, const Version& v2)
 
 bool PotatoAlert::operator>(const Version& v1, const Version& v2)
 {
-	if (!v1.success)
+	if (!v1.m_success)
 		return false;
-	if (!v2.success)
+	if (!v2.m_success)
 		return true;
 
-	const size_t j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
+	const size_t j = std::max(v1.m_versionInfo.size(), v2.m_versionInfo.size());
 	for (size_t i = 0; i < j; i++)
 	{
-		int n = i < v1.versionInfo.size() ? v1.versionInfo[i] : 0;
-		int m = i < v2.versionInfo.size() ? v2.versionInfo[i] : 0;
+		int n = i < v1.m_versionInfo.size() ? v1.m_versionInfo[i] : 0;
+		int m = i < v2.m_versionInfo.size() ? v2.m_versionInfo[i] : 0;
 		if (n != m)
 			return n > m;
 	}
@@ -82,16 +82,16 @@ bool PotatoAlert::operator>(const Version& v1, const Version& v2)
 
 bool PotatoAlert::operator<(const Version& v1, const Version& v2)
 {
-	if (!v2.success)
+	if (!v2.m_success)
 		return false;
-	if (!v1.success)
+	if (!v1.m_success)
 		return true;
 
-	const size_t j = std::max(v1.versionInfo.size(), v2.versionInfo.size());
+	const size_t j = std::max(v1.m_versionInfo.size(), v2.m_versionInfo.size());
 	for (size_t i = 0; i < j; i++)
 	{
-		int n = i < v1.versionInfo.size() ? v1.versionInfo[i] : 0;
-		int m = i < v2.versionInfo.size() ? v2.versionInfo[i] : 0;
+		int n = i < v1.m_versionInfo.size() ? v1.m_versionInfo[i] : 0;
+		int m = i < v2.m_versionInfo.size() ? v2.m_versionInfo[i] : 0;
 		if (n != m)
 			return n < m;
 	}

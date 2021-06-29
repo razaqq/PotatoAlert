@@ -16,16 +16,16 @@ class TitleBar : public QWidget
 	Q_OBJECT
 public:
 	explicit TitleBar(QWidget* parent);
-	[[nodiscard]] QObjectList GetIgnores() const { return ignore; };
+	[[nodiscard]] QObjectList GetIgnores() const { return m_ignore; };
 private:
-	QWidget* parentWindow;
+	QWidget* m_parentWindow;
 
-	QToolButton* appIcon = new QToolButton(this);
-	QLabel* appName = new QLabel(this);
-	QToolButton* btnMinimize = new QToolButton(this);
-	QToolButton* btnMaximize = new QToolButton(this);
-	QToolButton* btnRestore = new QToolButton(this);
-	QToolButton* btnClose = new QToolButton(this);
+	QToolButton* m_appIcon = new QToolButton(this);
+	QLabel* m_appName = new QLabel(this);
+	QToolButton* m_btnMinimize = new QToolButton(this);
+	QToolButton* m_btnMaximize = new QToolButton(this);
+	QToolButton* m_btnRestore = new QToolButton(this);
+	QToolButton* m_btnClose = new QToolButton(this);
 
 	void Init();
 	bool eventFilter(QObject* object, QEvent* event) override;
@@ -33,7 +33,7 @@ private:
 	void OnBtnMinimizeClicked();
 	void OnBtnMaximizeClicked();
 	void OnBtnRestoreClicked();
-	QObjectList ignore = { btnClose, btnMaximize, btnMinimize, btnRestore };
+	QObjectList m_ignore = { m_btnClose, m_btnMaximize, m_btnMinimize, m_btnRestore };
 };
 
 }  // namespace PotatoAlert

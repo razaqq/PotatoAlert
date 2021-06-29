@@ -17,7 +17,7 @@ using PotatoAlert::TitleBar;
 
 TitleBar::TitleBar(QWidget* parent) : QWidget(parent)
 {
-	this->parentWindow = parent;
+	this->m_parentWindow = parent;
 	this->Init();
 }
 
@@ -30,50 +30,50 @@ void TitleBar::Init()
 	hLayout->setContentsMargins(5, 0, 0, 0);
 	hLayout->setSpacing(0);
 
-	this->parentWindow->installEventFilter(this);
+	this->m_parentWindow->installEventFilter(this);
 
-	this->appName->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-	this->appName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	this->m_appName->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+	this->m_appName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
 	QSizePolicy buttonPolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-	this->btnMinimize->setSizePolicy(buttonPolicy);
-	this->btnMaximize->setSizePolicy(buttonPolicy);
-	this->btnRestore->setSizePolicy(buttonPolicy);
-	this->btnClose->setSizePolicy(buttonPolicy);
+	this->m_btnMinimize->setSizePolicy(buttonPolicy);
+	this->m_btnMaximize->setSizePolicy(buttonPolicy);
+	this->m_btnRestore->setSizePolicy(buttonPolicy);
+	this->m_btnClose->setSizePolicy(buttonPolicy);
 
-	this->btnMinimize->setIcon(QIcon(QPixmap(":/minimize.svg")));
-	this->btnMaximize->setIcon(QIcon(QPixmap(":/maximize.svg")));
-	this->btnRestore->setIcon(QIcon(QPixmap(":/restore.svg")));
-	this->btnClose->setIcon(QIcon(QPixmap(":/close.svg")));
+	this->m_btnMinimize->setIcon(QIcon(QPixmap(":/minimize.svg")));
+	this->m_btnMaximize->setIcon(QIcon(QPixmap(":/maximize.svg")));
+	this->m_btnRestore->setIcon(QIcon(QPixmap(":/restore.svg")));
+	this->m_btnClose->setIcon(QIcon(QPixmap(":/close.svg")));
 
-	this->appName->setText("PotatoAlert");
-	this->appName->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-	this->appName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	this->m_appName->setText("PotatoAlert");
+	this->m_appName->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+	this->m_appName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-	this->appIcon->setIcon(QIcon(":/potato.png"));
-	this->appIcon->setIconSize(QSize(12, 12));
+	this->m_appIcon->setIcon(QIcon(":/potato.png"));
+	this->m_appIcon->setIconSize(QSize(12, 12));
 
-	this->appIcon->setObjectName("appIcon");
-	this->btnMinimize->setObjectName("btnMinimize");
-	this->btnMaximize->setObjectName("btnMaximize");
-	this->btnRestore->setObjectName("btnRestore");
-	this->btnClose->setObjectName("btnClose");
+	this->m_appIcon->setObjectName("appIcon");
+	this->m_btnMinimize->setObjectName("btnMinimize");
+	this->m_btnMaximize->setObjectName("btnMaximize");
+	this->m_btnRestore->setObjectName("btnRestore");
+	this->m_btnClose->setObjectName("btnClose");
 
-	this->btnRestore->setVisible(false);
+	this->m_btnRestore->setVisible(false);
 
-	connect(this->btnClose, &QToolButton::clicked, this->parentWindow, &QWidget::close);
-	connect(this->btnMinimize, &QToolButton::clicked, this, &TitleBar::OnBtnMinimizeClicked);
-	connect(this->btnMaximize, &QToolButton::clicked, this, &TitleBar::OnBtnMaximizeClicked);
-	connect(this->btnRestore, &QToolButton::clicked, this, &TitleBar::OnBtnRestoreClicked);
+	connect(this->m_btnClose, &QToolButton::clicked, this->m_parentWindow, &QWidget::close);
+	connect(this->m_btnMinimize, &QToolButton::clicked, this, &TitleBar::OnBtnMinimizeClicked);
+	connect(this->m_btnMaximize, &QToolButton::clicked, this, &TitleBar::OnBtnMaximizeClicked);
+	connect(this->m_btnRestore, &QToolButton::clicked, this, &TitleBar::OnBtnRestoreClicked);
 
-	hLayout->addWidget(this->appIcon);
+	hLayout->addWidget(this->m_appIcon);
 	hLayout->addSpacing(5);
-	hLayout->addWidget(this->appName);
+	hLayout->addWidget(this->m_appName);
 	hLayout->addStretch();
-	hLayout->addWidget(this->btnMinimize);
-	hLayout->addWidget(this->btnMaximize);
-	hLayout->addWidget(this->btnRestore);
-	hLayout->addWidget(this->btnClose);
+	hLayout->addWidget(this->m_btnMinimize);
+	hLayout->addWidget(this->m_btnMaximize);
+	hLayout->addWidget(this->m_btnRestore);
+	hLayout->addWidget(this->m_btnClose);
 
 	this->setLayout(hLayout);
 }
@@ -82,19 +82,19 @@ bool TitleBar::eventFilter(QObject* object, QEvent* event)
 {
 	if (event->type() == QEvent::WindowStateChange)
 	{
-		if (this->parentWindow->windowState() == Qt::WindowMaximized)
+		if (this->m_parentWindow->windowState() == Qt::WindowMaximized)
 		{
-			this->btnMaximize->setVisible(false);
-			this->btnRestore->setVisible(true);
+			this->m_btnMaximize->setVisible(false);
+			this->m_btnRestore->setVisible(true);
 		}
 		else
 		{
-			this->btnMaximize->setVisible(true);
-			this->btnRestore->setVisible(false);
+			this->m_btnMaximize->setVisible(true);
+			this->m_btnRestore->setVisible(false);
 		}
 
-		this->btnMaximize->setAttribute(Qt::WA_UnderMouse, false);
-		this->btnRestore->setAttribute(Qt::WA_UnderMouse, false);
+		this->m_btnMaximize->setAttribute(Qt::WA_UnderMouse, false);
+		this->m_btnRestore->setAttribute(Qt::WA_UnderMouse, false);
 	}
 	QWidget::eventFilter(object, event);
 	return false;
@@ -102,26 +102,26 @@ bool TitleBar::eventFilter(QObject* object, QEvent* event)
 
 void TitleBar::OnBtnMinimizeClicked()
 {
-	this->parentWindow->setWindowState(Qt::WindowMinimized);
+	this->m_parentWindow->setWindowState(Qt::WindowMinimized);
 }
 
 void TitleBar::OnBtnMaximizeClicked()
 {
-	this->parentWindow->setWindowState(Qt::WindowMaximized);
-	this->btnMaximize->setVisible(false);
-	this->btnRestore->setVisible(true);
+	this->m_parentWindow->setWindowState(Qt::WindowMaximized);
+	this->m_btnMaximize->setVisible(false);
+	this->m_btnRestore->setVisible(true);
 }
 
 void TitleBar::OnBtnRestoreClicked()
 {
-	this->parentWindow->setWindowState(Qt::WindowNoState);
-	this->btnMaximize->setVisible(true);
-	this->btnRestore->setVisible(false);
+	this->m_parentWindow->setWindowState(Qt::WindowNoState);
+	this->m_btnMaximize->setVisible(true);
+	this->m_btnRestore->setVisible(false);
 }
 
 void TitleBar::mouseDoubleClickEvent(QMouseEvent*)
 {
-	if (this->parentWindow->windowState() == Qt::WindowMaximized)
+	if (this->m_parentWindow->windowState() == Qt::WindowMaximized)
 		this->OnBtnRestoreClicked();
 	else
 		this->OnBtnMaximizeClicked();

@@ -31,54 +31,54 @@ using PotatoAlert::MainWindow;
 
 MainWindow::MainWindow(PotatoClient* pc) : QMainWindow()
 {
-	this->pc = pc;
+	this->m_pc = pc;
 	this->Init();
 	this->ConnectSignals();
-	this->pc->Init();
+	this->m_pc->Init();
 }
 
 void MainWindow::Init()
 {
 	// central widget
-	this->setCentralWidget(this->centralW);
+	this->setCentralWidget(this->m_centralW);
 
 	this->layout()->setContentsMargins(0, 0, 0, 0);
 	this->layout()->setSpacing(0);
 
-	this->centralLayout->setContentsMargins(0, 0, 0, 0);
-	this->centralLayout->setSpacing(0);
-	this->centralW->setLayout(centralLayout);
+	this->m_centralLayout->setContentsMargins(0, 0, 0, 0);
+	this->m_centralLayout->setSpacing(0);
+	this->m_centralW->setLayout(m_centralLayout);
 
 	// menubar dock widget
 	const bool leftSide = PotatoConfig().Get<bool>("menubar_leftside");
 	const auto side = leftSide ? Qt::DockWidgetArea::LeftDockWidgetArea : Qt::DockWidgetArea::RightDockWidgetArea;
-	this->addDockWidget(side, this->menuBar);
-	connect(this->menuBar, &VerticalMenuBar::dockLocationChanged, [](Qt::DockWidgetArea area)
+	this->addDockWidget(side, this->m_menuBar);
+	connect(this->m_menuBar, &VerticalMenuBar::dockLocationChanged, [](Qt::DockWidgetArea area)
 	{
 		PotatoConfig().Set<bool>("menubar_leftside",area == Qt::DockWidgetArea::LeftDockWidgetArea);
 	});
 
-	this->settingsWidget = new SettingsWidget(this, this->pc);
+	this->m_settingsWidget = new SettingsWidget(this, this->m_pc);
 
 	// set other tabs invisible
-	this->settingsWidget->setVisible(false);
-	this->aboutWidget->setVisible(false);
+	this->m_settingsWidget->setVisible(false);
+	this->m_aboutWidget->setVisible(false);
 
-	this->centralLayout->addWidget(this->statsWidget);
-	this->centralLayout->addWidget(this->settingsWidget);
-	this->centralLayout->addWidget(this->aboutWidget);
+	this->m_centralLayout->addWidget(this->m_statsWidget);
+	this->m_centralLayout->addWidget(this->m_settingsWidget);
+	this->m_centralLayout->addWidget(this->m_aboutWidget);
 }
 
 void MainWindow::SwitchTab(MenuEntry i)
 {
-	QWidget* oldWidget = this->activeWidget;
+	QWidget* oldWidget = this->m_activeWidget;
 	switch (i)
 	{
 	case MenuEntry::Table:
-		this->activeWidget = this->statsWidget;
+		this->m_activeWidget = this->m_statsWidget;
 		break;
 	case MenuEntry::Settings:
-		this->activeWidget = this->settingsWidget;
+		this->m_activeWidget = this->m_settingsWidget;
 		break;
 	case MenuEntry::Discord:
 		QDesktopServices::openUrl(QUrl("https://discord.gg/Ut8t8PA"));
@@ -93,24 +93,24 @@ void MainWindow::SwitchTab(MenuEntry i)
 		QDesktopServices::openUrl(QUrl("https://github.com/razaqq/PotatoAlert"));
 		return;
 	case MenuEntry::About:
-		this->activeWidget = this->aboutWidget;
+		this->m_activeWidget = this->m_aboutWidget;
 		break;
 	}
 	oldWidget->setVisible(false);
-	this->activeWidget->setVisible(true);
+	this->m_activeWidget->setVisible(true);
 }
 
 void MainWindow::ConnectSignals()
 {
-	connect(this->menuBar, &VerticalMenuBar::EntryClicked, this, &MainWindow::SwitchTab);
+	connect(this->m_menuBar, &VerticalMenuBar::EntryClicked, this, &MainWindow::SwitchTab);
 
-	connect(this->pc, &PotatoClient::status, this->statsWidget, &StatsWidget::SetStatus);
-	connect(this->pc, &PotatoClient::matchReady, this->statsWidget, &StatsWidget::Update);
+	connect(this->m_pc, &PotatoClient::status, this->m_statsWidget, &StatsWidget::SetStatus);
+	connect(this->m_pc, &PotatoClient::matchReady, this->m_statsWidget, &StatsWidget::Update);
 
-	connect(this->settingsWidget, &SettingsWidget::done, [this]()
+	connect(this->m_settingsWidget, &SettingsWidget::done, [this]()
 	{
 		this->SwitchTab(MenuEntry::Table);
-		this->menuBar->SetChecked(MenuEntry::Table);
+		this->m_menuBar->SetChecked(MenuEntry::Table);
 	});
 }
 

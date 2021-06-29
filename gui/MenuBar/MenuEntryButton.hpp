@@ -12,7 +12,7 @@ class MenuEntryButton : public QWidget
 {
 public:
 	MenuEntryButton(QWidget* parent, const QIcon& icon, bool checkable = true);
-	QPushButton* button = new QPushButton;
+	QPushButton* m_button = new QPushButton;
 };
 
 }  // namespace PotatoAlert

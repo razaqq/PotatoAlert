@@ -45,15 +45,15 @@ void VerticalMenuBar::Init()
 	auto github = new MenuEntryButton(this, QIcon(QPixmap(":/github.svg")), false);
 	auto about = new MenuEntryButton(this, QIcon(QPixmap(":/about.svg")));
 
-	this->menuEntries = { table, settings, discord, csvMatches, log, github, about };
+	this->m_menuEntries = { table, settings, discord, csvMatches, log, github, about };
 
-	for (int i = 0; i < this->menuEntries.size(); i++)
+	for (int i = 0; i < this->m_menuEntries.size(); i++)
 	{
-		auto button = this->menuEntries[i]->button;
-		this->btnGroup->addButton(button);
-		this->btnGroup->setId(button, i);
+		auto button = this->m_menuEntries[i]->m_button;
+		this->m_btnGroup->addButton(button);
+		this->m_btnGroup->setId(button, i);
 	}
-	this->btnGroup->setExclusive(true);
+	this->m_btnGroup->setExclusive(true);
 
 	this->SetChecked(MenuEntry::Table);
 
@@ -68,7 +68,7 @@ void VerticalMenuBar::Init()
 
 	this->titleBarWidget()->setLayout(layout);
 
-	connect(this->btnGroup, &QButtonGroup::idClicked, [this](int id)
+	connect(this->m_btnGroup, &QButtonGroup::idClicked, [this](int id)
 	{
 		emit this->EntryClicked(static_cast<MenuEntry>(id));
 	});
@@ -76,9 +76,9 @@ void VerticalMenuBar::Init()
 
 void VerticalMenuBar::SetChecked(MenuEntry entry)
 {
-	for (auto& menuEntry : this->menuEntries)
+	for (auto& menuEntry : this->m_menuEntries)
 	{
-		menuEntry->button->setChecked(false);
+		menuEntry->m_button->setChecked(false);
 	}
-	this->menuEntries[static_cast<int>(entry)]->button->setChecked(true);
+	this->m_menuEntries[static_cast<int>(entry)]->m_button->setChecked(true);
 }

@@ -23,20 +23,20 @@ public:
 	bool ConfirmUpdate();
 protected:
 	void Init();
-	PotatoClient* pc;
+	PotatoClient* m_pc;
 
 	void SwitchTab(MenuEntry i);
 	void ConnectSignals();
 
-	QWidget* centralW = new QWidget(this);
-	QVBoxLayout* centralLayout = new QVBoxLayout;
+	QWidget* m_centralW = new QWidget(this);
+	QVBoxLayout* m_centralLayout = new QVBoxLayout();
 
-	VerticalMenuBar* menuBar = new VerticalMenuBar(this);
-	StatsWidget* statsWidget = new StatsWidget(this);
-	SettingsWidget* settingsWidget{};
-	AboutWidget* aboutWidget = new AboutWidget(this);
+	VerticalMenuBar* m_menuBar = new VerticalMenuBar(this);
+	StatsWidget* m_statsWidget = new StatsWidget(this);
+	SettingsWidget* m_settingsWidget{};
+	AboutWidget* m_aboutWidget = new AboutWidget(this);
 
-	QWidget* activeWidget = this->statsWidget;
+	QWidget* m_activeWidget = this->m_statsWidget;
 };
 
 }  // namespace PotatoAlert

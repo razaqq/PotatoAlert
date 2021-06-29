@@ -6,6 +6,7 @@
 #include <QEvent>
 #include "Game.hpp"
 
+
 namespace PotatoAlert {
 
 class FolderStatusGui : public QWidget
@@ -17,19 +18,19 @@ private:
 	void Init();
 	void changeEvent(QEvent* event) override;
 
-	QLabel* statusLabel = new QLabel();
-	QLabel* replaysLabel = new QLabel();
-	QLabel* regionLabel = new QLabel();
-	QLabel* versionLabel = new QLabel();
-	QLabel* steamLabel = new QLabel();
-	QLabel* versionedLabel = new QLabel();
+	QLabel* m_statusLabel = new QLabel();
+	QLabel* m_replaysLabel = new QLabel();
+	QLabel* m_regionLabel = new QLabel();
+	QLabel* m_versionLabel = new QLabel();
+	QLabel* m_steamLabel = new QLabel();
+	QLabel* m_versionedLabel = new QLabel();
 
-	QLabel* region = new QLabel();
-	QLabel* gameVersion = new QLabel();
-	QLabel* found = new QLabel();
-	QLabel* replaysFolders  = new QLabel();
-	QLabel* versionedReplays = new QLabel();
-	QLabel* statusText = new QLabel();
+	QLabel* m_region = new QLabel();
+	QLabel* m_gameVersion = new QLabel();
+	QLabel* m_found = new QLabel();
+	QLabel* m_replaysFolders = new QLabel();
+	QLabel* m_versionedReplays = new QLabel();
+	QLabel* m_statusText = new QLabel();
 };
 
 }  // namespace PotatoAlert

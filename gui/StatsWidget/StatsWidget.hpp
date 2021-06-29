@@ -28,12 +28,12 @@ public:
 	void SetStatus(Status status, const std::string& statusText);
 private:
 	void Init();
-	StatsTable* left = new StatsTable(this);
-	StatsTable* right = new StatsTable(this);
-	StatsTeamFooter* footer = new StatsTeamFooter(this);
-	StatsHeader* header = new StatsHeader(this);
+	StatsTable* m_leftTable = new StatsTable(this);
+	StatsTable* m_rightTable = new StatsTable(this);
+	StatsTeamFooter* m_footer = new StatsTeamFooter(this);
+	StatsHeader* m_header = new StatsHeader(this);
 
-	Match lastMatch;
+	Match m_lastMatch;
 };
 
 }  // namespace PotatoAlert

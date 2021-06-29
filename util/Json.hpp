@@ -3,9 +3,6 @@
 
 #include <string>
 #include "Logger.hpp"
-#include <Windows.h>
-#include <cstdio>
-#include <iostream>
 
 
 using PotatoAlert::Logger;
@@ -30,7 +27,6 @@ public:
 
 	static bool parse_error(std::size_t position, const std::string& last_token, const json::exception& ex)
 	{
-		std::cout << ex.what() << std::endl;
 		Logger::Error("JSON Parse Error at input byte {}. {}. Last read: \"{}\"", position, ex.what(), last_token);
 		return false;
 	}
