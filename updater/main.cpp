@@ -2,9 +2,9 @@
 #include <filesystem>
 #include <zip.h>
 #include <Palette.hpp>
-#include <cstdlib>
 #include "Logger.hpp"
 #include "UpdaterGui.hpp"
+#include "win32.h"
 
 
 namespace fs = std::filesystem;
