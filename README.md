@@ -25,7 +25,7 @@ If you think you cannot follow this simple rule, then you hereby don't have my p
 
 ## Compiling
 #### Requirements
-- Qt >= 5.15.0
+- Qt >= 5.15.0 (Qt6 currently not supported)
 - clang >= 11.0.0
 - ninja >= 1.10.2
 - cmake >= 3.17
@@ -42,8 +42,8 @@ If you think you cannot follow this simple rule, then you hereby don't have my p
     - Qt IFW `-DCPACK_IFW_ROOT=C:/Qt/Tools/QtInstallerFramework` (only for building the installer)
 - Call cmake
 ```console
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64 -DCPACK_IFW_ROOT=C:/Qt/Tools/QtInstallerFramework -DCMAKE_RC_COMPILER=RC
-cmake --build build --target PotatoAlert PotatoUpdater
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64 -DCMAKE_RC_COMPILER=RC
+cmake --build build --config Release --target PotatoAlert PotatoUpdater
 cpack -G IFW
 ```
 - You find the build output in `.\build\`
