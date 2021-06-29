@@ -20,7 +20,6 @@ set(
         StringTable.cpp
         StringTable.hpp
         Time.hpp
-        ../updater/Updater.cpp
         ../updater/Updater.hpp
         Version.cpp
         Version.hpp
@@ -32,6 +31,7 @@ if (WIN32)
             ${utils_src}
             File.win32.cpp
             Time.win32.cpp
+            ../updater/Updater.win32.cpp
     )
 endif (WIN32)
 

@@ -17,7 +17,7 @@
 #include <QEventLoop>
 #include <QElapsedTimer>
 #include <zip.h>
-#include "win32.h"
+#include <Windows.h>  // TODO: use win32 instead
 
 
 using PotatoUpdater::Updater;
@@ -421,7 +421,7 @@ bool Updater::CreateNewProcess(std::string_view path, std::string_view args, boo
 	const char* lpVerb = elevated ? "runas" : "open";
 	std::string pathStr = std::string(path);
 	std::string argsStr = std::string(args);
-	SHELLEXECUTEINFO sei = {
+	SHELLEXECUTEINFOA sei = {
 			sizeof(sei),
 			SEE_MASK_NO_CONSOLE,
 			nullptr,
