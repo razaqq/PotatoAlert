@@ -19,7 +19,6 @@
 #include <QTextStream>
 #include <QUrl>
 #include <QWebSocket>
-#include <Windows.h>
 #include <chrono>
 #include <filesystem>
 #include <format>
@@ -36,52 +35,52 @@ namespace fs = std::filesystem;
 const char* wsAddr = "ws://www.perry-swift.de:33333";
 // const char* wsAddr = "ws://192.168.178.36:10000";
 
-void PotatoClient::init()
+void PotatoClient::Init()
 {
-	emit this->status(Ready, "Ready");
+	emit this->status(Status::Ready, "Ready");
 
 	// handle connection
-	connect(this->socket, &QWebSocket::connected, [this]
+	connect(this->m_socket, &QWebSocket::connected, [this]
 	{
 		Logger::Debug("Websocket open, sending arena info...");
-		this->socket->sendTextMessage(this->tempArenaInfo);
+		this->m_socket->sendTextMessage(this->m_tempArenaInfo);
 	});
 
 	// handle error
-	connect(this->socket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), [=](QAbstractSocket::SocketError error)
+	connect(this->m_socket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), [=](QAbstractSocket::SocketError error)
 	{
 		switch (error)
 		{
 			case QAbstractSocket::ConnectionRefusedError:
-				emit this->status(Error, "Connection Refused");
+				emit this->status(Status::Error, "Connection Refused");
 				break;
 			case QAbstractSocket::SocketTimeoutError:
-				emit this->status(Error, "Socket Timeout");
+				emit this->status(Status::Error, "Socket Timeout");
 				break;
 			case QAbstractSocket::HostNotFoundError:
-				emit this->status(Error, "Host Not Found");
+				emit this->status(Status::Error, "Host Not Found");
 				break;
 			case QAbstractSocket::NetworkError:
 				// TODO: this is a shit way of doing this, maybe create a Qt bug report?
-				if (this->socket->errorString().contains("timed", Qt::CaseInsensitive))
-					emit this->status(Error, "Connection Timeout");
+				if (this->m_socket->errorString().contains("timed", Qt::CaseInsensitive))
+					emit this->status(Status::Error, "Connection Timeout");
 				else
-					emit this->status(Error, "Network Error");
+					emit this->status(Status::Error, "Network Error");
 				break;
 			case QAbstractSocket::RemoteHostClosedError:
-				emit this->status(Error, "Host Closed Conn.");
+				emit this->status(Status::Error, "Host Closed Conn.");
 				return;
 			default:
-				emit this->status(Error, "Websocket Error");
+				emit this->status(Status::Error, "Websocket Error");
 				break;
 		}
-		Logger::Error(this->socket->errorString().toStdString());
+		Logger::Error(this->m_socket->errorString().toStdString());
 	});
 
-	connect(this->socket, &QWebSocket::textMessageReceived, this, &PotatoClient::OnResponse);
-	connect(this->watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::OnDirectoryChanged);
+	connect(this->m_socket, &QWebSocket::textMessageReceived, this, &PotatoClient::OnResponse);
+	connect(this->m_watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::OnDirectoryChanged);
 
-	for (auto& path : this->watcher->directories())  // trigger run
+	for (auto& path : this->m_watcher->directories())  // trigger run
 		this->OnDirectoryChanged(path);
 }
 
@@ -90,18 +89,18 @@ void PotatoClient::UpdateReplaysPath()
 {
 	Logger::Debug("Updating replays path.");
 
-	if (!this->watcher->directories().isEmpty())
-		this->watcher->removePaths(this->watcher->directories());
+	if (!this->m_watcher->directories().isEmpty())
+		this->m_watcher->removePaths(this->m_watcher->directories());
 
 	if (PotatoConfig().Get<bool>("override_replays_folder"))
 	{
-		this->watcher->addPath(QString::fromStdString(this->fStatus.overrideReplaysPath));
+		this->m_watcher->addPath(QString::fromStdString(this->m_folderStatus.overrideReplaysPath));
 	}
 	else
 	{
-		for (auto& folder : this->fStatus.replaysPath)
+		for (auto& folder : this->m_folderStatus.replaysPath)
 			if (!folder.empty())
-				this->watcher->addPath(QString::fromStdString(folder));
+				this->m_watcher->addPath(QString::fromStdString(folder));
 	}
 }
 
@@ -119,58 +118,56 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 		if (!arenaInfo.has_value())
 		{
 			Logger::Error("Failed to read arena info from file.");
-			emit this->status(Error, "Reading ArenaInfo");
+			emit this->status(Status::Error, "Reading ArenaInfo");
 			return;
 		}
-
-		Logger::Debug(arenaInfo.value());
 
 		json j;
 		sax_no_exception sax(j);
 		if (!json::sax_parse(arenaInfo.value(), &sax))
 		{
 			Logger::Error("Failed to Parse arena info file as JSON.");
-			emit this->status(Error, "JSON Parse Error");
+			emit this->status(Status::Error, "JSON Parse Error");
 			return;
 		}
 
 		Logger::Debug("ArenaInfo read from file. Content: {}", j.dump());
 
 		// add region
-		j["region"] = this->fStatus.region;
+		j["region"] = this->m_folderStatus.region;
 
 		// set stats mode from config
-		switch (PotatoConfig().Get<int>("stats_mode"))
+		switch (PotatoConfig().Get<StatsMode>("stats_mode"))
 		{
-			case current:
+			case StatsMode::Current:
 				if (j.contains("matchGroup"))
 					j["StatsMode"] = j["matchGroup"];
 				else
 					j["StatsMode"] = "pvp";
 				break;
-			case pvp:
+			case StatsMode::Pvp:
 				j["StatsMode"] = "pvp";
 				break;
-			case ranked:
+			case StatsMode::Ranked:
 				j["StatsMode"] = "ranked";
 				break;
-			case clan:
+			case StatsMode::Clan:
 				j["StatsMode"] = "clan";
 				break;
 		}
 
-		QString newArenaInfo = QString::fromStdString(j.dump());
+		QString tempArenaInfo = QString::fromStdString(j.dump());
 
 		// make sure we dont pull the same match twice
-		if (newArenaInfo != this->tempArenaInfo)
-			this->tempArenaInfo = newArenaInfo;
+		if (tempArenaInfo != this->m_tempArenaInfo)
+			this->m_tempArenaInfo = tempArenaInfo;
 		else
 			return;
 
-		emit this->status(Loading, "Loading");
+		emit this->status(Status::Loading, "Loading");
 		Logger::Debug("Opening websocket...");
 
-		this->socket->open(QUrl(QString(wsAddr)));  // starts the request cycle
+		this->m_socket->open(QUrl(QString(wsAddr)));  // starts the request cycle
 	}
 }
 
@@ -178,76 +175,39 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 void PotatoClient::OnResponse(const QString& message)
 {
 	Logger::Debug("Closing websocket connection.");
-	this->socket->close();
+	this->m_socket->close();
 
 	Logger::Debug("Received response from server: {}", message.toStdString());
 
 	if (message.isNull() || message == "null")
 	{
-		emit this->status(Error, "NULL Response");
+		emit this->status(Status::Error, "NULL Response");
 		return;
 	}
 
-	try
+	json j;
+	sax_no_exception sax(j);
+	if (!json::sax_parse(message.toStdString(), &sax))
 	{
-		json j;
-		j = json::parse(message.toStdString());
-
-		// save match to csv file
-		if (PotatoConfig().get<bool>("save_csv"))
-			this->csvWriter.saveMatch(message.toStdString());
-
-		Logger::Debug("Updating tables.");
-
-		auto matchGroup = j["matchGroup"].get<std::string>();
-		auto team1Json = j["team1"].get<json>();
-		auto team2Json = j["team2"].get<json>();
-
-		auto team1 = StatsParser::parseTeam(team1Json, matchGroup);
-		auto team2 = StatsParser::parseTeam(team2Json, matchGroup);
-		emit this->teamsReady(std::vector{ team1, team2 });
-
-		auto avg = StatsParser::parseAvg(team1Json);
-		auto avg2 = StatsParser::parseAvg(team2Json);
-		avg.insert(avg.end(), avg2.begin(), avg2.end());
-		emit this->avgReady(avg);
-
-		auto wowsNumbers1 = StatsParser::parseWowsNumbersProfile(team1Json);
-		auto wowsNumbers2 = StatsParser::parseWowsNumbersProfile(team2Json);
-		emit this->wowsNumbersReady(std::vector<std::vector<QString>>{ wowsNumbers1, wowsNumbers2 });
-
-		if (matchGroup == "clan")
-		{
-			auto clans = StatsParser::parseClan(team1Json);
-			auto clan2 = StatsParser::parseClan(team2Json);
-			clans.insert(clans.end(), clan2.begin(), clan2.end());
-			emit this->clansReady(clans);
-		}
-		else
-		{
-			emit this->clansReady(std::vector<QString>{});
-		}
-
-		emit this->status(Ready, "Ready");
-	}
-	catch (json::parse_error& e)
-	{
-		Logger::Error("ParseError while parsing server response JSON: {}", e.what());
-		emit this->status(Error, "JSON Parse Error");
+		Logger::Error("ParseError while parsing server response JSON.");
+		emit this->status(Status::Error, "JSON Parse Error");
 		return;
 	}
-	catch (json::type_error& e)
-	{
-		Logger::Error("TypeError while parsing server response JSON: {}", e.what());
-		emit this->status(Error, "JSON Type Error");
-		return;
-	}
+
+	Logger::Debug("Parsing match.");
+	PotatoAlert::StatsParser::Match match;
+	PotatoAlert::StatsParser::ParseMatch(message.toUtf8().toStdString(), match, PotatoConfig().Get<bool>("save_csv"));
+
+	Logger::Debug("Updating tables.");
+	emit this->matchReady(match);
+
+	emit this->status(Status::Ready, "Ready");
 }
 
 // sets the folder status and triggers a new match run
 void PotatoClient::SetFolderStatus(const FolderStatus& status)
 {
-	this->fStatus = status;
+	this->m_folderStatus = status;
 	this->UpdateReplaysPath();
 }
 
@@ -256,80 +216,30 @@ std::optional<std::string> PotatoClient::ReadArenaInfo(const std::string& filePa
 {
 	Logger::Debug("Reading arena info from: {}", filePath);
 
-	HANDLE handle = CreateFile(
-			filePath.c_str(),
-			GENERIC_READ,
-			FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE,
-			nullptr,
-			OPEN_EXISTING,
-			FILE_ATTRIBUTE_NORMAL,
-			nullptr
-	);
-
-	static auto fail = [&handle]()
-	{
-		DWORD err = GetLastError();
-		LPSTR lpMsgBuf;
-		FormatMessage(
-				FORMAT_MESSAGE_ALLOCATE_BUFFER |
-				FORMAT_MESSAGE_FROM_SYSTEM |
-				FORMAT_MESSAGE_IGNORE_INSERTS,
-				nullptr,
-				err,
-				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				(LPTSTR) &lpMsgBuf,
-				0, nullptr
-		);
-		Logger::Error("Failed to read arena info: {}", lpMsgBuf);
-		CloseHandle(handle);
-	};
-
-	if (handle == INVALID_HANDLE_VALUE)
-	{
-		fail();
-		return {};
-	}
-
-	// try to wait for 1s for the file to get written to
 	using namespace std::chrono_literals;
-	LARGE_INTEGER fileSize;
 	auto startTime = std::chrono::high_resolution_clock::now();
 	auto now = std::chrono::high_resolution_clock::now();
 
+	File file = File::Open(filePath, File::Flags::Open | File::Flags::Read);
+	std::string arenaInfo;
+
 	while (std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime) < 1000ms)
 	{
-		if (!GetFileSizeEx(handle, &fileSize))
+		if (file.Size() > 0)
 		{
-			fail();
-			return {};
+			if (file.Read(arenaInfo))
+			{
+				return arenaInfo;
+			}
+			else
+			{
+				Logger::Error("Failed to read arena info: {}", File::LastError());
+				return {};
+			}
 		}
-		if (fileSize.QuadPart > 0)
-			break;
 		std::this_thread::sleep_for(100ms);
 		now = std::chrono::high_resolution_clock::now();
 	}
-
-	if (fileSize.QuadPart == 0)
-	{
-		fail();
-		return {};
-	}
-
-	// read the file
-	DWORD dwBytesRead;
-	static const size_t size = 16384;
-	static char buff[size];
-	std::string arenaInfo;
-
-	if (ReadFile(handle, buff, size, &dwBytesRead, nullptr))
-	{
-		buff[dwBytesRead] = '\0';  // add null termination
-		CloseHandle(handle);
-		return std::string(buff);
-	}
-	else
-	{
-		CloseHandle(handle);
-		return {};
-	}
+	Logger::Error("Game failed to write arena info within 1 second.");
+	return {};
 }

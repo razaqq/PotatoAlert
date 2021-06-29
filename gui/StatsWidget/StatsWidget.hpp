@@ -1,16 +1,19 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include <QWidget>
-#include <QTableWidgetItem>
+#include "PotatoClient.hpp"
+#include "StatsHeader.hpp"
+#include "StatsParser.hpp"
+#include "StatsTable.hpp"
+#include "StatsTeamFooter.hpp"
 #include <QLabel>
 #include <QString>
-#include <vector>
+#include <QTableWidgetItem>
+#include <QWidget>
+#include <array>
 #include <variant>
-#include "StatsTable.hpp"
-#include "StatsHeader.hpp"
-#include "StatsTeamFooter.hpp"
-#include "PotatoClient.hpp"
+#include <vector>
+
 
 typedef std::vector<std::vector<std::variant<QLabel*, QTableWidgetItem*>>> teamType;
 
@@ -29,6 +32,8 @@ private:
 	StatsTable* right = new StatsTable(this);
 	StatsTeamFooter* footer = new StatsTeamFooter(this);
 	StatsHeader* header = new StatsHeader(this);
+
+	Match lastMatch;
 };
 
 }  // namespace PotatoAlert

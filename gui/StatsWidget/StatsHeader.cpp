@@ -92,19 +92,17 @@ void StatsHeader::SetStatus(Status status, const std::string& text)
 
 	switch (status)
 	{
-	case Ready:
+	case Status::Ready:
 		loading->stop();
 		this->statusIcon->setPixmap(this->ready);
 		break;
-	case Loading:
+	case Status::Loading:
 		this->statusIcon->setMovie(this->loading);
 		loading->start();
 		break;
-	case Error:
+	case Status::Error:
 		loading->stop();
 		this->statusIcon->setPixmap(this->error);
-		break;
-	default:
 		break;
 	}
 }

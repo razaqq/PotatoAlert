@@ -1,217 +1,362 @@
-// Copyright 2020 <github.com/razaqq>
+// Copyright 2021 <github.com/razaqq>
 
 #include "StatsParser.hpp"
+#include "CSVWriter.hpp"
+#include "Logger.hpp"
+#include "Json.hpp"
 #include <QLabel>
-#include <QTableWidgetItem>
-#include <QFont>
+#include <array>
+#include <format>
+#include <optional>
 #include <string>
 #include <vector>
-#include <variant>
-#include <nlohmann/json.hpp>
-#include <fmt/format.h>
-#include <fmt/ostream.h>
 
-using PotatoAlert::StatsParser;
-using nlohmann::json;
 
-teamType StatsParser::parseTeam(json& teamJson, std::string& matchGroup)
+using PotatoAlert::Logger;
+using namespace PotatoAlert::StatsParser;
+
+static QString ToQString(const std::string_view& str)
 {
-	teamType team;
-	auto teamID = teamJson["id"].get<int>();
+	return QString::fromUtf8(str.data(), static_cast<int>(str.size()));
+}
 
-	// skip scenario bots, there might be too many for table
-	if ((matchGroup == "pve" || matchGroup == "pve_premade") && teamID == 2)
-		return team;
+namespace _JSON {
 
-	for (auto& playerJson : teamJson["players"].get<json>())
+struct Color
+{
+	int r, g, b;
+	std::optional<int> a;
+
+	Color() = default;
+	[[maybe_unused]] Color(int r, int g, int b) : r(r), g(g), b(b) {}
+	[[maybe_unused]] Color(int r, int g, int b, int a) : r(r), g(g), b(b), a(a) {}
+	[[maybe_unused]] explicit Color(const std::array<int, 3>& arr) : r(arr[0]), g(arr[1]), b(arr[2]) {}
+	[[maybe_unused]] explicit Color(const std::array<int, 4>& arr) : r(arr[0]), g(arr[1]), b(arr[2]), a(arr[3]) {}
+
+	[[nodiscard]] std::string ToString() const
 	{
-		playerType player;
-
-		auto playerName = playerJson["name"].get<std::string>();
-		auto hiddenProfile = playerJson["hiddenPro"].get<bool>();
-		auto clanJson = playerJson["clan"].get<json>();
-		auto shipJson = playerJson["ship"].get<json>();
-
-		// get stats & colors
-		QString ship, battles, winrate, avgDmg, battlesShip, winrateShip, avgDmgShip;
-		std::vector<int> shipC, prC, battlesC, winrateC, avgDmgC, battlesShipC, winrateShipC, avgDmgShipC;
-
-		if (!shipJson.is_null())
-		{
-			ship = QString::fromStdString(shipJson["name"].get<std::string>());
-			shipC = shipJson["color"].get<std::vector<int>>();
-		}
-
-		if (!hiddenProfile)
-		{
-			auto battlesJson = playerJson["battles"].get<json>();
-			auto winrateJson = playerJson["winrate"].get<json>();
-			auto avgDmgJson = playerJson["avgDmg"].get<json>();
-			auto battlesShipJson = playerJson["battlesShip"].get<json>();
-			auto winrateShipJson = playerJson["winrateShip"].get<json>();
-			auto avgDmgShipJson = playerJson["avgDmgShip"].get<json>();
-
-			battles = QString::fromStdString(battlesJson["string"].get<std::string>());
-			winrate = QString::fromStdString(winrateJson["string"].get<std::string>());
-			avgDmg = QString::fromStdString(avgDmgJson["string"].get<std::string>());
-			battlesShip = QString::fromStdString(battlesShipJson["string"].get<std::string>());
-			winrateShip = QString::fromStdString(winrateShipJson["string"].get<std::string>());
-			avgDmgShip = QString::fromStdString(avgDmgShipJson["string"].get<std::string>());
-			
-			
-			battlesC = battlesJson["color"].get<std::vector<int>>();
-			winrateC = winrateJson["color"].get<std::vector<int>>();
-			avgDmgC = avgDmgJson["color"].get<std::vector<int>>();
-			battlesShipC = battlesShipJson["color"].get<std::vector<int>>();
-			winrateShipC = winrateShipJson["color"].get<std::vector<int>>();
-			avgDmgShipC = avgDmgShipJson["color"].get<std::vector<int>>();
-
-			prC = playerJson["prColor"].get<std::vector<int>>();
-		}
-		std::vector<QString> values = { ship, battles, winrate, avgDmg, battlesShip, winrateShip, avgDmgShip };
-		std::vector<std::vector<int>> colors = { shipC, battlesC, winrateC, avgDmgC, battlesShipC, winrateShipC, avgDmgShipC };
-		assert(values.size() == colors.size());
-
-		// get player name widget
-		if (matchGroup != "clan" && !clanJson.is_null() && !clanJson["name"].get<std::string>().empty())
-			player.push_back(nameClanTag(playerName, prC, clanJson));
+		if (!a)
+			return std::format("rgb({}, {}, {})", r, g, b);
 		else
-			player.push_back(nameNoClanTag(playerName, prC));
+			return std::format("rgba({}, {}, {}, {})", r, g, b, a.value());
+	}
 
+	[[nodiscard]] bool Valid() const
+	{
+		auto valid = [](int i) -> bool { return i >= 0 && i <= 255; };
+		if (!a.has_value())
+			return valid(r) && valid(g) && valid(b);
+		else
+			return valid(r) && valid(g) && valid(b) && valid(a.value());
+	};
+
+	[[nodiscard]] QColor QColor() const
+	{
+		if (!a)
+			return QColor::fromRgb(r, g, b);
+		else
+			return QColor::fromRgb(r, g, b, a.value());
+	}
+};
+
+struct Stat
+{
+	std::string_view string;
+	Color color;
+
+	[[nodiscard]] QTableWidgetItem* GetField(const QFont& font, const QColor& bg, const QFlags<Qt::AlignmentFlag>& align) const
+	{
+		auto item = new QTableWidgetItem(ToQString(this->string));
+		item->setForeground(this->color.QColor());
+		item->setBackground(bg);
+		item->setFont(font);
+		item->setTextAlignment(align);
+		return item;
+	}
+
+	[[nodiscard]] Label GetLabel(const QString& suffix = "") const
+	{
+		return {ToQString(this->string) + suffix, this->color.QColor()};
+	}
+};
+
+[[maybe_unused]] static void from_json(const json& j, Stat& s)
+{
+	j.at("string").get_to(s.string);
+	s.color = Color(j.at("color").get<std::array<int, 3>>());
+}
+
+struct Clan
+{
+	std::string_view name;
+	std::string_view tag;
+	Color color;
+	std::string_view region;
+
+	[[nodiscard]] Label GetTagLabel() const
+	{
+		return {"[" + ToQString(this->tag) + "] ", this->color.QColor()};
+	}
+	[[nodiscard]] Label GetNameLabel() const
+	{
+		return {ToQString(this->name)};
+	}
+	[[nodiscard]] Label GetRegionLabel() const
+	{
+		return {ToQString(this->region)};
+	}
+};
+
+[[maybe_unused]] static void from_json(const json& j, Clan& c)
+{
+	j.at("name").get_to(c.name);
+	j.at("tag").get_to(c.tag);
+	c.color = Color(j.at("color").get<std::array<int, 3>>());
+	j.at("region").get_to(c.region);
+}
+
+struct Ship
+{
+	std::string_view name;
+	Color color;
+
+	[[nodiscard]] QTableWidgetItem* GetField(const QFont& font, const QColor& bg, const QFlags<Qt::AlignmentFlag>& align) const
+	{
+		auto item = new QTableWidgetItem(ToQString(this->name));
+		item->setForeground(this->color.QColor());
+		item->setBackground(bg);
+		item->setFont(font);
+		item->setTextAlignment(align);
+		return item;
+	}
+};
+
+[[maybe_unused]] static void from_json(const json& j, Ship& s)
+{
+	j.at("name").get_to(s.name);
+	s.color = Color(j.at("color").get<std::array<int, 3>>());
+}
+
+struct Player
+{
+	std::optional<Clan> clan;
+	bool hiddenPro;
+	std::string_view name;
+	Color nameColor;
+	Ship ship;
+	Stat battles;
+	Stat winrate;
+	Stat avgDmg;
+	Stat battlesShip;
+	Stat winrateShip;
+	Stat avgDmgShip;
+	Color prColor;
+	std::string_view wowsNumbers;
+
+	[[nodiscard]] PlayerType GetTableRow() const
+	{
 		QFont font13("Segoe UI", 1, QFont::Bold);
 		font13.setPixelSize(13);
 		QFont font16("Segoe UI", 1, QFont::Bold);
 		font16.setPixelSize(16);
 
-		QColor background;
-		if (!hiddenProfile && StatsParser::validColor(prC))
-			background.setRgb(prC[0], prC[1], prC[2], prC[3]);
+		QColor bg = this->prColor.QColor();
+		return {
+				this->GetNameField(),
+				this->ship.GetField(font13, bg, Qt::AlignVCenter | Qt::AlignLeft),
+				this->battles.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
+				this->winrate.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
+				this->avgDmg.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
+				this->battlesShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
+				this->winrateShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
+				this->avgDmgShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight)
+		};
+	}
 
-		for (int i = 0; i < values.size(); i++)
+	[[nodiscard]] FieldType GetNameField() const
+	{
+		if (this->clan)
 		{
-			auto item = new QTableWidgetItem(values[i]);
-			
-			if (i == 0) {
-				item->setFont(font13);
-				item->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+			auto label = new QLabel();
+			label->setTextFormat(Qt::RichText);
+			label->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+			label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+			label->setContentsMargins(3, 0, 3, 0);
+			auto text = std::format(
+					"<span style=\"color: {};\">[{}]</span>{}",
+					this->clan->color.ToString(), this->clan->tag, this->name);
+			label->setText(QString::fromStdString(text));
+
+			if (this->prColor.Valid())
+			{
+				label->setAutoFillBackground(true);
+				label->setStyleSheet(
+						QString::fromStdString(std::format(
+								"background-color: {}; font-size: 13px; font-family: Segoe UI;", this->prColor.ToString()
+						)));
 			}
-			else {
-				item->setFont(font16);
-				item->setTextAlignment(Qt::AlignVCenter | Qt::AlignRight);
+			else
+			{
+				label->setStyleSheet(QString::fromStdString("font-size: 13px; font-family: Segoe UI;"));
 			}
 
-			if (background.isValid())
-				item->setBackground(background);
-
-			if (StatsParser::validColor(colors[i]))
-				item->setForeground(QColor::fromRgb(colors[i][0], colors[i][1], colors[i][2]));
-
-			player.push_back(item);
+			return label;
 		}
-
-		team.push_back(player);
-	}
-	return team;
-}
-
-fieldType StatsParser::nameClanTag(std::string& playerName, std::vector<int>& prC, json& clanJson)
-{
-	auto clanTag = clanJson["tag"].get<std::string>();
-	auto clanC = clanJson["color"].get<std::vector<int>>();
-
-	auto name = new QLabel;
-	name->setTextFormat(Qt::RichText);
-	name->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-	name->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-	name->setContentsMargins(3, 0, 3, 0);
-	name->setText(QString::fromStdString(fmt::format("<span style=\"color: {};\">[{}]</span>{}", arrToRgbString(clanC), clanTag, playerName)));
-
-	if (!prC.empty())
-	{
-		name->setAutoFillBackground(true);
-		name->setStyleSheet(QString::fromStdString(
-			fmt::format("background-color: {}; font-size: 13px; font-family: Segoe UI;", arrToRgbString(prC))
-		));
-	}
-	else
-	{
-		name->setStyleSheet(QString::fromStdString("font-size: 13px; font-family: Segoe UI;"));
-	}
-	return name;
-}
-
-fieldType StatsParser::nameNoClanTag(std::string& playerName, std::vector<int>& prC)
-{
-	auto name = new QTableWidgetItem(QString::fromStdString(playerName));
-	QFont font("Segoe UI");
-	font.setPixelSize(13);
-	name->setFont(font);
-	name->setTextAlignment(Qt::AlignVCenter);
-	if (!prC.empty())
-		name->setBackground(QColor::fromRgb(prC[0], prC[1], prC[2], prC[3]));
-	return name;
-}
-
-std::string StatsParser::arrToRgbString(const std::vector<int>& a)
-{
-	switch (a.size())
-	{
-	case 3:
-		return fmt::format("rgb({}, {}, {})", a[0], a[1], a[2]);
-	case 4:
-		return fmt::format("rgba({}, {}, {}, {})", a[0], a[1], a[2], a[3]);
-	default:
-		return "";
-	}
-}
-
-bool StatsParser::validColor(const std::vector<int>& color)
-{
-	if (color.size() < 3)
-		return false;
-	return std::any_of(color.begin(), color.end(), [](int i){ return i != 0; });
-}
-
-std::vector<QString> StatsParser::parseAvg(json& teamJson)
-{
-	auto avgWrJson = teamJson["avgWr"].get<json>();
-	auto avgDmgJson = teamJson["avgDmg"].get<json>();
-
-	auto avgWr = QString::fromStdString(avgWrJson["string"].get<std::string>()) + "%";
-	auto avgWrC = "color: " + QString::fromStdString(arrToRgbString(avgWrJson["color"].get<std::vector<int>>()));
-
-	auto avgDmg = QString::fromStdString(avgDmgJson["string"].get<std::string>());
-	auto avgDmgC = "color: " + QString::fromStdString(arrToRgbString(avgDmgJson["color"].get<std::vector<int>>()));
-
-	return std::vector<QString>{ avgWr, avgWrC, avgDmg, avgDmgC };
-}
-
-std::vector<QString> StatsParser::parseClan(json& teamJson)
-{
-	json clanJson;
-	for (auto& player : teamJson["players"].get<std::vector<json>>())
-	{
-		clanJson = player["clan"].get<json>();
-		if (!clanJson.is_null())
+		else
 		{
-			auto tag = "[" + QString::fromStdString(clanJson["tag"].get<std::string>()) + "] ";
-			auto color = "color: " + QString::fromStdString(arrToRgbString(clanJson["color"].get<std::vector<int>>()));
-			auto name = QString::fromStdString(clanJson["name"].get<std::string>());
-			auto region = QString::fromStdString(clanJson["region"].get<std::string>());
-
-			return std::vector<QString>{ tag, color, name, region };
+			auto label = new QTableWidgetItem(ToQString(this->name));
+			QFont font("Segoe UI");
+			font.setPixelSize(13);
+			label->setFont(font);
+			label->setTextAlignment(Qt::AlignVCenter);
+			if (this->prColor.Valid())
+				label->setBackground(this->prColor.QColor());
+			return label;
 		}
 	}
-	return std::vector<QString>{};
+};
+
+[[maybe_unused]] static void from_json(const json& j, Player& p)
+{
+	if (!j.at("clan").is_null())
+		p.clan = j.at("clan").get<Clan>();
+	j.at("hiddenPro").get_to(p.hiddenPro);
+	j.at("name").get_to(p.name);
+	p.nameColor = Color(j.at("nameColor").get<std::array<int, 3>>());
+	j.at("ship").get_to(p.ship);
+	j.at("battles").get_to(p.battles);
+	j.at("winrate").get_to(p.winrate);
+	j.at("avgDmg").get_to(p.avgDmg);
+	j.at("battlesShip").get_to(p.battlesShip);
+	j.at("winrateShip").get_to(p.winrateShip);
+	j.at("avgDmgShip").get_to(p.avgDmgShip);
+	p.prColor = Color(j.at("prColor").get<std::array<int, 4>>());
+	j.at("wowsNumbers").get_to(p.wowsNumbers);
 }
 
-std::vector<QString> StatsParser::parseWowsNumbersProfile(json& teamJson)
+struct Team
 {
-	std::vector<QString> team;
-	for (auto& player : teamJson["players"].get<std::vector<json>>())
+	size_t id;
+	std::vector<Player> players;
+	Stat avgDmg;
+	Stat avgWr;
+};
+
+[[maybe_unused]] static void from_json(const json& j, Team& t)
+{
+	j.at("id").get_to(t.id);
+	j.at("players").get_to(t.players);
+	j.at("avgDmg").get_to(t.avgDmg);
+	j.at("avgWr").get_to(t.avgWr);
+}
+
+struct Match
+{
+	Team team1;
+	Team team2;
+	std::string_view matchGroup;
+	std::string_view statsMode;
+	std::string_view region;
+	std::string_view player;
+};
+
+[[maybe_unused]] static void from_json(const json& j, Match& m)
+{
+	j.at("team1").get_to(m.team1);
+	j.at("team2").get_to(m.team2);
+	j.at("matchGroup").get_to(m.matchGroup);
+	j.at("statsMode").get_to(m.statsMode);
+	j.at("region").get_to(m.region);
+	j.at("player").get_to(m.player);
+}
+
+std::string GetCSV(const Match& match)
+{
+	std::string out;
+	out += "Team;Player;Clan;Ship;Matches;Winrate;AverageDamage;MatchesShip;WinrateShip;AverageDamageShip;WowsNumbers\n";
+
+	auto getTeam = [&out](const Team& team, std::string_view teamID)
 	{
-		auto wowsNumbersLink = player["wowsNumbers"].get<std::string>();
-		team.push_back(QString::fromStdString(wowsNumbersLink));
+		for (auto& player : team.players)
+		{
+			std::string clanName;
+			if (player.clan)
+				clanName = player.clan->name;
+
+			out += std::format("{};{};{};{};{};{};{};{};{};{};{}\n",
+					teamID, player.name, clanName, player.ship.name,
+					player.battles.string, player.winrate.string,
+					player.avgDmg.string, player.battlesShip.string,
+					player.winrateShip.string, player.avgDmgShip.string,
+					player.wowsNumbers);
+		}
+	};
+	getTeam(match.team1, "1");
+	getTeam(match.team2, "2");
+
+	return out;
+}
+
+}  // namespace _JSON
+
+
+namespace pn = PotatoAlert::StatsParser;
+
+void pn::Label::UpdateLabel(QLabel* label) const
+{
+	label->setText(this->text);
+
+	if (this->color)
+	{
+		auto palette = label->palette();
+		palette.setColor(QPalette::WindowText, this->color.value());
+		label->setPalette(palette);
 	}
-	return team;
+}
+
+bool pn::ParseMatch(const std::string& raw, Match& outMatch, bool saveCSV) noexcept
+{
+	json j = json::parse(raw);
+	auto match = j.get<_JSON::Match>();
+
+	if (saveCSV)
+		CSV::SaveMatch(_JSON::GetCSV(match));
+
+	// parse match stats
+	auto getTeam = [](const _JSON::Team& inTeam, Team& outTeam)
+	{
+		TeamType teamTable;
+		for (auto& player : inTeam.players)
+		{
+			auto row = player.GetTableRow();
+			teamTable.push_back(row);
+			outTeam.wowsNumbers.push_back(ToQString(player.wowsNumbers));
+		}
+		outTeam.avgDmg = inTeam.avgDmg.GetLabel();
+		outTeam.winrate = inTeam.avgWr.GetLabel("%");
+		outTeam.table = teamTable;
+	};
+	getTeam(match.team1, outMatch.team1);
+	getTeam(match.team2, outMatch.team2);
+
+	// parse clan tag+name
+	if (match.matchGroup == "clan")
+	{
+		auto findClan = [](const _JSON::Team& inTeam, Team& outTeam)
+		{
+			for (auto& player : inTeam.players)
+			{
+				if (!player.clan)
+					continue;
+				outTeam.clan.show = true;
+				outTeam.clan.tag = player.clan->GetTagLabel();
+				outTeam.clan.name = player.clan->GetNameLabel();
+				outTeam.clan.region = player.clan->GetRegionLabel();
+			}
+		};
+		findClan(match.team1, outMatch.team1);
+		findClan(match.team2, outMatch.team2);
+	}
+
+	return true;
 }

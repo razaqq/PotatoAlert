@@ -1,14 +1,15 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include <QWidget>
-#include <QLabel>
-#include <QHBoxLayout>
-#include <QString>
+#include "StatsTeamFooter.hpp"
+#include "StatsParser.hpp"
+#include "StringTable.hpp"
 #include <QEvent>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QString>
+#include <QWidget>
 #include <iostream>
 #include <vector>
-#include "StatsTeamFooter.hpp"
-#include "StringTable.hpp"
 
 
 using PotatoAlert::StatsTeamFooter;
@@ -77,6 +78,9 @@ void StatsTeamFooter::Init()
 		}
 	}
 
+	this->team1RegionLabel->setVisible(false);
+	this->team2RegionLabel->setVisible(false);
+
 	leftWidget->setLayout(leftLayout);
 	rightWidget->setLayout(rightLayout);
 	layout->addWidget(leftWidget);
@@ -86,57 +90,36 @@ void StatsTeamFooter::Init()
 
 void StatsTeamFooter::Update(const Match& match)
 {
-	// t1Wr, t1WrStyle, t1Dmg, t1DmgStyle, t2Wr, t2WrStyle, t2Dmg, t2DmgStyle
-	this->team1Wr->setText(avg[0]);
-	this->team1Wr->setStyleSheet(avg[1]);
+	// set average stats per team
+	match.team1.winrate.UpdateLabel(this->team1Wr);
+	match.team1.avgDmg.UpdateLabel(this->team1Dmg);
+	match.team2.winrate.UpdateLabel(this->team2Wr);
+	match.team2.avgDmg.UpdateLabel(this->team2Dmg);
 
-	this->team1Dmg->setText(avg[2]);
-	this->team1Dmg->setStyleSheet(avg[3]);
-
-	this->team2Wr->setText(avg[4]);
-	this->team2Wr->setStyleSheet(avg[5]);
-
-	this->team2Dmg->setText(avg[6]);
-	this->team2Dmg->setStyleSheet(avg[7]);
-}
-
-void StatsTeamFooter::setClans(const std::vector<QString>& clans)
-{
-	// t1Tag, t1TagStyle, t1Name, t1Region, t2Tag, t2TagStyle, t2Name, t2Region
-	if (clans.size() == 8)
+	// set clan battle stuff
+	bool show1 = match.team1.clan.show;
+	if (show1)
 	{
-		this->team1Tag->setText(clans[0]);
-		this->team1Tag->setStyleSheet(clans[1]);
-		this->team1Name->setText(clans[2]);
-		this->team1Region->setText(clans[3]);
-
-		this->team1Tag->setVisible(true);
-		this->team1Name->setVisible(true);
-		this->team1Region->setVisible(true);
-		this->team1RegionLabel->setVisible(true);
-
-		this->team2Tag->setText(clans[4]);
-		this->team2Tag->setStyleSheet(clans[5]);
-		this->team2Name->setText(clans[6]);
-		this->team2Region->setText(clans[7]);
-
-		this->team2Tag->setVisible(true);
-		this->team2Name->setVisible(true);
-		this->team2Region->setVisible(true);
-		this->team2RegionLabel->setVisible(true);
+		match.team1.clan.tag.UpdateLabel(this->team1Tag);
+		match.team1.clan.name.UpdateLabel(this->team1Name);
+		match.team1.clan.region.UpdateLabel(this->team1Region);
 	}
-	else
+	this->team1Tag->setVisible(show1);
+	this->team1Name->setVisible(show1);
+	this->team1Region->setVisible(show1);
+	this->team1RegionLabel->setVisible(show1);
+
+	bool show2 = match.team1.clan.show;
+	if (show2)
 	{
-		this->team1Tag->setVisible(false);
-		this->team1Name->setVisible(false);
-		this->team1Region->setVisible(false);
-		this->team1RegionLabel->setVisible(false);
-
-		this->team2Tag->setVisible(false);
-		this->team2Name->setVisible(false);
-		this->team2Region->setVisible(false);
-		this->team2RegionLabel->setVisible(false);
+		match.team2.clan.tag.UpdateLabel(this->team2Tag);
+		match.team2.clan.name.UpdateLabel(this->team2Name);
+		match.team2.clan.region.UpdateLabel(this->team2Region);
 	}
+	this->team2Tag->setVisible(show2);
+	this->team2Name->setVisible(show2);
+	this->team2Region->setVisible(show2);
+	this->team2RegionLabel->setVisible(show2);
 }
 
 void StatsTeamFooter::changeEvent(QEvent* event)

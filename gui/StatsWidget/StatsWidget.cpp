@@ -1,14 +1,18 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "StatsWidget.hpp"
+#include "PotatoClient.hpp"
+#include "StatsHeader.hpp"
+#include "StatsParser.hpp"
+#include <QDesktopServices>
 #include <QHBoxLayout>
+#include <QTableWidgetItem>
+#include <QUrl>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <QTableWidgetItem>
-#include <vector>
+#include <array>
 #include <variant>
-#include "StatsWidget.hpp"
-#include "StatsHeader.hpp"
-#include "PotatoClient.hpp"
+#include <vector>
 
 
 using PotatoAlert::StatsWidget;
@@ -36,58 +40,63 @@ void StatsWidget::Init()
 	vLayout->addWidget(this->footer);
 
 	this->setLayout(vLayout);
-
-	this->setAverages();
-	this->setClans();
 }
 
 void StatsWidget::Update(const Match& match)
 {
+	this->lastMatch = match;
+
+	// update the tables
 	this->left->clearContents();
 	this->right->clearContents();
 
-	for (int t = 0; t < teams.size(); t++)
+	auto fillTable = [](QTableWidget* table, const TeamType& team)
 	{
-		QTableWidget* table;
-		if (t == 0)
-			table = this->left;
-		else
-			table = this->right;
-
-		auto team = teams[t];
-		for (int r = 0; r < team.size(); r++)
+		int row = 0;
+		for (auto& player : team)
 		{
-			auto player = team[r];
-			for (int c = 0; c < player.size(); c++)
+			int col = 0;
+			for (auto& field : player)
 			{
-				auto field = player[c];
-
 				if (std::holds_alternative<QTableWidgetItem*>(field))
-					table->setItem(r, c, std::get<QTableWidgetItem*>(field));
+					table->setItem(row, col, std::get<QTableWidgetItem*>(field));
 				if (std::holds_alternative<QLabel*>(field))
-					table->setCellWidget(r, c, std::get<QLabel*>(field));		
+					table->setCellWidget(row, col, std::get<QLabel*>(field));
+				col++;
 			}
+			row++;
 		}
-	}
+	};
+
+	fillTable(this->left, match.team1.table);
+	fillTable(this->right, match.team2.table);
+
+	// update the footer
+	this->footer->Update(match);
+
+	// add hooks to open wows-numbers link when double clicking cell
+	auto openWowsNumbers = [](int row, const Team& team)
+	{
+		auto wowsNumbers = team.wowsNumbers;
+
+		if (row < team.wowsNumbers.size())
+		{
+			QUrl url(team.wowsNumbers[row]);
+			if (url.isValid())
+				QDesktopServices::openUrl(url);
+		}
+	};
+	connect(this->left, &StatsTable::cellDoubleClicked, [&](int row, int column)
+	{
+		openWowsNumbers(row, this->lastMatch.team1);
+	});
+	connect(this->right, &StatsTable::cellDoubleClicked, [&](int row, int column)
+	{
+		openWowsNumbers(row, this->lastMatch.team2);
+	});
 }
 
-void StatsWidget::setStatus(Status status, const std::string& statusText)
+void StatsWidget::SetStatus(Status status, const std::string& statusText)
 {
-	this->header->setStatus(status, statusText);
-}
-
-void StatsWidget::setAverages(const std::vector<QString>& avg)
-{
-	this->footer->setAverages(avg);
-}
-
-void StatsWidget::setClans(const std::vector<QString>& clans)
-{
-	this->footer->setClans(clans);
-}
-
-void StatsWidget::setWowsNumbers(const std::vector<std::vector<QString>>& wowsNumbers)
-{
-	this->left->setWowsNumbers(wowsNumbers[0]);
-	this->right->setWowsNumbers(wowsNumbers[1]);
+	this->header->SetStatus(status, statusText);
 }

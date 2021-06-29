@@ -21,7 +21,7 @@ using namespace PotatoAlert::StatsParser;
 
 namespace PotatoAlert {
 
-enum Status
+enum class Status
 {
 	Ready,
 	Loading,
@@ -34,7 +34,17 @@ class PotatoClient : public QObject
 public:
 	PotatoClient() = default;
 	PotatoClient(const PotatoClient&) = delete;
-	void init();
+	PotatoClient& operator=(const PotatoClient&) = delete;
+	/*
+	PotatoClient(PotatoClient&& other) noexcept
+		: socket(other.socket), watcher(other.watcher),
+		  tempArenaInfo(std::move(other.tempArenaInfo)),
+		  fStatus(std::move(other.fStatus))
+	{
+		Logger::Debug("MOVED");
+	}
+	*/
+	void Init();
 	void SetFolderStatus(const FolderStatus& status);
 private:
 	void OnResponse(const QString& message);
@@ -42,18 +52,15 @@ private:
 	void UpdateReplaysPath();
 	static std::optional<std::string> ReadArenaInfo(const std::string& filePath);
 
-	QWebSocket* socket = new QWebSocket();
-	QFileSystemWatcher* watcher = new QFileSystemWatcher();
+	QWebSocket* m_socket = new QWebSocket();
+	QFileSystemWatcher* m_watcher = new QFileSystemWatcher();
 
-	QString tempArenaInfo;
-	FolderStatus fStatus;
+	QString m_tempArenaInfo;
+	FolderStatus m_folderStatus;
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
-	void teamsReady(const std::vector<teamType>& team1);
-	void avgReady(const std::vector<QString>& avgs);
-	void clansReady(const std::vector<QString>& clans);
-	void wowsNumbersReady(const std::vector<std::vector<QString>>& wowsNumbers);
+	void matchReady(const Match& match);
 	void status(PotatoAlert::Status status, const std::string& statusText);
 #pragma clang diagnostic pop
 };
