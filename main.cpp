@@ -16,7 +16,7 @@
 #include "NativeWindow.hpp"
 #include "VersionInfo.h"
 #include "FramelessWindowsManager.hpp"
-#include <Windows.h>
+#include "win32.h"
 
 
 using PotatoAlert::MainWindow;
