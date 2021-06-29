@@ -1,8 +1,9 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Config.hpp"
-#include "Logger.hpp"
+#include "File.hpp"
 #include "Json.hpp"
+#include "Logger.hpp"
 #include <QDir>
 #include <QStandardPaths>
 #include <QApplication>
@@ -10,6 +11,7 @@
 #include <fstream>
 #include <filesystem>
 #include <string>
+#include <utility>
 
 
 namespace fs = std::filesystem;
@@ -19,48 +21,31 @@ using PotatoAlert::Config;
 
 static json g_defaultConfig;
 
-Config::Config(const char* fileName)
+Config::Config(std::string_view fileName)
 {
 	g_defaultConfig = {
-			{"stats_mode", pvp},  // "current mode", "pvp", "ranked", "clan"
-			{"update_notifications", true},
-			{"api_key", "1234567890"},
-			{"save_csv", false},
-			{"use_ga", true},
-			{"window_height", 450},
-			{"window_width", 1500},
-			{"window_x", 0},
-			{"window_y", 0},
-			{"game_folder", ""},
-			{"override_replays_folder", false},
-			{"replays_folder", ""},
-			{"language", 0},
-			{"menubar_leftside", true}
+		{ "stats_mode", StatsMode::Pvp },
+		{ "update_notifications", true },
+		{ "api_key", "1234567890" },
+		{ "save_csv", false },
+		{ "window_height", 450 },
+		{ "window_width", 1500 },
+		{ "window_x", 0 },
+		{ "window_y", 0 },
+		{ "game_folder", "" },
+		{ "override_replays_folder", false },
+		{ "replays_folder", "" },
+		{ "language", 0 },
+		{ "menubar_leftside", true }
 	};
 
 	auto path = Config::GetPath(fileName);
-	if (path.has_value())
-	{
-		this->filePath = path.value();
-	}
-	else
+	if (!path)
 	{
 		Logger::Error("Failed to get config path.");
 		QApplication::exit(1);
 	}
-
-	this->Load();
-	this->AddMissingKeys();
-}
-
-Config::~Config()
-{
-	this->Save();
-}
-
-void Config::Load()
-{
-	Logger::Debug("Trying to Load config...");
+	this->m_filePath = std::move(path.value());
 
 	if (!this->Exists())
 	{
@@ -70,18 +55,41 @@ void Config::Load()
 			QApplication::exit(1);
 		}
 	}
+	this->Load();
+	this->AddMissingKeys();
+}
 
-	std::ifstream file(this->filePath);
-	if (!file.is_open())
+Config::~Config()
+{
+	this->Save();
+	this->m_file.Close();
+}
+
+void Config::Load()
+{
+	Logger::Debug("Trying to Load config...");
+
+	this->m_file = File::Open(this->m_filePath.string(), File::Flags::Open | File::Flags::Read | File::Flags::Write);
+	if (!this->m_file)
 	{
-		Logger::Error("Failed to open config file for reading.");
+		Logger::Error("Failed to open config file: {}", File::LastError());
+		QApplication::exit(1);
+	}
+
+	std::string str;
+	if (!this->m_file.Read(str))
+	{
+		Logger::Error("Failed to read config file: {}", File::LastError());
 		QApplication::exit(1);
 	}
 
 	sax_no_exception sax(this->j);
-	if (!json::sax_parse(file, &sax))
+	if (!json::sax_parse(str, &sax))
 	{
 		Logger::Error("Failed to Parse config as json.");
+
+		this->m_file.Close();
+		this->CreateBackup();
 
 		if (this->CreateDefault())
 			this->Load();
@@ -89,84 +97,108 @@ void Config::Load()
 			QApplication::exit(1);
 	}
 
-	file.close();
 	Logger::Debug("Config loaded.");
 }
 
 bool Config::Save()
 {
-	std::ofstream file(this->filePath);
-	if (!file.is_open())
+	if (!this->m_file)
 	{
-		Logger::Error("Failed to open config file for writing.");
+		Logger::Error("Cannot save config, because file is not open.");
 		return false;
 	}
-	file << this->j;
-	file.close();
+
+	if (!this->m_file.Write(this->j.dump(4)))
+	{
+		Logger::Error("Failed to write config file: {}", File::LastError());
+		return false;
+	}
 	return true;
 }
 
-bool Config::Exists() const noexcept
+bool Config::Exists() const
 {
 	std::error_code ec;
-	bool exists = fs::exists(this->filePath, ec);
+	bool exists = fs::exists(this->m_filePath, ec);
 	if (ec)
 	{
 		Logger::Error("Error while checking config existence: {}", ec.message());
 		return false;
 	}
-	bool regularFile = fs::is_regular_file(this->filePath, ec);
-	if (ec)
+
+	if (exists)
 	{
-		Logger::Error("Error while checking config existence: {}", ec.message());
-		return false;
+		bool regularFile = fs::is_regular_file(this->m_filePath, ec);
+		if (ec)
+		{
+			Logger::Error("Error while checking if config is regular file: {}", ec.message());
+			return false;
+		}
+		return regularFile;
 	}
-	return exists && regularFile;
+	return false;
 }
 
-bool Config::CreateDefault() noexcept
+bool Config::CreateDefault()
 {
 	Logger::Info("Creating new default config.");
-	if (!this->Exists())
+
+	this->m_file = File::Open(this->m_filePath.string(), File::Flags::Create | File::Flags::Read | File::Flags::Write);
+	if (!this->m_file)
 	{
-		this->j = g_defaultConfig;
-		return this->Save();
+		Logger::Error("Failed to open config file: {}", File::LastError());
+		return false;
 	}
+	this->j = g_defaultConfig;
 
-	Logger::Info("Creating backup of old config.");
-	fs::path backupConfig(this->filePath.string() + ".bak");  // TODO
+	bool saved = this->Save();
+	this->m_file.Close();
+	return saved;
+}
 
+bool Config::CreateBackup()
+{
+	Logger::Info("Creating config backup");
 	std::error_code ec;
-
-	// check if backup exists
-	bool exists = fs::exists(backupConfig, ec);
+	bool exists = fs::exists(this->m_filePath, ec);
 	if (ec)
 	{
 		Logger::Error("Failed to check for config backup: {}", ec.message());
 		return false;
 	}
 
-	// remove backup if it exists
-	if (!exists)
+	if (exists)
 	{
-		fs::remove(backupConfig, ec);
+		fs::path backupConfig(this->m_filePath.string() + ".bak");  // TODO
+
+		// check if backup exists
+		exists = fs::exists(backupConfig, ec);
 		if (ec)
 		{
-			Logger::Error("Failed to remove config backup: {}", ec.message());
+			Logger::Error("Failed to check for config backup: {}", ec.message());
+			return false;
+		}
+
+		// remove backup if it exists
+		if (!exists)
+		{
+			fs::remove(backupConfig, ec);
+			if (ec)
+			{
+				Logger::Error("Failed to remove config backup: {}", ec.message());
+				return false;
+			}
+		}
+
+		// create backup
+		fs::rename(this->m_filePath, backupConfig, ec);
+		if (ec)
+		{
+			Logger::Error("Failed to create config backup: {}", ec.message());
 			return false;
 		}
 	}
-
-	// create backup
-	fs::rename(this->filePath, backupConfig, ec);
-	if (ec)
-	{
-		Logger::Error("Failed to create config backup: {}", ec.message());
-		return false;
-	}
-
-	this->j = g_defaultConfig;
-	return this->Save();
+	return true;
 }
 
 void Config::AddMissingKeys()
@@ -181,7 +213,7 @@ void Config::AddMissingKeys()
 	}
 }
 
-std::optional<fs::path> Config::GetPath(const char* fileName)
+std::optional<fs::path> Config::GetPath(std::string_view fileName)
 {
 	const std::string root = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).toStdString();
 	const fs::path configPath = fs::path(root) / "PotatoAlert";

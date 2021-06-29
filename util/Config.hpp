@@ -1,8 +1,9 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "Logger.hpp"
+#include "File.hpp"
 #include "Json.hpp"
+#include "Logger.hpp"
 #include <QString>
 #include <QObject>
 #include <string>
@@ -14,46 +15,48 @@ namespace fs = std::filesystem;
 
 namespace PotatoAlert {
 
-enum StatsMode
+enum class StatsMode
 {
-	current,
-	pvp,
-	ranked,
-	clan
+	Current,
+	Pvp,
+	Ranked,
+	Clan
 };
 
 class Config : public QObject
 {
 	Q_OBJECT
 public:
-	explicit Config(const char* fileName);
+	explicit Config(std::string_view fileName);
 	~Config() override;
 
 	void Load();
 	bool Save();
 
 	template <typename T>
-	T Get(const char* name) const
+	T Get(const char* key) const
 	{
 		// we technically dont have to check, since we check for keys on init
-		if (this->j.contains(name))
-			return this->j.at(name).get<T>();
+		if (this->j.contains(key))
+			return this->j.at(key).get<T>();
 		return {};
 	}
 
 	template <typename T>
-	void Set(const char* name, T value)
+	void Set(const char* key, T value)
 	{
-		this->j.at(name) = value;
+		this->j.at(key) = value;
 	}
 
 	json j;
 private:
-	fs::path filePath;
-	static std::optional<fs::path> GetPath(const char* fileName);
+	File m_file;
+	fs::path m_filePath;
+	static std::optional<fs::path> GetPath(std::string_view fileName);
 	void AddMissingKeys();
-	bool CreateDefault() noexcept;
-	[[nodiscard]] bool Exists() const noexcept;
+	bool CreateDefault();
+	bool CreateBackup();
+	[[nodiscard]] bool Exists() const;
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
