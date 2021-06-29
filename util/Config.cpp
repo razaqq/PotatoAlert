@@ -169,7 +169,8 @@ bool Config::CreateBackup()
 
 	if (exists)
 	{
-		fs::path backupConfig(this->m_filePath.string() + ".bak");  // TODO
+		fs::path backupConfig = this->m_filePath;
+		backupConfig.replace_extension(".bak");
 
 		// check if backup exists
 		exists = fs::exists(backupConfig, ec);
