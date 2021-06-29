@@ -38,7 +38,7 @@ void Version::Parse(const std::string &versionString)
 	}
 }
 
-bool PotatoAlert::operator== (const Version& v1, const Version& v2)
+bool PotatoAlert::operator==(const Version& v1, const Version& v2)
 {
 	if (v1.success != v2.success)
 		return false;
@@ -54,7 +54,7 @@ bool PotatoAlert::operator== (const Version& v1, const Version& v2)
 	return true;
 }
 
-bool PotatoAlert::operator!= (const Version& v1, const Version& v2)
+bool PotatoAlert::operator!=(const Version& v1, const Version& v2)
 {
 	if (v1 == v2)
 		return false;
@@ -62,9 +62,9 @@ bool PotatoAlert::operator!= (const Version& v1, const Version& v2)
 		return true;
 }
 
-bool PotatoAlert::operator> (const Version& v1, const Version& v2)
+bool PotatoAlert::operator>(const Version& v1, const Version& v2)
 {
-	if (!v1.success)  // TODO: check the success cases
+	if (!v1.success)
 		return false;
 	if (!v2.success)
 		return true;
@@ -80,7 +80,7 @@ bool PotatoAlert::operator> (const Version& v1, const Version& v2)
 	return false;
 }
 
-bool PotatoAlert::operator< (const Version& v1, const Version& v2)
+bool PotatoAlert::operator<(const Version& v1, const Version& v2)
 {
 	if (!v2.success)
 		return false;
