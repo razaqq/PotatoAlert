@@ -1,45 +1,59 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "CSVWriter.hpp"
+#include "File.hpp"
+#include "Time.hpp"
+#include <format>
 #include <string>
-#include <initializer_list>
-#include <fstream>
 #include <QDir>
 #include <QString>
 #include <QStandardPaths>
-#include "CSVWriter.hpp"
-#include "Logger.hpp"
 
 
-using PotatoAlert::CSVWriter;
+namespace csv = PotatoAlert::CSV;
+using namespace PotatoAlert::Time;
 
-CSVWriter::CSVWriter()
+
+static constexpr std::string_view timeFormat = "%Y-%m-%d_%H-%M-%S";
+
+QString csv::GetDir()
 {
-	this->file.open(CSVWriter::getFilePath(), std::ios::out | std::ios::app);
-	if (!this->file.is_open())
-		Logger::Error("Failed to open file to save matches.");
+	return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert/Matches");
 }
 
-CSVWriter::~CSVWriter()
+std::string GetFilePath()
 {
-	this->file.close();
-}
-
-void CSVWriter::saveMatch(const std::string& jsonObj)
-{
-	if (this->file.is_open())
-	{
-		this->file << jsonObj + ";";
-		Logger::Debug("Appending match to csv log.");
-	}
-}
-
-std::string CSVWriter::getFilePath()
-{
-	QString dirPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/PotatoAlert";
+	auto dir = csv::GetDir();
 
 	QDir d;
-	d.mkpath(dirPath);
-	d.setPath(dirPath);
+	d.mkpath(dir);
+	d.setPath(dir);
 
-	return d.filePath("matches.csv").toStdString();
+	return d.filePath(QString::fromStdString(std::format("match_{}.csv", GetTimeStamp(timeFormat)))).toStdString();
+}
+
+void csv::SaveMatch(const std::string& csv)
+{
+	if (File file = File::Open(GetFilePath(), File::Flags::Write | File::Flags::Create))
+	{
+		if (file.Write(csv))
+		{
+			Logger::Debug("Wrote match as CSV.");
+		}
+		else
+		{
+			Logger::Error("Failed to save match as csv: {}", File::LastError());
+		}
+	}
+	else
+	{
+		Logger::Error("Failed to open csv file for writing: {}", File::LastError());
+	}
+
+#if 0
+	if (PotatoAlert::File::Write(GetFilePath(), csv))
+		Logger::Debug("Wrote match as CSV.");
+	else
+		Logger::Error("Failed to write match as CSV.");
+#endif
 }

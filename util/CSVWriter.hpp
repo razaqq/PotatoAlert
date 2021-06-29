@@ -1,22 +1,15 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "StatsParser.hpp"
 #include <string>
-#include <fstream>
-#include <initializer_list>
 
 
-namespace PotatoAlert {
+using PotatoAlert::StatsParser::Match;
 
-class CSVWriter
-{
-public:
-	CSVWriter();
-	~CSVWriter();
-	void saveMatch(const std::string& jsonObj);
-private:
-	std::ofstream file;
-	static std::string getFilePath();
-};
+namespace PotatoAlert::CSV {
 
-}  // namespace PotatoAlert
+QString GetDir();
+void SaveMatch(const std::string& csv);
+
+}  // namespace PotatoAlert::CSV
