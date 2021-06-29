@@ -1,0 +1,33 @@
+// Copyright 2021 <github.com/razaqq>
+#pragma once
+
+#include <type_traits>
+
+
+namespace PotatoAlert {
+
+template<typename T>
+constexpr bool HasFlag(T flags, T flag)
+{
+	return (flags & flag) != (T)0;
+}
+
+}  // namespace PotatoAlert
+
+
+#define DEFINE_FLAGS(flags) \
+	constexpr flags operator| [[maybe_unused]] (flags a, flags b) \
+	{ \
+		typedef std::underlying_type_t<flags> T; \
+		return (flags)((T)a | (T)b); \
+	} \
+	constexpr flags operator& [[maybe_unused]] (flags a, flags b) \
+	{ \
+		typedef std::underlying_type_t<flags> T; \
+		return (flags)((T)a & (T)b); \
+	} \
+	constexpr flags operator~ [[maybe_unused]] (flags a) \
+	{ \
+		typedef std::underlying_type_t<flags> T; \
+		return (flags)~(T)a; \
+	}

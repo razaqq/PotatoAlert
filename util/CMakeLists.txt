@@ -5,6 +5,8 @@ set(
         Config.hpp
         CSVWriter.cpp
         CSVWriter.hpp
+        File.hpp
+        Flags.hpp
         Game.cpp
         Game.hpp
         Logger.cpp
@@ -17,7 +19,6 @@ set(
         StatsParser.hpp
         StringTable.cpp
         StringTable.hpp
-        Time.cpp
         Time.hpp
         ../updater/Updater.cpp
         ../updater/Updater.hpp
@@ -29,6 +30,7 @@ if (WIN32)
     set(
             utils_src
             ${utils_src}
+            File.win32.cpp
             Time.win32.cpp
     )
 endif (WIN32)
