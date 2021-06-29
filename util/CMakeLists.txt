@@ -25,6 +25,22 @@ set(
         Version.hpp
 )
 
+if (WIN32)
+    set(
+            utils_src
+            ${utils_src}
+            Time.win32.cpp
+    )
+endif (WIN32)
+
+if (UNIX)
+    set(
+            utils_src
+            ${utils_src}
+            Time.linux.cpp
+    )
+endif (UNIX)
+
 add_library(util STATIC ${utils_src})
 target_link_libraries(
         util
