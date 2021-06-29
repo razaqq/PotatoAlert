@@ -1,5 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "VerticalMenuBar.hpp"
+#include "MenuEntryButton.hpp"
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QSizePolicy>
@@ -7,8 +9,6 @@
 #include <QPixmap>
 #include <QButtonGroup>
 #include <QDockWidget>
-#include "VerticalMenuBar.hpp"
-#include "MenuEntry.hpp"
 
 
 using PotatoAlert::VerticalMenuBar;
@@ -36,40 +36,49 @@ void VerticalMenuBar::Init()
 	this->setFixedWidth(30);
 	this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 
-	auto table = new MenuEntry(this, QIcon(QPixmap(":/table.svg")));
-	auto settings = new MenuEntry(this, QIcon(QPixmap(":/settings.svg")));
+	auto table = new MenuEntryButton(this, QIcon(QPixmap(":/table.svg")));
+	auto settings = new MenuEntryButton(this, QIcon(QPixmap(":/settings.svg")));
 
-	auto discord = new MenuEntry(this, QIcon(QPixmap(":/discord.svg")));
-	auto log = new MenuEntry(this, QIcon(QPixmap(":/log.svg")));
-	auto github = new MenuEntry(this, QIcon(QPixmap(":/github.svg")));
-	auto about = new MenuEntry(this, QIcon(QPixmap(":/about.svg")));
+	auto discord = new MenuEntryButton(this, QIcon(QPixmap(":/discord.svg")), false);
+	auto csvMatches = new MenuEntryButton(this, QIcon(QPixmap(":/csv.svg")), false);
+	auto log = new MenuEntryButton(this, QIcon(QPixmap(":/log.svg")), false);
+	auto github = new MenuEntryButton(this, QIcon(QPixmap(":/github.svg")), false);
+	auto about = new MenuEntryButton(this, QIcon(QPixmap(":/about.svg")));
 
-	table->button->setChecked(true);
-	discord->button->setCheckable(false);
-	log->button->setCheckable(false);
-	github->button->setCheckable(false);
+	this->menuEntries = { table, settings, discord, csvMatches, log, github, about };
 
-	this->btnGroup->addButton(table->button);
-	this->btnGroup->setId(table->button, 0);
-	this->btnGroup->addButton(settings->button);
-	this->btnGroup->setId(settings->button, 1);
-	this->btnGroup->addButton(discord->button);
-	this->btnGroup->setId(discord->button, 2);
-	this->btnGroup->addButton(log->button);
-	this->btnGroup->setId(log->button, 3);
-	this->btnGroup->addButton(github->button);
-	this->btnGroup->setId(github->button, 4);
-	this->btnGroup->addButton(about->button);
-	this->btnGroup->setId(about->button, 5);
+	for (int i = 0; i < this->menuEntries.size(); i++)
+	{
+		auto button = this->menuEntries[i]->button;
+		this->btnGroup->addButton(button);
+		this->btnGroup->setId(button, i);
+	}
 	this->btnGroup->setExclusive(true);
+
+	this->SetChecked(MenuEntry::Table);
 
 	layout->addWidget(table, 0, Qt::AlignTop | Qt::AlignHCenter);
 	layout->addWidget(settings, 0, Qt::AlignTop | Qt::AlignHCenter);
 	layout->addStretch();
 	layout->addWidget(discord, 0, Qt::AlignBottom | Qt::AlignHCenter);
+	layout->addWidget(csvMatches, 0, Qt::AlignBottom | Qt::AlignHCenter);
 	layout->addWidget(log, 0, Qt::AlignBottom | Qt::AlignHCenter);
 	layout->addWidget(github, 0, Qt::AlignBottom | Qt::AlignHCenter);
 	layout->addWidget(about, 0, Qt::AlignBottom | Qt::AlignHCenter);
 
 	this->titleBarWidget()->setLayout(layout);
+
+	connect(this->btnGroup, &QButtonGroup::idClicked, [this](int id)
+	{
+		emit this->EntryClicked(static_cast<MenuEntry>(id));
+	});
+}
+
+void VerticalMenuBar::SetChecked(MenuEntry entry)
+{
+	for (auto& menuEntry : this->menuEntries)
+	{
+		menuEntry->button->setChecked(false);
+	}
+	this->menuEntries[static_cast<int>(entry)]->button->setChecked(true);
 }

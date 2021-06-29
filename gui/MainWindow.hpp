@@ -25,7 +25,7 @@ protected:
 	void Init();
 	PotatoClient* pc;
 
-	void SwitchTab(int i);
+	void SwitchTab(MenuEntry i);
 	void ConnectSignals();
 
 	QWidget* centralW = new QWidget(this);

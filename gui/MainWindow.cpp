@@ -24,7 +24,7 @@
 #include "StatsWidget/StatsHeader.hpp"
 #include "MenuBar/VerticalMenuBar.hpp"
 #include "StringTable.hpp"
-#include "MainWindow.hpp"
+#include "CSVWriter.hpp"
 
 
 using PotatoAlert::MainWindow;
@@ -34,7 +34,7 @@ MainWindow::MainWindow(PotatoClient* pc) : QMainWindow()
 	this->pc = pc;
 	this->Init();
 	this->ConnectSignals();
-	this->pc->init();
+	this->pc->Init();
 }
 
 void MainWindow::Init()
@@ -69,30 +69,31 @@ void MainWindow::Init()
 	this->centralLayout->addWidget(this->aboutWidget);
 }
 
-void MainWindow::SwitchTab(int i)
+void MainWindow::SwitchTab(MenuEntry i)
 {
 	QWidget* oldWidget = this->activeWidget;
 	switch (i)
 	{
-	case 0:  // stats table
+	case MenuEntry::Table:
 		this->activeWidget = this->statsWidget;
 		break;
-	case 1:  // settings
+	case MenuEntry::Settings:
 		this->activeWidget = this->settingsWidget;
 		break;
-	case 2:  // discord
+	case MenuEntry::Discord:
 		QDesktopServices::openUrl(QUrl("https://discord.gg/Ut8t8PA"));
 		return;
-		case 3:  // log
-		QDesktopServices::openUrl(QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/PotatoAlert"));
+	case MenuEntry::CSV:
+		QDesktopServices::openUrl(QUrl(CSV::GetDir()));
 		return;
-		case 4:  // github
+	case MenuEntry::Log:
+		QDesktopServices::openUrl(QUrl(Logger::GetDir()));
+		return;
+	case MenuEntry::Github:
 		QDesktopServices::openUrl(QUrl("https://github.com/razaqq/PotatoAlert"));
 		return;
-	case 5:  // about
+	case MenuEntry::About:
 		this->activeWidget = this->aboutWidget;
-		break;
-	default:
 		break;
 	}
 	oldWidget->setVisible(false);
@@ -101,15 +102,15 @@ void MainWindow::SwitchTab(int i)
 
 void MainWindow::ConnectSignals()
 {
-	connect(this->menuBar->btnGroup, &QButtonGroup::idClicked, this, &MainWindow::SwitchTab);
+	connect(this->menuBar, &VerticalMenuBar::EntryClicked, this, &MainWindow::SwitchTab);
 
 	connect(this->pc, &PotatoClient::status, this->statsWidget, &StatsWidget::SetStatus);
 	connect(this->pc, &PotatoClient::matchReady, this->statsWidget, &StatsWidget::Update);
 
-	connect(this->settingsWidget, &SettingsWidget::done,[this]()
+	connect(this->settingsWidget, &SettingsWidget::done, [this]()
 	{
-		this->SwitchTab(0);
-		this->menuBar->btnGroup->button(0)->setChecked(true);
+		this->SwitchTab(MenuEntry::Table);
+		this->menuBar->SetChecked(MenuEntry::Table);
 	});
 }
 
