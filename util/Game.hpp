@@ -22,7 +22,7 @@ struct FolderStatus
 	std::string overrideReplaysPath;
 	std::string region;
 	bool versionedReplays;
-	std::string statusText;
+	std::string statusText = "No Game Directory Set";
 	bool found = false;
 };
 

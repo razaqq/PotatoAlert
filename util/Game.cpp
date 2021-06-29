@@ -1,59 +1,29 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Game.hpp"
+
+#include "Config.hpp"
+#include "File.hpp"
+#include "Logger.hpp"
+
+#include <tinyxml2.h>
+
 #include <algorithm>
-#include <string>
+#include <charconv>
 #include <filesystem>
 #include <format>
 #include <iostream>
-#include <sstream>
-#include <regex>
-#include <vector>
-#include <charconv>
 #include <optional>
-#include <algorithm>
-#include "Logger.hpp"
-#include "Game.hpp"
-#include "Config.hpp"
-#include <tinyxml2.h>
-#include <winver.h>
+#include <regex>
+#include <sstream>
+#include <string>
+#include <vector>
 
 
 using PotatoAlert::Game::FolderStatus;
 namespace fs = std::filesystem;
 
 namespace PotatoAlert::Game {
-
-// reads version number from a file
-std::optional<std::string> GetFileVersion(const std::string& file)
-{
-	DWORD size = GetFileVersionInfoSize(file.c_str(), nullptr);
-	if (size == 0)
-		return {};
-
-	char* versionInfo = new char[size];
-	if (!GetFileVersionInfo(file.c_str(), 0, 255, versionInfo))
-	{
-		delete[] versionInfo;
-		return {};
-	}
-
-	VS_FIXEDFILEINFO* out;
-	UINT outSize = 0;
-	if (!VerQueryValue(&versionInfo[0], "\\", (LPVOID*)&out, &outSize) && outSize > 0)
-	{
-		delete[] versionInfo;
-		return {};
-	}
-
-	std::string version = std::format("{}.{}.{}.{}",
-									  ( out->dwFileVersionMS >> 16 ) & 0xff,
-									  ( out->dwFileVersionMS >>  0 ) & 0xff,
-									  ( out->dwFileVersionLS >> 16 ) & 0xff,
-									  ( out->dwFileVersionLS >>  0 ) & 0xff
-									  );
-	delete[] versionInfo;
-	return version;
-}
 
 bool AsInteger(const std::string& src, int& value)
 {
@@ -80,12 +50,19 @@ bool GetResFolderPath(FolderStatus& status)
 			continue;
 
 		const fs::path exe = (entry.path() / "bin32" / "WorldOfWarships32.exe");
-
-		auto version = GetFileVersion(exe.string());
-		if (!version.has_value())
+		if (!fs::exists(exe))
+		{
 			continue;
+		}
 
-		if (version.value() == status.gameVersion)
+		std::string version;
+		if (!File::GetVersion(exe.string(), version))
+		{
+			Logger::Error("Failed to read version info from file: {} - {}", exe.string(), File::LastError());
+			continue;
+		}
+
+		if (version == status.gameVersion)
 		{
 			status.folderVersion = entry.path().filename().string();
 			status.resFolderPath = (fs::path(status.gamePath) / "bin" / status.folderVersion).string();
@@ -193,12 +170,6 @@ bool ReadPreferences(FolderStatus& status, const std::string& basePath)
 {
 	// For some reason preferences.xml is not valid xml and so we have to parse it with regex instead of xml
 	std::string preferencesPath = (fs::path(basePath) / "preferences.xml").string();
-	/*
-	if (status.preferencesPathBase == "cwd")
-		preferencesPath = (fs::path(status.gamePath) / "preferences.xml").string();
-	else if (status.preferencesPathBase == "exe_path")
-		preferencesPath = (fs::path(status.gamePath) / "bin" / status.folderVersion / "preferences.xml").string();
-	 */
 
 	if (!fs::exists(fs::path(preferencesPath)))
 	{
@@ -315,9 +286,9 @@ bool CheckPath(const std::string& selectedPath, FolderStatus& status)
 
 	// get rid of all replays folders that dont exist
 	status.replaysPath.erase(std::remove_if(status.replaysPath.begin(), status.replaysPath.end(), [](const std::string& p)
-			{
-				return !fs::exists(p);
-			}), status.replaysPath.end());
+	{
+		return !fs::exists(p);
+	}), status.replaysPath.end());
 
 	status.found = !status.replaysPath.empty();
 	// TODO: localize
@@ -326,4 +297,4 @@ bool CheckPath(const std::string& selectedPath, FolderStatus& status)
 	return true;
 }
 
-}  // namespace Game
+}  // namespace PotatoAlert::Game
