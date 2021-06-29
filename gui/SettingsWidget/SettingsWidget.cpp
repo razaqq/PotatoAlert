@@ -277,12 +277,11 @@ void SettingsWidget::ConnectSignals()
 void SettingsWidget::CheckPath()
 {
 	FolderStatus status;
-	if (!Game::CheckPath(PotatoConfig().Get<std::string>("game_folder"), status))
+	if (Game::CheckPath(PotatoConfig().Get<std::string>("game_folder"), status))
 	{
-		// TODO: handle
+		this->pc->SetFolderStatus(status);
 	}
-	this->folderStatusGui->updateStatus(status);
-	this->pc->SetFolderStatus(status);
+	this->folderStatusGui->Update(status);
 }
 
 void SettingsWidget::changeEvent(QEvent* event)

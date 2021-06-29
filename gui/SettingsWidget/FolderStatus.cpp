@@ -1,14 +1,15 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "FolderStatus.hpp"
+#include "Game.hpp"
+#include "StringTable.hpp"
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QLabel>
 #include <QString>
 #include <QGridLayout>
 #include <QEvent>
-#include "FolderStatus.hpp"
-#include "Game.hpp"
-#include "StringTable.hpp"
+#include <sstream>
 
 
 using PotatoAlert::FolderStatusGui;
@@ -16,12 +17,12 @@ using PotatoAlert::Game::FolderStatus;
 
 FolderStatusGui::FolderStatusGui(QWidget *parent) : QWidget(parent)
 {
-	this->init();
+	this->Init();
 }
 
-void FolderStatusGui::init()
+void FolderStatusGui::Init()
 {
-	auto gridLayout = new QGridLayout;
+	auto gridLayout = new QGridLayout();
 	gridLayout->setContentsMargins(10, 0, 10, 0);
 
 	this->statusLabel->setBuddy(this->statusText);
@@ -47,26 +48,37 @@ void FolderStatusGui::init()
 	this->setLayout(gridLayout);
 }
 
-void FolderStatusGui::updateStatus(const FolderStatus& status)
+void FolderStatusGui::Update(const FolderStatus& status)
 {
+	this->replaysFolders->clear();
+	this->versionedReplays->clear();
+	this->region->clear();
+	this->gameVersion->clear();
+
 	this->statusText->setText(QString::fromStdString(status.statusText));
 	if (status.found)
+	{
 		this->statusText->setStyleSheet("QLabel { color : green; }");
+		this->region->setText(QString::fromStdString(status.region));
+		this->gameVersion->setText(QString::fromStdString(status.gameVersion));
+		status.versionedReplays ? this->versionedReplays->setText("yes") : this->versionedReplays->setText("no");
+
+		// create string from replays paths
+		std::stringstream ss;
+		auto beg = status.replaysPath.begin();
+		auto end = status.replaysPath.end();
+		if (beg != end)
+		{
+			ss << *beg;
+			while (++beg != end)
+				ss << "\n" << *beg;
+		}
+		this->replaysFolders->setText(QString::fromStdString(ss.str()));
+	}
 	else
+	{
 		this->statusText->setStyleSheet("QLabel { color : red; }");
-
-	this->region->setText(QString::fromStdString(status.region));
-	this->gameVersion->setText(QString::fromStdString(status.gameVersion));
-	status.versionedReplays ? this->versionedReplays->setText("yes") : this->versionedReplays->setText("no");
-
-	this->replaysFolders->clear();
-
-	if (status.replaysPath.size() == 1)
-		this->replaysFolders->setText(QString::fromStdString(status.replaysPath[0]));
-	else if (status.replaysPath.size() == 2)
-		this->replaysFolders->setText(
-				QString::fromStdString(status.replaysPath[0]) + "\n" + QString::fromStdString(status.replaysPath[1])
-				);
+	}
 }
 
 void FolderStatusGui::changeEvent(QEvent* event)
