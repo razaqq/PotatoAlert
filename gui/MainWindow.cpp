@@ -29,12 +29,11 @@
 
 using PotatoAlert::MainWindow;
 
-MainWindow::MainWindow(PotatoClient* pc) : QMainWindow()
+MainWindow::MainWindow() : QMainWindow()
 {
-	this->m_pc = pc;
 	this->Init();
 	this->ConnectSignals();
-	this->m_pc->Init();
+	PotatoClient::Instance().Init();
 }
 
 void MainWindow::Init()
@@ -58,7 +57,7 @@ void MainWindow::Init()
 		PotatoConfig().Set<bool>("menubar_leftside",area == Qt::DockWidgetArea::LeftDockWidgetArea);
 	});
 
-	this->m_settingsWidget = new SettingsWidget(this, this->m_pc);
+	this->m_settingsWidget = new SettingsWidget(this);
 
 	// set other tabs invisible
 	this->m_settingsWidget->setVisible(false);
@@ -104,8 +103,8 @@ void MainWindow::ConnectSignals()
 {
 	connect(this->m_menuBar, &VerticalMenuBar::EntryClicked, this, &MainWindow::SwitchTab);
 
-	connect(this->m_pc, &PotatoClient::status, this->m_statsWidget, &StatsWidget::SetStatus);
-	connect(this->m_pc, &PotatoClient::matchReady, this->m_statsWidget, &StatsWidget::Update);
+	connect(&PotatoClient::Instance(), &PotatoClient::status, this->m_statsWidget, &StatsWidget::SetStatus);
+	connect(&PotatoClient::Instance(), &PotatoClient::matchReady, this->m_statsWidget, &StatsWidget::Update);
 
 	connect(this->m_settingsWidget, &SettingsWidget::done, [this]()
 	{

@@ -24,7 +24,7 @@ class VerticalMenuBar : public QDockWidget
 {
 	Q_OBJECT
 public:
-	explicit VerticalMenuBar(QWidget* parent);
+	explicit VerticalMenuBar(QWidget* parent = nullptr);
 	void SetChecked(MenuEntry entry);
 private:
 	std::array<MenuEntryButton*, 7> m_menuEntries;

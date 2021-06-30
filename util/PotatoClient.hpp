@@ -32,21 +32,20 @@ class PotatoClient : public QObject
 {
 	Q_OBJECT
 public:
-	PotatoClient() = default;
 	PotatoClient(const PotatoClient&) = delete;
+	PotatoClient(PotatoClient&&) noexcept = delete;
 	PotatoClient& operator=(const PotatoClient&) = delete;
-	/*
-	PotatoClient(PotatoClient&& other) noexcept
-		: socket(other.socket), watcher(other.watcher),
-		  tempArenaInfo(std::move(other.tempArenaInfo)),
-		  fStatus(std::move(other.fStatus))
+	PotatoClient& operator=(PotatoClient&&) noexcept = delete;
+
+	static PotatoClient& Instance()
 	{
-		Logger::Debug("MOVED");
+		static PotatoClient pc{};
+		return pc;
 	}
-	*/
 	void Init();
 	void SetFolderStatus(const FolderStatus& status);
 private:
+	PotatoClient() = default;
 	void OnResponse(const QString& message);
 	void OnDirectoryChanged(const QString& path);
 	void UpdateReplaysPath();

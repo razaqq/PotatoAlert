@@ -15,14 +15,12 @@
 #include <vector>
 
 
-typedef std::vector<std::vector<std::variant<QLabel*, QTableWidgetItem*>>> teamType;
-
 namespace PotatoAlert {
 
 class StatsWidget : public QWidget
 {
 public:
-	explicit StatsWidget(QWidget* parent);
+	explicit StatsWidget(QWidget* parent = nullptr);
 
 	void Update(const Match& match);
 	void SetStatus(Status status, const std::string& statusText);

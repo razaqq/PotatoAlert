@@ -19,11 +19,10 @@ namespace PotatoAlert {
 class MainWindow : public QMainWindow
 {
 public:
-	explicit MainWindow(PotatoClient* pc);
+	MainWindow();
 	bool ConfirmUpdate();
 protected:
 	void Init();
-	PotatoClient* m_pc;
 
 	void SwitchTab(MenuEntry i);
 	void ConnectSignals();

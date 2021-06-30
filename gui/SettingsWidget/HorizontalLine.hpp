@@ -10,7 +10,7 @@ namespace PotatoAlert {
 class HorizontalLine : public QFrame
 {
 public:
-	explicit HorizontalLine(QWidget* parent);
+	explicit HorizontalLine(QWidget* parent = nullptr);
 };
 
 }  // namespace PotatoAlert

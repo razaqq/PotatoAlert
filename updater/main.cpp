@@ -1,9 +1,10 @@
+#include "Logger.hpp"
+#include "UpdaterGui.hpp"
+#include "Updater.hpp"
 #include <QApplication>
 #include <filesystem>
 #include <zip.h>
 #include <Palette.hpp>
-#include "Logger.hpp"
-#include "UpdaterGui.hpp"
 #include "win32.h"
 
 
@@ -32,8 +33,7 @@ int runMain(int argc, char* argv[])
 	QApplication::setPalette(PotatoAlert::DarkPalette());
 	app.setStyleSheet(style);
 
-	Updater u;
-	new UpdaterGui(&u);
+	new UpdaterGui();
 	return QApplication::exec();
 }
 

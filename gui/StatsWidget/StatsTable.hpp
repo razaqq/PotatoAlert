@@ -11,7 +11,7 @@ namespace PotatoAlert {
 class StatsTable : public QTableWidget
 {
 public:
-	explicit StatsTable(QWidget* parent);
+	explicit StatsTable(QWidget* parent = nullptr);
 private:
 	void Init();
 	void InitHeaders();

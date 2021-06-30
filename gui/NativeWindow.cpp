@@ -13,9 +13,8 @@
 
 using PotatoAlert::NativeWindow;
 
-NativeWindow::NativeWindow(QMainWindow* mainWindow) : QWidget()
+NativeWindow::NativeWindow(QMainWindow* mainWindow) : QWidget(), m_mainWindow(mainWindow)
 {
-	this->m_mainWindow = mainWindow;
 	this->m_mainWindow->setParent(this);
 	this->Init();
 }

@@ -43,8 +43,7 @@ int runMain(int argc, char* argv[])
 	font.setStyleStrategy(QFont::PreferAntialias);
 	QApplication::setFont(font);
 
-	PotatoClient client;
-	auto mainWindow = new MainWindow(&client);
+	auto mainWindow = new MainWindow();
 	auto nativeWindow = new NativeWindow(mainWindow);
 	nativeWindow->show();
 

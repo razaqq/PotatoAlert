@@ -1,16 +1,18 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "UpdaterGui.hpp"
+#include "Updater.hpp"
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QProgressBar>
 #include <QPushButton>
 #include "StringTable.hpp"
 
+
 using PotatoAlert::FramelessDialog;
 using PotatoUpdater::UpdaterGui;
 
-UpdaterGui::UpdaterGui(Updater* updater) : FramelessDialog(nullptr)
+UpdaterGui::UpdaterGui() : FramelessDialog(nullptr)
 {
 	auto vLayout = new QVBoxLayout();
 
@@ -34,7 +36,7 @@ UpdaterGui::UpdaterGui(Updater* updater) : FramelessDialog(nullptr)
 	vLayout->addLayout(progressLayout);
 	this->setLayout(vLayout);
 
-	connect(updater, &Updater::downloadProgress,
+	connect(&Updater::Instance(), &Updater::downloadProgress,
 			[progressBar, progressLabel, speedLabel](int percent, const QString& progress, const QString& speed)
 			{
 				progressBar->setValue(percent);
@@ -75,6 +77,6 @@ UpdaterGui::UpdaterGui(Updater* updater) : FramelessDialog(nullptr)
 	});
 	*/
 
-	updater->Run();
+	Updater::Instance().Run();
 	this->exec();
 }

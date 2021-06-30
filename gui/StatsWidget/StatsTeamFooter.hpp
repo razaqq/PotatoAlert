@@ -14,7 +14,7 @@ using PotatoAlert::StatsParser::Match;
 class StatsTeamFooter : public QWidget
 {
 public:
-	explicit StatsTeamFooter(QWidget* parent);
+	explicit StatsTeamFooter(QWidget* parent = nullptr);
 	void Update(const Match& match);
 private:
 	void Init();

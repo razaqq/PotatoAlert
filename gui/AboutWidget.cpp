@@ -11,7 +11,8 @@
 using PotatoAlert::AboutWidget;
 
 AboutWidget::AboutWidget(QWidget* parent) : QWidget(parent)
-{ this->Init();
+{
+	this->Init();
 }
 
 void AboutWidget::Init()

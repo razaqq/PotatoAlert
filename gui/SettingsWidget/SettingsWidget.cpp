@@ -32,9 +32,8 @@ static const int ROW_HEIGHT = 20;
 using PotatoAlert::SettingsWidget;
 using PotatoAlert::SettingsChoice;
 
-SettingsWidget::SettingsWidget(QWidget* parent, PotatoClient* pc) : QWidget(parent)
+SettingsWidget::SettingsWidget(QWidget* parent) : QWidget(parent)
 {
-	this->m_pc = pc;
 	this->Init();
 	this->ConnectSignals();
 	this->CheckPath();
@@ -279,7 +278,7 @@ void SettingsWidget::CheckPath()
 	FolderStatus status;
 	if (Game::CheckPath(PotatoConfig().Get<std::string>("game_folder"), status))
 	{
-		this->m_pc->SetFolderStatus(status);
+		PotatoClient::Instance().SetFolderStatus(status);
 	}
 	this->m_folderStatusGui->Update(status);
 }

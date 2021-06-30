@@ -12,7 +12,6 @@
 #include "SettingsSwitch.hpp"
 #include "SettingsChoice.hpp"
 #include "FolderStatus.hpp"
-#include "PotatoClient.hpp"
 #include "Config.hpp"
 #include "Logger.hpp"
 
@@ -23,15 +22,13 @@ class SettingsWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	SettingsWidget(QWidget* parent, PotatoClient* pc);
+	explicit SettingsWidget(QWidget* parent = nullptr);
 private:
 	void Init();
 	void Load();
 	void ConnectSignals();
 	void CheckPath();
 	void changeEvent(QEvent* event) override;
-
-	PotatoClient* m_pc;
 
 	QLabel* m_updateLabel = new QLabel();
 	QLabel* m_csvLabel = new QLabel();

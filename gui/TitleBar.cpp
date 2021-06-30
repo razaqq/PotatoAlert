@@ -15,9 +15,8 @@
 
 using PotatoAlert::TitleBar;
 
-TitleBar::TitleBar(QWidget* parent) : QWidget(parent)
+TitleBar::TitleBar(QWidget* parent) : QWidget(parent), m_parentWindow(parent)
 {
-	this->m_parentWindow = parent;
 	this->Init();
 }
 

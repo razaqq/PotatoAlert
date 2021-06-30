@@ -17,6 +17,17 @@ class Updater : public QWidget
 {
 	Q_OBJECT
 public:
+	Updater(const Updater&) = delete;
+	Updater(Updater&&) noexcept = delete;
+	Updater& operator=(const Updater&) = delete;
+	Updater& operator=(Updater&&) noexcept = delete;
+
+	static Updater& Instance()
+	{
+		static Updater u{};
+		return u;
+	}
+
 	static bool UpdateAvailable();
 
 	void Run();
@@ -33,6 +44,7 @@ public:
 
 	static void RemoveTrash();
 private:
+	Updater() = default;
 	QNetworkReply* Download();
 
 	static void End(bool success = true, bool revert = false);

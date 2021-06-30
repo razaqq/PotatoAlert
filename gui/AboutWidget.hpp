@@ -9,7 +9,7 @@ namespace PotatoAlert {
 class AboutWidget : public QWidget
 {
 public:
-	explicit AboutWidget(QWidget* parent);
+	explicit AboutWidget(QWidget* parent = nullptr);
 private:
 	void Init();
 };

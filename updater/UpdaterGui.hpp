@@ -2,7 +2,6 @@
 #pragma once
 
 #include "FramelessDialog.hpp"
-#include "Updater.hpp"
 
 
 namespace PotatoUpdater {
@@ -12,7 +11,7 @@ using PotatoAlert::FramelessDialog;
 class UpdaterGui : FramelessDialog
 {
 public:
-	explicit UpdaterGui(Updater* updater);
+	UpdaterGui();
 };
 
 }  // namespace PotatoAlert

@@ -12,7 +12,7 @@ namespace PotatoAlert {
 class FolderStatusGui : public QWidget
 {
 public:
-	explicit FolderStatusGui(QWidget* parent);
+	explicit FolderStatusGui(QWidget* parent = nullptr);
 	void Update(const Game::FolderStatus& status);
 private:
 	void Init();

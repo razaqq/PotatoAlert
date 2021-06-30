@@ -16,7 +16,7 @@ class StatsHeader : public QWidget
 {
 	Q_OBJECT
 public:
-	explicit StatsHeader(QWidget* parent);
+	explicit StatsHeader(QWidget* parent = nullptr);
 	void SetStatus(Status status, const std::string& text);
 private:
 	void Init();

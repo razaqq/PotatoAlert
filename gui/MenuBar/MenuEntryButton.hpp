@@ -11,7 +11,7 @@ namespace PotatoAlert {
 class MenuEntryButton : public QWidget
 {
 public:
-	MenuEntryButton(QWidget* parent, const QIcon& icon, bool checkable = true);
+	MenuEntryButton(QWidget* parent = nullptr, const QIcon& icon = QIcon(), bool checkable = true);
 	QPushButton* m_button = new QPushButton;
 };
 
