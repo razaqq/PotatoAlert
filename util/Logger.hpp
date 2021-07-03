@@ -17,94 +17,123 @@ class Logger
 {
 public:
 	Logger(const Logger&) = delete;
-	Logger& operator= (const Logger) = delete;
+	Logger(Logger&&) = delete;
+	Logger& operator=(const Logger&) = delete;
+	Logger& operator=(Logger&&) = delete;
 
 	static QString GetDir();
 
 	// DEBUG
-	static void Debug(const char* text);
-	static void Debug(const std::string& text);
-
+	static void Debug(const char* text)
+	{
+	#ifndef NDEBUG
+		std::cout << Format(Level::Debug, text) << std::endl;
+	#endif
+	}
+	static void Debug(const std::string& text)
+	{
+	#ifndef NDEBUG
+		std::cout << Format(Level::Debug, text) << std::endl;
+	#endif
+	}
 	template<typename... TArgs>
 	static void Debug(const char* format, TArgs&&... args)
 	{
 	#ifndef NDEBUG
-			auto text = std::format(format, args...);
-			std::cout << GetTimeStamp(timeFormat) << debugPrefix << text << std::endl;
+		std::cout << Format(Level::Debug, format, args...) << std::endl;
 	#endif
 	}
 
 	// INFO
-	static void Info(const char* text) { return Logger::Get().IInfo(text); }
-	static void Info(const std::string& text) { return Logger::Get().IInfo(text); }
+	static void Info(const char* text) { Instance().Write(Level::Info, text); }
+	static void Info(const std::string& text) { Instance().Write(Level::Info, text); }
 	template<typename... TArgs>
-	static void Info(const char* format, TArgs&&... args) { return Logger::Get().template IInfo(format, args...); }
+	static void Info(const char* format, TArgs&&... args) { Instance().Write(Level::Info, format, args...); }
 
 	// WARN
-	static void Warn(const char* text) { return Logger::Get().IWarn(text); }
-	static void Warn(const std::string& text) { return Logger::Get().IWarn(text); }
+	static void Warn(const char* text) { Instance().Write(Level::Warn, text); }
+	static void Warn(const std::string& text) { Instance().Write(Level::Warn, text); }
 	template<typename... TArgs>
-	static void Warn(const char* format, TArgs&&... args) { return Logger::Get().template IWarn(format, args...); }
+	static void Warn(const char* format, TArgs&&... args) { Instance().Write(Level::Warn, format, args...); }
 
 	// ERROR
-	static void Error(const char* text) { return Logger::Get().IError(text); }
-	static void Error(const std::string& text) { return Logger::Get().IError(text); }
+	static void Error(const char* text) { Instance().Write(Level::Error, text); }
+	static void Error(const std::string& text) { Instance().Write(Level::Error, text); }
 	template<typename... TArgs>
-	static void Error(const char* format, TArgs&&... args) { return Logger::Get().template IError(format, args...); }
+	static void Error(const char* format, TArgs&&... args) { Instance().Write(Level::Error, format, args...); }
 private:
 	Logger();
 	~Logger();
 
-	static constexpr std::string_view timeFormat = "%d-%m-%Y %H:%M:%S";
-	static constexpr std::string_view debugPrefix = " - [DEBUG] ";
-	static constexpr std::string_view infoPrefix = " - [INFO] ";
-	static constexpr std::string_view warnPrefix = " - [WARN] ";
-	static constexpr std::string_view errorPrefix = " - [ERROR] ";
-
-	static Logger& Get()
+	static Logger& Instance()
 	{
 		static Logger l;
 		return l;
 	}
 
-	// INFO
-	void IInfo(const char* text);
-	void IInfo(const std::string& text);
+	enum class Level
+	{
+		Debug,
+		Info,
+		Warn,
+		Error
+	};
 
 	template<typename... TArgs>
-	void IInfo(const char* format, TArgs&&... args)
+	static std::string Format(Level level, const char* format, TArgs&&... args)
 	{
-		auto text = std::format(format, args...);
-		std::cout << GetTimeStamp(timeFormat) << infoPrefix << text << std::endl;
-		this->_ofs << GetTimeStamp(timeFormat) << infoPrefix << text << std::endl;
-
+		return std::format("{} - [{:5}] {}", GetTimeStamp(m_timeFormat), GetPrefix(level), std::format(format, args...));
+	}
+	static std::string Format(Level level, const char* text)
+	{
+		return std::format("{} - [{:5}] {}", GetTimeStamp(m_timeFormat), GetPrefix(level), text);
+	}
+	static std::string Format(Level level, const std::string& text)
+	{
+		return std::format("{} - [{:5}] {}", GetTimeStamp(m_timeFormat), GetPrefix(level), text);
 	}
 
-	// WARN
-	void IWarn(const char* text);
-	void IWarn(const std::string& text);
+	static constexpr std::string_view m_timeFormat = "%d-%m-%Y %H:%M:%S";
+	static constexpr std::string_view GetPrefix(Level level)
+	{
+		switch (level)
+		{
+			case Level::Debug: return "DEBUG";
+			case Level::Info: return "INFO";
+			case Level::Warn: return "WARN";
+			case Level::Error: return "ERROR";
+		}
+	}
+	static constexpr std::ostream& GetOutput(Level level)
+	{
+		switch (level)
+		{
+			case Level::Debug: case Level::Info: case Level::Warn: return std::cout;
+			case Level::Error: return std::cerr;
+		}
+	}
 
+	void Write(Level level, const std::string& text)
+	{
+		auto formatted = Format(level, text);
+		GetOutput(level) << formatted << std::endl;
+		this->_ofs << formatted << std::endl;
+	}
+	void Write(Level level, const char* text)
+	{
+		auto formatted = Format(level, text);
+		GetOutput(level) << formatted << std::endl;
+		this->_ofs << formatted << std::endl;
+	}
 	template<typename... TArgs>
-	void IWarn(const char* format, TArgs&&... args)
+	void Write(Level level, const char* format, TArgs&&... args)
 	{
-		auto text = std::format(format, args...);
-		std::cout << GetTimeStamp(timeFormat) << warnPrefix << text << std::endl;
-		this->_ofs << GetTimeStamp(timeFormat) << warnPrefix << text << std::endl;
+		auto formatted = Format(level, format, args...);
+		GetOutput(level) << formatted << std::endl;
+		this->_ofs << formatted << std::endl;
 	}
 
-	// ERROR
-	void IError(const char* text);
-	void IError(const std::string& text);
-
-	template<typename... TArgs>
-	void IError(const char* format, TArgs&&... args)
-	{
-		auto text = std::format(format, args...);
-		std::cerr << GetTimeStamp(timeFormat) << errorPrefix << text << std::endl;
-		this->_ofs << GetTimeStamp(timeFormat) << errorPrefix << text << std::endl;
-	}
-
-	std::ofstream _ofs;
+	std::ofstream _ofs;  // TODO
 };
 
 }  // namespace PotatoAlert
