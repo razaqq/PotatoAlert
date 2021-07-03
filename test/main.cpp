@@ -2,7 +2,10 @@
 #include "catch.hpp"
 #include "Log.hpp"
 
-TEST_CASE( "Init" )
+struct test_init
 {
-	PotatoAlert::Log::Init();
-}
+	test_init()
+	{
+		PotatoAlert::Log::Init();
+	}
+} test_init_instance;
