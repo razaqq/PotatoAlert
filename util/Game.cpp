@@ -244,7 +244,7 @@ void SetReplaysFolder(FolderStatus& status)
 
 bool CheckPath(const std::string& selectedPath, FolderStatus& status)
 {
-	fs::path gamePath = fs::path(selectedPath).make_preferred();
+	const fs::path gamePath = fs::path(selectedPath).make_preferred();
 	status.gamePath = gamePath.string();
 
 	// check for replays folder override
@@ -277,15 +277,20 @@ bool CheckPath(const std::string& selectedPath, FolderStatus& status)
 		return false;
 	}
 
-	std::string resModsFolder = fs::path(fs::path(status.resFolderPath) / "res_mods").string();
+	const std::string resModsFolder = fs::path(fs::path(status.resFolderPath) / "res_mods").string();
 	ReadEngineConfig(status, resModsFolder.c_str());
 	SetReplaysFolder(status);
 
 
-	// get rid of all replays folders that dont exist
+	// get rid of all replays folders that don't exist
 	status.replaysPath.erase(std::remove_if(status.replaysPath.begin(), status.replaysPath.end(), [](const std::string& p)
 	{
-		return !fs::exists(p);
+		if (!fs::exists(p))
+		{
+			LOG_TRACE("Removing replays folder {}, because it doesn't exist.", p);
+			return true;
+		}
+		return false;
 	}), status.replaysPath.end());
 
 	status.found = !status.replaysPath.empty();

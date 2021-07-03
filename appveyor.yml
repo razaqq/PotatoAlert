@@ -35,7 +35,7 @@ after_build:
   - 7z a PotatoAlert.zip -r .\PotatoAlert.exe .\PotatoUpdater.exe .\package\*
 
 test_script:
-  - cmd: cd %APPVEYOR_BUILD_FOLDER%\build\test\PotatoTest.exe
+  - "%APPVEYOR_BUILD_FOLDER%\\build\\test\\PotatoTest.exe"
 
 artifacts:
   - path: 'build\PotatoAlert.zip'
