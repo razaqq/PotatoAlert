@@ -80,7 +80,13 @@ void PotatoClient::Init()
 	connect(this->m_socket, &QWebSocket::textMessageReceived, this, &PotatoClient::OnResponse);
 	connect(this->m_watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::OnDirectoryChanged);
 
-	for (auto& path : this->m_watcher->directories())  // trigger run
+	this->TriggerRun();
+}
+
+// triggers a run with the current replays folders
+void PotatoClient::TriggerRun()
+{
+	for (auto& path : this->m_watcher->directories())
 		this->OnDirectoryChanged(path);
 }
 
@@ -204,11 +210,17 @@ void PotatoClient::OnResponse(const QString& message)
 	emit this->status(Status::Ready, "Ready");
 }
 
-// sets the folder status and triggers a new match run
-void PotatoClient::SetFolderStatus(const FolderStatus& status)
+// checks the game path for a valid replays folder and triggers a new match run
+FolderStatus PotatoClient::CheckPath()
 {
-	this->m_folderStatus = status;
-	this->UpdateReplaysPath();
+	FolderStatus folderStatus;
+	if (Game::CheckPath(PotatoConfig().Get<std::string>("game_folder"), folderStatus))
+	{
+		this->m_folderStatus = folderStatus;
+		this->UpdateReplaysPath();
+		this->TriggerRun();
+	}
+	return folderStatus;
 }
 
 // opens and reads a file

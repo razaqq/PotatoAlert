@@ -36,7 +36,6 @@ SettingsWidget::SettingsWidget(QWidget* parent) : QWidget(parent)
 {
 	this->Init();
 	this->ConnectSignals();
-	this->CheckPath();
 }
 
 void SettingsWidget::Init()
@@ -275,12 +274,7 @@ void SettingsWidget::ConnectSignals()
 
 void SettingsWidget::CheckPath()
 {
-	FolderStatus status;
-	if (Game::CheckPath(PotatoConfig().Get<std::string>("game_folder"), status))
-	{
-		PotatoClient::Instance().SetFolderStatus(status);
-	}
-	this->m_folderStatusGui->Update(status);
+	this->m_folderStatusGui->Update(PotatoClient::Instance().CheckPath());
 }
 
 void SettingsWidget::changeEvent(QEvent* event)

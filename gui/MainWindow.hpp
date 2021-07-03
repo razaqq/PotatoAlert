@@ -26,6 +26,7 @@ protected:
 
 	void SwitchTab(MenuEntry i);
 	void ConnectSignals();
+	void showEvent(QShowEvent* event) override;
 
 	QWidget* m_centralW = new QWidget(this);
 	QVBoxLayout* m_centralLayout = new QVBoxLayout();

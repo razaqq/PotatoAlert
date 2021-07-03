@@ -43,7 +43,8 @@ public:
 		return pc;
 	}
 	void Init();
-	void SetFolderStatus(const FolderStatus& status);
+	void TriggerRun();
+	FolderStatus CheckPath();
 private:
 	PotatoClient() = default;
 	void OnResponse(const QString& message);

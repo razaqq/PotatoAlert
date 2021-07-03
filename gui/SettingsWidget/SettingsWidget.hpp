@@ -23,11 +23,11 @@ class SettingsWidget : public QWidget
 	Q_OBJECT
 public:
 	explicit SettingsWidget(QWidget* parent = nullptr);
+	void CheckPath();
 private:
 	void Init();
 	void Load();
 	void ConnectSignals();
-	void CheckPath();
 	void changeEvent(QEvent* event) override;
 
 	QLabel* m_updateLabel = new QLabel();

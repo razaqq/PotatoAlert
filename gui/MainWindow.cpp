@@ -68,6 +68,12 @@ void MainWindow::Init()
 	this->m_centralLayout->addWidget(this->m_aboutWidget);
 }
 
+void MainWindow::showEvent([[maybe_unused]] QShowEvent* event)
+{
+	// we have to trigger the run here or else we would not get a loading animation on program start
+	this->m_settingsWidget->CheckPath();
+}
+
 void MainWindow::SwitchTab(MenuEntry i)
 {
 	QWidget* oldWidget = this->m_activeWidget;
