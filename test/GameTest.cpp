@@ -3,6 +3,7 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 #include "Game.hpp"
+#include <filesystem>
 
 
 using namespace PotatoAlert::Game;
@@ -35,7 +36,7 @@ TEST_CASE( "GameTest_CheckPathTest" )
 {
 	FolderStatus f1;
 	REQUIRE( CheckPath(GetGamePath(Test::nsnv).string(), f1) );
-	REQUIRE(f1.gamePath == GetGamePath(Test::nsnv) );
+	REQUIRE( f1.gamePath == GetGamePath(Test::nsnv) );
 	REQUIRE( f1.replaysPath == std::vector<std::string>{(GetGamePath(Test::nsnv) / "replays").string()} );
 
 	FolderStatus f2;
