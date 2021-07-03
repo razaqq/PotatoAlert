@@ -23,8 +23,8 @@ void NativeWindow::closeEvent(QCloseEvent* event)
 {
 	PotatoConfig().Set<int>("window_height", this->height());
 	PotatoConfig().Set<int>("window_width", this->width());
-	PotatoConfig().Set<int>("window_x", this->x());
-	PotatoConfig().Set<int>("window_y", this->y());
+	PotatoConfig().Set<int>("window_x", this->windowHandle()->position().x());
+	PotatoConfig().Set<int>("window_y", this->windowHandle()->position().y());
 	QWidget::closeEvent(event);
 }
 
@@ -43,7 +43,7 @@ void NativeWindow::Init()
 	FramelessWindowsManager::setBorderHeight(w, m_borderWidth);
 	FramelessWindowsManager::setTitleBarHeight(w, this->m_titleBar->height());
 
-	auto layout = new QVBoxLayout;
+	auto layout = new QVBoxLayout();
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(0);
 
@@ -53,5 +53,5 @@ void NativeWindow::Init()
 	this->setLayout(layout);
 
 	this->resize(PotatoConfig().Get<int>("window_width"), PotatoConfig().Get<int>("window_height"));
-	this->move(PotatoConfig().Get<int>("window_x"), PotatoConfig().Get<int>("window_y"));
+	this->windowHandle()->setPosition(PotatoConfig().Get<int>("window_x"), PotatoConfig().Get<int>("window_y"));
 }
