@@ -3,6 +3,7 @@
 #include "catch.hpp"
 #include "Game.hpp"
 #include <filesystem>
+#include "win32.h"
 
 
 using namespace PotatoAlert::Game;
@@ -18,29 +19,35 @@ enum class Test
 
 static fs::path GetGamePath(Test t)
 {
+	char path[MAX_PATH];
+	if (!GetModuleFileNameA(nullptr, path, MAX_PATH))
+	{
+		exit(1);
+	}
+
 	switch (t)
 	{
 		case Test::nsnv:
-			return fs::current_path() / "gameDirectories" / "non_steam_non_versioned";
+			return fs::path(path).remove_filename() / "gameDirectories" / "non_steam_non_versioned";
 		case Test::nsv:
-			return fs::current_path() / "gameDirectories" / "non_steam_versioned";
+			return fs::path(path).remove_filename() / "gameDirectories" / "non_steam_versioned";
 		case Test::snvexe:
-			return fs::current_path() / "gameDirectories" / "steam_non_versioned_exe";
+			return fs::path(path).remove_filename() / "gameDirectories" / "steam_non_versioned_exe";
 		case Test::svcwd:
-			return fs::current_path() / "gameDirectories" / "steam_versioned_cwd";
+			return fs::path(path).remove_filename() / "gameDirectories" / "steam_versioned_cwd";
 	}
 }
 
 TEST_CASE( "GameTest_CheckPathTest" )
 {
 	FolderStatus f1;
-	REQUIRE(CheckPath(GetGamePath(Test::nsnv).string(), f1));
-	REQUIRE(f1.gamePath == GetGamePath(Test::nsnv));
-	REQUIRE(f1.replaysPath == std::vector<std::string>{ (GetGamePath(Test::nsnv) / "replays").string() });
+	REQUIRE( CheckPath(GetGamePath(Test::nsnv).string(), f1) );
+	REQUIRE( f1.gamePath == GetGamePath(Test::nsnv) );
+	REQUIRE( f1.replaysPath == std::vector<std::string>{ (GetGamePath(Test::nsnv) / "replays").string() } );
 
 	FolderStatus f2;
 	REQUIRE( CheckPath(GetGamePath(Test::nsv).string(), f2) );
-	REQUIRE( f2.replaysPath == std::vector<std::string>{(GetGamePath(Test::nsv) / "replays" / "0.9.4.0").string()} );
+	REQUIRE( f2.replaysPath == std::vector<std::string>{ (GetGamePath(Test::nsv) / "replays" / "0.9.4.0").string()} );
 
 	FolderStatus f3;
 	REQUIRE( CheckPath(GetGamePath(Test::snvexe).string(), f3) );
