@@ -6,19 +6,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 add_definitions(-D_HAS_EXCEPTIONS=0)
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-        add_compile_options(-Wall -Wno-unknown-pragmas -EHsc -Wno-error=unused-variable -Wno-c++-compat)
-    elseif (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
-        add_compile_options(-Wall -pedantic -Werror -fno-exceptions -Wno-unknown-pragmas)
-    endif()
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    add_compile_options(/W4 /WX /EHsc)  # TODO: completely untested
-else ()
-    message(FATAL_ERROR "Unsupported compiler!")
-endif ()
-
-
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
@@ -39,10 +26,11 @@ generate_product_version(
 
 find_package(Qt5 COMPONENTS Widgets Core Gui WebSockets REQUIRED)
 
-include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2/include)
-include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/nlohmann_json/include)
-include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/zip/src)
-include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/win32)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/nlohmann_json/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/spdlog/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/win32)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/zip/src)
 
 include_directories(${PROJECT_SOURCE_DIR}/util)
 include_directories(${PROJECT_SOURCE_DIR}/gui)
@@ -50,6 +38,7 @@ include_directories(${PROJECT_SOURCE_DIR}/Resources)
 include_directories(${PROJECT_SOURCE_DIR}/framelessHelper)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2)
+set(CMAKE_DISABLE_TESTING ON)
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/zip)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/util)
@@ -62,6 +51,18 @@ add_executable(PotatoAlert main.cpp Resources/PotatoAlert.qrc ${VersionFilesOutp
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set_property(TARGET PotatoAlert PROPERTY WIN32_EXECUTABLE true)
+endif()
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")  # clang-cl
+        target_compile_options(PotatoAlert PRIVATE -Wall -Wno-unknown-pragmas -EHsc -Wno-error=unused-variable -Wno-c++98-compat -Wno-c++98-compat-pedantic)
+    elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")  # clang
+        target_compile_options(PotatoAlert PRIVATE -Wall -pedantic -Werror -fno-exceptions -Wno-unknown-pragmas -Os)
+    endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    target_compile_options(PotatoAlert PRIVATE /W4 /WX /EHsc)  # TODO: completely untested
+else()
+    message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
 target_link_libraries(PotatoAlert

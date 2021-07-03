@@ -23,6 +23,18 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set_property(TARGET PotatoUpdater PROPERTY WIN32_EXECUTABLE true)
 endif()
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")  # clang-cl
+        target_compile_options(PotatoUpdater PRIVATE -Wall -Wno-unknown-pragmas -EHsc -Wno-error=unused-variable -Wno-c++98-compat -Wno-c++98-compat-pedantic)
+    elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")  # clang
+        target_compile_options(PotatoUpdater PRIVATE -Wall -pedantic -Werror -fno-exceptions -Wno-unknown-pragmas -Os)
+    endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    target_compile_options(PotatoUpdater PRIVATE /W4 /WX /EHsc)  # TODO: completely untested
+else()
+    message(FATAL_ERROR "Unsupported compiler!")
+endif()
+
 target_link_libraries(PotatoUpdater
         Qt5::Widgets
         Qt5::Core
