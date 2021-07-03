@@ -422,5 +422,5 @@ bool Updater::CreateNewProcess(std::string_view path, std::string_view args, boo
 			nullptr,
 			SW_SHOWNORMAL
 	};
-	return ShellExecuteEx(&sei);
+	return ShellExecuteExA(&sei);
 }

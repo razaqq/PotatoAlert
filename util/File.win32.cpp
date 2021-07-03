@@ -158,12 +158,12 @@ std::string File::LastError()
 
 bool File::GetVersion(std::string_view fileName, std::string& outVersion)
 {
-	const DWORD size = GetFileVersionInfoSize(fileName.data(), nullptr);
+	const DWORD size = GetFileVersionInfoSizeA(fileName.data(), nullptr);
 	if (size == 0)
 		return {};
 
 	char* versionInfo = new char[size];
-	if (!GetFileVersionInfo(fileName.data(), 0, 255, versionInfo))
+	if (!GetFileVersionInfoA(fileName.data(), 0, 255, versionInfo))
 	{
 		delete[] versionInfo;
 		return false;
@@ -171,7 +171,7 @@ bool File::GetVersion(std::string_view fileName, std::string& outVersion)
 
 	VS_FIXEDFILEINFO* out;
 	UINT outSize = 0;
-	if (!VerQueryValue(&versionInfo[0], "\\", reinterpret_cast<LPVOID*>(&out), &outSize) && outSize > 0)
+	if (!VerQueryValueA(&versionInfo[0], "\\", reinterpret_cast<LPVOID*>(&out), &outSize) && outSize > 0)
 	{
 		delete[] versionInfo;
 		return false;
@@ -200,7 +200,7 @@ bool File::RawDelete(std::string_view file)
 
 bool File::RawExists(std::string_view file)
 {
-	const DWORD dwAttrib = GetFileAttributes(file.data());
+	const DWORD dwAttrib = GetFileAttributesA(file.data());
 	return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
