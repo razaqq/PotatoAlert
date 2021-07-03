@@ -28,9 +28,63 @@ namespace fs = std::filesystem;
 static std::string_view g_updateURL = "https://github.com/razaqq/PotatoAlert/releases/latest/download/PotatoAlert.zip";
 static std::string_view g_versionURL = "https://api.github.com/repos/razaqq/PotatoAlert/releases/latest";
 
+struct DownloadProgress
+{
+	void Reset()
+	{
+		this->m_bytesSinceTick = Q_INT64_C(0);
+		this->timer.restart();
+	}
+
+	void Update(qint64 bytesReceived)
+	{
+		if (!this->m_started)
+		{
+			this->m_started = true;
+			this->timer.start();
+		}
+
+		this->m_bytesSinceTick += bytesReceived;
+
+		if (this->timer.hasExpired(1e3))
+		{
+			this->m_speed = this->m_bytesSinceTick / 1e5f / this->timer.elapsed();  // MB/s
+
+			// convert to kilobyte in case we are slow
+			if (this->m_speed < 1.0f)
+			{
+				this->m_speed *= 1e3;
+				this->m_unit = "kB/s";
+			}
+			else
+			{
+				this->m_unit = "MB/s";
+			}
+
+			this->Reset();
+		}
+	}
+
+	[[nodiscard]] std::string ToString() const
+	{
+		return std::format("{:.1f} {}", this->m_speed, this->m_unit);
+	}
+
+private:
+	QElapsedTimer timer;
+	bool m_started = false;
+	float m_speed = 0.0f;
+	const char* m_unit = "MB/s";
+	qint64 m_bytesSinceTick = Q_INT64_C(0);
+} g_downloadProgress;
+
 // makes a request to the github api and checks if there is a new version available
 bool Updater::UpdateAvailable()
 {
+#ifndef NDEBUG
+	return true;
+#endif
+
 	QEventLoop loop;
 	auto manager = new QNetworkAccessManager();
 
@@ -55,14 +109,7 @@ bool Updater::UpdateAvailable()
 		return false;
 	}
 
-	auto remoteVersion = j["tag_name"].get<std::string>();
-	auto localVersion = QApplication::applicationVersion().toStdString();
-
-#ifdef NDEBUG
-	return Version(remoteVersion) > Version(localVersion);
-#else
-	return true;
-#endif
+	return Version(j["tag_name"].get<std::string>()) > Version(QApplication::applicationVersion().toStdString());
 }
 
 // starts the update process
@@ -70,10 +117,10 @@ void Updater::Run()
 {
 	LOG_TRACE("Starting update...");
 
-	if (!Updater::ElevationInfo().first)
+	if (!ElevationInfo().first)
 	{
 		LOG_ERROR("Updater needs to be started with admin privileges.");
-		Updater::End(false);
+		End(false);
 	}
 
 	LOG_TRACE("Starting download...");
@@ -87,47 +134,46 @@ void Updater::Run()
 		if (reply->error() != QNetworkReply::NoError)
 		{
 			LOG_ERROR("Failed to download update: {}", reply->errorString().toStdString());
-			Updater::End(false);
+			End(false);
 		}
 
 		LOG_TRACE("Update downloaded successfully.");
 
-		const std::string archive = Updater::UpdateArchive().string();
-		const std::string dest = Updater::UpdateDest().string();
+		const std::string archive = UpdateArchive().string();
+		const std::string dest = UpdateDest().string();
 
 		if (auto file = new QFile(QString::fromStdString(archive)); file->open(QFile::WriteOnly))
 		{
 			file->write(reply->readAll());
 			file->flush();
 			file->close();
-			LOG_TRACE("Update archive saved successfully in {}",
-					Updater::UpdateArchive().string());
+			LOG_TRACE("Update archive saved successfully in {}", Updater::UpdateArchive().string());
 		}
 		else
 		{
 			LOG_ERROR("Failed to Save update reply to file.");
-			Updater::End(false);
+			End(false);
 		}
 
 		// make backup
-		if (!Updater::CreateBackup()) Updater::End(false);
+		if (!CreateBackup()) End(false);
 
 		// rename exe/dll to trash
-		if (!Updater::RenameToTrash())
+		if (!RenameToTrash())
 		{
 			LOG_ERROR("Failed to rename exe/dll to trash.");
-			Updater::End(false, true);
+			End(false, true);
 		}
 
 		// Unpack archive
 		LOG_TRACE("Extracting archive to: {}", dest);
-		if (!Updater::Unpack(archive.c_str(), dest.c_str()))
+		if (!Unpack(archive.c_str(), dest.c_str()))
 		{
 			LOG_ERROR("Failed to Unpack archive.");
-			Updater::End(false, true);
+			End(false, true);
 		}
 
-		Updater::End(true);
+		End(true);
 	});
 }
 
@@ -167,80 +213,28 @@ QNetworkReply* Updater::Download()
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 	auto reply = manager->get(request);
 
-	struct DownloadProgress
-	{
-		QElapsedTimer timer;
-		bool started = false;
-		float speed = 0.0f;
-		const char* unit = "MB/s";
-		qint64 bytesSinceTick = Q_INT64_C(0);
-
-		void reset()
-		{
-			this->bytesSinceTick = Q_INT64_C(0);
-			this->timer.restart();
-		}
-
-		void update(qint64 bytesReceived)
-		{
-			if (!this->started)
-			{
-				this->started = true;
-				this->timer.start();
-			}
-
-			this->bytesSinceTick += bytesReceived;
-
-			if (this->timer.hasExpired(1e3))
-			{
-				this->speed = this->bytesSinceTick / 1e5f / this->timer.elapsed();  // MB/s
-
-				// convert to kilobyte in case we are slow
-				if (this->speed < 1.0f)
-				{
-					this->speed *= 1e3;
-					this->unit = "kB/s";
-				}
-				else
-				{
-					this->unit = "MB/s";
-				}
-
-				this->reset();
-			}
-		}
-	};
-	auto p = new DownloadProgress();
-	// std::unique_ptr<DownloadProgress> p(new DownloadProgress());
-
-	connect(reply, &QNetworkReply::downloadProgress, [this, p](qint64 bytesReceived, qint64 bytesTotal)
+	connect(reply, &QNetworkReply::downloadProgress, [this](qint64 bytesReceived, qint64 bytesTotal)
 	{
 		if (bytesTotal == 0)
 			return;
 
-		if (p)
-			p->update(bytesReceived);
+		g_downloadProgress.Update(bytesReceived);
 
-		QString progress = std::format("{:.1f}/{:.1f} MB", bytesReceived/1e6f, bytesTotal/1e6f).c_str();
-		QString speedStr = std::format("{:.1f} {}", p->speed, p->unit).c_str();
+		const QString progress = std::format("{:.1f}/{:.1f} MB", bytesReceived/1e6f, bytesTotal/1e6f).c_str();
+		const QString speedStr = QString::fromStdString(g_downloadProgress.ToString());
 		emit this->downloadProgress(static_cast<int>(bytesReceived * 100 / bytesTotal), progress, speedStr);
-	});
-
-	connect(reply, &QNetworkReply::finished, [p]()
-	{
-		delete p;
 	});
 
 	connect(reply, &QNetworkReply::sslErrors, [reply](const QList<QSslError>&)
 	{
 		LOG_ERROR(reply->errorString().toStdString());
-		Updater::End(false);
+		End(false);
 	});
 
 	connect(reply, &QNetworkReply::errorOccurred, [reply](QNetworkReply::NetworkError)
 	{
 		LOG_ERROR(reply->errorString().toStdString());
-		Updater::End(false);
+		End(false);
 	});
 
 	return reply;
@@ -284,7 +278,7 @@ bool Updater::CreateBackup()
 	std::error_code ec;
 
 	// check if old backup exists and remove it
-	bool exists = fs::exists(Updater::BackupDest(), ec);
+	bool exists = fs::exists(BackupDest(), ec);
 	if (ec)
 	{
 		LOG_ERROR("Failed to check if backup exists: {}", ec.message());
@@ -293,7 +287,7 @@ bool Updater::CreateBackup()
 
 	if (exists)
 	{
-		fs::remove_all(Updater::BackupDest(), ec);
+		fs::remove_all(BackupDest(), ec);
 		if (ec)
 		{
 			LOG_ERROR("Failed to remove old backup: {}", ec.message());
@@ -302,7 +296,7 @@ bool Updater::CreateBackup()
 	}
 
 	// copy new backup
-	fs::copy(Updater::UpdateDest(), Updater::BackupDest(), fs::copy_options::recursive, ec);
+	fs::copy(UpdateDest(), BackupDest(), fs::copy_options::recursive, ec);
 	if (ec)
 	{
 		LOG_ERROR("Failed to copy backup to backup dest: {}", ec.message());
@@ -310,7 +304,7 @@ bool Updater::CreateBackup()
 	}
 
 	// fix permissions
-	fs::permissions(Updater::BackupDest(), fs::perms::all, ec);
+	fs::permissions(BackupDest(), fs::perms::all, ec);
 	if (ec)
 	{
 		LOG_ERROR("Failed to change permissions of backup: {}", ec.message());
@@ -322,7 +316,7 @@ bool Updater::CreateBackup()
 bool Updater::RemoveBackup()
 {
 	std::error_code ec;
-	fs::remove_all(Updater::BackupDest(), ec);
+	fs::remove_all(BackupDest(), ec);
 
 	if (ec)
 	{
@@ -335,7 +329,7 @@ bool Updater::RemoveBackup()
 bool Updater::RevertBackup()
 {
 	std::error_code ec;
-	fs::copy(Updater::BackupDest(),Updater::UpdateDest(),
+	fs::copy(BackupDest(),UpdateDest(),
 			fs::copy_options::recursive | fs::copy_options::overwrite_existing,
 			ec);
 
@@ -352,7 +346,7 @@ bool Updater::RenameToTrash()
 {
 	std::error_code ec;
 
-	auto it = fs::recursive_directory_iterator(Updater::UpdateDest(), ec);
+	auto it = fs::recursive_directory_iterator(UpdateDest(), ec);
 	if (ec)
 	{
 		LOG_ERROR("Failed to get directory iterator: {}", ec.message());
@@ -389,7 +383,7 @@ void Updater::RemoveTrash()
 {
 	std::error_code ec;
 
-	auto it = fs::recursive_directory_iterator(Updater::UpdateDest(), ec);
+	auto it = fs::recursive_directory_iterator(UpdateDest(), ec);
 	if (ec)
 	{
 		LOG_ERROR("Failed to get directory iterator: {}", ec.message());
