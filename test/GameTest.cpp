@@ -1,6 +1,5 @@
 // Copyright 2020 <github.com/razaqq>
 
-#define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 #include "Game.hpp"
 #include <filesystem>
@@ -35,9 +34,9 @@ static fs::path GetGamePath(Test t)
 TEST_CASE( "GameTest_CheckPathTest" )
 {
 	FolderStatus f1;
-	REQUIRE( CheckPath(GetGamePath(Test::nsnv).string(), f1) );
-	REQUIRE( f1.gamePath == GetGamePath(Test::nsnv) );
-	REQUIRE( f1.replaysPath == std::vector<std::string>{(GetGamePath(Test::nsnv) / "replays").string()} );
+	REQUIRE(CheckPath(GetGamePath(Test::nsnv).string(), f1));
+	REQUIRE(f1.gamePath == GetGamePath(Test::nsnv));
+	REQUIRE(f1.replaysPath == std::vector<std::string>{ (GetGamePath(Test::nsnv) / "replays").string() });
 
 	FolderStatus f2;
 	REQUIRE( CheckPath(GetGamePath(Test::nsv).string(), f2) );

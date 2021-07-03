@@ -15,7 +15,7 @@ include_directories(${PROJECT_SOURCE_DIR}/util)
 # enable CTest testing
 enable_testing()
 
-add_executable(PotatoTest GameTest.cpp VersionTest.cpp)
+add_executable(PotatoTest main.cpp GameTest.cpp VersionTest.cpp)
 
 target_link_libraries(PotatoTest
         util
