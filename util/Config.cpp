@@ -61,7 +61,6 @@ Config::Config(std::string_view fileName)
 Config::~Config()
 {
 	this->Save();
-	this->m_file.FlushBuffer();
 	this->m_file.Close();
 }
 
@@ -114,6 +113,7 @@ bool Config::Save()
 		LOG_ERROR("Failed to write config file: {}", File::LastError());
 		return false;
 	}
+	this->m_file.FlushBuffer();
 	return true;
 }
 
