@@ -9,7 +9,7 @@
 #include <QLatin1String>
 #include <string>
 #include "Config.hpp"
-#include "PotatoClient.hpp"
+#include "Log.hpp"
 #include "Palette.hpp"
 #include "updater/Updater.hpp"
 #include "MainWindow.hpp"
@@ -30,6 +30,8 @@ using PotatoAlert::PotatoConfig;
 int runMain(int argc, char* argv[])
 {
 	Q_INIT_RESOURCE(PotatoAlert);
+
+	PotatoAlert::Log::Init();
 
 	QApplication::setOrganizationName(PRODUCT_COMPANY_NAME);
 	QApplication::setApplicationVersion(PRODUCT_VERSION_FULL_STR);

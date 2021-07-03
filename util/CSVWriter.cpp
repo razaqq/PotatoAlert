@@ -2,6 +2,7 @@
 
 #include "CSVWriter.hpp"
 #include "File.hpp"
+#include "Log.hpp"
 #include "Time.hpp"
 #include <format>
 #include <string>
@@ -38,22 +39,15 @@ void csv::SaveMatch(const std::string& csv)
 	{
 		if (file.Write(csv))
 		{
-			Logger::Debug("Wrote match as CSV.");
+			LOG_TRACE("Wrote match as CSV.");
 		}
 		else
 		{
-			Logger::Error("Failed to save match as csv: {}", File::LastError());
+			LOG_ERROR("Failed to save match as csv: {}", File::LastError());
 		}
 	}
 	else
 	{
-		Logger::Error("Failed to open csv file for writing: {}", File::LastError());
+		LOG_ERROR("Failed to open csv file for writing: {}", File::LastError());
 	}
-
-#if 0
-	if (PotatoAlert::File::Write(GetFilePath(), csv))
-		Logger::Debug("Wrote match as CSV.");
-	else
-		Logger::Error("Failed to write match as CSV.");
-#endif
 }

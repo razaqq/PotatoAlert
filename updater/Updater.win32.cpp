@@ -1,7 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Updater.hpp"
-#include "Logger.hpp"
+#include "Log.hpp"
 #include "Version.hpp"
 #include "Json.hpp"
 #include <chrono>
@@ -44,7 +44,7 @@ bool Updater::UpdateAvailable()
 
 	if (reply->error())
 	{
-		Logger::Error("Network reply for update failed: {}", reply->errorString().toStdString());
+		LOG_ERROR("Network reply for update failed: {}", reply->errorString().toStdString());
 		return false;
 	}
 
@@ -52,7 +52,7 @@ bool Updater::UpdateAvailable()
 	sax_no_exception sax(j);
 	if (!json::sax_parse(reply->readAll().toStdString(), &sax))
 	{
-		Logger::Error("ParseError while parsing github api response as JSON.");
+		LOG_ERROR("ParseError while parsing github api response as JSON.");
 		return false;
 	}
 
@@ -69,17 +69,17 @@ bool Updater::UpdateAvailable()
 // starts the update process
 void Updater::Run()
 {
-	Logger::Debug("Starting update...");
+	LOG_TRACE("Starting update...");
 
 	if (!Updater::ElevationInfo().first)
 	{
-		Logger::Error("Updater needs to be started with admin privileges.");
+		LOG_ERROR("Updater needs to be started with admin privileges.");
 		Updater::End(false);
 	}
 
-	Logger::Debug("Starting download...");
+	LOG_TRACE("Starting download...");
 	QNetworkReply* reply = this->Download();
-	// TODO: get updateURL dynamically from repo
+	// TODO: get g_updateURL dynamically from repo
 	// TODO: maybe do some checksum check on the downloaded archive
 
 	connect(reply, &QNetworkReply::finished, [reply]()
@@ -87,11 +87,11 @@ void Updater::Run()
 		// check if there was an error with the download
 		if (reply->error() != QNetworkReply::NoError)
 		{
-			Logger::Error("Failed to download update: {}", reply->errorString().toStdString());
+			LOG_ERROR("Failed to download update: {}", reply->errorString().toStdString());
 			Updater::End(false);
 		}
 
-		Logger::Debug("Update downloaded successfully.");
+		LOG_TRACE("Update downloaded successfully.");
 
 		const std::string archive = Updater::UpdateArchive().string();
 		const std::string dest = Updater::UpdateDest().string();
@@ -103,12 +103,12 @@ void Updater::Run()
 			file->write(reply->readAll());
 			file->flush();
 			file->close();
-			Logger::Debug("Update archive saved successfully in {}",
+			LOG_TRACE("Update archive saved successfully in {}",
 					Updater::UpdateArchive().string());
 		}
 		else
 		{
-			Logger::Error("Failed to Save update reply to file.");
+			LOG_ERROR("Failed to Save update reply to file.");
 			Updater::End(false);
 		}
 
@@ -118,15 +118,15 @@ void Updater::Run()
 		// rename exe/dll to trash
 		if (!Updater::RenameToTrash())
 		{
-			Logger::Error("Failed to rename exe/dll to trash.");
+			LOG_ERROR("Failed to rename exe/dll to trash.");
 			Updater::End(false, true);
 		}
 
 		// Unpack archive
-		Logger::Debug("Extracting archive to: {}", dest);
+		LOG_TRACE("Extracting archive to: {}", dest);
 		if (!Updater::Unpack(archive.c_str(), dest.c_str()))
 		{
-			Logger::Error("Failed to Unpack archive.");
+			LOG_ERROR("Failed to Unpack archive.");
 			Updater::End(false, true);
 		}
 
@@ -137,14 +137,14 @@ void Updater::Run()
 // unpacks an archive into a folder
 bool Updater::Unpack(const char* file, const char* dest)
 {
-	Logger::Info("Extracting zip archive: {}", file);
+	LOG_INFO("Extracting zip archive: {}", file);
 
 	static int i = 0;
 	static const char* d = dest;
 	auto on_extract_entry = [](const char* filename, void* arg)
 	{
 		int n = *static_cast<int*>(arg);
-		Logger::Info("Extracted: {} ({}/{})", fs::relative(filename, d).string(), ++i, n);
+		LOG_INFO("Extracted: {} ({}/{})", fs::relative(filename, d).string(), ++i, n);
 
 		return 0;
 	};
@@ -236,13 +236,13 @@ QNetworkReply* Updater::Download()
 
 	connect(reply, &QNetworkReply::sslErrors, [reply](const QList<QSslError>&)
 	{
-		Logger::Error(reply->errorString().toStdString());
+		LOG_ERROR(reply->errorString().toStdString());
 		Updater::End(false);
 	});
 
 	connect(reply, &QNetworkReply::errorOccurred, [reply](QNetworkReply::NetworkError)
 	{
-		Logger::Error(reply->errorString().toStdString());
+		LOG_ERROR(reply->errorString().toStdString());
 		Updater::End(false);
 	});
 
@@ -290,7 +290,7 @@ bool Updater::CreateBackup()
 	bool exists = fs::exists(Updater::BackupDest(), ec);
 	if (ec)
 	{
-		Logger::Error("Failed to check if backup exists: {}", ec.message());
+		LOG_ERROR("Failed to check if backup exists: {}", ec.message());
 		return false;
 	}
 
@@ -299,7 +299,7 @@ bool Updater::CreateBackup()
 		fs::remove_all(Updater::BackupDest(), ec);
 		if (ec)
 		{
-			Logger::Error("Failed to remove old backup: {}", ec.message());
+			LOG_ERROR("Failed to remove old backup: {}", ec.message());
 			return false;
 		}
 	}
@@ -308,7 +308,7 @@ bool Updater::CreateBackup()
 	fs::copy(Updater::UpdateDest(), Updater::BackupDest(), fs::copy_options::recursive, ec);
 	if (ec)
 	{
-		Logger::Error("Failed to copy backup to backup dest: {}", ec.message());
+		LOG_ERROR("Failed to copy backup to backup dest: {}", ec.message());
 		return false;
 	}
 
@@ -316,7 +316,7 @@ bool Updater::CreateBackup()
 	fs::permissions(Updater::BackupDest(), fs::perms::all, ec);
 	if (ec)
 	{
-		Logger::Error("Failed to change permissions of backup: {}", ec.message());
+		LOG_ERROR("Failed to change permissions of backup: {}", ec.message());
 		return false;
 	}
 	return true;
@@ -329,7 +329,7 @@ bool Updater::RemoveBackup()
 
 	if (ec)
 	{
-		Logger::Error("Failed to delete backup: {}", ec.message());
+		LOG_ERROR("Failed to delete backup: {}", ec.message());
 		return false;
 	}
 	return true;
@@ -344,7 +344,7 @@ bool Updater::RevertBackup()
 
 	if (ec)
 	{
-		Logger::Error("Failed to revert backup: {}", ec.message());
+		LOG_ERROR("Failed to revert backup: {}", ec.message());
 		return false;
 	}
 	return true;
@@ -358,7 +358,7 @@ bool Updater::RenameToTrash()
 	auto it = fs::recursive_directory_iterator(Updater::UpdateDest(), ec);
 	if (ec)
 	{
-		Logger::Error("Failed to get directory iterator: {}", ec.message());
+		LOG_ERROR("Failed to get directory iterator: {}", ec.message());
 		return false;
 	}
 
@@ -369,7 +369,7 @@ bool Updater::RenameToTrash()
 		bool regularFile = p.is_regular_file(ec);
 		if (ec)
 		{
-			Logger::Error("Failed to check if {} is regular file: {}", p.path().string(), ec.message());
+			LOG_ERROR("Failed to check if {} is regular file: {}", p.path().string(), ec.message());
 			return false;
 		}
 
@@ -379,7 +379,7 @@ bool Updater::RenameToTrash()
 			fs::rename(p, newName, ec);
 			if (ec)
 			{
-				Logger::Error("Failed to rename {} to {}: {}", p.path().string(), newName, ec.message());
+				LOG_ERROR("Failed to rename {} to {}: {}", p.path().string(), newName, ec.message());
 				return false;
 			}
 		}
@@ -395,7 +395,7 @@ void Updater::RemoveTrash()
 	auto it = fs::recursive_directory_iterator(Updater::UpdateDest(), ec);
 	if (ec)
 	{
-		Logger::Error("Failed to get directory iterator: {}", ec.message());
+		LOG_ERROR("Failed to get directory iterator: {}", ec.message());
 		return;
 	}
 
@@ -405,13 +405,13 @@ void Updater::RemoveTrash()
 
 		bool regularFile = p.is_regular_file(ec);
 		if (ec)
-			Logger::Error("Failed to check if {} is regular file: {}", p.path().string(), ec.message());
+			LOG_ERROR("Failed to check if {} is regular file: {}", p.path().string(), ec.message());
 
 		if (regularFile && (ext == ".trash"))
 		{
 			fs::remove(p, ec);
 			if (ec)
-				Logger::Error("Failed to remove file {}: {}", p.path().string(), ec.message());
+				LOG_ERROR("Failed to remove file {}: {}", p.path().string(), ec.message());
 		}
 	}
 }

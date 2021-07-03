@@ -3,7 +3,7 @@
 #include "Config.hpp"
 #include "File.hpp"
 #include "Json.hpp"
-#include "Logger.hpp"
+#include "Log.hpp"
 #include <QDir>
 #include <QStandardPaths>
 #include <QApplication>
@@ -42,7 +42,7 @@ Config::Config(std::string_view fileName)
 	auto path = Config::GetPath(fileName);
 	if (!path)
 	{
-		Logger::Error("Failed to get config path.");
+		LOG_ERROR("Failed to get config path.");
 		QApplication::exit(1);
 	}
 	this->m_filePath = std::move(path.value());
@@ -51,7 +51,7 @@ Config::Config(std::string_view fileName)
 	{
 		if (!this->CreateDefault())
 		{
-			Logger::Error("Failed to create default config.");
+			LOG_ERROR("Failed to create default config.");
 			QApplication::exit(1);
 		}
 	}
@@ -67,26 +67,26 @@ Config::~Config()
 
 void Config::Load()
 {
-	Logger::Debug("Trying to Load config...");
+	LOG_TRACE("Trying to Load config...");
 
 	this->m_file = File::Open(this->m_filePath.string(), File::Flags::Open | File::Flags::Read | File::Flags::Write);
 	if (!this->m_file)
 	{
-		Logger::Error("Failed to open config file: {}", File::LastError());
+		LOG_ERROR("Failed to open config file: {}", File::LastError());
 		QApplication::exit(1);
 	}
 
 	std::string str;
 	if (!this->m_file.Read(str))
 	{
-		Logger::Error("Failed to read config file: {}", File::LastError());
+		LOG_ERROR("Failed to read config file: {}", File::LastError());
 		QApplication::exit(1);
 	}
 
 	sax_no_exception sax(this->j);
 	if (!json::sax_parse(str, &sax))
 	{
-		Logger::Error("Failed to Parse config as json.");
+		LOG_ERROR("Failed to Parse config as json.");
 
 		this->m_file.Close();
 		this->CreateBackup();
@@ -97,20 +97,21 @@ void Config::Load()
 			QApplication::exit(1);
 	}
 
-	Logger::Debug("Config loaded.");
+	LOG_TRACE("Config loaded.");
 }
 
 bool Config::Save()
 {
+	LOG_TRACE("Saving Config");
 	if (!this->m_file)
 	{
-		Logger::Error("Cannot save config, because file is not open.");
+		LOG_ERROR("Cannot save config, because file is not open.");
 		return false;
 	}
 
 	if (!this->m_file.Write(this->j.dump(4)))
 	{
-		Logger::Error("Failed to write config file: {}", File::LastError());
+		LOG_ERROR("Failed to write config file: {}", File::LastError());
 		return false;
 	}
 	return true;
@@ -122,7 +123,7 @@ bool Config::Exists() const
 	bool exists = fs::exists(this->m_filePath, ec);
 	if (ec)
 	{
-		Logger::Error("Error while checking config existence: {}", ec.message());
+		LOG_ERROR("Error while checking config existence: {}", ec.message());
 		return false;
 	}
 
@@ -131,7 +132,7 @@ bool Config::Exists() const
 		bool regularFile = fs::is_regular_file(this->m_filePath, ec);
 		if (ec)
 		{
-			Logger::Error("Error while checking if config is regular file: {}", ec.message());
+			LOG_ERROR("Error while checking if config is regular file: {}", ec.message());
 			return false;
 		}
 		return regularFile;
@@ -141,12 +142,12 @@ bool Config::Exists() const
 
 bool Config::CreateDefault()
 {
-	Logger::Info("Creating new default config.");
+	LOG_INFO("Creating new default config.");
 
 	this->m_file = File::Open(this->m_filePath.string(), File::Flags::Create | File::Flags::Read | File::Flags::Write);
 	if (!this->m_file)
 	{
-		Logger::Error("Failed to open config file: {}", File::LastError());
+		LOG_ERROR("Failed to open config file: {}", File::LastError());
 		return false;
 	}
 	this->j = g_defaultConfig;
@@ -158,12 +159,12 @@ bool Config::CreateDefault()
 
 bool Config::CreateBackup()
 {
-	Logger::Info("Creating config backup");
+	LOG_INFO("Creating config backup");
 	std::error_code ec;
 	bool exists = fs::exists(this->m_filePath, ec);
 	if (ec)
 	{
-		Logger::Error("Failed to check for config backup: {}", ec.message());
+		LOG_ERROR("Failed to check for config backup: {}", ec.message());
 		return false;
 	}
 
@@ -176,7 +177,7 @@ bool Config::CreateBackup()
 		exists = fs::exists(backupConfig, ec);
 		if (ec)
 		{
-			Logger::Error("Failed to check for config backup: {}", ec.message());
+			LOG_ERROR("Failed to check for config backup: {}", ec.message());
 			return false;
 		}
 
@@ -186,7 +187,7 @@ bool Config::CreateBackup()
 			fs::remove(backupConfig, ec);
 			if (ec)
 			{
-				Logger::Error("Failed to remove config backup: {}", ec.message());
+				LOG_ERROR("Failed to remove config backup: {}", ec.message());
 				return false;
 			}
 		}
@@ -195,7 +196,7 @@ bool Config::CreateBackup()
 		fs::rename(this->m_filePath, backupConfig, ec);
 		if (ec)
 		{
-			Logger::Error("Failed to create config backup: {}", ec.message());
+			LOG_ERROR("Failed to create config backup: {}", ec.message());
 			return false;
 		}
 	}
@@ -208,7 +209,7 @@ void Config::AddMissingKeys()
 	{
 		if (!this->j.contains(it.key()))
 		{
-			Logger::Info("Adding missing key '{}' to config.", it.key());
+			LOG_INFO("Adding missing key '{}' to config.", it.key());
 			this->j[it.key()] = it.value();
 		}
 	}
@@ -225,7 +226,7 @@ std::optional<fs::path> Config::GetPath(std::string_view fileName)
 	bool exists = fs::exists(configPath, ec);
 	if (ec)
 	{
-		Logger::Error("Failed to check for config path: {}", ec.message());
+		LOG_ERROR("Failed to check for config path: {}", ec.message());
 		return {};
 	}
 
@@ -234,7 +235,7 @@ std::optional<fs::path> Config::GetPath(std::string_view fileName)
 		fs::create_directories(configPath, ec);
 		if (ec)
 		{
-			Logger::Error("Failed to create dirs for config path: {}", ec.message());
+			LOG_ERROR("Failed to create dirs for config path: {}", ec.message());
 			return {};
 		}
 	}

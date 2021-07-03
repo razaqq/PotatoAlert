@@ -3,8 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <filesystem>
-#include "Logger.hpp"
 
 
 namespace PotatoAlert::Game {

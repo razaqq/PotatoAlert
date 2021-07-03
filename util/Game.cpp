@@ -4,7 +4,7 @@
 
 #include "Config.hpp"
 #include "File.hpp"
-#include "Logger.hpp"
+#include "Log.hpp"
 
 #include <tinyxml2.h>
 
@@ -39,7 +39,7 @@ bool GetResFolderPath(FolderStatus& status)
 	const fs::path binPath = fs::path(status.gamePath) / "bin";
 	if (!fs::exists(binPath))
 	{
-		Logger::Error("Bin folder does not exist: {}", binPath.string());
+		LOG_ERROR("Bin folder does not exist: {}", binPath.string());
 		return false;
 	}
 
@@ -58,7 +58,7 @@ bool GetResFolderPath(FolderStatus& status)
 		std::string version;
 		if (!File::GetVersion(exe.string(), version))
 		{
-			Logger::Error("Failed to read version info from file: {} - {}", exe.string(), File::LastError());
+			LOG_ERROR("Failed to read version info from file: {} - {}", exe.string(), File::LastError());
 			continue;
 		}
 
@@ -92,7 +92,7 @@ bool GetResFolderPath(FolderStatus& status)
 		return fs::exists(status.resFolderPath);
 	}
 
-	Logger::Error("Could not find a valid res folder!");
+	LOG_ERROR("Could not find a valid res folder!");
 	return false;
 }
 
@@ -102,7 +102,7 @@ bool ReadEngineConfig(FolderStatus& status, const char* resFolder)
 	fs::path engineConfig(status.resFolderPath / fs::path(resFolder) / "engine_config.xml");
 	if (!fs::exists(engineConfig))
 	{
-		Logger::Debug("No engine_config.xml in path: {}", resFolder);
+		LOG_TRACE("No engine_config.xml in path: {}", resFolder);
 		return false;
 	}
 
@@ -117,14 +117,14 @@ bool ReadEngineConfig(FolderStatus& status, const char* resFolder)
 	tinyxml2::XMLError err = doc.LoadFile(engineConfig.string().c_str());
 	if (err != tinyxml2::XML_SUCCESS)
 	{
-		Logger::Debug("Failed to open engine_config.xml for reading.");
+		LOG_TRACE("Failed to open engine_config.xml for reading.");
 		return false;
 	}
 
 	tinyxml2::XMLNode* root = doc.FirstChild();
 	if (root == nullptr)
 	{
-		Logger::Debug("engine_config.xml seems to be empty.");
+		LOG_TRACE("engine_config.xml seems to be empty.");
 		return false;
 	}
 
@@ -173,7 +173,7 @@ bool ReadPreferences(FolderStatus& status, const std::string& basePath)
 
 	if (!fs::exists(fs::path(preferencesPath)))
 	{
-		Logger::Debug("Cannot find preferences.xml for reading in path: {}", preferencesPath);
+		LOG_TRACE("Cannot find preferences.xml for reading in path: {}", preferencesPath);
 		return false;
 	}
 
@@ -198,7 +198,7 @@ bool ReadPreferences(FolderStatus& status, const std::string& basePath)
 	}
 	else
 	{
-		Logger::Error("Cannot find version string in preferences.xml.");
+		LOG_ERROR("Cannot find version string in preferences.xml.");
 		return false;
 	}
 
@@ -212,7 +212,7 @@ bool ReadPreferences(FolderStatus& status, const std::string& basePath)
 	}
 	else
 	{
-		Logger::Error("Cannot find region string in preferences.xml.");
+		LOG_ERROR("Cannot find region string in preferences.xml.");
 		return false;
 	}
 
@@ -260,7 +260,7 @@ bool CheckPath(const std::string& selectedPath, FolderStatus& status)
 	bool exists = fs::exists(gamePath, ec);
 	if (ec)
 	{
-		Logger::Error("Failed to check if game path exists: {}", ec.message());
+		LOG_ERROR("Failed to check if game path exists: {}", ec.message());
 		return false;
 	}
 	if (gamePath.empty() || !exists)

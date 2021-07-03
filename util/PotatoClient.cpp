@@ -4,7 +4,7 @@
 #include "Config.hpp"
 #include "Game.hpp"
 #include "Json.hpp"
-#include "Logger.hpp"
+#include "Log.hpp"
 #include "StatsParser.hpp"
 #include <QColor>
 #include <QDir>
@@ -42,7 +42,7 @@ void PotatoClient::Init()
 	// handle connection
 	connect(this->m_socket, &QWebSocket::connected, [this]
 	{
-		Logger::Debug("Websocket open, sending arena info...");
+		LOG_TRACE("Websocket open, sending arena info...");
 		this->m_socket->sendTextMessage(this->m_tempArenaInfo);
 	});
 
@@ -74,7 +74,7 @@ void PotatoClient::Init()
 				emit this->status(Status::Error, "Websocket Error");
 				break;
 		}
-		Logger::Error(this->m_socket->errorString().toStdString());
+		LOG_ERROR(this->m_socket->errorString().toStdString());
 	});
 
 	connect(this->m_socket, &QWebSocket::textMessageReceived, this, &PotatoClient::OnResponse);
@@ -87,7 +87,7 @@ void PotatoClient::Init()
 // sets filesystem watcher to current replays folder, triggered when config is modified
 void PotatoClient::UpdateReplaysPath()
 {
-	Logger::Debug("Updating replays path.");
+	LOG_TRACE("Updating replays path.");
 
 	if (!this->m_watcher->directories().isEmpty())
 		this->m_watcher->removePaths(this->m_watcher->directories());
@@ -107,7 +107,7 @@ void PotatoClient::UpdateReplaysPath()
 // triggered whenever a file gets modified in a replays path
 void PotatoClient::OnDirectoryChanged(const QString& path)
 {
-	Logger::Debug("Directory changed.");
+	LOG_TRACE("Directory changed.");
 
 	std::string filePath = std::format("{}\\tempArenaInfo.json", path.toStdString());
 
@@ -117,7 +117,7 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 		auto arenaInfo = PotatoClient::ReadArenaInfo(filePath);
 		if (!arenaInfo.has_value())
 		{
-			Logger::Error("Failed to read arena info from file.");
+			LOG_ERROR("Failed to read arena info from file.");
 			emit this->status(Status::Error, "Reading ArenaInfo");
 			return;
 		}
@@ -126,12 +126,12 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 		sax_no_exception sax(j);
 		if (!json::sax_parse(arenaInfo.value(), &sax))
 		{
-			Logger::Error("Failed to Parse arena info file as JSON.");
+			LOG_ERROR("Failed to Parse arena info file as JSON.");
 			emit this->status(Status::Error, "JSON Parse Error");
 			return;
 		}
 
-		Logger::Debug("ArenaInfo read from file. Content: {}", j.dump());
+		LOG_TRACE("ArenaInfo read from file. Content: {}", j.dump());
 
 		// add region
 		j["region"] = this->m_folderStatus.region;
@@ -165,7 +165,7 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 			return;
 
 		emit this->status(Status::Loading, "Loading");
-		Logger::Debug("Opening websocket...");
+		LOG_TRACE("Opening websocket...");
 
 		this->m_socket->open(QUrl(QString(wsAddr)));  // starts the request cycle
 	}
@@ -174,10 +174,10 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 // triggered when server response is received. processes the response, updates gui tables
 void PotatoClient::OnResponse(const QString& message)
 {
-	Logger::Debug("Closing websocket connection.");
+	LOG_TRACE("Closing websocket connection.");
 	this->m_socket->close();
 
-	Logger::Debug("Received response from server: {}", message.toStdString());
+	LOG_TRACE("Received response from server: {}", message.toStdString());
 
 	if (message.isNull() || message == "null")
 	{
@@ -189,16 +189,16 @@ void PotatoClient::OnResponse(const QString& message)
 	sax_no_exception sax(j);
 	if (!json::sax_parse(message.toStdString(), &sax))
 	{
-		Logger::Error("ParseError while parsing server response JSON.");
+		LOG_ERROR("ParseError while parsing server response JSON.");
 		emit this->status(Status::Error, "JSON Parse Error");
 		return;
 	}
 
-	Logger::Debug("Parsing match.");
-	PotatoAlert::StatsParser::Match match;
-	PotatoAlert::StatsParser::ParseMatch(message.toUtf8().toStdString(), match, PotatoConfig().Get<bool>("save_csv"));
+	LOG_TRACE("Parsing match.");
+	StatsParser::Match match;
+	ParseMatch(message.toUtf8().toStdString(), match, PotatoConfig().Get<bool>("save_csv"));
 
-	Logger::Debug("Updating tables.");
+	LOG_TRACE("Updating tables.");
 	emit this->matchReady(match);
 
 	emit this->status(Status::Ready, "Ready");
@@ -233,13 +233,13 @@ std::optional<std::string> PotatoClient::ReadArenaInfo(const std::string& filePa
 			}
 			else
 			{
-				Logger::Error("Failed to read arena info: {}", File::LastError());
+				LOG_ERROR("Failed to read arena info: {}", File::LastError());
 				return {};
 			}
 		}
 		std::this_thread::sleep_for(100ms);
 		now = std::chrono::high_resolution_clock::now();
 	}
-	Logger::Error("Game failed to write arena info within 1 second.");
+	LOG_ERROR("Game failed to write arena info within 1 second.");
 	return {};
 }

@@ -1,22 +1,20 @@
-#include "Logger.hpp"
+#include "Log.hpp"
+#include "Palette.hpp"
 #include "UpdaterGui.hpp"
 #include "Updater.hpp"
 #include <QApplication>
-#include <filesystem>
-#include <zip.h>
-#include <Palette.hpp>
 #include "win32.h"
 
 
-namespace fs = std::filesystem;
-using PotatoAlert::Logger;
 using PotatoUpdater::Updater;
 using PotatoUpdater::UpdaterGui;
 
-
-int runMain(int argc, char* argv[])
+static int runMain(int argc, char* argv[])
 {
 	Q_INIT_RESOURCE(PotatoAlert);
+
+	PotatoAlert::Log::Init();
+	
 	QApplication app(argc, argv);
 
 	if (QApplication::arguments().contains("--clear"))

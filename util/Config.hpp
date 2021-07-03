@@ -3,7 +3,6 @@
 
 #include "File.hpp"
 #include "Json.hpp"
-#include "Logger.hpp"
 #include <QString>
 #include <QObject>
 #include <string>

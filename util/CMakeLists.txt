@@ -9,8 +9,8 @@ set(
         Flags.hpp
         Game.cpp
         Game.hpp
-        Logger.cpp
-        Logger.hpp
+        Log.cpp
+        Log.hpp
         Palette.cpp
         Palette.hpp
         PotatoClient.cpp

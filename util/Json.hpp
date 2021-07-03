@@ -2,16 +2,15 @@
 #pragma once
 
 #include <string>
-#include "Logger.hpp"
+#include "Log.hpp"
 
 
-using PotatoAlert::Logger;
 
 #define JSON_TRY_USER if (true)
 #define JSON_CATCH_USER(exception) if (false)
 #define JSON_THROW_USER(exception)           \
 	{                                        \
-		Logger::Error("Error in {}:{} (function {}) - {} (ID: {})", __FILE__, __LINE__, __PRETTY_FUNCTION__, \
+		LOG_ERROR("Error in {}:{} (function {}) - {} (ID: {})", __FILE__, __LINE__, __PRETTY_FUNCTION__, \
 		(exception).what(), (exception).id); \
 		std::abort();                        \
 	}
@@ -25,9 +24,9 @@ class sax_no_exception : public nlohmann::detail::json_sax_dom_parser<json>
 public:
 	explicit sax_no_exception(json& j) : nlohmann::detail::json_sax_dom_parser<json>(j, false) {}
 
-	static bool parse_error(std::size_t position, const std::string& last_token, const json::exception& ex)
+	static bool parse_error(std::size_t position, const std::string& lastToken, const json::exception& ex)
 	{
-		Logger::Error("JSON Parse Error at input byte {}. {}. Last read: \"{}\"", position, ex.what(), last_token);
+		LOG_ERROR("JSON Parse Error at input byte {}. {}. Last read: \"{}\"", position, ex.what(), lastToken);
 		return false;
 	}
 };

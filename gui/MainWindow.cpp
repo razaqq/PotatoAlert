@@ -17,7 +17,7 @@
 #include <QApplication>
 #include <QProgressBar>
 #include "Config.hpp"
-#include "Logger.hpp"
+#include "Log.hpp"
 #include "PotatoClient.hpp"
 #include "FramelessDialog.hpp"
 #include "StatsWidget/StatsWidget.hpp"
@@ -86,7 +86,7 @@ void MainWindow::SwitchTab(MenuEntry i)
 		QDesktopServices::openUrl(QUrl(CSV::GetDir()));
 		return;
 	case MenuEntry::Log:
-		QDesktopServices::openUrl(QUrl(Logger::GetDir()));
+		QDesktopServices::openUrl(QUrl(Log::GetDir()));
 		return;
 	case MenuEntry::Github:
 		QDesktopServices::openUrl(QUrl("https://github.com/razaqq/PotatoAlert"));
