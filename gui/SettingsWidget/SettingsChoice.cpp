@@ -31,7 +31,7 @@ SettingsChoice::SettingsChoice(QWidget* parent, const std::vector<QString>& butt
 	QFont btnFont("Helvetica Neue", 10, QFont::DemiBold);
 	btnFont.setStyleStrategy(QFont::PreferAntialias);
 
-	for (int i = 0; i < buttons.size(); i++)
+	for (size_t i = 0; i < buttons.size(); i++)
 	{
 		auto button = new QPushButton(buttons[i], this);
 		button->setObjectName("settingsChoiceButton");
@@ -44,7 +44,7 @@ SettingsChoice::SettingsChoice(QWidget* parent, const std::vector<QString>& butt
 		button->setFlat(true);
 		button->setCheckable(true);
 
-		this->m_btnGroup->addButton(button, i);
+		this->m_btnGroup->addButton(button, static_cast<int>(i));
 		layout->addWidget(button);
 	}
 	this->setLayout(layout);

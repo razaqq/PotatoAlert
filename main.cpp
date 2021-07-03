@@ -14,20 +14,19 @@
 #include "updater/Updater.hpp"
 #include "MainWindow.hpp"
 #include "NativeWindow.hpp"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreserved-id-macro"
 #include "VersionInfo.h"
-#include "FramelessWindowsManager.hpp"
+#pragma clang diagnostic pop
 #include "win32.h"
 
 
 using PotatoAlert::MainWindow;
 using PotatoAlert::NativeWindow;
-using PotatoAlert::PotatoClient;
-using PotatoAlert::Logger;
-using PotatoAlert::Config;
 using PotatoUpdater::Updater;
 using PotatoAlert::PotatoConfig;
 
-int runMain(int argc, char* argv[])
+static int runMain(int argc, char* argv[])
 {
 	Q_INIT_RESOURCE(PotatoAlert);
 

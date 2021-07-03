@@ -4,12 +4,10 @@
 #include "Game.hpp"
 #include "StatsParser.hpp"
 #include <QFileSystemWatcher>
-#include <QLabel>
 #include <QObject>
 #include <QString>
 #include <QTableWidgetItem>
 #include <QWebSocket>
-#include <array>
 #include <optional>
 #include <string>
 #include <variant>
@@ -17,7 +15,6 @@
 
 
 using PotatoAlert::Game::FolderStatus;
-using namespace PotatoAlert::StatsParser;
 
 namespace PotatoAlert {
 
@@ -36,10 +33,11 @@ public:
 	PotatoClient(PotatoClient&&) noexcept = delete;
 	PotatoClient& operator=(const PotatoClient&) = delete;
 	PotatoClient& operator=(PotatoClient&&) noexcept = delete;
+	~PotatoClient() override = default;
 
 	static PotatoClient& Instance()
 	{
-		static PotatoClient pc{};
+		static PotatoClient pc;
 		return pc;
 	}
 	void Init();
@@ -60,8 +58,8 @@ private:
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
-	void matchReady(const Match& match);
-	void status(PotatoAlert::Status status, const std::string& statusText);
+	void matchReady(const StatsParser::Match& match);
+	void status(Status status, const std::string& statusText);
 #pragma clang diagnostic pop
 };
 

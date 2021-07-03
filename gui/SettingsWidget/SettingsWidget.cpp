@@ -1,23 +1,18 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Config.hpp"
 #include <QIcon>
 #include <QSize>
-#include <QFrame>
 #include <QPixmap>
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QLabel>
 #include <QEvent>
-#include <QLineEdit>
 #include <QFileDialog>
 #include <QToolButton>
 #include <QPushButton>
 #include <QApplication>
 #include "SettingsWidget.hpp"
-#include "Game.hpp"
-#include "Config.hpp"
-#include "Logger.hpp"
 #include "PotatoClient.hpp"
 #include "SettingsSwitch.hpp"
 #include "SettingsChoice.hpp"
@@ -216,7 +211,7 @@ void SettingsWidget::Load()
 			PotatoConfig().Get<std::string>("replays_folder")));
 	bool manualReplays = PotatoConfig().Get<bool>("override_replays_folder");
 	this->m_overrideReplaysFolder->setChecked(manualReplays);
-	m_toggleReplaysFolderOverride.operator()(manualReplays);
+	this->m_toggleReplaysFolderOverride(manualReplays);
 }
 
 void SettingsWidget::ConnectSignals()

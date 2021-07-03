@@ -11,9 +11,7 @@
 #include <algorithm>
 #include <charconv>
 #include <filesystem>
-#include <format>
-#include <iostream>
-#include <optional>
+#include <fstream>
 #include <regex>
 #include <sstream>
 #include <string>
@@ -25,7 +23,7 @@ namespace fs = std::filesystem;
 
 namespace PotatoAlert::Game {
 
-bool AsInteger(const std::string& src, int& value)
+static bool AsInteger(const std::string& src, int& value)
 {
 	auto [ptr, ec] = std::from_chars(src.data(), src.data()+src.size(), value);
 	return ec == std::errc();

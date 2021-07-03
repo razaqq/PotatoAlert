@@ -5,7 +5,6 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QProgressBar>
-#include <QPushButton>
 #include "StringTable.hpp"
 
 

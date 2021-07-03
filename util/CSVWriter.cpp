@@ -12,7 +12,6 @@
 
 
 namespace csv = PotatoAlert::CSV;
-using namespace PotatoAlert::Time;
 
 
 static constexpr std::string_view timeFormat = "%Y-%m-%d_%H-%M-%S";
@@ -22,7 +21,7 @@ QString csv::GetDir()
 	return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert/Matches");
 }
 
-std::string GetFilePath()
+static std::string GetFilePath()
 {
 	auto dir = csv::GetDir();
 
@@ -30,7 +29,7 @@ std::string GetFilePath()
 	d.mkpath(dir);
 	d.setPath(dir);
 
-	return d.filePath(QString::fromStdString(std::format("match_{}.csv", GetTimeStamp(timeFormat)))).toStdString();
+	return d.filePath(QString::fromStdString(std::format("match_{}.csv", PotatoAlert::Time::GetTimeStamp(timeFormat)))).toStdString();
 }
 
 void csv::SaveMatch(const std::string& csv)

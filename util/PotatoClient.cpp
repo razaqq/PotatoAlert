@@ -7,33 +7,26 @@
 #include "Log.hpp"
 #include "StatsParser.hpp"
 #include <QColor>
-#include <QDir>
-#include <QFileInfo>
 #include <QFileSystemWatcher>
-#include <QIODevice>
-#include <QLabel>
 #include <QObject>
-#include <QSizePolicy>
 #include <QString>
 #include <QTableWidgetItem>
-#include <QTextStream>
 #include <QUrl>
 #include <QWebSocket>
 #include <chrono>
 #include <filesystem>
 #include <format>
-#include <iostream>
 #include <optional>
-#include <sstream>
 #include <string>
 #include <thread>
+#include <utility>
 
 
 using PotatoAlert::PotatoClient;
 namespace fs = std::filesystem;
 
-const char* wsAddr = "ws://www.perry-swift.de:33333";
-// const char* wsAddr = "ws://192.168.178.36:10000";
+static const char* g_wsAddress = "ws://www.perry-swift.de:33333";
+// const char* g_wsAddress = "ws://192.168.178.36:10000";
 
 void PotatoClient::Init()
 {
@@ -47,7 +40,7 @@ void PotatoClient::Init()
 	});
 
 	// handle error
-	connect(this->m_socket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), [=](QAbstractSocket::SocketError error)
+	connect(this->m_socket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), [this](QAbstractSocket::SocketError error)
 	{
 		switch (error)
 		{
@@ -162,10 +155,8 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 				break;
 		}
 
-		QString tempArenaInfo = QString::fromStdString(j.dump());
-
-		// make sure we dont pull the same match twice
-		if (tempArenaInfo != this->m_tempArenaInfo)
+		// make sure we don't pull the same match twice
+		if (const QString tempArenaInfo = QString::fromStdString(j.dump()); tempArenaInfo != this->m_tempArenaInfo)
 			this->m_tempArenaInfo = tempArenaInfo;
 		else
 			return;
@@ -173,7 +164,7 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 		emit this->status(Status::Loading, "Loading");
 		LOG_TRACE("Opening websocket...");
 
-		this->m_socket->open(QUrl(QString(wsAddr)));  // starts the request cycle
+		this->m_socket->open(QUrl(QString(g_wsAddress)));  // starts the request cycle
 	}
 }
 
@@ -226,22 +217,21 @@ FolderStatus PotatoClient::CheckPath()
 // opens and reads a file
 std::optional<std::string> PotatoClient::ReadArenaInfo(const std::string& filePath)
 {
-	Logger::Debug("Reading arena info from: {}", filePath);
+	LOG_TRACE("Reading arena info from: {}", filePath);
 
 	using namespace std::chrono_literals;
-	auto startTime = std::chrono::high_resolution_clock::now();
+	const auto startTime = std::chrono::high_resolution_clock::now();
 	auto now = std::chrono::high_resolution_clock::now();
 
-	File file = File::Open(filePath, File::Flags::Open | File::Flags::Read);
-	std::string arenaInfo;
+	const File file = File::Open(filePath, File::Flags::Open | File::Flags::Read);
 
 	while (std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime) < 1000ms)
 	{
 		if (file.Size() > 0)
 		{
-			if (file.Read(arenaInfo))
+			if (std::string arenaInfo; file.Read(arenaInfo))
 			{
-				return arenaInfo;
+				return std::move(arenaInfo);
 			}
 			else
 			{

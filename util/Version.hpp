@@ -13,7 +13,7 @@ public:
 	explicit Version(const std::string& versionString);
 	explicit Version(const char* versionString);
 
-	explicit operator bool() const { return this->m_success; };
+	explicit operator bool() const { return this->m_success; }
 	friend bool operator== (const Version& v1, const Version& v2);
 	friend bool operator!= (const Version& v1, const Version& v2);
 	friend bool operator> (const Version& v1, const Version& v2);

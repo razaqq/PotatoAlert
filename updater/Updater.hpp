@@ -24,7 +24,7 @@ public:
 
 	static Updater& Instance()
 	{
-		static Updater u{};
+		static Updater u;
 		return u;
 	}
 
@@ -33,11 +33,11 @@ public:
 	void Run();
 
 	// functions to start updater/main binary
-	static inline bool StartUpdater(std::string_view args = "")
+	static bool StartUpdater(std::string_view args = "")
 	{
 		return CreateNewProcess(m_updaterBinary, args, true);
 	}
-	static inline bool StartMain(std::string_view args = "")
+	static bool StartMain(std::string_view args = "")
 	{
 		return CreateNewProcess(m_mainBinary, args, false);
 	}
@@ -47,7 +47,7 @@ private:
 	Updater() = default;
 	QNetworkReply* Download();
 
-	static void End(bool success = true, bool revert = false);
+	[[noreturn]] static void End(bool success = true, bool revert = false);
 
 	// functions to handle backup
 	static bool CreateBackup();
@@ -58,9 +58,9 @@ private:
 	static bool RenameToTrash();
 
 	// functions for paths
-	static inline fs::path UpdateDest() { return fs::absolute(fs::current_path()); };
-	static inline fs::path BackupDest() { return fs::path(fs::temp_directory_path() / "PotatoAlertBackup"); };
-	static inline fs::path UpdateArchive() { return fs::path(fs::temp_directory_path() / "PotatoAlert.zip"); };
+	static fs::path UpdateDest() { return fs::absolute(fs::current_path()); }
+	static fs::path BackupDest() { return fs::path(fs::temp_directory_path() / "PotatoAlertBackup"); }
+	static fs::path UpdateArchive() { return fs::path(fs::temp_directory_path() / "PotatoAlert.zip"); }
 
 	static bool CreateNewProcess(std::string_view path, std::string_view args, bool elevated);
 

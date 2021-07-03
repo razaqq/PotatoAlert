@@ -3,17 +3,13 @@
 
 #include <QWidget>
 #include <QEvent>
-#include <QComboBox>
-#include <QFileDialog>
+#include <QLabel>
 #include <QLineEdit>
-#include <QCheckBox>
 #include <QToolButton>
 #include <QPushButton>
 #include "SettingsSwitch.hpp"
 #include "SettingsChoice.hpp"
 #include "FolderStatus.hpp"
-#include "Config.hpp"
-#include "Logger.hpp"
 
 
 namespace PotatoAlert {

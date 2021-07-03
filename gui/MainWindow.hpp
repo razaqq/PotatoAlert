@@ -5,13 +5,10 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include "Config.hpp"
-#include "Logger.hpp"
-#include "PotatoClient.hpp"
-#include "StatsWidget/StatsWidget.hpp"
-#include "SettingsWidget/SettingsWidget.hpp"
 #include "AboutWidget.hpp"
 #include "MenuBar/VerticalMenuBar.hpp"
+#include "SettingsWidget/SettingsWidget.hpp"
+#include "StatsWidget/StatsWidget.hpp"
 
 
 namespace PotatoAlert {

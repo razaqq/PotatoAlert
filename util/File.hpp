@@ -2,16 +2,12 @@
 #pragma once
 
 #include "Flags.hpp"
-#include <chrono>
 #include <filesystem>
 #include <string>
-#include <optional>
 #include <type_traits>
 
 
-using namespace std::chrono_literals;
 namespace fs = std::filesystem;
-
 
 namespace PotatoAlert {
 
@@ -68,7 +64,7 @@ public:
 	[[nodiscard]] Handle GetHandle() const
 	{
 		return m_handle;
-	};
+	}
 
 	static File Open(std::string_view path, Flags flags)
 	{
@@ -83,7 +79,7 @@ public:
 	[[nodiscard]] uint64_t Size() const
 	{
 		return RawGetSize(m_handle);
-	};
+	}
 
 	bool Read(std::string& out) const
 	{

@@ -9,7 +9,7 @@ namespace PotatoAlert {
 template<typename T>
 constexpr bool HasFlag(T flags, T flag)
 {
-	return (flags & flag) != (T)0;
+	return (flags & flag) != static_cast<T>(0);
 }
 
 }  // namespace PotatoAlert
@@ -19,15 +19,15 @@ constexpr bool HasFlag(T flags, T flag)
 	constexpr flags operator| [[maybe_unused]] (flags a, flags b) \
 	{ \
 		typedef std::underlying_type_t<flags> T; \
-		return (flags)((T)a | (T)b); \
+		return static_cast<flags>(static_cast<T>(a) | static_cast<T>(b)); \
 	} \
 	constexpr flags operator& [[maybe_unused]] (flags a, flags b) \
 	{ \
 		typedef std::underlying_type_t<flags> T; \
-		return (flags)((T)a & (T)b); \
+		return static_cast<flags>(static_cast<T>(a) & static_cast<T>(b)); \
 	} \
 	constexpr flags operator~ [[maybe_unused]] (flags a) \
 	{ \
 		typedef std::underlying_type_t<flags> T; \
-		return (flags)~(T)a; \
+		return static_cast<flags>(~static_cast<T>(a)); \
 	}

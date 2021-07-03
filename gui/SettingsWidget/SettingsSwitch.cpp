@@ -67,7 +67,7 @@ void SettingsSwitch::paintEvent(QPaintEvent*)
 	QBrush trackB;
 	QBrush thumbB;
 	QColor textC;
-	float trackOpacity = 1.0;
+	double trackOpacity = 1.0;
 
 	if (this->isEnabled())
 	{
@@ -93,10 +93,11 @@ void SettingsSwitch::paintEvent(QPaintEvent*)
 	p->setBrush(thumbB);
 	p->setOpacity(1.0);
 	p->drawEllipse(
-			this->GetOffset() - this->m_thumbRadius,
+		this->GetOffset() - this->m_thumbRadius,
 		this->m_trackRadius - this->m_thumbRadius,
 		2 * this->m_thumbRadius,
-		2 * this->m_thumbRadius);
+		2 * this->m_thumbRadius
+	);
 
 	p->setPen(textC);
 	QFont font = p->font();
@@ -105,10 +106,10 @@ void SettingsSwitch::paintEvent(QPaintEvent*)
 	p->setFont(font);
 	p->drawText(
 		QRectF(
-			(double)this->GetOffset() - this->m_thumbRadius,
-			(double)this->m_trackRadius - this->m_thumbRadius,
-			2 * (double)this->m_thumbRadius,
-			2 * (double)this->m_thumbRadius),
+			static_cast<double>(this->GetOffset()) - this->m_thumbRadius,
+			static_cast<double>(this->m_trackRadius) - this->m_thumbRadius,
+			2 * static_cast<double>(this->m_thumbRadius),
+			2 * static_cast<double>(this->m_thumbRadius)),
 		Qt::AlignCenter,
 			m_thumbText[this->isChecked()]
 	);

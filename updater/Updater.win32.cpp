@@ -8,7 +8,6 @@
 #include <filesystem>
 #include <format>
 #include <string>
-#include <sstream>
 #include <utility>
 #include <QtNetwork>
 #include <QUrl>
@@ -18,16 +17,16 @@
 #include <QElapsedTimer>
 #include <zip.h>
 #include <Windows.h>  // TODO: use win32 instead
+#include <shellapi.h>
 
 
 using PotatoUpdater::Updater;
 using PotatoAlert::Version;
-using PotatoAlert::Logger;
 namespace fs = std::filesystem;
 
 // needs libssl-1_1-x64.dll and libcrypto-1_1-x64.dll from OpenSSL
-static std::string_view updateURL = "https://github.com/razaqq/PotatoAlert/releases/latest/download/PotatoAlert.zip";
-static std::string_view versionURL = "https://api.github.com/repos/razaqq/PotatoAlert/releases/latest";
+static std::string_view g_updateURL = "https://github.com/razaqq/PotatoAlert/releases/latest/download/PotatoAlert.zip";
+static std::string_view g_versionURL = "https://api.github.com/repos/razaqq/PotatoAlert/releases/latest";
 
 // makes a request to the github api and checks if there is a new version available
 bool Updater::UpdateAvailable()
@@ -36,7 +35,7 @@ bool Updater::UpdateAvailable()
 	auto manager = new QNetworkAccessManager();
 
 	QNetworkRequest request;
-	request.setUrl(QUrl(std::string(versionURL).c_str()));
+	request.setUrl(QUrl(std::string(g_versionURL).c_str()));
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 	QNetworkReply* reply = manager->get(request);
 	connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
@@ -96,9 +95,7 @@ void Updater::Run()
 		const std::string archive = Updater::UpdateArchive().string();
 		const std::string dest = Updater::UpdateDest().string();
 
-		// Save reply to file
-		auto file = new QFile(QString::fromStdString(archive));
-		if (file->open(QFile::WriteOnly))
+		if (auto file = new QFile(QString::fromStdString(archive)); file->open(QFile::WriteOnly))
 		{
 			file->write(reply->readAll());
 			file->flush();
@@ -166,7 +163,7 @@ QNetworkReply* Updater::Download()
 	auto manager = new QNetworkAccessManager();
 
 	QNetworkRequest request;
-	request.setUrl(QUrl(std::string(updateURL).c_str()));
+	request.setUrl(QUrl(std::string(g_updateURL).c_str()));
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 	auto reply = manager->get(request);
 
@@ -419,8 +416,8 @@ void Updater::RemoveTrash()
 bool Updater::CreateNewProcess(std::string_view path, std::string_view args, bool elevated)
 {
 	const char* lpVerb = elevated ? "runas" : "open";
-	std::string pathStr = std::string(path);
-	std::string argsStr = std::string(args);
+	const std::string pathStr = std::string(path);
+	const std::string argsStr = std::string(args);
 	SHELLEXECUTEINFOA sei = {
 			sizeof(sei),
 			SEE_MASK_NO_CONSOLE,

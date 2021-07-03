@@ -47,11 +47,11 @@ void VerticalMenuBar::Init()
 
 	this->m_menuEntries = { table, settings, discord, csvMatches, log, github, about };
 
-	for (int i = 0; i < this->m_menuEntries.size(); i++)
+	for (size_t i = 0; i < this->m_menuEntries.size(); i++)
 	{
 		auto button = this->m_menuEntries[i]->m_button;
 		this->m_btnGroup->addButton(button);
-		this->m_btnGroup->setId(button, i);
+		this->m_btnGroup->setId(button, static_cast<int>(i));
 	}
 	this->m_btnGroup->setExclusive(true);
 

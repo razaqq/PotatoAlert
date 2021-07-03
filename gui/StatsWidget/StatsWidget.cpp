@@ -50,7 +50,7 @@ void StatsWidget::Update(const Match& match)
 	this->m_leftTable->clearContents();
 	this->m_rightTable->clearContents();
 
-	auto fillTable = [](QTableWidget* table, const TeamType& team)
+	auto fillTable = [](QTableWidget* table, const StatsParser::TeamType& team)
 	{
 		int row = 0;
 		for (auto& player : team)
@@ -75,22 +75,22 @@ void StatsWidget::Update(const Match& match)
 	this->m_footer->Update(match);
 
 	// add hooks to open wows-numbers link when double clicking cell
-	auto openWowsNumbers = [](int row, const Team& team)
+	auto openWowsNumbers = [](int row, const StatsParser::Team& team)
 	{
 		auto wowsNumbers = team.wowsNumbers;
 
-		if (row < team.wowsNumbers.size())
+		if (static_cast<size_t>(row) < team.wowsNumbers.size())
 		{
 			QUrl url(team.wowsNumbers[row]);
 			if (url.isValid())
 				QDesktopServices::openUrl(url);
 		}
 	};
-	connect(this->m_leftTable, &StatsTable::cellDoubleClicked, [&](int row, int column)
+	connect(this->m_leftTable, &StatsTable::cellDoubleClicked, [&](int row, [[maybe_unused]] int column)
 	{
 		openWowsNumbers(row, this->m_lastMatch.team1);
 	});
-	connect(this->m_rightTable, &StatsTable::cellDoubleClicked, [&](int row, int column)
+	connect(this->m_rightTable, &StatsTable::cellDoubleClicked, [&](int row, [[maybe_unused]] int column)
 	{
 		openWowsNumbers(row, this->m_lastMatch.team2);
 	});

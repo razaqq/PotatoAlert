@@ -35,7 +35,7 @@ public:
 	template <typename T>
 	T Get(const char* key) const
 	{
-		// we technically dont have to check, since we check for keys on init
+		// we technically don't have to check, since we check for keys on init
 		if (this->j.contains(key))
 			return this->j.at(key).get<T>();
 		return {};

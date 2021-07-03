@@ -1,14 +1,13 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "FramelessDialog.hpp"
+
 #include <QDialog>
 #include <QWidget>
-#include <QFocusEvent>
 #include <QWindow>
 
 #include <dwmapi.h>
-#include <Windows.h>
-
-#include "FramelessDialog.hpp"
+#include "win32.h"
 
 
 using PotatoAlert::FramelessDialog;
@@ -39,20 +38,16 @@ void FramelessDialog::showEvent(QShowEvent* event)
 
 bool FramelessDialog::nativeEvent(const QByteArray& eventType, void* message, long* result)
 {
-	MSG* msg = reinterpret_cast<MSG*>(message);
-	switch (msg->message)
+	MSG* msg = static_cast<MSG*>(message);
+	if (msg->message == WM_NCCALCSIZE)
 	{
-		case WM_NCCALCSIZE:
-		{
-			NCCALCSIZE_PARAMS& params = *reinterpret_cast<NCCALCSIZE_PARAMS*>(msg->lParam);
-			if (params.rgrc[0].top != 0)
-				params.rgrc[0].top -= 1;
+		NCCALCSIZE_PARAMS& params = *reinterpret_cast<NCCALCSIZE_PARAMS*>(msg->lParam);
+		if (params.rgrc[0].top != 0)
+			params.rgrc[0].top -= 1;
 
-			// kill the window frame and title bar we added with WS_THICKFRAME and WS_CAPTION
-			*result = WVR_REDRAW;
-			return true;
-		}
-		default:
-			return QWidget::nativeEvent(eventType, message, result);
+		// kill the window frame and title bar we added with WS_THICKFRAME and WS_CAPTION
+		*result = WVR_REDRAW;
+		return true;
 	}
+	return QWidget::nativeEvent(eventType, message, result);
 }

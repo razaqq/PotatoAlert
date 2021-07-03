@@ -2,7 +2,6 @@
 
 #include "StatsParser.hpp"
 #include "CSVWriter.hpp"
-#include "Logger.hpp"
 #include "Json.hpp"
 #include <QLabel>
 #include <array>
@@ -12,7 +11,6 @@
 #include <vector>
 
 
-using PotatoAlert::Logger;
 using namespace PotatoAlert::StatsParser;
 
 static QString ToQString(const std::string_view& str)
@@ -24,38 +22,38 @@ namespace _JSON {
 
 struct Color
 {
-	int r, g, b;
-	std::optional<int> a;
+	int m_r, m_g, m_b;
+	std::optional<int> m_a;
 
 	Color() = default;
-	[[maybe_unused]] Color(int r, int g, int b) : r(r), g(g), b(b) {}
-	[[maybe_unused]] Color(int r, int g, int b, int a) : r(r), g(g), b(b), a(a) {}
-	[[maybe_unused]] explicit Color(const std::array<int, 3>& arr) : r(arr[0]), g(arr[1]), b(arr[2]) {}
-	[[maybe_unused]] explicit Color(const std::array<int, 4>& arr) : r(arr[0]), g(arr[1]), b(arr[2]), a(arr[3]) {}
+	[[maybe_unused]] Color(int r, int g, int b) : m_r(r), m_g(g), m_b(b) {}
+	[[maybe_unused]] Color(int r, int g, int b, int a) : m_r(r), m_g(g), m_b(b), m_a(a) {}
+	[[maybe_unused]] explicit Color(const std::array<int, 3>& arr) : m_r(arr[0]), m_g(arr[1]), m_b(arr[2]) {}
+	[[maybe_unused]] explicit Color(const std::array<int, 4>& arr) : m_r(arr[0]), m_g(arr[1]), m_b(arr[2]), m_a(arr[3]) {}
 
 	[[nodiscard]] std::string ToString() const
 	{
-		if (!a)
-			return std::format("rgb({}, {}, {})", r, g, b);
+		if (!m_a)
+			return std::format("rgb({}, {}, {})", m_r, m_g, m_b);
 		else
-			return std::format("rgba({}, {}, {}, {})", r, g, b, a.value());
+			return std::format("rgba({}, {}, {}, {})", m_r, m_g, m_b, m_a.value());
 	}
 
 	[[nodiscard]] bool Valid() const
 	{
 		auto valid = [](int i) -> bool { return i >= 0 && i <= 255; };
-		if (!a.has_value())
-			return valid(r) && valid(g) && valid(b);
+		if (!m_a.has_value())
+			return valid(m_r) && valid(m_g) && valid(m_b);
 		else
-			return valid(r) && valid(g) && valid(b) && valid(a.value());
-	};
+			return valid(m_r) && valid(m_g) && valid(m_b) && valid(m_a.value());
+	}
 
 	[[nodiscard]] QColor QColor() const
 	{
-		if (!a)
-			return QColor::fromRgb(r, g, b);
+		if (!m_a)
+			return QColor::fromRgb(m_r, m_g, m_b);
 		else
-			return QColor::fromRgb(r, g, b, a.value());
+			return QColor::fromRgb(m_r, m_g, m_b, m_a.value());
 	}
 };
 
@@ -95,15 +93,15 @@ struct Clan
 
 	[[nodiscard]] Label GetTagLabel() const
 	{
-		return {"[" + ToQString(this->tag) + "] ", this->color.QColor()};
+		return { "[" + ToQString(this->tag) + "] ", this->color.QColor() };
 	}
 	[[nodiscard]] Label GetNameLabel() const
 	{
-		return {ToQString(this->name)};
+		return { ToQString(this->name), std::nullopt };
 	}
 	[[nodiscard]] Label GetRegionLabel() const
 	{
-		return {ToQString(this->region)};
+		return { ToQString(this->region), std::nullopt };
 	}
 };
 
@@ -270,7 +268,7 @@ struct Match
 	j.at("player").get_to(m.player);
 }
 
-std::string GetCSV(const Match& match)
+static std::string GetCSV(const Match& match)
 {
 	std::string out;
 	out += "Team;Player;Clan;Ship;Matches;Winrate;AverageDamage;MatchesShip;WinrateShip;AverageDamageShip;WowsNumbers\n";

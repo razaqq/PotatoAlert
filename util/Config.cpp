@@ -8,7 +8,6 @@
 #include <QStandardPaths>
 #include <QApplication>
 #include <iostream>
-#include <fstream>
 #include <filesystem>
 #include <string>
 #include <utility>
@@ -39,7 +38,7 @@ Config::Config(std::string_view fileName)
 		{ "menubar_leftside", true }
 	};
 
-	auto path = Config::GetPath(fileName);
+	auto path = GetPath(fileName);
 	if (!path)
 	{
 		LOG_ERROR("Failed to get config path.");

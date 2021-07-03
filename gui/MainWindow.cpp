@@ -4,24 +4,19 @@
 #include <QMainWindow>
 #include <QWidget>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QSizeGrip>
 #include <QIcon>
 #include <QUrl>
 #include <QSettings>
 #include <QWindow>
-#include <QButtonGroup>
 #include <QDesktopServices>
 #include <QPushButton>
 #include <QDialogButtonBox>
 #include <QApplication>
-#include <QProgressBar>
 #include "Config.hpp"
 #include "Log.hpp"
 #include "PotatoClient.hpp"
 #include "FramelessDialog.hpp"
 #include "StatsWidget/StatsWidget.hpp"
-#include "StatsWidget/StatsHeader.hpp"
 #include "MenuBar/VerticalMenuBar.hpp"
 #include "StringTable.hpp"
 #include "CSVWriter.hpp"
@@ -137,8 +132,8 @@ bool MainWindow::ConfirmUpdate()
 	auto noButton = new QPushButton(GetString(StringTable::Keys::NO), buttonBox);
 	noButton->setObjectName("confirmButton");
 
-	connect(yesButton, &QPushButton::clicked, [dialog](int button) { dialog->done(QDialog::Accepted); });
-	connect(noButton, &QPushButton::clicked, [dialog](int button) { dialog->done(QDialog::Rejected); });
+	connect(yesButton, &QPushButton::clicked, [dialog]([[maybe_unused]] bool checked) { dialog->done(QDialog::Accepted); });
+	connect(noButton, &QPushButton::clicked, [dialog]([[maybe_unused]] bool checked) { dialog->done(QDialog::Rejected); });
 
 	buttonBox->addButton(yesButton, QDialogButtonBox::ActionRole);
 	buttonBox->addButton(noButton, QDialogButtonBox::ActionRole);
