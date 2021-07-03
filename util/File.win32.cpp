@@ -7,8 +7,17 @@
 
 using PotatoAlert::File;
 
-#define CREATE_HANDLE(type, handle) ((type)((uintptr_t)(handle) + 1))
-#define UNWRAP_HANDLE(type, handle) ((type)((uintptr_t)(handle) - 1))
+template<typename T>
+static constexpr T CreateHandle(HANDLE handle)
+{
+	return static_cast<T>(reinterpret_cast<uintptr_t>(handle) + 1);
+}
+
+template<typename T>
+static constexpr T UnwrapHandle(File::Handle handle)
+{
+	return reinterpret_cast<T>(static_cast<uintptr_t>(handle) - 1);
+}
 
 namespace {
 
@@ -69,18 +78,18 @@ File::Handle File::RawOpen(std::string_view path, Flags flags)
 		return Handle::Null;
 	}
 
-	return CREATE_HANDLE(Handle, hFile);
+	return CreateHandle<Handle>(hFile);
 }
 
 void File::RawClose(Handle handle)
 {
-	CloseHandle(UNWRAP_HANDLE(HANDLE, handle));
+	CloseHandle(UnwrapHandle<HANDLE>(handle));
 }
 
 uint64_t File::RawGetSize(Handle handle)
 {
 	LARGE_INTEGER largeInteger;
-	GetFileSizeEx(UNWRAP_HANDLE(HANDLE, handle), &largeInteger);
+	GetFileSizeEx(UnwrapHandle<HANDLE>(handle), &largeInteger);
 	return largeInteger.QuadPart;
 }
 
@@ -97,7 +106,7 @@ bool File::RawRead(Handle handle, std::string& out)
 	static const size_t size = 16384;
 	static char buff[size];
 
-	if (ReadFile(UNWRAP_HANDLE(HANDLE, handle), buff, RawGetSize(handle), &dwBytesRead, nullptr))
+	if (ReadFile(UnwrapHandle<HANDLE>(handle), buff, RawGetSize(handle), &dwBytesRead, nullptr))
 	{
 		buff[dwBytesRead] = '\0';  // add null termination
 		out = std::string(buff);
@@ -117,16 +126,22 @@ bool File::RawWrite(Handle handle, const std::string& data)
 	ResetFilePointer(handle);
 
 	DWORD dwBytesWritten = 0;
-	if (WriteFile(UNWRAP_HANDLE(HANDLE, handle), data.c_str(), data.length(), &dwBytesWritten, nullptr))
+	if (WriteFile(UnwrapHandle<HANDLE>(handle), data.c_str(), data.length(), &dwBytesWritten, nullptr))
 	{
 		return dwBytesWritten == data.length();
 	}
 	return false;
 }
 
+bool File::RawFlushBuffer(Handle handle)
+{
+	return FlushFileBuffers(UnwrapHandle<HANDLE>(handle));
+}
+
+
 std::string File::LastError()
 {
-	DWORD err = GetLastError();
+	const DWORD err = GetLastError();
 	LPSTR lpMsgBuf;
 	FormatMessage(
 			FORMAT_MESSAGE_ALLOCATE_BUFFER |
@@ -135,7 +150,7 @@ std::string File::LastError()
 			nullptr,
 			err,
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			(LPTSTR) &lpMsgBuf,
+			reinterpret_cast<LPTSTR>(&lpMsgBuf),
 			0, nullptr
 	);
 	return std::string(lpMsgBuf);
@@ -143,7 +158,7 @@ std::string File::LastError()
 
 bool File::GetVersion(std::string_view fileName, std::string& outVersion)
 {
-	DWORD size = GetFileVersionInfoSize(fileName.data(), nullptr);
+	const DWORD size = GetFileVersionInfoSize(fileName.data(), nullptr);
 	if (size == 0)
 		return {};
 
@@ -185,11 +200,11 @@ bool File::RawDelete(std::string_view file)
 
 bool File::RawExists(std::string_view file)
 {
-	DWORD dwAttrib = GetFileAttributes(file.data());
+	const DWORD dwAttrib = GetFileAttributes(file.data());
 	return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
 bool File::ResetFilePointer(Handle handle)
 {
-	return SetFilePointer(UNWRAP_HANDLE(HANDLE, handle), 0, nullptr, FILE_BEGIN) != INVALID_SET_FILE_POINTER;
+	return SetFilePointer(UnwrapHandle<HANDLE>(handle), 0, nullptr, FILE_BEGIN) != INVALID_SET_FILE_POINTER;
 }

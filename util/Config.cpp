@@ -62,6 +62,7 @@ Config::Config(std::string_view fileName)
 Config::~Config()
 {
 	this->Save();
+	this->m_file.FlushBuffer();
 	this->m_file.Close();
 }
 

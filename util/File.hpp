@@ -95,6 +95,11 @@ public:
 		return RawWrite(m_handle, data);
 	}
 
+	bool FlushBuffer()
+	{
+		return RawFlushBuffer(m_handle);
+	}
+
 	static bool Move(std::string_view src, std::string_view dst)
 	{
 		return RawMove(src, dst);
@@ -134,6 +139,7 @@ private:
 	// these have to be implemented for each os
 	static bool RawRead(Handle handle, std::string& out);
 	static bool RawWrite(Handle handle, const std::string& data);
+	static bool RawFlushBuffer(Handle handle);
 	static uint64_t RawGetSize(Handle handle);
 	static Handle RawOpen(std::string_view path, Flags flags);
 	static void RawClose(Handle handle);
@@ -145,15 +151,3 @@ private:
 DEFINE_FLAGS(File::Flags);
 
 }  // namespace PotatoAlert
-
-
-namespace PotatoAlert::File2 {
-
-[[maybe_unused]] std::optional<std::string> Read(std::string_view filePath);
-
-template <class Rep, class Period>
-[[maybe_unused]] std::optional<std::string> ReadDelayed(std::string_view filePath, const std::chrono::duration<Rep, Period>& delay = 100ms);
-
-[[maybe_unused]] bool Write(const std::string& filePath, const std::string& data);
-
-}  // namespace PotatoAlert::File
