@@ -111,7 +111,7 @@ void SettingsWidget::Init()
 	languageLayout->addWidget(this->m_languageLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
 	std::vector<QString> langs;
-	for (auto& lang : Languages)
+	for (auto& lang : StringTable::Languages)
 	{
 		langs.push_back(QString::fromUtf8(lang.data()));
 	}
@@ -287,16 +287,16 @@ void SettingsWidget::changeEvent(QEvent* event)
 {
 	if (event->type() == QEvent::LanguageChange)
 	{
-		this->m_updateLabel->setText(GetString(StringKeys::SETTINGS_UPDATES));
-		this->m_csvLabel->setText(GetString(StringKeys::SETTINGS_SAVE_CSV));
-		this->m_gamePathLabel->setText(GetString(StringKeys::SETTINGS_GAME_DIRECTORY));
-		this->m_replaysFolderLabel->setText(GetString(StringKeys::SETTINGS_MANUAL_REPLAYS));
-		this->m_replaysFolderDesc->setText(GetString(StringKeys::SETTINGS_MANUAL_REPLAYS_DESC));
-		this->m_statsModeLabel->setText(GetString(StringKeys::SETTINGS_STATS_MODE));
-		this->m_gaLabel->setText(GetString(StringKeys::SETTINGS_GA));
-		this->m_languageLabel->setText(GetString(StringKeys::SETTINGS_LANGUAGE));
-		this->m_saveButton->setText(GetString(StringKeys::SETTINGS_SAVE));
-		this->m_cancelButton->setText(GetString(StringKeys::SETTINGS_CANCEL));
+		this->m_updateLabel->setText(GetString(StringTable::Keys::SETTINGS_UPDATES));
+		this->m_csvLabel->setText(GetString(StringTable::Keys::SETTINGS_SAVE_CSV));
+		this->m_gamePathLabel->setText(GetString(StringTable::Keys::SETTINGS_GAME_DIRECTORY));
+		this->m_replaysFolderLabel->setText(GetString(StringTable::Keys::SETTINGS_MANUAL_REPLAYS));
+		this->m_replaysFolderDesc->setText(GetString(StringTable::Keys::SETTINGS_MANUAL_REPLAYS_DESC));
+		this->m_statsModeLabel->setText(GetString(StringTable::Keys::SETTINGS_STATS_MODE));
+		this->m_gaLabel->setText(GetString(StringTable::Keys::SETTINGS_GA));
+		this->m_languageLabel->setText(GetString(StringTable::Keys::SETTINGS_LANGUAGE));
+		this->m_saveButton->setText(GetString(StringTable::Keys::SETTINGS_SAVE));
+		this->m_cancelButton->setText(GetString(StringTable::Keys::SETTINGS_CANCEL));
 	}
 	else
 	{

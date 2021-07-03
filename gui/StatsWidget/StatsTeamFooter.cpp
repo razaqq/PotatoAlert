@@ -126,12 +126,12 @@ void StatsTeamFooter::changeEvent(QEvent* event)
 {
 	if (event->type() == QEvent::LanguageChange)
 	{
-		this->m_team1WrLabel->setText(GetString(StringKeys::LABEL_WINRATE));
-		this->m_team1DmgLabel->setText(GetString(StringKeys::LABEL_DAMAGE));
-		this->m_team1RegionLabel->setText(GetString(StringKeys::LABEL_REGION));
-		this->m_team2WrLabel->setText(GetString(StringKeys::LABEL_WINRATE));
-		this->m_team2DmgLabel->setText(GetString(StringKeys::LABEL_DAMAGE));
-		this->m_team2RegionLabel->setText(GetString(StringKeys::LABEL_REGION));
+		this->m_team1WrLabel->setText(GetString(StringTable::Keys::LABEL_WINRATE));
+		this->m_team1DmgLabel->setText(GetString(StringTable::Keys::LABEL_DAMAGE));
+		this->m_team1RegionLabel->setText(GetString(StringTable::Keys::LABEL_REGION));
+		this->m_team2WrLabel->setText(GetString(StringTable::Keys::LABEL_WINRATE));
+		this->m_team2DmgLabel->setText(GetString(StringTable::Keys::LABEL_DAMAGE));
+		this->m_team2RegionLabel->setText(GetString(StringTable::Keys::LABEL_REGION));
 	}
 	else
 	{

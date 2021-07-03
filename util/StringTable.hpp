@@ -5,9 +5,9 @@
 #include <QString>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::StringTable {
 
-enum StringKeys
+enum class Keys
 {
 #include "StringTableKeys.i"
 };
@@ -22,6 +22,6 @@ static const std::string_view Strings[][200] =
 #include "StringTableStrings.i"
 };
 
-QString GetString(StringKeys key);
+QString GetString(Keys key);
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::StringTable

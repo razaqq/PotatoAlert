@@ -16,7 +16,7 @@ UpdaterGui::UpdaterGui() : FramelessDialog(nullptr)
 {
 	auto vLayout = new QVBoxLayout();
 
-	auto waitLabel = new QLabel(PotatoAlert::GetString(PotatoAlert::StringKeys::UPDATE_DOWNLOADING));
+	auto waitLabel = new QLabel(GetString(PotatoAlert::StringTable::Keys::UPDATE_DOWNLOADING));
 
 	auto progressBar = new QProgressBar();
 	progressBar->setValue(0);
@@ -51,7 +51,7 @@ UpdaterGui::UpdaterGui() : FramelessDialog(nullptr)
 		qDeleteAll(this->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
 		delete this->layout();
 
-		auto errorLabel = new QLabel(PotatoAlert::GetString(PotatoAlert::StringKeys::UPDATE_FAILED) + text);
+		auto errorLabel = new QLabel(PotatoAlert::Get(PotatoAlert::Keys::UPDATE_FAILED) + text);
 		errorLabel->setWordWrap(true);
 
 		auto errorIcon = new QLabel();
@@ -65,7 +65,7 @@ UpdaterGui::UpdaterGui() : FramelessDialog(nullptr)
 		hLayout->addWidget(errorLabel);
 		hLayout->addStretch();
 
-		auto okButton = new QPushButton(PotatoAlert::GetString(PotatoAlert::StringKeys::OK));
+		auto okButton = new QPushButton(PotatoAlert::Get(PotatoAlert::Keys::OK));
 		okButton->setObjectName("confirmButton");
 		connect(okButton, &QPushButton::clicked, [this]() { this->close(); });
 

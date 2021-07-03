@@ -125,10 +125,10 @@ bool MainWindow::ConfirmUpdate()
 	auto buttonBox = new QDialogButtonBox();
 	buttonBox->setAttribute(Qt::WA_TranslucentBackground);
 
-	auto yesButton = new QPushButton(PotatoAlert::GetString(PotatoAlert::StringKeys::YES), buttonBox);
+	auto yesButton = new QPushButton(GetString(StringTable::Keys::YES), buttonBox);
 	yesButton->setObjectName("confirmButton");
 
-	auto noButton = new QPushButton(PotatoAlert::GetString(PotatoAlert::StringKeys::NO), buttonBox);
+	auto noButton = new QPushButton(GetString(StringTable::Keys::NO), buttonBox);
 	noButton->setObjectName("confirmButton");
 
 	connect(yesButton, &QPushButton::clicked, [dialog](int button) { dialog->done(QDialog::Accepted); });
@@ -138,7 +138,7 @@ bool MainWindow::ConfirmUpdate()
 	buttonBox->addButton(noButton, QDialogButtonBox::ActionRole);
 	buttonBox->setCenterButtons(true);
 
-	auto textField = new QLabel(PotatoAlert::GetString(PotatoAlert::StringKeys::UPDATE_QUESTION));
+	auto textField = new QLabel(GetString(StringTable::Keys::UPDATE_QUESTION));
 	textField->setWordWrap(true);
 
 	auto icon = new QIcon(QApplication::style()->standardIcon(QStyle::SP_MessageBoxQuestion));
