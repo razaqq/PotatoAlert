@@ -15,11 +15,13 @@ set(
         Palette.hpp
         PotatoClient.cpp
         PotatoClient.hpp
+        Process.hpp
         StatsParser.cpp
         StatsParser.hpp
         StringTable.cpp
         StringTable.hpp
         Time.hpp
+        ../updater/Updater.cpp
         ../updater/Updater.hpp
         Version.cpp
         Version.hpp
@@ -27,23 +29,23 @@ set(
         Zip.cpp
 )
 
-if (WIN32)
+if(WIN32)
     set(
             utils_src
             ${utils_src}
             File.win32.cpp
+            Process.win32.cpp
             Time.win32.cpp
-            ../updater/Updater.win32.cpp
     )
-endif (WIN32)
+endif(WIN32)
 
-if (UNIX)
+if(UNIX)
     set(
             utils_src
             ${utils_src}
             Time.linux.cpp
     )
-endif (UNIX)
+endif(UNIX)
 
 add_library(util STATIC ${utils_src})
 target_link_libraries(util PRIVATE tinyxml2 zip)

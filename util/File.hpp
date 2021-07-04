@@ -4,6 +4,7 @@
 #include "Flags.hpp"
 #include <filesystem>
 #include <string>
+#include <utility>
 #include <type_traits>
 
 
@@ -33,10 +34,7 @@ public:
 		m_handle = Handle::Null;
 	}
 
-	explicit File(Handle handle)
-	{
-		m_handle = handle;
-	}
+	explicit File(Handle handle) : m_handle(handle) {}
 
 	File(File&& src) noexcept
 	{

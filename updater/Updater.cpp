@@ -1,9 +1,12 @@
 // Copyright 2021 <github.com/razaqq>
 
-#include "Updater.hpp"
-#include "Log.hpp"
-#include "Version.hpp"
 #include "Json.hpp"
+#include "Log.hpp"
+#include "Process.hpp"
+#include "Updater.hpp"
+#include "Version.hpp"
+#include "Zip.hpp"
+
 #include <chrono>
 #include <filesystem>
 #include <format>
@@ -15,13 +18,34 @@
 #include <QApplication>
 #include <QEventLoop>
 #include <QElapsedTimer>
-#include <zip.h>
-#include <Windows.h>  // TODO: use win32 instead
-#include <shellapi.h>
+
+
+/*
+ * CURRENT WAY:
+ * Shut down main binary, start updater as admin
+ * Download archive to temp
+ * Create backup
+ * Rename current files to .trash
+ * Unpack archive into target
+ * Restart main binary
+ * Remove trash
+ */
+
+/*
+ * MAYBE BETTER:
+ * Shut down main binary, start updater as admin
+ * Download archive to temp
+ * Create backup
+ * Rename current files to .trash
+ * Unpack archive into temp
+ * MoveFile() to target location, on the same drive this is atomic
+ * Restart main binary
+ */
 
 
 using PotatoUpdater::Updater;
 using PotatoAlert::Version;
+using PotatoAlert::Zip;
 namespace fs = std::filesystem;
 
 // needs libssl-1_1-x64.dll and libcrypto-1_1-x64.dll from OpenSSL
@@ -115,7 +139,7 @@ bool Updater::UpdateAvailable()
 // starts the update process
 void Updater::Run()
 {
-	LOG_TRACE("Starting update...");
+	LOG_INFO("Starting update...");
 
 	if (!ElevationInfo().first)
 	{
@@ -123,7 +147,7 @@ void Updater::Run()
 		End(false);
 	}
 
-	LOG_TRACE("Starting download...");
+	LOG_INFO("Starting download...");
 	QNetworkReply* reply = this->Download();
 	// TODO: get g_updateURL dynamically from repo
 	// TODO: maybe do some checksum check on the downloaded archive
@@ -137,7 +161,7 @@ void Updater::Run()
 			End(false);
 		}
 
-		LOG_TRACE("Update downloaded successfully.");
+		LOG_INFO("Update download successful.");
 
 		const std::string archive = UpdateArchive().string();
 		const std::string dest = UpdateDest().string();
@@ -147,7 +171,7 @@ void Updater::Run()
 			file->write(reply->readAll());
 			file->flush();
 			file->close();
-			LOG_TRACE("Update archive saved successfully in {}", Updater::UpdateArchive().string());
+			LOG_INFO("Update archive saved successfully in {}", Updater::UpdateArchive().string());
 		}
 		else
 		{
@@ -166,41 +190,25 @@ void Updater::Run()
 		}
 
 		// Unpack archive
-		LOG_TRACE("Extracting archive to: {}", dest);
-		if (!Unpack(archive.c_str(), dest.c_str()))
+		LOG_INFO("Extracting archive {} to {}", archive, dest);
+
+		int totalEntries = Zip::Open(archive.c_str(), 0).EntryCount();
+		int i = 0;
+		auto onExtract = [dest, &i, totalEntries](const char* fileName)
+		{
+			LOG_INFO("Extracted: {} ({}/{})", fs::relative(fileName, dest).string(), ++i, totalEntries);
+			return 0;
+		};
+
+		if (!Zip::Extract(archive.c_str(), dest.c_str(), onExtract))
 		{
 			LOG_ERROR("Failed to Unpack archive.");
 			End(false, true);
 		}
 
+		LOG_INFO("Update complete!");
 		End(true);
 	});
-}
-
-// unpacks an archive into a folder
-bool Updater::Unpack(const char* file, const char* dest)
-{
-	LOG_INFO("Extracting zip archive: {}", file);
-
-	static int i = 0;
-	static const char* d = dest;
-	auto on_extract_entry = [](const char* filename, void* arg)
-	{
-		int n = *static_cast<int*>(arg);
-		LOG_INFO("Extracted: {} ({}/{})", fs::relative(filename, d).string(), ++i, n);
-
-		return 0;
-	};
-
-	if (struct zip_t *zip = zip_open(file, 0, 'r'))
-	{
-		int n = zip_total_entries(zip);
-		zip_close(zip);
-
-		int status = zip_extract(file, dest, on_extract_entry, &n);
-		return status == 0;
-	}
-	return false;
 }
 
 // downloads the update archive
@@ -381,8 +389,9 @@ bool Updater::RenameToTrash()
 // deletes all .trash files
 void Updater::RemoveTrash()
 {
-	std::error_code ec;
+	LOG_INFO("Clearing trash of old version.");
 
+	std::error_code ec;
 	auto it = fs::recursive_directory_iterator(UpdateDest(), ec);
 	if (ec)
 	{
@@ -407,20 +416,14 @@ void Updater::RemoveTrash()
 	}
 }
 
-bool Updater::CreateNewProcess(std::string_view path, std::string_view args, bool elevated)
+bool Updater::StartUpdater(std::string_view args)
 {
-	const char* lpVerb = elevated ? "runas" : "open";
-	const std::string pathStr = std::string(path);
-	const std::string argsStr = std::string(args);
-	SHELLEXECUTEINFOA sei = {
-			sizeof(sei),
-			SEE_MASK_NO_CONSOLE,
-			nullptr,
-			lpVerb,
-			pathStr.c_str(),
-			argsStr.c_str(),
-			nullptr,
-			SW_SHOWNORMAL
-	};
-	return ShellExecuteExA(&sei);
+	LOG_INFO("Restarting updater binary.");
+	return PotatoAlert::Process::CreateNewProcess(m_updaterBinary, args, true);
+}
+
+bool Updater::StartMain(std::string_view args)
+{
+	LOG_INFO("Restarting main binary.");
+	return PotatoAlert::Process::CreateNewProcess(m_mainBinary, args, false);
 }

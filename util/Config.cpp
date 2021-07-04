@@ -4,9 +4,11 @@
 #include "File.hpp"
 #include "Json.hpp"
 #include "Log.hpp"
+
 #include <QDir>
 #include <QStandardPaths>
 #include <QApplication>
+
 #include <iostream>
 #include <filesystem>
 #include <string>

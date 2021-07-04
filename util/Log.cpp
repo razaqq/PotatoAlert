@@ -21,7 +21,7 @@ QString Log::GetDir()
 
 void Log::Init()
 {
-	auto dir = Log::GetDir();
+	auto dir = GetDir();
 	QDir d;
 	d.mkpath(dir);
 	d.setPath(dir);

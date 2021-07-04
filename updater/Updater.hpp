@@ -3,7 +3,6 @@
 
 #include <string>
 #include <filesystem>
-#include <QObject>
 #include <QWidget>
 #include <QtNetwork>
 #include <QNetworkAccessManager>
@@ -33,14 +32,8 @@ public:
 	void Run();
 
 	// functions to start updater/main binary
-	static bool StartUpdater(std::string_view args = "")
-	{
-		return CreateNewProcess(m_updaterBinary, args, true);
-	}
-	static bool StartMain(std::string_view args = "")
-	{
-		return CreateNewProcess(m_mainBinary, args, false);
-	}
+	static bool StartUpdater(std::string_view args = "");
+	static bool StartMain(std::string_view args = "");
 
 	static void RemoveTrash();
 private:
@@ -62,9 +55,6 @@ private:
 	static fs::path BackupDest() { return fs::path(fs::temp_directory_path() / "PotatoAlertBackup"); }
 	static fs::path UpdateArchive() { return fs::path(fs::temp_directory_path() / "PotatoAlert.zip"); }
 
-	static bool CreateNewProcess(std::string_view path, std::string_view args, bool elevated);
-
-	static bool Unpack(const char* file, const char* dest);
 	static std::pair<bool, bool> ElevationInfo();
 
 	constexpr static std::string_view m_updaterBinary = "PotatoUpdater.exe";
