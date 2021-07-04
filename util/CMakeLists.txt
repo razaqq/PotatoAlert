@@ -23,6 +23,8 @@ set(
         ../updater/Updater.hpp
         Version.cpp
         Version.hpp
+        Zip.hpp
+        Zip.cpp
 )
 
 if (WIN32)
