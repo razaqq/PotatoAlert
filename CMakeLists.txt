@@ -65,13 +65,7 @@ else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
-target_link_libraries(PotatoAlert
-        Qt5::Widgets
-        Qt5::Core
-        Qt5::Gui
-        util
-        gui
-        )
+target_link_libraries(PotatoAlert PRIVATE gui util)
 
 include(packaging)
 windeployqt(PotatoAlert)

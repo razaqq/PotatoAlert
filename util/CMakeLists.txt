@@ -44,11 +44,9 @@ if (UNIX)
 endif (UNIX)
 
 add_library(util STATIC ${utils_src})
-target_link_libraries(
-        util
-        tinyxml2
-        zip
-        Version
-        Qt5::Core
-        Qt5::WebSockets
-        Qt5::Widgets)
+target_link_libraries(util PRIVATE tinyxml2 zip)
+target_link_libraries(util PUBLIC Qt5::Core Qt5::WebSockets Qt5::Widgets)
+
+if(WIN32)
+    target_link_libraries(util PRIVATE Version)
+endif(WIN32)

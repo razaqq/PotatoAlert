@@ -3,12 +3,15 @@ set(
 
         AboutWidget.cpp
         AboutWidget.hpp
+        FramelessDialog.cpp
+        FramelessDialog.hpp
         MainWindow.cpp
         MainWindow.hpp
         NativeWindow.cpp
         NativeWindow.hpp
         TitleBar.cpp
         TitleBar.hpp
+
         MenuBar/MenuEntryButton.cpp
         MenuBar/MenuEntryButton.hpp
         MenuBar/VerticalMenuBar.cpp
@@ -34,12 +37,9 @@ set(
         StatsWidget/StatsWidget.cpp
         StatsWidget/StatsWidget.hpp
 
-        FramelessDialog.cpp
-        FramelessDialog.hpp
-
         ../updater/UpdaterGui.cpp
         ../updater/UpdaterGui.hpp
 )
 
 add_library(gui STATIC ${gui_src})
-target_link_libraries(gui util framelessHelper Qt5::Widgets)
+target_link_libraries(gui PRIVATE util framelessHelper Qt5::Widgets)

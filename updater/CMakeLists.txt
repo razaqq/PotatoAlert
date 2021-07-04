@@ -23,15 +23,7 @@ else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
-target_link_libraries(PotatoUpdater
-        Qt5::Widgets
-        Qt5::Core
-        Qt5::Gui
-        util
-        zip
-        gui
-        Dwmapi
-        )
+target_link_libraries(PotatoUpdater PRIVATE gui util)
 
 add_custom_command(
         TARGET PotatoUpdater
