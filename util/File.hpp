@@ -80,9 +80,14 @@ public:
 		return RawGetSize(m_handle);
 	}
 
-	bool Read(std::string& out) const
+	bool Read(std::vector<std::byte>& out) const
 	{
 		return RawRead(m_handle, out);
+	}
+
+	bool ReadString(std::string& out) const
+	{
+		return RawReadString(m_handle, out);
 	}
 
 	bool Write(const std::string& data)
@@ -132,7 +137,8 @@ private:
 	Handle m_handle;
 
 	// these have to be implemented for each os
-	static bool RawRead(Handle handle, std::string& out);
+	static bool RawRead(Handle handle, std::vector<std::byte>& out);
+	static bool RawReadString(Handle handle, std::string& out);
 	static bool RawWrite(Handle handle, const std::string& data);
 	static bool RawFlushBuffer(Handle handle);
 	static uint64_t RawGetSize(Handle handle);

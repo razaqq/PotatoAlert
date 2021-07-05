@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <charconv>
 #include <filesystem>
-#include <fstream>
 #include <regex>
 #include <sstream>
 #include <string>
@@ -76,9 +75,8 @@ bool GetResFolderPath(FolderStatus& status)
 			continue;
 
 		std::string fileName = entry.path().filename().string();
-		int v = 0;
 
-		if (AsInteger(fileName, v))
+		if (int v = 0; AsInteger(fileName, v))
 			if (v > folderVersion)
 				folderVersion = v;
 	}
@@ -175,11 +173,20 @@ bool ReadPreferences(FolderStatus& status, const std::string& basePath)
 		return false;
 	}
 
-	std::ifstream ifs(preferencesPath);
-	std::stringstream ss;
-	ss << ifs.rdbuf();
-	ifs.close();
-	const std::string pref = ss.str();
+	std::string pref;
+	if (File file = File::Open(preferencesPath, File::Flags::Open | File::Flags::Read); file)
+	{
+		if (!file.ReadString(pref))
+		{
+			LOG_ERROR("Failed to read preferences.xml: {}", File::LastError());
+			return false;
+		}
+	}
+	else
+	{
+		LOG_ERROR("Failed to open preferences.xml for reading: {}", File::LastError());
+		return false;
+	}
 
 	static const std::regex versionRegex(R"regex(<clientVersion>([\s,0-9]*)<\/clientVersion>)regex");
 	static const std::regex regionRegex(R"regex(<active_server>([\sA-Z]*)<\/active_server>)regex");

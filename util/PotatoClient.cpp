@@ -231,15 +231,12 @@ std::optional<std::string> PotatoClient::ReadArenaInfo(const std::string& filePa
 	{
 		if (file.Size() > 0)
 		{
-			if (std::string arenaInfo; file.Read(arenaInfo))
+			if (std::string arenaInfo; file.ReadString(arenaInfo))
 			{
 				return std::move(arenaInfo);
 			}
-			else
-			{
-				LOG_ERROR("Failed to read arena info: {}", File::LastError());
-				return {};
-			}
+			LOG_ERROR("Failed to read arena info: {}", File::LastError());
+			return {};
 		}
 		std::this_thread::sleep_for(100ms);
 		now = std::chrono::high_resolution_clock::now();

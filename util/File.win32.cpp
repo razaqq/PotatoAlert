@@ -5,6 +5,9 @@
 #include "Flags.hpp"
 #include "win32.h"
 
+#include <string>
+#include <vector>
+
 
 using PotatoAlert::File;
 
@@ -94,7 +97,7 @@ uint64_t File::RawGetSize(Handle handle)
 	return largeInteger.QuadPart;
 }
 
-bool File::RawRead(Handle handle, std::string& out)
+bool File::RawRead(Handle handle, std::vector<std::byte>& out)
 {
 	if (handle == Handle::Null)
 	{
@@ -104,17 +107,30 @@ bool File::RawRead(Handle handle, std::string& out)
 	ResetFilePointer(handle);
 
 	DWORD dwBytesRead;
-	static const size_t size = 16384;
-	static char buff[size];
+	const uint64_t size = RawGetSize(handle);
 
-	if (ReadFile(UnwrapHandle<HANDLE>(handle), buff, RawGetSize(handle), &dwBytesRead, nullptr))
+	out.resize(size);
+	void* buff = std::data(out);
+
+	return ReadFile(UnwrapHandle<HANDLE>(handle), buff, static_cast<DWORD>(size), &dwBytesRead, nullptr);
+}
+
+bool File::RawReadString(Handle handle, std::string& out)
+{
+	if (handle == Handle::Null)
 	{
-		buff[dwBytesRead] = '\0';  // add null termination
-		out = std::string(buff);
-		return true;
+		return false;
 	}
 
-	return false;
+	ResetFilePointer(handle);
+
+	DWORD dwBytesRead;
+	const uint64_t size = RawGetSize(handle);
+
+	out.resize(size);
+	void* buff = std::data(out);
+
+	return ReadFile(UnwrapHandle<HANDLE>(handle), buff, static_cast<DWORD>(size), &dwBytesRead, nullptr);
 }
 
 bool File::RawWrite(Handle handle, const std::string& data)
