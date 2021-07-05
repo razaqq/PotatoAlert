@@ -57,6 +57,21 @@ public:
 			Close();
 	}
 
+	explicit operator bool() const
+	{
+		return m_handle != Handle::Null;
+	}
+
+	bool operator==(decltype(nullptr)) const
+	{
+		return m_handle == Handle::Null;
+	}
+
+	bool operator!=(decltype(nullptr)) const
+	{
+		return m_handle != Handle::Null;
+	}
+
 	[[nodiscard]] Handle GetHandle() const
 	{
 		return m_handle;
