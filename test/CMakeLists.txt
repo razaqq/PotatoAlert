@@ -10,17 +10,14 @@ else()
 endif()
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/catch2)
-include_directories(${PROJECT_SOURCE_DIR}/util)
+include_directories(${PROJECT_SOURCE_DIR}/Util)
 
 # enable CTest testing
 enable_testing()
 
 add_executable(PotatoTest main.cpp GameTest.cpp VersionTest.cpp)
 
-target_link_libraries(PotatoTest
-        util
-        Catch2::Test
-        )
+target_link_libraries(PotatoTest util Catch2::Test)
 
 add_test(test_all PotatoTest)
 

@@ -1,17 +1,13 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include <QApplication>
-#include <QMainWindow>
 #include <QWindow>
-#include <QFile>
 #include <QFont>
 #include <QString>
-#include <QLatin1String>
-#include <string>
 #include "Config.hpp"
 #include "Log.hpp"
 #include "Palette.hpp"
-#include "updater/Updater.hpp"
+#include "Updater/Updater.hpp"
 #include "MainWindow.hpp"
 #include "NativeWindow.hpp"
 #pragma clang diagnostic push
@@ -26,7 +22,7 @@ using PotatoAlert::NativeWindow;
 using PotatoUpdater::Updater;
 using PotatoAlert::PotatoConfig;
 
-static int runMain(int argc, char* argv[])
+static int RunMain(int argc, char* argv[])
 {
 	Q_INIT_RESOURCE(PotatoAlert);
 
@@ -75,11 +71,11 @@ static int runMain(int argc, char* argv[])
 #ifndef NDEBUG
 int main(int argc, char* argv[])
 {
-	return runMain(argc, argv);
+	return RunMain(argc, argv);
 }
 #else
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	return runMain(__argc, __argv);
+	return RunMain(__argc, __argv);
 }
 #endif

@@ -37,8 +37,8 @@ set(
         StatsWidget/StatsWidget.cpp
         StatsWidget/StatsWidget.hpp
 
-        ../updater/UpdaterGui.cpp
-        ../updater/UpdaterGui.hpp
+        ../Updater/UpdaterGui.cpp
+        ../Updater/UpdaterGui.hpp
 )
 
 add_library(gui STATIC ${gui_src})

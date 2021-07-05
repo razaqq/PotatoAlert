@@ -9,7 +9,7 @@
 using PotatoUpdater::Updater;
 using PotatoUpdater::UpdaterGui;
 
-static int runMain(int argc, char* argv[])
+static int RunMain(int argc, char* argv[])
 {
 	Q_INIT_RESOURCE(PotatoAlert);
 
@@ -38,11 +38,11 @@ static int runMain(int argc, char* argv[])
 #ifndef NDEBUG
 int main(int argc, char* argv[])
 {
-	return runMain(argc, argv);
+	return RunMain(argc, argv);
 }
 #else
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	return runMain(__argc, __argv);
+	return RunMain(__argc, __argv);
 }
 #endif

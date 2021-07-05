@@ -32,20 +32,20 @@ include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2/include)
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/win32)
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/zip/src)
 
-include_directories(${PROJECT_SOURCE_DIR}/util)
-include_directories(${PROJECT_SOURCE_DIR}/gui)
+include_directories(${PROJECT_SOURCE_DIR}/Util)
+include_directories(${PROJECT_SOURCE_DIR}/Gui)
 include_directories(${PROJECT_SOURCE_DIR}/Resources)
-include_directories(${PROJECT_SOURCE_DIR}/framelessHelper)
+include_directories(${PROJECT_SOURCE_DIR}/FramelessHelper)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2)
 set(CMAKE_DISABLE_TESTING ON)
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/zip)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/util)
-add_subdirectory(${PROJECT_SOURCE_DIR}/gui)
-add_subdirectory(${PROJECT_SOURCE_DIR}/test)
-add_subdirectory(${PROJECT_SOURCE_DIR}/updater)
-add_subdirectory(${PROJECT_SOURCE_DIR}/framelessHelper)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Util)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Gui)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Test)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Updater)
+add_subdirectory(${PROJECT_SOURCE_DIR}/FramelessHelper)
 
 add_executable(PotatoAlert main.cpp Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
 

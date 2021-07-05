@@ -21,8 +21,8 @@ set(
         StringTable.cpp
         StringTable.hpp
         Time.hpp
-        ../updater/Updater.cpp
-        ../updater/Updater.hpp
+        ../Updater/Updater.cpp
+        ../Updater/Updater.hpp
         Version.cpp
         Version.hpp
         Zip.hpp
