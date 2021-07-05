@@ -3,11 +3,13 @@
 
 #include "Game.hpp"
 #include "StatsParser.hpp"
+
 #include <QFileSystemWatcher>
 #include <QObject>
 #include <QString>
 #include <QTableWidgetItem>
 #include <QWebSocket>
+
 #include <optional>
 #include <string>
 #include <variant>

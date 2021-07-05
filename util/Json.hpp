@@ -1,9 +1,9 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include <string>
 #include "Log.hpp"
 
+#include <string>
 
 
 #define JSON_TRY_USER if (true)

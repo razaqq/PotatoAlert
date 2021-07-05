@@ -2,16 +2,17 @@
 #pragma once
 
 #include <QAbstractButton>
-#include <QWidget>
-#include <QSize>
-#include <QPaintEvent>
-#include <QMouseEvent>
-#include <QResizeEvent>
 #include <QBrush>
-#include <QString>
 #include <QColor>
-#include <map>
+#include <QMouseEvent>
+#include <QPaintEvent>
+#include <QResizeEvent>
+#include <QSize>
+#include <QString>
+#include <QWidget>
+
 #include <functional>
+#include <map>
 
 
 typedef std::map<bool, QBrush> BrushType;
@@ -27,7 +28,7 @@ class SettingsSwitch : public QAbstractButton
 	Q_PROPERTY(int offset READ GetOffset WRITE SetOffset)
 public:
 	explicit SettingsSwitch(QWidget* parent = nullptr);
-public:
+
 	void Init();
 	void paintEvent(QPaintEvent* event) override;
 	void mouseReleaseEvent(QMouseEvent* event) override;

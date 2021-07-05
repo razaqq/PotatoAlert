@@ -1,15 +1,17 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include <QApplication>
-#include <QWindow>
-#include <QFont>
-#include <QString>
 #include "Config.hpp"
 #include "Log.hpp"
-#include "Palette.hpp"
-#include "Updater/Updater.hpp"
 #include "MainWindow.hpp"
 #include "NativeWindow.hpp"
+#include "Palette.hpp"
+#include "Updater/Updater.hpp"
+
+#include <QApplication>
+#include <QFont>
+#include <QString>
+#include <QWindow>
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreserved-id-macro"
 #include "VersionInfo.h"

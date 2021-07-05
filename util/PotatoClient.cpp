@@ -1,18 +1,20 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "PotatoClient.hpp"
+
 #include "Config.hpp"
 #include "Game.hpp"
 #include "Json.hpp"
 #include "Log.hpp"
 #include "StatsParser.hpp"
-#include <QColor>
+
 #include <QFileSystemWatcher>
 #include <QObject>
 #include <QString>
 #include <QTableWidgetItem>
 #include <QUrl>
 #include <QWebSocket>
+
 #include <chrono>
 #include <filesystem>
 #include <format>

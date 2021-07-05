@@ -1,11 +1,12 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include <QWidget>
+#include "AboutWidget.hpp"
+
+#include <QApplication>
 #include <QGridLayout>
 #include <QLabel>
-#include <QApplication>
 #include <QPixmap>
-#include "AboutWidget.hpp"
+#include <QWidget>
 
 
 using PotatoAlert::AboutWidget;
@@ -23,19 +24,19 @@ void AboutWidget::Init()
 
 	auto centralWidget = new QWidget(this);
 	centralWidget->setObjectName("aboutWidget");
-	auto centralLayout = new QHBoxLayout;
+	auto centralLayout = new QHBoxLayout();
 	centralLayout->setContentsMargins(10, 10, 10, 10);
 	centralLayout->setSpacing(0);
 
-	auto horLayout = new QHBoxLayout;
+	auto horLayout = new QHBoxLayout();
 	horLayout->setContentsMargins(10, 10, 10, 10);
 	horLayout->setSpacing(0);
 
-	auto appIcon = new QLabel;
+	auto appIcon = new QLabel();
 	appIcon->setPixmap(QPixmap(":/potato.png").scaledToWidth(100));
 	horLayout->addWidget(appIcon);
 
-	auto gridLayout = new QGridLayout;
+	auto gridLayout = new QGridLayout();
 	gridLayout->setContentsMargins(10, 0, 10, 0);
 	gridLayout->setColumnMinimumWidth(0, 100);
 

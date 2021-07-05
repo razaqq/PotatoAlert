@@ -1,24 +1,26 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "SettingsWidget.hpp"
+
 #include "Config.hpp"
-#include <QIcon>
-#include <QSize>
-#include <QPixmap>
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
+#include "FolderStatus.hpp"
+#include "HorizontalLine.hpp"
+#include "PotatoClient.hpp"
+#include "SettingsChoice.hpp"
+#include "SettingsSwitch.hpp"
+#include "StringTable.hpp"
+
+#include <QApplication>
 #include <QEvent>
 #include <QFileDialog>
-#include <QToolButton>
+#include <QHBoxLayout>
+#include <QIcon>
+#include <QPixmap>
 #include <QPushButton>
-#include <QApplication>
-#include "SettingsWidget.hpp"
-#include "PotatoClient.hpp"
-#include "SettingsSwitch.hpp"
-#include "SettingsChoice.hpp"
-#include "HorizontalLine.hpp"
-#include "FolderStatus.hpp"
-#include "StringTable.hpp"
+#include <QSize>
+#include <QToolButton>
+#include <QVBoxLayout>
+#include <QWidget>
 
 
 static const int LABEL_WIDTH = 280;

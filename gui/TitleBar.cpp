@@ -1,16 +1,17 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include <QWidget>
-#include <QLabel>
-#include <QIcon>
-#include <QPixmap>
+#include "TitleBar.hpp"
+
 #include <QEvent>
-#include <QObject>
 #include <QHBoxLayout>
+#include <QIcon>
+#include <QLabel>
+#include <QMouseEvent>
+#include <QObject>
+#include <QPixmap>
 #include <QSizePolicy>
 #include <QToolButton>
-#include <QMouseEvent>
-#include "TitleBar.hpp"
+#include <QWidget>
 
 
 using PotatoAlert::TitleBar;

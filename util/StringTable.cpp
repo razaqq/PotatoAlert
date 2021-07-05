@@ -1,7 +1,9 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "StringTable.hpp"
+
 #include "Config.hpp"
+
 #include <QString>
 
 

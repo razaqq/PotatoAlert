@@ -1,7 +1,9 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "catch.hpp"
 #include "Version.hpp"
+
+#include "catch.hpp"
+
 #include <vector>
 
 

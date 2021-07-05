@@ -1,9 +1,9 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include <QWidget>
 #include <QIcon>
 #include <QPushButton>
+#include <QWidget>
 
 
 namespace PotatoAlert {
@@ -12,7 +12,11 @@ class MenuEntryButton : public QWidget
 {
 public:
 	MenuEntryButton(QWidget* parent = nullptr, const QIcon& icon = QIcon(), bool checkable = true);
-	QPushButton* m_button = new QPushButton;
+	void SetChecked(bool checked) const;
+	[[nodiscard]] QPushButton* GetButton() const { return m_button; }
+
+private:
+	QPushButton* m_button = new QPushButton();
 };
 
 }  // namespace PotatoAlert

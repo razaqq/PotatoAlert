@@ -2,8 +2,8 @@
 #pragma once
 
 #include "StatsParser.hpp"
+
 #include <QLabel>
-#include <QString>
 #include <QWidget>
 
 

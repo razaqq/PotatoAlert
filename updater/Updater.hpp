@@ -1,11 +1,12 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include <string>
-#include <filesystem>
+#include <QNetworkAccessManager>
 #include <QWidget>
 #include <QtNetwork>
-#include <QNetworkAccessManager>
+
+#include <filesystem>
+#include <string>
 
 
 namespace fs = std::filesystem;

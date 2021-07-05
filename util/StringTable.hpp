@@ -1,8 +1,9 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include <string>
 #include <QString>
+
+#include <string>
 
 
 namespace PotatoAlert::StringTable {

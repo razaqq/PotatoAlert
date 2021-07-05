@@ -1,13 +1,15 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "StatsTeamFooter.hpp"
+
 #include "StatsParser.hpp"
 #include "StringTable.hpp"
+
 #include <QEvent>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QString>
 #include <QWidget>
+
 #include <iostream>
 #include <vector>
 

@@ -3,7 +3,6 @@ set(
 
         AboutWidget.cpp
         AboutWidget.hpp
-        FramelessDialog.cpp
         FramelessDialog.hpp
         MainWindow.cpp
         MainWindow.hpp
@@ -40,6 +39,14 @@ set(
         ../Updater/UpdaterGui.cpp
         ../Updater/UpdaterGui.hpp
 )
+
+if(WIN32)
+    set(
+            gui_src
+            ${gui_src}
+            FramelessDialog.win32.cpp
+    )
+endif(WIN32)
 
 add_library(gui STATIC ${gui_src})
 target_link_libraries(gui PRIVATE util framelessHelper Qt5::Widgets)

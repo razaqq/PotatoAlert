@@ -1,11 +1,13 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "UpdaterGui.hpp"
+
+#include "StringTable.hpp"
 #include "Updater.hpp"
-#include <QVBoxLayout>
+
 #include <QLabel>
 #include <QProgressBar>
-#include "StringTable.hpp"
+#include <QVBoxLayout>
 
 
 using PotatoAlert::FramelessDialog;

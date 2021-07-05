@@ -4,9 +4,9 @@
 #include "FramelessDialog.hpp"
 
 
-namespace PotatoUpdater {
-
 using PotatoAlert::FramelessDialog;
+
+namespace PotatoUpdater {
 
 class UpdaterGui : FramelessDialog
 {

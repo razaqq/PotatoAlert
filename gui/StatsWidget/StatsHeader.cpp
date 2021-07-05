@@ -1,20 +1,25 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "StatsHeader.hpp"
-#include "StringTable.hpp"
-#include "PotatoClient.hpp"
+
 #include "Config.hpp"
-#include <QWidget>
-#include <QLabel>
+#include "PotatoClient.hpp"
+#include "StringTable.hpp"
+
 #include <QFont>
+#include <QHBoxLayout>
+#include <QLabel>
 #include <QSize>
+#include <QWidget>
+
 #include <string>
 
 
 using PotatoAlert::StatsHeader;
 
 StatsHeader::StatsHeader(QWidget* parent) : QWidget(parent)
-{ this->Init();
+{
+	this->Init();
 }
 
 void StatsHeader::Init()
@@ -24,18 +29,18 @@ void StatsHeader::Init()
 	this->m_ready = this->m_ready.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 	this->m_error = this->m_error.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
-	auto layout = new QHBoxLayout;
+	auto layout = new QHBoxLayout();
 	layout->setContentsMargins(10, 0, 10, 0);
 	layout->setSpacing(10);
 
-	auto leftLayout = new QHBoxLayout;
-	auto rightLayout = new QHBoxLayout;
+	auto leftLayout = new QHBoxLayout();
+	auto rightLayout = new QHBoxLayout();
 
 	const QFont labelFont("Segoe UI", 16, QFont::Bold);
 
 	// status icon and text
 	auto status = new QWidget(this);
-	auto statusLayout = new QHBoxLayout;
+	auto statusLayout = new QHBoxLayout();
 	statusLayout->setContentsMargins(0, 0, 0, 0);
 	statusLayout->setSpacing(0);
 	status->setFixedWidth(130);
@@ -53,7 +58,7 @@ void StatsHeader::Init()
 	this->m_team2Label->setFont(labelFont);
 
 	// dummy with same width as status
-	auto dummy = new QWidget;
+	auto dummy = new QWidget();
 	dummy->setFixedWidth(130);
 
 	// add to layouts

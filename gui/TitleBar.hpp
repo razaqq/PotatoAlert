@@ -1,12 +1,12 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include <QWidget>
-#include <QLabel>
-#include <QToolButton>
-#include <QObject>
 #include <QEvent>
+#include <QLabel>
 #include <QMouseEvent>
+#include <QObject>
+#include <QToolButton>
+#include <QWidget>
 
 
 namespace PotatoAlert {

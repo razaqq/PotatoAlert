@@ -1,10 +1,11 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include <QWidget>
-#include <QMainWindow>
 #include "Config.hpp"
 #include "TitleBar.hpp"
+
+#include <QMainWindow>
+#include <QWidget>
 
 
 namespace PotatoAlert {

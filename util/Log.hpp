@@ -1,12 +1,14 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include <memory>
 #define SPDLOG_NO_EXCEPTIONS
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
+
 #include <QString>
+
+#include <memory>
 
 
 namespace PotatoAlert {
@@ -22,7 +24,7 @@ private:
 	static std::shared_ptr<spdlog::logger> s_logger;
 };
 
-}
+}  // namespace PotatoAlert
 
 #define LOG_TRACE(...) SPDLOG_LOGGER_TRACE(::PotatoAlert::Log::GetLogger(), __VA_ARGS__)
 #define LOG_INFO(...)  SPDLOG_LOGGER_INFO(::PotatoAlert::Log::GetLogger(), __VA_ARGS__)

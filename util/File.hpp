@@ -2,10 +2,11 @@
 #pragma once
 
 #include "Flags.hpp"
+
 #include <filesystem>
 #include <string>
-#include <utility>
 #include <type_traits>
+#include <utility>
 
 
 namespace fs = std::filesystem;
@@ -118,12 +119,12 @@ public:
 		return m_handle != Handle::Null;
 	}
 
-	bool operator==(decltype(nullptr))
+	bool operator==(decltype(nullptr)) const
 	{
 		return m_handle == Handle::Null;
 	}
 
-	bool operator!=(decltype(nullptr))
+	bool operator!=(decltype(nullptr)) const
 	{
 		return m_handle != Handle::Null;
 	}

@@ -1,14 +1,17 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "FolderStatus.hpp"
+
 #include "Game.hpp"
 #include "StringTable.hpp"
-#include <QVBoxLayout>
-#include <QWidget>
+
+#include <QEvent>
+#include <QGridLayout>
 #include <QLabel>
 #include <QString>
-#include <QGridLayout>
-#include <QEvent>
+#include <QVBoxLayout>
+#include <QWidget>
+
 #include <sstream>
 
 
@@ -61,7 +64,7 @@ void FolderStatusGui::Update(const FolderStatus& status)
 		this->m_statusText->setStyleSheet("QLabel { color : green; }");
 		this->m_region->setText(QString::fromStdString(status.region));
 		this->m_gameVersion->setText(QString::fromStdString(status.gameVersion));
-		status.versionedReplays ? this->m_versionedReplays->setText("yes") : this->m_versionedReplays->setText("no");
+		status.versionedReplays ? this->m_versionedReplays->setText("yes") : this->m_versionedReplays->setText("no");  // TODO: localize
 
 		// create string from replays paths
 		std::stringstream ss;

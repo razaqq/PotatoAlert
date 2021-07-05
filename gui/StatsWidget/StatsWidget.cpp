@@ -1,15 +1,17 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "StatsWidget.hpp"
+
 #include "PotatoClient.hpp"
 #include "StatsHeader.hpp"
 #include "StatsParser.hpp"
+
 #include <QDesktopServices>
-#include <QHBoxLayout>
 #include <QTableWidgetItem>
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QWidget>
+
 #include <array>
 #include <variant>
 #include <vector>
@@ -24,13 +26,13 @@ StatsWidget::StatsWidget(QWidget* parent) : QWidget(parent)
 
 void StatsWidget::Init()
 {
-	auto vLayout = new QVBoxLayout;
+	auto vLayout = new QVBoxLayout();
 	vLayout->setContentsMargins(0, 0, 0, 10);
 	vLayout->setSpacing(0);
 
 	vLayout->addWidget(this->m_header);
 
-	auto tableLayout = new QHBoxLayout;
+	auto tableLayout = new QHBoxLayout();
 	tableLayout->addWidget(this->m_leftTable);
 	tableLayout->addWidget(this->m_rightTable);
 	tableLayout->setSpacing(10);

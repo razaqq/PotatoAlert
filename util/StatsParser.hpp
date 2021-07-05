@@ -2,14 +2,15 @@
 
 #pragma once
 
-#include <optional>
-#include <vector>
+#include "Json.hpp"
+
 #include <QColor>
-#include <QFont>
-#include <QLabel>
 #include <QLabel>
 #include <QTableWidgetItem>
-#include "Json.hpp"
+
+#include <optional>
+#include <variant>
+#include <vector>
 
 
 namespace PotatoAlert::StatsParser

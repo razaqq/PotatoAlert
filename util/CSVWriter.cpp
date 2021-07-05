@@ -1,14 +1,17 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "CSVWriter.hpp"
+
 #include "File.hpp"
 #include "Log.hpp"
 #include "Time.hpp"
+
+#include <QDir>
+#include <QStandardPaths>
+#include <QString>
+
 #include <format>
 #include <string>
-#include <QDir>
-#include <QString>
-#include <QStandardPaths>
 
 
 namespace csv = PotatoAlert::CSV;

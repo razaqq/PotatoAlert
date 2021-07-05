@@ -1,13 +1,16 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Log.hpp"
-#include <memory>
-#include <vector>
-#include <spdlog/sinks/stdout_color_sinks.h>
+
 #include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
 #include <QDir>
 #include <QStandardPaths>
 #include <QString>
+
+#include <memory>
+#include <vector>
 
 
 using PotatoAlert::Log;

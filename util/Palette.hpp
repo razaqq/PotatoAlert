@@ -3,6 +3,7 @@
 
 #include <QPalette>
 
+
 namespace PotatoAlert {
 
 [[maybe_unused]] QPalette DarkPalette();

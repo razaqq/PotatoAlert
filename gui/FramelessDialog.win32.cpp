@@ -2,12 +2,21 @@
 
 #include "FramelessDialog.hpp"
 
+#define WIN32_USER
+#define WIN32_WINSTYLES
+#define WIN32_WINOFFSETS
+#define WIN32_WINMESSAGES
+#define WIN32_MSG
+#define WIN32_TEXTMETRIC
+#define WIN32_GDI
+#define WIN32_CTLMGR
+#include "win32.h"
+
+#include <dwmapi.h>
+
 #include <QDialog>
 #include <QWidget>
 #include <QWindow>
-
-#include <dwmapi.h>
-#include "win32.h"
 
 
 using PotatoAlert::FramelessDialog;
@@ -23,11 +32,11 @@ FramelessDialog::FramelessDialog(QWidget* parent) : QDialog(parent)
 void FramelessDialog::showEvent(QShowEvent* event)
 {
 	// edit underlying native window
-	HWND winId = reinterpret_cast<HWND>(this->windowHandle()->winId());
+	const HWND winId = reinterpret_cast<HWND>(this->windowHandle()->winId());
 
 	// edit style
-	LONG style = GetWindowLong(winId, GWL_STYLE);
-	SetWindowLongPtr(winId, GWL_STYLE, style | WS_MAXIMIZEBOX | WS_THICKFRAME | WS_CAPTION);
+	const LONG style = GetWindowLongA(winId, GWL_STYLE);
+	SetWindowLongPtrA(winId, GWL_STYLE, style | WS_MAXIMIZEBOX | WS_THICKFRAME | WS_CAPTION);
 
 	// add shadow
 	const MARGINS shadow = { 1, 1, 1, 1 };

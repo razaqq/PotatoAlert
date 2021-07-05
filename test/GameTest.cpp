@@ -1,9 +1,11 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "catch.hpp"
 #include "Game.hpp"
-#include <filesystem>
+
+#include "catch.hpp"
 #include "win32.h"
+
+#include <filesystem>
 
 
 using namespace PotatoAlert::Game;

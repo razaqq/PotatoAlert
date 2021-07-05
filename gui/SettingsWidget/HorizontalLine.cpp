@@ -1,6 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "HorizontalLine.hpp"
+
 #include <QFrame>
 #include <QWidget>
 

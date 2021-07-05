@@ -1,18 +1,20 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include <QTableWidgetItem>
+#include "StatsTable.hpp"
+
+#include "StringTable.hpp"
+
 #include <QEvent>
 #include <QHeaderView>
-#include "StatsTable.hpp"
-#include "StringTable.hpp"
+#include <QTableWidgetItem>
 
 
 using PotatoAlert::StatsTable;
 
 StatsTable::StatsTable(QWidget* parent) : QTableWidget(parent)
 {
-	Init();
-	InitHeaders();
+	this->Init();
+	this->InitHeaders();
 }
 
 void StatsTable::Init()

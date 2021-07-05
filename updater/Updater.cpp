@@ -1,23 +1,25 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Updater.hpp"
+
 #include "Json.hpp"
 #include "Log.hpp"
 #include "Process.hpp"
-#include "Updater.hpp"
 #include "Version.hpp"
 #include "Zip.hpp"
+
+#include <QApplication>
+#include <QElapsedTimer>
+#include <QEventLoop>
+#include <QFile>
+#include <QUrl>
+#include <QtNetwork>
 
 #include <chrono>
 #include <filesystem>
 #include <format>
 #include <string>
 #include <utility>
-#include <QtNetwork>
-#include <QUrl>
-#include <QFile>
-#include <QApplication>
-#include <QEventLoop>
-#include <QElapsedTimer>
 
 
 /*

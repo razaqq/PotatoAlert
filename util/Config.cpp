@@ -1,16 +1,17 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Config.hpp"
+
 #include "File.hpp"
 #include "Json.hpp"
 #include "Log.hpp"
 
+#include <QApplication>
 #include <QDir>
 #include <QStandardPaths>
-#include <QApplication>
 
-#include <iostream>
 #include <filesystem>
+#include <iostream>
 #include <string>
 #include <utility>
 

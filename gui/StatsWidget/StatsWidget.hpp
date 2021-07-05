@@ -6,13 +6,8 @@
 #include "StatsParser.hpp"
 #include "StatsTable.hpp"
 #include "StatsTeamFooter.hpp"
-#include <QLabel>
-#include <QString>
-#include <QTableWidgetItem>
+
 #include <QWidget>
-#include <array>
-#include <variant>
-#include <vector>
 
 
 namespace PotatoAlert {

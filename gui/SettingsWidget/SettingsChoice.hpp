@@ -1,9 +1,9 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include <QWidget>
-#include <QString>
 #include <QButtonGroup>
+#include <QString>
+#include <QWidget>
 
 
 namespace PotatoAlert {

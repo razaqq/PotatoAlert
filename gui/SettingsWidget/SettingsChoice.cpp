@@ -1,13 +1,14 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "SettingsChoice.hpp"
-#include <QWidget>
-#include <QString>
-#include <QFont>
-#include <QPushButton>
-#include <QHBoxLayout>
+
 #include <QButtonGroup>
+#include <QFont>
+#include <QHBoxLayout>
+#include <QPushButton>
 #include <QSizePolicy>
+#include <QString>
+#include <QWidget>
 
 
 const int WIDGET_HEIGHT = 20;

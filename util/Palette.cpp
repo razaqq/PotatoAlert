@@ -1,8 +1,9 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Palette.hpp"
+
 #include <QColor>
 #include <QPalette>
-#include "Palette.hpp"
 
 
 QPalette PotatoAlert::DarkPalette()

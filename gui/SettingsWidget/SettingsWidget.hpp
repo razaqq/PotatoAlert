@@ -1,15 +1,16 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include <QWidget>
+#include "FolderStatus.hpp"
+#include "SettingsChoice.hpp"
+#include "SettingsSwitch.hpp"
+
 #include <QEvent>
 #include <QLabel>
 #include <QLineEdit>
-#include <QToolButton>
 #include <QPushButton>
-#include "SettingsSwitch.hpp"
-#include "SettingsChoice.hpp"
-#include "FolderStatus.hpp"
+#include <QToolButton>
+#include <QWidget>
 
 
 namespace PotatoAlert {

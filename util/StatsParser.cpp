@@ -1,9 +1,12 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "StatsParser.hpp"
+
 #include "CSVWriter.hpp"
 #include "Json.hpp"
+
 #include <QLabel>
+
 #include <array>
 #include <format>
 #include <optional>

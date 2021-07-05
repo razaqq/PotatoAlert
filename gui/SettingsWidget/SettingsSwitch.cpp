@@ -1,26 +1,23 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include <QSize>
-#include <QFont>
-#include <QWidget>
-#include <QAbstractButton>
-#include <QSizePolicy>
-#include <QPainter>
-#include <QPaintEvent>
-#include <QMouseEvent>
-#include <QResizeEvent>
-#include <QPropertyAnimation>
-#include <map>
-#include <functional>
 #include "SettingsSwitch.hpp"
+
+#include <QAbstractButton>
+#include <QFont>
+#include <QMouseEvent>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QPropertyAnimation>
+#include <QResizeEvent>
+#include <QSize>
+#include <QSizePolicy>
+#include <QWidget>
 
 
 using PotatoAlert::SettingsSwitch;
 
-SettingsSwitch::SettingsSwitch(QWidget* parent) : QAbstractButton(parent)
+SettingsSwitch::SettingsSwitch(QWidget* parent) : QAbstractButton(parent), m_trackRadius(10), m_thumbRadius(8)
 {
-	this->m_trackRadius = 10;
-	this->m_thumbRadius = 8;
 	this->m_offset = this->m_trackRadius;
 	this->Init();
 }
@@ -31,8 +28,8 @@ void SettingsSwitch::Init()
 	this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	this->setCursor(Qt::PointingHandCursor);
 
-	std::function<int()> f1 = [this]() { return this->width() - this->m_trackRadius; };
-	std::function<int()> f2 = [this]() { return this->m_trackRadius; };
+	auto f1 = [this]() { return this->width() - this->m_trackRadius; };
+	auto f2 = [this]() { return this->m_trackRadius; };
 	this->m_endOffset = {
 		{ true, f1 },
 		{ false, f2 }
@@ -58,7 +55,7 @@ void SettingsSwitch::Init()
 	this->setFixedSize(this->sizeHint());
 }
 
-void SettingsSwitch::paintEvent(QPaintEvent*)
+void SettingsSwitch::paintEvent([[maybe_unused]] QPaintEvent* event)
 {
 	auto p = new QPainter(this);
 	p->setRenderHint(QPainter::Antialiasing, true); 

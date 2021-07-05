@@ -2,9 +2,12 @@
 #pragma once
 
 #include "MenuEntryButton.hpp"
-#include <QWidget>
-#include <QDockWidget>
+
 #include <QButtonGroup>
+#include <QDockWidget>
+#include <QWidget>
+
+#include <array>
 
 
 namespace PotatoAlert {

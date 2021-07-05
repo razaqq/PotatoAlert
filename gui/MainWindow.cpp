@@ -1,25 +1,27 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "MainWindow.hpp"
-#include <QMainWindow>
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QIcon>
-#include <QUrl>
-#include <QSettings>
-#include <QWindow>
-#include <QDesktopServices>
-#include <QPushButton>
-#include <QDialogButtonBox>
-#include <QApplication>
-#include "Config.hpp"
-#include "Log.hpp"
-#include "PotatoClient.hpp"
-#include "FramelessDialog.hpp"
-#include "StatsWidget/StatsWidget.hpp"
-#include "MenuBar/VerticalMenuBar.hpp"
-#include "StringTable.hpp"
+
 #include "CSVWriter.hpp"
+#include "Config.hpp"
+#include "FramelessDialog.hpp"
+#include "Log.hpp"
+#include "MenuBar/VerticalMenuBar.hpp"
+#include "PotatoClient.hpp"
+#include "StatsWidget/StatsWidget.hpp"
+#include "StringTable.hpp"
+
+#include <QApplication>
+#include <QDesktopServices>
+#include <QDialogButtonBox>
+#include <QIcon>
+#include <QMainWindow>
+#include <QPushButton>
+#include <QSettings>
+#include <QUrl>
+#include <QVBoxLayout>
+#include <QWidget>
+#include <QWindow>
 
 
 using PotatoAlert::MainWindow;
@@ -51,8 +53,6 @@ void MainWindow::Init()
 	{
 		PotatoConfig().Set<bool>("menubar_leftside",area == Qt::DockWidgetArea::LeftDockWidgetArea);
 	});
-
-	this->m_settingsWidget = new SettingsWidget(this);
 
 	// set other tabs invisible
 	this->m_settingsWidget->setVisible(false);

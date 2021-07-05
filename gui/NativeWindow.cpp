@@ -1,14 +1,15 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QMainWindow>
-#include <QWindow>
-
 #include "NativeWindow.hpp"
-#include "TitleBar.hpp"
+
 #include "Config.hpp"
 #include "FramelessWindowsManager.hpp"
+#include "TitleBar.hpp"
+
+#include <QMainWindow>
+#include <QVBoxLayout>
+#include <QWidget>
+#include <QWindow>
 
 
 using PotatoAlert::NativeWindow;

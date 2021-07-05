@@ -1,14 +1,16 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "VerticalMenuBar.hpp"
+
 #include "MenuEntryButton.hpp"
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QSizePolicy>
-#include <QIcon>
-#include <QPixmap>
+
 #include <QButtonGroup>
 #include <QDockWidget>
+#include <QIcon>
+#include <QPixmap>
+#include <QSizePolicy>
+#include <QVBoxLayout>
+#include <QWidget>
 
 
 using PotatoAlert::VerticalMenuBar;
@@ -49,7 +51,7 @@ void VerticalMenuBar::Init()
 
 	for (size_t i = 0; i < this->m_menuEntries.size(); i++)
 	{
-		auto button = this->m_menuEntries[i]->m_button;
+		auto button = this->m_menuEntries[i]->GetButton();
 		this->m_btnGroup->addButton(button);
 		this->m_btnGroup->setId(button, static_cast<int>(i));
 	}
@@ -78,7 +80,7 @@ void VerticalMenuBar::SetChecked(MenuEntry entry)
 {
 	for (auto& menuEntry : this->m_menuEntries)
 	{
-		menuEntry->m_button->setChecked(false);
+		menuEntry->SetChecked(false);
 	}
-	this->m_menuEntries[static_cast<int>(entry)]->m_button->setChecked(true);
+	this->m_menuEntries[static_cast<int>(entry)]->SetChecked(true);
 }

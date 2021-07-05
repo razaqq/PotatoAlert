@@ -1,10 +1,11 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Game.hpp"
+
+#include <QEvent>
 #include <QLabel>
 #include <QWidget>
-#include <QEvent>
-#include "Game.hpp"
 
 
 namespace PotatoAlert {

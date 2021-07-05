@@ -1,15 +1,18 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include <QWidget>
-#include <QIcon>
-#include <QPushButton>
-#include <QLayout>
-#include <QSize>
-#include <QVBoxLayout>
 #include "MenuEntryButton.hpp"
 
+#include <QIcon>
+#include <QLayout>
+#include <QPushButton>
+#include <QSize>
+#include <QVBoxLayout>
+#include <QWidget>
 
-PotatoAlert::MenuEntryButton::MenuEntryButton(QWidget* parent, const QIcon& icon, bool checkable) : QWidget(parent)
+
+using PotatoAlert::MenuEntryButton;
+
+MenuEntryButton::MenuEntryButton(QWidget* parent, const QIcon& icon, bool checkable) : QWidget(parent)
 {
 	this->setObjectName("menuEntry");
 
@@ -29,3 +32,9 @@ PotatoAlert::MenuEntryButton::MenuEntryButton(QWidget* parent, const QIcon& icon
 
 	this->setLayout(layout);
 }
+
+void MenuEntryButton::SetChecked(bool checked) const
+{
+	this->m_button->setChecked(checked);
+}
+

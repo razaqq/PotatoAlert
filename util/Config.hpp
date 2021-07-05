@@ -3,11 +3,13 @@
 
 #include "File.hpp"
 #include "Json.hpp"
-#include <QString>
+
 #include <QObject>
-#include <string>
-#include <optional>
+#include <QString>
+
 #include <filesystem>
+#include <optional>
+#include <string>
 
 
 namespace fs = std::filesystem;

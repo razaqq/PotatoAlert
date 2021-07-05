@@ -2,9 +2,8 @@
 #pragma once
 
 #include <QDialog>
-#include <QWidget>
-#include <QFocusEvent>
 #include <QShowEvent>
+#include <QWidget>
 
 
 namespace PotatoAlert {

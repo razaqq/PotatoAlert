@@ -2,11 +2,12 @@
 #pragma once
 
 #include "PotatoClient.hpp"
-#include <QWidget>
+
 #include <QLabel>
 #include <QMovie>
 #include <QPixmap>
-#include <QHBoxLayout>
+#include <QWidget>
+
 #include <string>
 
 
@@ -33,4 +34,4 @@ private:
 	QPixmap m_error = QPixmap(":/error.png");
 };
 
-} // namespace PotatoAlert
+}  // namespace PotatoAlert

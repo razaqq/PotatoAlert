@@ -1,9 +1,10 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Version.hpp"
+
 #include <algorithm>
-#include <string>
 #include <sstream>
+#include <string>
 
 
 using PotatoAlert::Version;

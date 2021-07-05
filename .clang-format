@@ -2,7 +2,7 @@
 BasedOnStyle: LLVM
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
-AlignConsecutiveAssignments: None
+AlignConsecutiveAssignments: false
 AlignOperands: Align
 AlignTrailingComments: false
 AllowAllArgumentsOnNextLine: false
@@ -48,10 +48,13 @@ FixNamespaceComments: true
 IncludeBlocks: Regroup
 IncludeCategories:
   # Headers in <> without extension.
-  - Regex:           '<([A-Za-z0-9\/-_])+>'
+  - Regex:           '<[^Q]([A-Za-z0-9\/-_])+>'
+    Priority:        5
+  # Qt Headers in <> without extension.
+  - Regex:           '<Q([A-Za-z0-9\/-_])+>'
     Priority:        4
   # Headers in <> from specific external libraries.
-  - Regex:           '<(nlohmann_json|tinyxml2|zip|win32)\/([A-Za-z0-9.\/-_])+>'
+  - Regex:           '<(nlohmann_json|tinyxml2|zip|win32|spdlog)\/([A-Za-z0-9.\/-_])+>'
     Priority:        3
   # Headers in <> with extension.
   - Regex:           '<([A-Za-z0-9.\/-_])+>'

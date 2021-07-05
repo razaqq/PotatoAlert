@@ -1,7 +1,9 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Zip.hpp"
+
 #include "zip.h"
+
 #include <optional>
 #include <string>
 #include <vector>
@@ -90,11 +92,6 @@ bool Zip::WriteEntry(std::string_view entryName, const std::string& data) const
 		return success == 0;
 	}
 	return false;
-}
-
-void Test()
-{
-	zip_entry_crc32()
 }
 
 bool Zip::Create(std::string_view file, const std::vector<std::string_view>& fileNames)
