@@ -22,18 +22,14 @@ static constexpr std::string_view timeFormat = "%Y-%m-%d_%H-%M-%S";
 
 QString GetDir()
 {
-	return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert/Screenshots");
+	auto path = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert/Screenshots");
+	QDir(path).mkdir(".");
+	return path;
 }
 
 static QString GetFilePath()
 {
-	const auto dir = GetDir();
-
-	QDir d;
-	d.mkpath(dir);
-	d.setPath(dir);
-
-	return d.filePath(QString::fromStdString(std::format("capture_{}.png", PotatoAlert::Time::GetTimeStamp(timeFormat))));
+	return QDir(GetDir()).filePath(QString::fromStdString(std::format("capture_{}.png", PotatoAlert::Time::GetTimeStamp(timeFormat))));
 }
 
 bool ss::Capture(QWidget* window)

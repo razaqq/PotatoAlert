@@ -220,8 +220,7 @@ void Config::AddMissingKeys()
 
 std::optional<fs::path> Config::GetPath(std::string_view fileName)
 {
-	const std::string root = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).toStdString();
-	const fs::path configPath = fs::path(root) / "PotatoAlert";
+	const fs::path configPath = fs::path(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert").toStdString());
 
 	std::error_code ec;
 

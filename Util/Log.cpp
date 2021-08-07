@@ -19,15 +19,14 @@ std::shared_ptr<spdlog::logger> Log::s_logger;
 
 QString Log::GetDir()
 {
-	return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert");
+	QString path = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert");
+	QDir(path).mkdir(".");
+	return path;
 }
 
 void Log::Init()
 {
-	auto dir = GetDir();
-	QDir d;
-	d.mkpath(dir);
-	d.setPath(dir);
+	const std::string filePath = QDir(GetDir()).filePath("PotatoAlert.log").toStdString();
 	spdlog::set_error_handler([](const std::string& msg) { spdlog::get("console")->error("*** LOGGER ERROR ***: {}", msg); });
 
 #ifndef NDEBUG
@@ -36,7 +35,7 @@ void Log::Init()
 	stdoutSink->set_level(spdlog::level::trace);
 #endif
 
-	auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(d.filePath("PotatoAlert.log").toStdString());
+	auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filePath);
 	fileSink->set_pattern("[%d-%m-%Y %T] [%=7l] %n (%-30!@): %v");
 	fileSink->set_level(spdlog::level::info);
 

@@ -21,18 +21,14 @@ static constexpr std::string_view timeFormat = "%Y-%m-%d_%H-%M-%S";
 
 QString csv::GetDir()
 {
-	return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert/Matches");
+	QString path = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert/Matches");
+	QDir(path).mkdir(".");
+	return path;
 }
 
 static std::string GetFilePath()
 {
-	auto dir = csv::GetDir();
-
-	QDir d;
-	d.mkpath(dir);
-	d.setPath(dir);
-
-	return d.filePath(QString::fromStdString(std::format("match_{}.csv", PotatoAlert::Time::GetTimeStamp(timeFormat)))).toStdString();
+	return QDir(csv::GetDir()).filePath(QString::fromStdString(std::format("match_{}.csv", PotatoAlert::Time::GetTimeStamp(timeFormat)))).toStdString();
 }
 
 void csv::SaveMatch(const std::string& csv)
