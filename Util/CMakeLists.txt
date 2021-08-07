@@ -16,6 +16,8 @@ set(
         PotatoClient.cpp
         PotatoClient.hpp
         Process.hpp
+        Screenshot.cpp
+        Screenshot.hpp
         StatsParser.cpp
         StatsParser.hpp
         StringTable.cpp

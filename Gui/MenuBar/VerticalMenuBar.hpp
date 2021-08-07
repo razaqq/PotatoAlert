@@ -17,6 +17,7 @@ enum class MenuEntry
 	Table,
 	Settings,
 	Discord,
+	Screenshot,
 	CSV,
 	Log,
 	Github,
@@ -30,7 +31,7 @@ public:
 	explicit VerticalMenuBar(QWidget* parent = nullptr);
 	void SetChecked(MenuEntry entry);
 private:
-	std::array<MenuEntryButton*, 7> m_menuEntries;
+	std::array<MenuEntryButton*, 8> m_menuEntries;
 	QButtonGroup* m_btnGroup = new QButtonGroup();
 	void Init();
 signals:

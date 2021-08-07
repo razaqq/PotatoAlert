@@ -18,5 +18,6 @@
         <file alias="discord.svg">menuicons/discord.svg</file>
         <file alias="restore.svg">menuicons/restore.svg</file>
         <file alias="folder.svg">menuicons/folder.svg</file>
+		<file alias="screenshot.svg">menuicons/screenshot.svg</file>
     </qresource>
 </RCC>

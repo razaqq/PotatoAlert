@@ -8,6 +8,7 @@
 #include "Log.hpp"
 #include "MenuBar/VerticalMenuBar.hpp"
 #include "PotatoClient.hpp"
+#include "Screenshot.hpp"
 #include "StatsWidget/StatsWidget.hpp"
 #include "StringTable.hpp"
 
@@ -82,6 +83,9 @@ void MainWindow::SwitchTab(MenuEntry i)
 		break;
 	case MenuEntry::Discord:
 		QDesktopServices::openUrl(QUrl("https://discord.gg/Ut8t8PA"));
+		return;
+	case MenuEntry::Screenshot:
+		Screenshot::Capture(this->window());
 		return;
 	case MenuEntry::CSV:
 		QDesktopServices::openUrl(QUrl(CSV::GetDir()));
