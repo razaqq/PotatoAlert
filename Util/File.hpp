@@ -9,8 +9,6 @@
 #include <utility>
 
 
-namespace fs = std::filesystem;
-
 namespace PotatoAlert {
 
 class File
