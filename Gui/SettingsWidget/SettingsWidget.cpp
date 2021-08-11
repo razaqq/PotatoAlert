@@ -222,7 +222,7 @@ void SettingsWidget::ConnectSignals()
 	{
 		PotatoConfig().Save();
 		this->CheckPath();
-		emit this->done();
+		emit this->Done();
 	});
 	connect(this->m_cancelButton, &QPushButton::clicked, [this]()
 	{
@@ -231,7 +231,7 @@ void SettingsWidget::ConnectSignals()
 		this->CheckPath();
 		QEvent event(QEvent::LanguageChange);
 		QApplication::sendEvent(this->window(), &event);
-		emit this->done();
+		emit this->Done();
 	});
 	connect(this->m_updates, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<bool>("update_notifications", checked); });
 	// connect(this->googleAnalytics, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set("use_ga", checked); });

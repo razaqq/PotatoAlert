@@ -32,7 +32,7 @@ static const char* g_wsAddress = "ws://www.perry-swift.de:33333";
 
 void PotatoClient::Init()
 {
-	emit this->status(Status::Ready, "Ready");
+	emit this->StatusReady(Status::Ready, "Ready");
 
 	// handle connection
 	connect(this->m_socket, &QWebSocket::connected, [this]
@@ -47,26 +47,26 @@ void PotatoClient::Init()
 		switch (error)
 		{
 			case QAbstractSocket::ConnectionRefusedError:
-				emit this->status(Status::Error, "Connection Refused");
+				emit this->StatusReady(Status::Error, "Connection Refused");
 				break;
 			case QAbstractSocket::SocketTimeoutError:
-				emit this->status(Status::Error, "Socket Timeout");
+				emit this->StatusReady(Status::Error, "Socket Timeout");
 				break;
 			case QAbstractSocket::HostNotFoundError:
-				emit this->status(Status::Error, "Host Not Found");
+				emit this->StatusReady(Status::Error, "Host Not Found");
 				break;
 			case QAbstractSocket::NetworkError:
 				// TODO: this is a shit way of doing this, maybe create a Qt bug report?
 				if (this->m_socket->errorString().contains("timed", Qt::CaseInsensitive))
-					emit this->status(Status::Error, "Connection Timeout");
+					emit this->StatusReady(Status::Error, "Connection Timeout");
 				else
-					emit this->status(Status::Error, "Network Error");
+					emit this->StatusReady(Status::Error, "Network Error");
 				break;
 			case QAbstractSocket::RemoteHostClosedError:
-				emit this->status(Status::Error, "Host Closed Conn.");
+				emit this->StatusReady(Status::Error, "Host Closed Conn.");
 				return;
 			default:
-				emit this->status(Status::Error, "Websocket Error");
+				emit this->StatusReady(Status::Error, "Websocket Error");
 				break;
 		}
 		LOG_ERROR(this->m_socket->errorString().toStdString());
@@ -119,7 +119,7 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 		if (!arenaInfo.has_value())
 		{
 			LOG_ERROR("Failed to read arena info from file.");
-			emit this->status(Status::Error, "Reading ArenaInfo");
+			emit this->StatusReady(Status::Error, "Reading ArenaInfo");
 			return;
 		}
 
@@ -128,7 +128,7 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 		if (!json::sax_parse(arenaInfo.value(), &sax))
 		{
 			LOG_ERROR("Failed to Parse arena info file as JSON.");
-			emit this->status(Status::Error, "JSON Parse Error");
+			emit this->StatusReady(Status::Error, "JSON Parse Error");
 			return;
 		}
 
@@ -163,7 +163,7 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 		else
 			return;
 
-		emit this->status(Status::Loading, "Loading");
+		emit this->StatusReady(Status::Loading, "Loading");
 		LOG_TRACE("Opening websocket...");
 
 		this->m_socket->open(QUrl(QString(g_wsAddress)));  // starts the request cycle
@@ -180,7 +180,7 @@ void PotatoClient::OnResponse(const QString& message)
 
 	if (message.isNull() || message == "null")
 	{
-		emit this->status(Status::Error, "NULL Response");
+		emit this->StatusReady(Status::Error, "NULL Response");
 		return;
 	}
 
@@ -189,7 +189,7 @@ void PotatoClient::OnResponse(const QString& message)
 	if (!json::sax_parse(message.toStdString(), &sax))
 	{
 		LOG_ERROR("ParseError while parsing server response JSON.");
-		emit this->status(Status::Error, "JSON Parse Error");
+		emit this->StatusReady(Status::Error, "JSON Parse Error");
 		return;
 	}
 
@@ -198,9 +198,9 @@ void PotatoClient::OnResponse(const QString& message)
 	ParseMatch(message.toUtf8().toStdString(), match, PotatoConfig().Get<bool>("save_csv"));
 
 	LOG_TRACE("Updating tables.");
-	emit this->matchReady(match);
+	emit this->MatchReady(match);
 
-	emit this->status(Status::Ready, "Ready");
+	emit this->StatusReady(Status::Ready, "Ready");
 }
 
 // checks the game path for a valid replays folder and triggers a new match run

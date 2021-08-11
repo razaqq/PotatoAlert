@@ -108,10 +108,10 @@ void MainWindow::ConnectSignals()
 {
 	connect(this->m_menuBar, &VerticalMenuBar::EntryClicked, this, &MainWindow::SwitchTab);
 
-	connect(&PotatoClient::Instance(), &PotatoClient::status, this->m_statsWidget, &StatsWidget::SetStatus);
-	connect(&PotatoClient::Instance(), &PotatoClient::matchReady, this->m_statsWidget, &StatsWidget::Update);
+	connect(&PotatoClient::Instance(), &PotatoClient::StatusReady, this->m_statsWidget, &StatsWidget::SetStatus);
+	connect(&PotatoClient::Instance(), &PotatoClient::MatchReady, this->m_statsWidget, &StatsWidget::Update);
 
-	connect(this->m_settingsWidget, &SettingsWidget::done, [this]()
+	connect(this->m_settingsWidget, &SettingsWidget::Done, [this]()
 	{
 		this->SwitchTab(MenuEntry::Table);
 		this->m_menuBar->SetChecked(MenuEntry::Table);

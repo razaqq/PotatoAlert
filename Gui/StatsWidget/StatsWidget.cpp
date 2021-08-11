@@ -98,7 +98,7 @@ void StatsWidget::Update(const Match& match)
 	});
 }
 
-void StatsWidget::SetStatus(Status status, const std::string& statusText)
+void StatsWidget::SetStatus(Status status, const std::string& statusText) const
 {
 	this->m_header->SetStatus(status, statusText);
 }

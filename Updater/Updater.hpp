@@ -63,7 +63,7 @@ private:
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
-	void downloadProgress(int percent, const QString& progress, const QString& speed);
+	void DownloadProgress(int percent, const QString& progress, const QString& speed);
 #pragma clang diagnostic pop
 };
 

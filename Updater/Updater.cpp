@@ -232,7 +232,7 @@ QNetworkReply* Updater::Download()
 
 		const QString progress = std::format("{:.1f}/{:.1f} MB", bytesReceived/1e6f, bytesTotal/1e6f).c_str();
 		const QString speedStr = QString::fromStdString(g_downloadProgress.ToString());
-		emit this->downloadProgress(static_cast<int>(bytesReceived * 100 / bytesTotal), progress, speedStr);
+		emit this->DownloadProgress(static_cast<int>(bytesReceived * 100 / bytesTotal), progress, speedStr);
 	});
 
 	connect(reply, &QNetworkReply::sslErrors, [reply](const QList<QSslError>&)

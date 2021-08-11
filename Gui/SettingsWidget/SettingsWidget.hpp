@@ -58,7 +58,7 @@ private:
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
-	void done();
+	void Done();
 #pragma clang diagnostic pop
 };
 

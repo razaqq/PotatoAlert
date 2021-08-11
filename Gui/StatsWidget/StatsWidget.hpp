@@ -18,7 +18,7 @@ public:
 	explicit StatsWidget(QWidget* parent = nullptr);
 
 	void Update(const Match& match);
-	void SetStatus(Status status, const std::string& statusText);
+	void SetStatus(Status status, const std::string& statusText) const;
 private:
 	void Init();
 	StatsTable* m_leftTable = new StatsTable(this);
