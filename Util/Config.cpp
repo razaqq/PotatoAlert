@@ -29,7 +29,7 @@ Config::Config(std::string_view fileName)
 		{ "stats_mode", StatsMode::Pvp },
 		{ "update_notifications", true },
 		{ "api_key", "1234567890" },
-		{ "save_csv", false },
+		{ "match_history", true },
 		{ "window_height", 450 },
 		{ "window_width", 1500 },
 		{ "window_x", 0 },
@@ -70,6 +70,11 @@ Config::~Config()
 void Config::Load()
 {
 	LOG_TRACE("Trying to Load config...");
+
+	if (this->m_file)
+	{
+		this->m_file.Close();
+	}
 
 	this->m_file = File::Open(this->m_filePath.string(), File::Flags::Open | File::Flags::Read | File::Flags::Write);
 	if (!this->m_file)
@@ -146,6 +151,11 @@ bool Config::Exists() const
 bool Config::CreateDefault()
 {
 	LOG_INFO("Creating new default config.");
+
+	if (this->m_file)
+	{
+		this->m_file.Close();
+	}
 
 	this->m_file = File::Open(this->m_filePath.string(), File::Flags::Create | File::Flags::Read | File::Flags::Write);
 	if (!this->m_file)

@@ -30,9 +30,9 @@
         <English>Update Notifications</English>
         <Deutsch>Update Benachrichtigungen</Deutsch>
     </Key>
-    <Key ID="SETTINGS_SAVE_CSV">
-        <English>Save Match As CSV</English>
-        <Deutsch>Gefechte Als CSV Speichern</Deutsch>
+    <Key ID="SETTINGS_SAVE_MATCHHISTORY">
+        <English>Save Match History</English>
+        <Deutsch>Gefechtsverlauf Speichern</Deutsch>
     </Key>
     <Key ID="SETTINGS_GAME_DIRECTORY">
         <English>Game Directory</English>
@@ -148,5 +148,23 @@
     <Key ID="UPDATE_DOWNLOADING">
         <English>Downloading update, please wait...</English>
         <Deutsch>Update wird heruntergeladen, bitte warten...</Deutsch>
+    </Key>
+
+    <!-- MATCH HISTORY-->
+    <Key ID="HISTORY_DATE">
+	    <English>Date</English>
+	    <Deutsch>Datum</Deutsch>
+    </Key>
+    <Key ID="HISTORY_MODE">
+	    <English>Mode</English>
+	    <Deutsch>Modus</Deutsch>
+    </Key>
+    <Key ID="HISTORY_MAP">
+	    <English>Map</English>
+	    <Deutsch>Karte</Deutsch>
+    </Key>
+    <Key ID="HISTORY_REGION">
+	    <English>Region</English>
+	    <Deutsch>Region</Deutsch>
     </Key>
 </Package>

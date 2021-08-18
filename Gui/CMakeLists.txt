@@ -6,11 +6,13 @@ set(
         FramelessDialog.hpp
         MainWindow.cpp
         MainWindow.hpp
+        MatchHistory.cpp
+        MatchHistory.hpp
         NativeWindow.cpp
         NativeWindow.hpp
         TitleBar.cpp
         TitleBar.hpp
-
+        
         MenuBar/MenuEntryButton.cpp
         MenuBar/MenuEntryButton.hpp
         MenuBar/VerticalMenuBar.cpp

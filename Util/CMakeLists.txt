@@ -3,8 +3,6 @@ set(
 
         Config.cpp
         Config.hpp
-        CSVWriter.cpp
-        CSVWriter.hpp
         File.hpp
         Flags.hpp
         Game.cpp

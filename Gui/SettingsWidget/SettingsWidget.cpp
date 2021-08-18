@@ -120,11 +120,11 @@ void SettingsWidget::Init()
 
 	/* CSV OUTPUT */
 	auto csvLayout = new QHBoxLayout();
-	this->m_csvLabel->setFixedWidth(LABEL_WIDTH);
-	this->m_csvLabel->setFont(labelFont);
-	this->m_csvLabel->setFixedWidth(LABEL_WIDTH);
-	csvLayout->addWidget(this->m_csvLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
-	csvLayout->addWidget(this->m_csv, 0, Qt::AlignVCenter | Qt::AlignRight);
+	this->m_matchHistoryLabel->setFixedWidth(LABEL_WIDTH);
+	this->m_matchHistoryLabel->setFont(labelFont);
+	this->m_matchHistoryLabel->setFixedWidth(LABEL_WIDTH);
+	csvLayout->addWidget(this->m_matchHistoryLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+	csvLayout->addWidget(this->m_matchHistory, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(csvLayout);
 	/* CSV OUTPUT */
 
@@ -207,7 +207,7 @@ void SettingsWidget::Load()
 			PotatoConfig().Get<std::string>("game_folder")));
 	this->m_statsMode->m_btnGroup->button(PotatoConfig().Get<int>("stats_mode"))->setChecked(true);
 	this->m_language->m_btnGroup->button(PotatoConfig().Get<int>("language"))->setChecked(true);
-	this->m_csv->setChecked(PotatoConfig().Get<bool>("save_csv"));
+	this->m_matchHistory->setChecked(PotatoConfig().Get<bool>("match_history"));
 
 	this->m_replaysFolderEdit->setText(QString::fromStdString(
 			PotatoConfig().Get<std::string>("replays_folder")));
@@ -236,7 +236,7 @@ void SettingsWidget::ConnectSignals()
 	connect(this->m_updates, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<bool>("update_notifications", checked); });
 	// connect(this->googleAnalytics, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().set("use_ga", checked); });
 	connect(this->m_statsMode->m_btnGroup, &QButtonGroup::idClicked, [](int id) { PotatoConfig().Set<int>("stats_mode", id); });
-	connect(this->m_csv, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<bool>("save_csv", checked); });
+	connect(this->m_matchHistory, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<bool>("match_history", checked); });
 	connect(this->m_language->m_btnGroup, &QButtonGroup::idClicked, [this](int id)
 	{
 		PotatoConfig().Set<int>("language", id);
@@ -279,7 +279,7 @@ void SettingsWidget::changeEvent(QEvent* event)
 	if (event->type() == QEvent::LanguageChange)
 	{
 		this->m_updateLabel->setText(GetString(StringTable::Keys::SETTINGS_UPDATES));
-		this->m_csvLabel->setText(GetString(StringTable::Keys::SETTINGS_SAVE_CSV));
+		this->m_matchHistoryLabel->setText(GetString(StringTable::Keys::SETTINGS_SAVE_MATCHHISTORY));
 		this->m_gamePathLabel->setText(GetString(StringTable::Keys::SETTINGS_GAME_DIRECTORY));
 		this->m_replaysFolderLabel->setText(GetString(StringTable::Keys::SETTINGS_MANUAL_REPLAYS));
 		this->m_replaysFolderDesc->setText(GetString(StringTable::Keys::SETTINGS_MANUAL_REPLAYS_DESC));

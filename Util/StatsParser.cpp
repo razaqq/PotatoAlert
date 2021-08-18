@@ -2,7 +2,6 @@
 
 #include "StatsParser.hpp"
 
-#include "CSVWriter.hpp"
 #include "Json.hpp"
 
 #include <QLabel>
@@ -262,6 +261,9 @@ struct Match
 	std::string_view statsMode;
 	std::string_view region;
 	std::string_view player;
+	std::string_view ship;
+	std::string_view map;
+	std::string_view dateTime;
 };
 
 [[maybe_unused]] static void from_json(const json& j, Match& m)
@@ -272,6 +274,9 @@ struct Match
 	j.at("statsMode").get_to(m.statsMode);
 	j.at("region").get_to(m.region);
 	j.at("player").get_to(m.player);
+	j.at("ship").get_to(m.ship);
+	j.at("map").get_to(m.map);
+	j.at("dateTime").get_to(m.dateTime);
 }
 
 static std::string GetCSV(const Match& match)
@@ -322,13 +327,15 @@ void pn::Label::UpdateLabel(QLabel* label) const
 	}
 }
 
-bool pn::ParseMatch(const std::string& raw, Match& outMatch, bool saveCSV) noexcept
+StatsParseResult pn::ParseMatch(const std::string& raw, bool parseCsv) noexcept
 {
-	json j = json::parse(raw);
-	auto match = j.get<_JSON::Match>();
+	StatsParseResult result;
+	
+	const json j = json::parse(raw);
+	const auto match = j.get<_JSON::Match>();
 
-	if (saveCSV)
-		CSV::SaveMatch(_JSON::GetCSV(match));
+	if (parseCsv)
+		result.csv = _JSON::GetCSV(match);
 
 	// parse match stats
 	auto getTeam = [](const _JSON::Team& inTeam, Team& outTeam)
@@ -344,8 +351,8 @@ bool pn::ParseMatch(const std::string& raw, Match& outMatch, bool saveCSV) noexc
 		outTeam.winrate = inTeam.avgWr.GetLabel("%");
 		outTeam.table = teamTable;
 	};
-	getTeam(match.team1, outMatch.team1);
-	getTeam(match.team2, outMatch.team2);
+	getTeam(match.team1, result.match.team1);
+	getTeam(match.team2, result.match.team2);
 
 	// parse clan tag+name
 	if (match.matchGroup == "clan")
@@ -362,9 +369,19 @@ bool pn::ParseMatch(const std::string& raw, Match& outMatch, bool saveCSV) noexc
 				outTeam.clan.region = player.clan->GetRegionLabel();
 			}
 		};
-		findClan(match.team1, outMatch.team1);
-		findClan(match.team2, outMatch.team2);
+		findClan(match.team1, result.match.team1);
+		findClan(match.team2, result.match.team2);
 	}
 
-	return true;
+	// parse match info
+	result.match.info.matchGroup = match.matchGroup;
+	result.match.info.statsMode = match.statsMode;
+	result.match.info.map = match.map;
+	result.match.info.ship = match.ship;
+	result.match.info.dateTime = match.dateTime;
+	result.match.info.region = match.region;
+	result.match.info.player = match.player;
+
+	result.success = true;
+	return result;
 }

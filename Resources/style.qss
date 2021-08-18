@@ -186,7 +186,7 @@ QMainWindow::separator
   border: transparent;
 }
 
-#btnMinimize,#btnMaximize,#btnRestore,#btnClose
+#btnMinimize, #btnMaximize, #btnRestore, #btnClose
 {
   background-color: transparent;
   border: transparent;
@@ -242,7 +242,7 @@ QMainWindow::separator
   background-color: palette(base);
 }
 
-#settingsWidget, #aboutWidget
+#settingsWidget, #aboutWidget, #matchHistoryWidget
 {
   background-color: #444444;
 }

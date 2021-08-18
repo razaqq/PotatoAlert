@@ -2,6 +2,7 @@
 #pragma once
 
 #include "AboutWidget.hpp"
+#include "MatchHistory.hpp"
 #include "MenuBar/VerticalMenuBar.hpp"
 #include "SettingsWidget/SettingsWidget.hpp"
 #include "StatsWidget/StatsWidget.hpp"
@@ -18,6 +19,7 @@ class MainWindow : public QMainWindow
 public:
 	MainWindow();
 	bool ConfirmUpdate();
+
 private:
 	void Init();
 
@@ -31,6 +33,7 @@ private:
 	VerticalMenuBar* m_menuBar = new VerticalMenuBar(this);
 	StatsWidget* m_statsWidget = new StatsWidget(this);
 	SettingsWidget* m_settingsWidget = new SettingsWidget(this);
+	MatchHistory* m_matchHistory = new MatchHistory(this);
 	AboutWidget* m_aboutWidget = new AboutWidget(this);
 
 	QWidget* m_activeWidget = this->m_statsWidget;

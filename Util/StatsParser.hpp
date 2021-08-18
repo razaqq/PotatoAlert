@@ -1,5 +1,4 @@
 // Copyright 2021 <github.com/razaqq>
-
 #pragma once
 
 #include "Json.hpp"
@@ -52,8 +51,26 @@ struct Match
 {
 	Team team1;
 	Team team2;
+
+	struct Info
+	{
+		std::string map;
+		std::string ship;
+		std::string dateTime;
+		std::string matchGroup;
+		std::string statsMode;
+		std::string region;
+		std::string player;
+	} info;
 };
 
-bool ParseMatch(const std::string& raw, Match& outMatch, bool saveCSV) noexcept;
+struct StatsParseResult
+{
+	bool success = false;
+	Match match;
+	std::optional<std::string> csv;
+};
+
+StatsParseResult ParseMatch(const std::string& raw, bool parseCsv) noexcept;
 
 }  // namespace PotatoAlert::StatsParser

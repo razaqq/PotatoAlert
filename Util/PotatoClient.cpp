@@ -6,6 +6,7 @@
 #include "Game.hpp"
 #include "Json.hpp"
 #include "Log.hpp"
+#include "Serializer.hpp"
 #include "StatsParser.hpp"
 
 #include <QFileSystemWatcher>
@@ -28,7 +29,7 @@ using PotatoAlert::PotatoClient;
 namespace fs = std::filesystem;
 
 static const char* g_wsAddress = "ws://www.perry-swift.de:33333";
-// const char* g_wsAddress = "ws://192.168.178.36:10000";
+// static const char* g_wsAddress = "ws://192.168.178.36:10000";
 
 void PotatoClient::Init()
 {
@@ -194,11 +195,17 @@ void PotatoClient::OnResponse(const QString& message)
 	}
 
 	LOG_TRACE("Parsing match.");
-	StatsParser::Match match;
-	ParseMatch(message.toUtf8().toStdString(), match, PotatoConfig().Get<bool>("save_csv"));
+	std::string rawJson = message.toUtf8().toStdString();
+	auto res = StatsParser::ParseMatch(rawJson, true);
+
+	if (PotatoConfig().Get<bool>("match_history"))
+	{
+		Serializer::Instance().SaveMatch(res.match.info, rawJson, res.csv.value());
+		emit this->MatchHistoryChanged();
+	}
 
 	LOG_TRACE("Updating tables.");
-	emit this->MatchReady(match);
+	emit this->MatchReady(res.match);
 
 	emit this->StatusReady(Status::Ready, "Ready");
 }

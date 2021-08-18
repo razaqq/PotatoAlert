@@ -40,6 +40,7 @@ void VerticalMenuBar::Init()
 
 	auto table = new MenuEntryButton(this, QIcon(QPixmap(":/table.svg")));
 	auto settings = new MenuEntryButton(this, QIcon(QPixmap(":/settings.svg")));
+	auto matchHistory = new MenuEntryButton(this, QIcon(QPixmap(":/match_history.svg")));
 
 	auto discord = new MenuEntryButton(this, QIcon(QPixmap(":/discord.svg")), false);
 	auto screenshot = new MenuEntryButton(this, QIcon(QPixmap(":/screenshot.svg")), false);
@@ -48,7 +49,7 @@ void VerticalMenuBar::Init()
 	auto github = new MenuEntryButton(this, QIcon(QPixmap(":/github.svg")), false);
 	auto about = new MenuEntryButton(this, QIcon(QPixmap(":/about.svg")));
 
-	this->m_menuEntries = { table, settings, discord, screenshot, csvMatches, log, github, about };
+	this->m_menuEntries = { table, settings, discord, matchHistory, screenshot, csvMatches, log, github, about };
 
 	for (size_t i = 0; i < this->m_menuEntries.size(); i++)
 	{
@@ -62,6 +63,7 @@ void VerticalMenuBar::Init()
 
 	layout->addWidget(table, 0, Qt::AlignTop | Qt::AlignHCenter);
 	layout->addWidget(settings, 0, Qt::AlignTop | Qt::AlignHCenter);
+	layout->addWidget(matchHistory, 0, Qt::AlignTop | Qt::AlignHCenter);
 	layout->addStretch();
 	layout->addWidget(discord, 0, Qt::AlignBottom | Qt::AlignHCenter);
 	layout->addWidget(screenshot, 0, Qt::AlignBottom | Qt::AlignHCenter);
