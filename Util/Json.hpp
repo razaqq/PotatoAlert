@@ -24,27 +24,9 @@ class sax_no_exception : public nlohmann::detail::json_sax_dom_parser<json>
 public:
 	explicit sax_no_exception(json& j) : nlohmann::detail::json_sax_dom_parser<json>(j, false) {}
 
-	static bool parse_error(std::size_t position, const std::string& lastToken, const json::exception& ex)
+	static bool parse_error(size_t position, const std::string& lastToken, const json::exception& ex)
 	{
 		LOG_ERROR("JSON Parse Error at input byte {}. {}. Last read: \"{}\"", position, ex.what(), lastToken);
 		return false;
 	}
 };
-
-/*
-// add support for std::optional<T>
-namespace nlohmann {
-
-template <typename T>
-struct [[maybe_unused]] adl_serializer<std::optional<T>> {
-	[[maybe_unused]] static void from_json(const json& j, std::optional<T>& opt)
-	{
-		if (j.is_null())
-			opt = std::nullopt;
-		else
-			opt = j.get<T>();
-	}
-};
-
-}  // namespace nlohmann
-*/
