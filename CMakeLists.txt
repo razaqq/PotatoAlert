@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(PotatoAlert)
 
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)  # new option() policy
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -15,7 +16,7 @@ include(generate_product_version)
 generate_product_version(
         VersionFilesOutputVariable
         NAME ${PROJECT_NAME}
-        FILE_DESCRIPTION "Stats Tool For World of Warships"
+        FILE_DESCRIPTION "PotatoAlert"
         COMPANY_NAME github.com/razaqq
         ICON ${PROJECT_SOURCE_DIR}/Resources/potato.ico
         VERSION_MAJOR 3
