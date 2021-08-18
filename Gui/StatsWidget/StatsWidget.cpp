@@ -26,6 +26,7 @@ StatsWidget::StatsWidget(QWidget* parent) : QWidget(parent)
 
 void StatsWidget::Init()
 {
+	this->setMinimumWidth(1000);
 	auto vLayout = new QVBoxLayout();
 	vLayout->setContentsMargins(0, 0, 0, 10);
 	vLayout->setSpacing(0);
@@ -42,6 +43,28 @@ void StatsWidget::Init()
 	vLayout->addWidget(this->m_footer);
 
 	this->setLayout(vLayout);
+
+
+	// add hooks to open wows-numbers link when double clicking cell
+	auto openWowsNumbers = [](int row, const StatsParser::Team& team)
+	{
+		auto wowsNumbers = team.wowsNumbers;
+
+		if (static_cast<size_t>(row) < team.wowsNumbers.size())
+		{
+			const QUrl url(team.wowsNumbers[row]);
+			if (url.isValid())
+				QDesktopServices::openUrl(url);
+		}
+	};
+	connect(this->m_leftTable, &StatsTable::cellDoubleClicked, [&](int row, [[maybe_unused]] int column)
+	{
+		openWowsNumbers(row, this->m_lastMatch.team1);
+	});
+	connect(this->m_rightTable, &StatsTable::cellDoubleClicked, [&](int row, [[maybe_unused]] int column)
+	{
+		openWowsNumbers(row, this->m_lastMatch.team2);
+	});
 }
 
 void StatsWidget::Update(const Match& match)
@@ -75,27 +98,6 @@ void StatsWidget::Update(const Match& match)
 
 	// update the footer
 	this->m_footer->Update(match);
-
-	// add hooks to open wows-numbers link when double clicking cell
-	auto openWowsNumbers = [](int row, const StatsParser::Team& team)
-	{
-		auto wowsNumbers = team.wowsNumbers;
-
-		if (static_cast<size_t>(row) < team.wowsNumbers.size())
-		{
-			QUrl url(team.wowsNumbers[row]);
-			if (url.isValid())
-				QDesktopServices::openUrl(url);
-		}
-	};
-	connect(this->m_leftTable, &StatsTable::cellDoubleClicked, [&](int row, [[maybe_unused]] int column)
-	{
-		openWowsNumbers(row, this->m_lastMatch.team1);
-	});
-	connect(this->m_rightTable, &StatsTable::cellDoubleClicked, [&](int row, [[maybe_unused]] int column)
-	{
-		openWowsNumbers(row, this->m_lastMatch.team2);
-	});
 }
 
 void StatsWidget::SetStatus(Status status, const std::string& statusText) const

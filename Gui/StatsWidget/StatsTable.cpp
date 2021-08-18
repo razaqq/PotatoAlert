@@ -37,7 +37,7 @@ void StatsTable::InitHeaders()
 {
 	for (int i = 0; i < this->columnCount(); i++)
 	{
-		auto item = new QTableWidgetItem;
+		auto item = new QTableWidgetItem();
 		item->setFont(QFont("Segoe UI", 11));
 		this->setHorizontalHeaderItem(i, item);
 	}
