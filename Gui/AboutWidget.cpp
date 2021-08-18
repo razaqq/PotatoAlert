@@ -61,7 +61,7 @@ void AboutWidget::Init()
 
 	auto poweredLabel = new QLabel("Powered by:");
 	poweredLabel->setFont(labelFont);
-	auto poweredText = new QLabel("Qt5, nlohmann/json, tinyxml2, fmt");
+	auto poweredText = new QLabel("Qt5, nlohmann/json, tinyxml2, spdlog, zip, sqlite3");
 	poweredText->setFont(labelFont);
 	poweredLabel->setBuddy(poweredText);
 	gridLayout->addWidget(poweredLabel, 3, 0);
