@@ -18,6 +18,8 @@ set(
         Process.hpp
         Screenshot.cpp
         Screenshot.hpp
+        Serializer.cpp
+        Serializer.hpp
         StatsParser.cpp
         StatsParser.hpp
         StringTable.cpp
