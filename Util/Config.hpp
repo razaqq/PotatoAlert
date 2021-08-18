@@ -58,11 +58,6 @@ private:
 	bool CreateDefault();
 	bool CreateBackup();
 	[[nodiscard]] bool Exists() const;
-signals:
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "NotImplementedFunctions"
-	void modified();
-#pragma clang diagnostic pop
 };
 
 Config& PotatoConfig();

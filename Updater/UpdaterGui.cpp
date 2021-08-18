@@ -37,7 +37,7 @@ UpdaterGui::UpdaterGui() : FramelessDialog(nullptr)
 	vLayout->addLayout(progressLayout);
 	this->setLayout(vLayout);
 
-	connect(&Updater::Instance(), &Updater::downloadProgress,
+	connect(&Updater::Instance(), &Updater::DownloadProgress,
 			[progressBar, progressLabel, speedLabel](int percent, const QString& progress, const QString& speed)
 			{
 				progressBar->setValue(percent);
