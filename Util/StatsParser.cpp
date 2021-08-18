@@ -144,7 +144,7 @@ struct Player
 	bool hiddenPro;
 	std::string_view name;
 	Color nameColor;
-	Ship ship;
+	std::optional<Ship> ship;
 	Stat battles;
 	Stat winrate;
 	Stat avgDmg;
@@ -162,9 +162,11 @@ struct Player
 		font16.setPixelSize(16);
 
 		QColor bg = this->prColor.QColor();
+		auto shipItem = this->ship ? this->ship->GetField(font13, bg, Qt::AlignVCenter | Qt::AlignLeft)  : new QTableWidgetItem();
+		
 		return {
 				this->GetNameField(),
-				this->ship.GetField(font13, bg, Qt::AlignVCenter | Qt::AlignLeft),
+				shipItem,
 				this->battles.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
 				this->winrate.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
 				this->avgDmg.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
@@ -224,7 +226,8 @@ struct Player
 	j.at("hiddenPro").get_to(p.hiddenPro);
 	j.at("name").get_to(p.name);
 	p.nameColor = Color(j.at("nameColor").get<std::array<int, 3>>());
-	j.at("ship").get_to(p.ship);
+	if (!j.at("ship").is_null())
+		p.ship = j.at("ship").get<Ship>();
 	j.at("battles").get_to(p.battles);
 	j.at("winrate").get_to(p.winrate);
 	j.at("avgDmg").get_to(p.avgDmg);
@@ -284,8 +287,12 @@ static std::string GetCSV(const Match& match)
 			if (player.clan)
 				clanName = player.clan->name;
 
+			std::string shipName;
+			if (player.ship)
+				shipName = player.ship->name;
+
 			out += std::format("{};{};{};{};{};{};{};{};{};{};{}\n",
-					teamID, player.name, clanName, player.ship.name,
+					teamID, player.name, clanName, shipName,
 					player.battles.string, player.winrate.string,
 					player.avgDmg.string, player.battlesShip.string,
 					player.winrateShip.string, player.avgDmgShip.string,
