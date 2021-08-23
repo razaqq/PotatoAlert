@@ -64,10 +64,11 @@ static std::string GetFilePath()
 bool Serializer::WriteJson(const StatsParser::Match::Info& info, const std::string& json, const std::string& hash) const
 {
 	if (!this->m_db)
-		return {};
-	
-	auto statement = SQLite::Statement(this->m_db, "INSERT INTO matches (hash, date, ship, map, matchGroup, statsMode, player, region, json) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9);");
+		return false;
 
+	LOG_TRACE("Writing match into match history database.");
+	auto statement = SQLite::Statement(this->m_db, "INSERT INTO matches (hash, date, ship, map, matchGroup, statsMode, player, region, json) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9);");
+	
 	if (!statement.Bind(1, hash))
 	{
 		LOG_ERROR("Failed to bind to sql statement for match history database: {}", this->m_db.GetLastError());
@@ -128,6 +129,8 @@ bool Serializer::WriteJson(const StatsParser::Match::Info& info, const std::stri
 		LOG_ERROR("Failed to execute sql statement for match history database: {}", this->m_db.GetLastError());
 		return false;
 	}
+	
+	this->m_db.FlushBuffer();
 	return true;
 }
 
@@ -135,7 +138,8 @@ std::vector<Serializer::MatchHistoryEntry> Serializer::GetEntries() const
 {
 	if (!this->m_db)
 		return {};
-	
+
+	LOG_TRACE("Getting entries from match history database.");
 	std::vector<MatchHistoryEntry> matches;
 
 	auto statement = SQLite::Statement(this->m_db, "SELECT id, hash, date, ship, map, matchGroup, statsMode, player, region FROM matches;");
@@ -166,7 +170,8 @@ std::optional<Serializer::MatchHistoryEntry> Serializer::GetLatest() const
 {
 	if (!this->m_db)
 		return {};
-	
+
+	LOG_TRACE("Getting latest entry from match history database.");
 	auto statement = SQLite::Statement(this->m_db, "SELECT id, hash, date, ship, map, matchGroup, statsMode, player, region FROM matches ORDER BY id DESC LIMIT 1;");
 
 	while (!statement.IsDone())
@@ -195,6 +200,8 @@ std::optional<sp::Match> Serializer::GetMatch(int id) const
 {
 	if (!this->m_db)
 		return {};
+
+	LOG_TRACE("Getting match from match history database with id {}.", id);
 	
 	auto statement = SQLite::Statement(this->m_db, "SELECT json FROM matches WHERE id = ?1;");
 	if (!statement.Bind(1, id))
@@ -254,7 +261,7 @@ bool Serializer::WriteCsv(const std::string& csv)
 
 void Serializer::SaveMatch(const StatsParser::Match::Info& info, const std::string& json, const std::string& csv)
 {
-	std::string hash = std::to_string(std::hash<std::string>{}(json));
+	const std::string hash = std::to_string(std::hash<std::string>{}(json));
 	if (m_hashes.contains(hash))
 		return;
 	m_hashes.insert(hash);
@@ -270,6 +277,8 @@ void Serializer::BuildHashSet()
 {
 	if (!this->m_db)
 		return;
+
+	LOG_TRACE("Building hash set for match history database.");
 
 	auto statement = SQLite::Statement(this->m_db, "SELECT hash FROM matches;");
 

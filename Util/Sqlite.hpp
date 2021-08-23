@@ -78,7 +78,7 @@ public:
 		RawClose(std::exchange(m_handle, Handle::Null));
 	}
 
-	[[nodiscard]] bool FlushBuffer() const
+	bool FlushBuffer() const
 	{
 		return RawFlushBuffer(m_handle);
 	}

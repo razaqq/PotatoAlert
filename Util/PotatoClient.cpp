@@ -1,4 +1,4 @@
-// Copyright 2020 <github.com/razaqq>
+﻿// Copyright 2020 <github.com/razaqq>
 
 #include "PotatoClient.hpp"
 
@@ -195,7 +195,7 @@ void PotatoClient::OnResponse(const QString& message)
 	}
 
 	LOG_TRACE("Parsing match.");
-	std::string rawJson = message.toUtf8().toStdString();
+	const std::string rawJson = message.toUtf8().toStdString();
 	auto res = StatsParser::ParseMatch(rawJson, true);
 
 	if (PotatoConfig().Get<bool>("match_history"))

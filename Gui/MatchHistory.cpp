@@ -109,21 +109,25 @@ void MatchHistory::changeEvent(QEvent* event)
 	}
 }
 
-void MatchHistory::UpdateAll() const
+void MatchHistory::UpdateAll()
 {
 	this->m_table->clearContents();
 	this->m_table->setRowCount(0);
 
 	auto matches = Serializer::Instance().GetEntries();
 
+	this->m_table->setSortingEnabled(false);
 	for (auto& match : matches)
 	{
+		if (match.id > this->m_latestId)
+			this->m_latestId = match.id;
 		this->AddEntry(match);
 	}
 	this->m_table->sortByColumn(0, Qt::SortOrder::DescendingOrder);
+	this->m_table->setSortingEnabled(true);
 }
 
-void MatchHistory::UpdateLatest() const
+void MatchHistory::UpdateLatest()
 {
 	auto res = Serializer::Instance().GetLatest();
 	if (res)
@@ -131,24 +135,21 @@ void MatchHistory::UpdateLatest() const
 		const Serializer::MatchHistoryEntry entry = res.value();
 
 		// check that we don't have that entry already somehow
-		for (int i = 0; i < this->m_table->rowCount(); i++)
+		if (entry.id > this->m_latestId)
 		{
-			const auto item = this->m_table->item(i, 7);
-			if (entry.id == item->data(Qt::DisplayRole).toInt())
-			{
-				return;
-			}
+			this->m_latestId = entry.id;
+			this->m_table->setSortingEnabled(false);
+			this->AddEntry(entry);
+			this->m_table->sortByColumn(0, Qt::SortOrder::DescendingOrder);
+			this->m_table->setSortingEnabled(true);
 		}
-		
-		this->AddEntry(entry);
-		this->m_table->sortByColumn(0, Qt::SortOrder::DescendingOrder);
 	}
 }
 
 void MatchHistory::AddEntry(const Serializer::MatchHistoryEntry& entry) const
 {
-	const int row = this->m_table->rowCount();
-	this->m_table->insertRow(row);
+	this->m_table->insertRow(this->m_table->rowCount());
+	const int row = this->m_table->rowCount() - 1;
 
 	auto dateItem = new QTableWidgetItem();
 	const auto date = QDateTime::fromString(QString::fromStdString(entry.date), "dd.MM.yyyy hh:mm:ss");
