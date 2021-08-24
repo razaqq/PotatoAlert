@@ -17,7 +17,6 @@ struct FolderStatus
 	std::string replaysPathBase;
 	std::string replaysDirPath;
 	std::vector<std::string> replaysPath;
-	std::string overrideReplaysPath;
 	std::string region;
 	bool versionedReplays;
 	std::string statusText = "No Game Directory Set";

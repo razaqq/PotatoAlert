@@ -86,32 +86,12 @@ void PotatoClient::TriggerRun()
 		this->OnDirectoryChanged(path);
 }
 
-// sets filesystem watcher to current replays folder, triggered when config is modified
-void PotatoClient::UpdateReplaysPath()
-{
-	LOG_TRACE("Updating replays path.");
-
-	if (!this->m_watcher->directories().isEmpty())
-		this->m_watcher->removePaths(this->m_watcher->directories());
-
-	if (PotatoConfig().Get<bool>("override_replays_folder"))
-	{
-		this->m_watcher->addPath(QString::fromStdString(this->m_folderStatus.overrideReplaysPath));
-	}
-	else
-	{
-		for (auto& folder : this->m_folderStatus.replaysPath)
-			if (!folder.empty())
-				this->m_watcher->addPath(QString::fromStdString(folder));
-	}
-}
-
 // triggered whenever a file gets modified in a replays path
 void PotatoClient::OnDirectoryChanged(const QString& path)
 {
 	LOG_TRACE("Directory changed.");
 
-	std::string filePath = std::format("{}\\tempArenaInfo.json", path.toStdString());
+	const std::string filePath = std::format("{}\\tempArenaInfo.json", path.toStdString());
 
 	if (fs::exists(filePath))
 	{
@@ -185,22 +165,18 @@ void PotatoClient::OnResponse(const QString& message)
 		return;
 	}
 
-	json j;
-	sax_no_exception sax(j);
-	if (!json::sax_parse(message.toStdString(), &sax))
-	{
-		LOG_ERROR("ParseError while parsing server response JSON.");
-		emit this->StatusReady(Status::Error, "JSON Parse Error");
-		return;
-	}
-
 	LOG_TRACE("Parsing match.");
-	const std::string rawJson = message.toUtf8().toStdString();
-	auto res = StatsParser::ParseMatch(rawJson, true);
+	const std::string raw = message.toUtf8().toStdString();
+	auto res = StatsParser::ParseMatch(raw, true);
+
+	if (!res.success)
+	{
+		emit this->StatusReady(Status::Error, "JSON Parse Error");
+	}
 
 	if (PotatoConfig().Get<bool>("match_history"))
 	{
-		Serializer::Instance().SaveMatch(res.match.info, rawJson, res.csv.value());
+		Serializer::Instance().SaveMatch(res.match.info, raw, res.csv.value());
 		emit this->MatchHistoryChanged();
 	}
 
@@ -214,10 +190,28 @@ void PotatoClient::OnResponse(const QString& message)
 FolderStatus PotatoClient::CheckPath()
 {
 	FolderStatus folderStatus;
+
+	if (!this->m_watcher->directories().isEmpty())
+		this->m_watcher->removePaths(this->m_watcher->directories());
+
+	if (PotatoConfig().Get<bool>("override_replays_folder"))
+	{
+		this->m_watcher->addPath(QString::fromStdString(PotatoConfig().Get<std::string>("replays_folder")));
+		folderStatus.statusText = "";
+		this->TriggerRun();
+		return folderStatus;
+	}
+
 	if (Game::CheckPath(PotatoConfig().Get<std::string>("game_folder"), folderStatus))
 	{
 		this->m_folderStatus = folderStatus;
-		this->UpdateReplaysPath();
+		for (auto& folder : folderStatus.replaysPath)
+		{
+			if (!folder.empty())
+			{
+				this->m_watcher->addPath(QString::fromStdString(folder));
+			}
+		}
 		this->TriggerRun();
 	}
 	return folderStatus;

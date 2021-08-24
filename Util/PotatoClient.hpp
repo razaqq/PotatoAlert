@@ -49,7 +49,6 @@ private:
 	PotatoClient() = default;
 	void OnResponse(const QString& message);
 	void OnDirectoryChanged(const QString& path);
-	void UpdateReplaysPath();
 	static std::optional<std::string> ReadArenaInfo(const std::string& filePath);
 
 	QWebSocket* m_socket = new QWebSocket();

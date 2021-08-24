@@ -20,7 +20,7 @@ class SettingsWidget : public QWidget
 	Q_OBJECT
 public:
 	explicit SettingsWidget(QWidget* parent = nullptr);
-	void CheckPath();
+	void CheckPath() const;
 private:
 	void Init();
 	void Load();

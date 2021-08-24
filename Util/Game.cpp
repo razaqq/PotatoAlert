@@ -254,12 +254,6 @@ bool CheckPath(const std::string& selectedPath, FolderStatus& status)
 	const fs::path gamePath = fs::path(selectedPath).make_preferred();
 	status.gamePath = gamePath.string();
 
-	// check for replays folder override
-	if (PotatoConfig().Get<bool>("override_replays_folder"))
-	{
-		status.overrideReplaysPath = PotatoConfig().Get<std::string>("replays_folder");
-	}
-
 	// check that the game path exists
 	std::error_code ec;
 	bool exists = fs::exists(gamePath, ec);

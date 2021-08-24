@@ -269,7 +269,7 @@ void SettingsWidget::ConnectSignals()
 	});
 }
 
-void SettingsWidget::CheckPath()
+void SettingsWidget::CheckPath() const
 {
 	this->m_folderStatusGui->Update(PotatoClient::Instance().CheckPath());
 }

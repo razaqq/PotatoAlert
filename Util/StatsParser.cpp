@@ -331,7 +331,14 @@ StatsParseResult pn::ParseMatch(const std::string& raw, bool parseCsv) noexcept
 {
 	StatsParseResult result;
 	
-	const json j = json::parse(raw);
+	json j;
+	sax_no_exception sax(j);
+	if (!json::sax_parse(raw, &sax))
+	{
+		LOG_ERROR("ParseError while parsing server response JSON.");
+		return result;
+	}
+
 	const auto match = j.get<_JSON::Match>();
 
 	if (parseCsv)
