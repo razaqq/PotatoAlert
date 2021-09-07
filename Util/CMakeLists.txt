@@ -31,6 +31,8 @@ set(
         Version.hpp
         Zip.hpp
         Zip.cpp
+        Zlib.cpp
+        Zlib.hpp
 )
 
 if(WIN32)
