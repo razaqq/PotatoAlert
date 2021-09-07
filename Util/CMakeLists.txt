@@ -56,7 +56,7 @@ if(UNIX)
 endif(UNIX)
 
 add_library(util STATIC ${utils_src})
-target_link_libraries(util PRIVATE sqlite3 tinyxml2 zip)
+target_link_libraries(util PRIVATE sqlite3 tinyxml2 zip ZLIB::ZLIB)
 target_link_libraries(util PUBLIC Qt5::Core Qt5::WebSockets Qt5::Widgets)
 
 if(WIN32)
