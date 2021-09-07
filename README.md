@@ -6,6 +6,7 @@
 [![appveyor build status](https://img.shields.io/appveyor/build/razaqq/PotatoAlert2?style=flat-square&logo=appveyor)](https://ci.appveyor.com/project/razaqq/PotatoAlert2)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Discord Chat](https://img.shields.io/discord/711953820745203815.svg?&logo=discord&logoColor=ffffff&style=flat-square)](https://discord.gg/Ut8t8PA)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg?&logo=paypal&style=flat-square)](https://paypal.me/potatoalert)
 
 ## Screenshots
 
