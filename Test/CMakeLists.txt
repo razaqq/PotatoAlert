@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 
 project(catch2_unit_test)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 if (MSVC)
     add_compile_options(/W4 /WX /EHsc)
@@ -15,7 +15,7 @@ include_directories(${PROJECT_SOURCE_DIR}/Util)
 # enable CTest testing
 enable_testing()
 
-add_executable(PotatoTest main.cpp GameTest.cpp VersionTest.cpp)
+add_executable(PotatoTest main.cpp GameTest.cpp UtilTest.cpp VersionTest.cpp)
 
 target_link_libraries(PotatoTest util Catch2::Test)
 
