@@ -116,7 +116,7 @@ bool Config::Save()
 		return false;
 	}
 
-	if (!this->m_file.Write(this->j.dump(4)))
+	if (!this->m_file.WriteString(this->j.dump(4)))
 	{
 		LOG_ERROR("Failed to write config file: {}", File::LastError());
 		return false;

@@ -133,7 +133,24 @@ bool File::RawReadString(Handle handle, std::string& out)
 	return ReadFile(UnwrapHandle<HANDLE>(handle), buff, static_cast<DWORD>(size), &dwBytesRead, nullptr);
 }
 
-bool File::RawWrite(Handle handle, const std::string& data)
+bool File::RawWrite(Handle handle, std::span<const std::byte> data)
+{
+	if (handle == Handle::Null)
+	{
+		return false;
+	}
+	
+	ResetFilePointer(handle);
+
+	DWORD dwBytesWritten = 0;
+	if (WriteFile(UnwrapHandle<HANDLE>(handle), data.data(), data.size(), &dwBytesWritten, nullptr))
+	{
+		return dwBytesWritten == data.size();
+	}
+	return false;
+}
+
+bool File::RawWriteString(Handle handle, const std::string& data)
 {
 	if (handle == Handle::Null)
 	{

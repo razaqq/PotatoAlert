@@ -4,6 +4,7 @@
 #include "Flags.hpp"
 
 #include <filesystem>
+#include <span>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -88,9 +89,14 @@ public:
 		return RawReadString(m_handle, out);
 	}
 
-	bool Write(const std::string& data)
+	bool Write(std::span<const std::byte> data)
 	{
 		return RawWrite(m_handle, data);
+	}
+
+	bool WriteString(const std::string& data)
+	{
+		return RawWriteString(m_handle, data);
 	}
 
 	bool FlushBuffer()
@@ -137,7 +143,8 @@ private:
 	// these have to be implemented for each os
 	static bool RawRead(Handle handle, std::vector<std::byte>& out);
 	static bool RawReadString(Handle handle, std::string& out);
-	static bool RawWrite(Handle handle, const std::string& data);
+	static bool RawWrite(Handle handle, std::span<const std::byte> data);
+	static bool RawWriteString(Handle handle, const std::string& data);
 	static bool RawFlushBuffer(Handle handle);
 	static uint64_t RawGetSize(Handle handle);
 	static Handle RawOpen(std::string_view path, Flags flags);

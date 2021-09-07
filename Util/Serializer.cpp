@@ -241,7 +241,7 @@ bool Serializer::WriteCsv(const std::string& csv)
 {
 	if (File file = File::Open(GetFilePath(), File::Flags::Write | File::Flags::Create))
 	{
-		if (file.Write(csv))
+		if (file.WriteString(csv))
 		{
 			LOG_TRACE("Wrote match as CSV.");
 			return true;
