@@ -11,8 +11,8 @@ environment:
       CMAKE_OPTIONS: -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe
       MSVC_SETUP_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat
       MSVC_SETUP_ARG: amd64
-      CC: clang
-      CXX: clang++
+      CC: clang-cl
+      CXX: clang-cl
       PYTHON: "C:\\Python39-x64"
 
 init:
@@ -20,7 +20,7 @@ init:
 
 before_build:
   - cmake --version
-  - clang --version
+  - clang-cl --version
   - if DEFINED MSVC_SETUP_PATH call "%MSVC_SETUP_PATH%" %MSVC_SETUP_ARG%
   - "%PYTHON%\\python.exe .\\Resources\\generate_translations.py"
 
