@@ -1,6 +1,8 @@
 set(
         utils_src
 
+        Blowfish.cpp
+        Blowfish.hpp
         Config.cpp
         Config.hpp
         File.hpp
