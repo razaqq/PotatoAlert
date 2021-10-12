@@ -15,7 +15,7 @@ class StatsTeamFooter : public QWidget
 {
 public:
 	explicit StatsTeamFooter(QWidget* parent = nullptr);
-	void Update(const Match& match);
+	void Update(const Match& match) const;
 private:
 	void Init();
 	void changeEvent(QEvent* event) override;

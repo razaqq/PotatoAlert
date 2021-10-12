@@ -1,3 +1,8 @@
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 set(
         gui_src
 
@@ -10,6 +15,7 @@ set(
         MatchHistory.hpp
         NativeWindow.cpp
         NativeWindow.hpp
+        PotatoAlert.cpp
         TitleBar.cpp
         TitleBar.hpp
         
@@ -50,5 +56,16 @@ if(WIN32)
     )
 endif(WIN32)
 
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
+
 add_library(gui STATIC ${gui_src})
-target_link_libraries(gui PRIVATE util framelessHelper Qt5::Widgets)
+target_link_libraries(gui PRIVATE client util framelessHelper Qt5::Widgets)
+target_include_directories(
+        gui
+        PUBLIC
+        ${PROJECT_SOURCE_DIR}/Client
+        ${PROJECT_SOURCE_DIR}/FramelessHelper
+        ${PROJECT_SOURCE_DIR}/Util
+        ${PROJECT_SOURCE_DIR}/Updater
+        ${CMAKE_BINARY_DIR}
+)

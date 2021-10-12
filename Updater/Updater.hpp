@@ -1,9 +1,9 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include <QNetworkAccessManager>
+#include <QtNetwork/QNetworkAccessManager>
 #include <QWidget>
-#include <QtNetwork>
+// #include <QtNetwork>
 
 #include <filesystem>
 #include <string>

@@ -3,9 +3,21 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_definitions(-D_HAS_EXCEPTIONS=0)
 
-find_package(Qt5 COMPONENTS Widgets Core Gui WebSockets REQUIRED)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_executable(PotatoUpdater main.cpp ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
+find_package(Qt5 COMPONENTS Network REQUIRED)
+
+add_executable(PotatoUpdater PotatoUpdater.cpp ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
+
+target_include_directories(
+        PotatoUpdater
+        PUBLIC
+        ${PROJECT_SOURCE_DIR}/Gui
+        ${PROJECT_SOURCE_DIR}/Util
+)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set_property(TARGET PotatoUpdater PROPERTY WIN32_EXECUTABLE true)
@@ -24,6 +36,7 @@ else()
 endif()
 
 target_link_libraries(PotatoUpdater PRIVATE gui util)
+target_link_libraries(PotatoUpdater PRIVATE Qt5::Network)
 
 add_custom_command(
         TARGET PotatoUpdater

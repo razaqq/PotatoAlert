@@ -15,6 +15,8 @@ if(WIN32)
     )
 endif(WIN32)
 
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
+
 add_library(framelessHelper STATIC ${frameless_src})
 target_link_libraries(framelessHelper PRIVATE Qt5::GuiPrivate Qt5::Widgets)
 

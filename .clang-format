@@ -27,6 +27,7 @@ BraceWrapping:
   AfterExternBlock: true
   AfterFunction: true
   AfterNamespace: false
+  AfterStruct: true
   AfterUnion: false
   BeforeCatch: false
   BeforeElse: true

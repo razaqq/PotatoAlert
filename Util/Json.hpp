@@ -30,3 +30,55 @@ public:
 		return false;
 	}
 };
+
+namespace PotatoAlert {
+
+class Json
+{
+public:
+	explicit Json(json j) : m_json(std::move(j)) {}
+	static Json Parse(const std::string& raw);
+
+	Json(Json&& src) noexcept
+	{
+		m_json = std::exchange(src.m_json, nullptr);
+	}
+
+	Json(const Json&) = delete;
+
+	Json& operator=(Json&& src) noexcept
+	{
+		m_json = std::exchange(src.m_json, nullptr);
+		return *this;
+	}
+
+	Json& operator=(const Json&) = delete;
+
+	~Json()
+	{
+		m_json = nullptr;
+	}
+
+	[[nodiscard]] bool HasError() const { return m_hasError; }
+
+	explicit operator bool() const
+	{
+		return m_json != nullptr;
+	}
+
+	bool operator==(decltype(nullptr)) const
+	{
+		return m_json == nullptr;
+	}
+
+	bool operator!=(decltype(nullptr)) const
+	{
+		return m_json != nullptr;
+	}
+
+private:
+	json m_json;
+	bool m_hasError = false;
+};
+
+}  // namespace PotatoAlert

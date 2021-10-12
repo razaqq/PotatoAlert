@@ -90,7 +90,7 @@ void StatsTeamFooter::Init()
 	this->setLayout(layout);
 }
 
-void StatsTeamFooter::Update(const Match& match)
+void StatsTeamFooter::Update(const Match& match) const
 {
 	// set average stats per team
 	match.team1.winrate.UpdateLabel(this->m_team1Wr);

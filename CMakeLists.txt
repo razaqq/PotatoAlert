@@ -25,34 +25,15 @@ generate_product_version(
         VERSION_REVISION ${BUILD_REVISION}
 )
 
-find_package(Qt5 COMPONENTS Widgets Core Gui WebSockets REQUIRED)
-
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/nlohmann_json/include)
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/spdlog/include)
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/sqlite3/include)
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2/include)
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/win32)
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/zip/src)
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/ThirdParty/zlib)
-
-include_directories(${PROJECT_SOURCE_DIR}/Util)
-include_directories(${PROJECT_SOURCE_DIR}/Gui)
-include_directories(${PROJECT_SOURCE_DIR}/Resources)
-include_directories(${PROJECT_SOURCE_DIR}/FramelessHelper)
-
-add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/sqlite3)
-add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2)
-set(CMAKE_DISABLE_TESTING ON)
-add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/zip)
-add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/zlib)
-
 add_subdirectory(${PROJECT_SOURCE_DIR}/Util)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Client)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Gui)
+add_subdirectory(${PROJECT_SOURCE_DIR}/ReplayParser)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Test)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Updater)
 add_subdirectory(${PROJECT_SOURCE_DIR}/FramelessHelper)
 
-add_executable(PotatoAlert main.cpp Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
+add_executable(PotatoAlert Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set_property(TARGET PotatoAlert PROPERTY WIN32_EXECUTABLE true)
@@ -70,7 +51,7 @@ else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
-target_link_libraries(PotatoAlert PRIVATE gui util)
+target_link_libraries(PotatoAlert PRIVATE gui)
 
 include(packaging)
 windeployqt(PotatoAlert)

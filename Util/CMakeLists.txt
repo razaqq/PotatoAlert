@@ -1,5 +1,10 @@
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 set(
-        utils_src
+        util_src
 
         Blowfish.cpp
         Blowfish.hpp
@@ -7,28 +12,16 @@ set(
         Config.hpp
         File.hpp
         Flags.hpp
-        Game.cpp
-        Game.hpp
         Log.cpp
         Log.hpp
-        Palette.cpp
-        Palette.hpp
-        PotatoClient.cpp
-        PotatoClient.hpp
         Process.hpp
         Screenshot.cpp
         Screenshot.hpp
-        Serializer.cpp
-        Serializer.hpp
-        StatsParser.cpp
-        StatsParser.hpp
         StringTable.cpp
         StringTable.hpp
         Sqlite.cpp
         Sqlite.hpp
         Time.hpp
-        ../Updater/Updater.cpp
-        ../Updater/Updater.hpp
         Version.cpp
         Version.hpp
         Zip.hpp
@@ -39,8 +32,8 @@ set(
 
 if(WIN32)
     set(
-            utils_src
-            ${utils_src}
+            util_src
+            ${util_src}
             File.win32.cpp
             Process.win32.cpp
             Time.win32.cpp
@@ -49,15 +42,38 @@ endif(WIN32)
 
 if(UNIX)
     set(
-            utils_src
+            util_src
             ${utils_src}
             Time.linux.cpp
     )
 endif(UNIX)
 
-add_library(util STATIC ${utils_src})
+find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2 ${CMAKE_BINARY_DIR}/ThirdParty/tinyxml2)
+add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/sqlite3 ${CMAKE_BINARY_DIR}/ThirdParty/sqlite3)
+set(CMAKE_DISABLE_TESTING ON)
+add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/zip ${CMAKE_BINARY_DIR}/ThirdParty/zip)
+add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/zlib ${CMAKE_BINARY_DIR}/ThirdParty/zlib)
+target_compile_options(zlib PRIVATE -Wno-deprecated)
+target_compile_options(zlibstatic PRIVATE -Wno-deprecated)
+
+add_library(util STATIC ${util_src})
 target_link_libraries(util PRIVATE sqlite3 tinyxml2 zip ZLIB::ZLIB)
-target_link_libraries(util PUBLIC Qt5::Core Qt5::WebSockets Qt5::Widgets)
+target_link_libraries(util PUBLIC Qt5::Core Qt5::Widgets)
+target_include_directories(
+        util
+        PUBLIC
+        ${PROJECT_SOURCE_DIR}/Resources
+        SYSTEM
+        ${PROJECT_SOURCE_DIR}/ThirdParty/nlohmann_json/include
+        ${PROJECT_SOURCE_DIR}/ThirdParty/spdlog/include
+        ${PROJECT_SOURCE_DIR}/ThirdParty/sqlite3/include
+        ${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2/include
+        ${PROJECT_SOURCE_DIR}/ThirdParty/win32
+        ${PROJECT_SOURCE_DIR}/ThirdParty/zip/src
+        ${PROJECT_SOURCE_DIR}/ThirdParty/zlib
+)
 
 if(WIN32)
     target_link_libraries(util PRIVATE Version)

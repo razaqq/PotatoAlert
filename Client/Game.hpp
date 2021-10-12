@@ -1,9 +1,13 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include <filesystem>
 #include <string>
+#include <optional>
 #include <vector>
 
+
+namespace fs = std::filesystem;
 
 namespace PotatoAlert::Game {
 
@@ -28,5 +32,6 @@ bool GetResFolderPath(FolderStatus& status);
 bool ReadEngineConfig(FolderStatus& status, const char* resFolder);
 bool ReadPreferences(FolderStatus& status, const std::string& basePath);
 void SetReplaysFolder(FolderStatus& status);
+std::optional<fs::path> GetGamePath();
 
 }  // namespace PotatoAlert::Game

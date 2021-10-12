@@ -68,7 +68,7 @@ TEST_CASE( "GameTest_ReadPreferencesTest" )
 	FolderStatus status = {
 			GetGamePath(Test::nsnv).string(),
 			"", "", "cwd", "", "", "", {},
-			"", "", false
+			"", false
 	};
 	REQUIRE( ReadPreferences(status, status.gamePath) );
 	REQUIRE( status.gameVersion == "0.9.4.0" );
@@ -80,7 +80,7 @@ TEST_CASE( "GameTest_GetResFolderPathTest" )
 	FolderStatus status = {
 			GetGamePath(Test::nsnv).string(),
 			"", "", "", "", "", "", {},
-			"", "", false
+			"", false
 	};
 	REQUIRE( GetResFolderPath(status) );
 	REQUIRE(status.resFolderPath == (GetGamePath(Test::nsnv) / "bin" / "2666186").string() );
@@ -97,7 +97,7 @@ TEST_CASE( "GameTest_ReadEngineConfigTest" )
 	FolderStatus f1 = {
 			GetGamePath(Test::nsnv).string(),
 			"", "", "", "", "", "", {},
-			"", "", false
+			"", false
 	};
 	REQUIRE( GetResFolderPath(f1) );
 	REQUIRE( ReadEngineConfig(f1, "res") );
@@ -109,7 +109,7 @@ TEST_CASE( "GameTest_ReadEngineConfigTest" )
 	FolderStatus f2 = {
 			GetGamePath(Test::snvexe).string(),
 			"", "", "", "", "", "", {},
-			"", "", false
+			"", false
 	};
 	REQUIRE( GetResFolderPath(f2) );
 	REQUIRE( ReadEngineConfig(f2, "res") );
@@ -123,7 +123,7 @@ TEST_CASE( "GameTest_SetReplaysFolderTest" )
 	FolderStatus f1 = {
 			GetGamePath(Test::nsnv).string(),
 			"0.9.4.0", (GetGamePath(Test::nsnv) / "res").string(), "", "", "cwd", "replays",
-			{}, "eu", "", false
+			{}, "eu", false
 	};
 	SetReplaysFolder(f1);
 	REQUIRE( f1.replaysPath == std::vector<std::string>{(GetGamePath(Test::nsnv) / "replays").string()} );
@@ -131,7 +131,7 @@ TEST_CASE( "GameTest_SetReplaysFolderTest" )
 	FolderStatus f2 = {
 			GetGamePath(Test::snvexe).string(),
 			"0.9.4.0", (GetGamePath(Test::snvexe) / "res").string(), "", "", "cwd", "replays",
-			{}, "eu", "", false
+			{}, "eu", false
 	};
 	SetReplaysFolder(f2);
 	REQUIRE( f2.replaysPath == std::vector<std::string>{(GetGamePath(Test::snvexe) / "replays").string()} );
@@ -139,7 +139,7 @@ TEST_CASE( "GameTest_SetReplaysFolderTest" )
 	FolderStatus f3 = {
 			GetGamePath(Test::snvexe).string(),
 			"0.9.4.0", (GetGamePath(Test::snvexe) / "res").string(), "", "1427460", "exe_path", "replays",
-			{}, "eu", "", false
+			{}, "eu", false
 	};
 	SetReplaysFolder(f3);
 	REQUIRE( f3.replaysPath == std::vector<std::string>{
@@ -150,7 +150,7 @@ TEST_CASE( "GameTest_SetReplaysFolderTest" )
 	FolderStatus f4 = {
 			GetGamePath(Test::svcwd).string(),
 			"0.9.4.0", (GetGamePath(Test::svcwd) / "res").string(), "", "1427460", "exe_path", "replays",
-			{}, "eu", "", true
+			{}, "eu", true
 	};
 	SetReplaysFolder(f4);
 	REQUIRE( f4.replaysPath == std::vector<std::string>{

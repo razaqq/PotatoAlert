@@ -8,12 +8,11 @@
 #include <QObject>
 #include <QString>
 #include <QTableWidgetItem>
-#include <QWebSocket>
+#include <QtWebSockets/QWebSocket>
 
 #include <optional>
 #include <string>
 #include <variant>
-#include <vector>
 
 
 using PotatoAlert::Game::FolderStatus;
