@@ -15,6 +15,8 @@ set(
         MatchHistory.hpp
         NativeWindow.cpp
         NativeWindow.hpp
+        Palette.cpp
+        Palette.hpp
         PotatoAlert.cpp
         TitleBar.cpp
         TitleBar.hpp

@@ -4,6 +4,7 @@
 
 #include "Config.hpp"
 #include "Game.hpp"
+#include "Hash.hpp"
 #include "Json.hpp"
 #include "Log.hpp"
 #include "Serializer.hpp"
@@ -139,10 +140,15 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 		}
 
 		// make sure we don't pull the same match twice
-		if (const QString tempArenaInfo = QString::fromStdString(j.dump()); tempArenaInfo != this->m_tempArenaInfo)
+		if (std::string raw = j.dump(); Hash(raw) != Hash(this->m_tempArenaInfo.toStdString()))
+		{
+			const QString tempArenaInfo = QString::fromStdString(j.dump());
 			this->m_tempArenaInfo = tempArenaInfo;
+		}
 		else
+		{
 			return;
+		}
 
 		emit this->StatusReady(Status::Loading, "Loading");
 		LOG_TRACE("Opening websocket...");
@@ -176,7 +182,7 @@ void PotatoClient::OnResponse(const QString& message)
 
 	if (PotatoConfig().Get<bool>("match_history"))
 	{
-		Serializer::Instance().SaveMatch(res.match.info, raw, res.csv.value());
+		Serializer::Instance().SaveMatch(res.match.info, this->m_tempArenaInfo.toStdString(), raw, res.csv.value());
 		emit this->MatchHistoryChanged();
 	}
 

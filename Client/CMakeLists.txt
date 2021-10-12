@@ -8,8 +8,6 @@ set(
 
         Game.cpp
         Game.hpp
-        Palette.cpp
-        Palette.hpp
         PotatoClient.cpp
         PotatoClient.hpp
         Serializer.cpp

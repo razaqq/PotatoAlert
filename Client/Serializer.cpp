@@ -2,11 +2,11 @@
 
 #include "Serializer.hpp"
 #include "File.hpp"
+#include "Hash.hpp"
 #include "Log.hpp"
 #include "Sqlite.hpp"
 #include "Time.hpp"
 
-#include <QDebug>
 #include <QDir>
 #include <QStandardPaths>
 #include <QString>
@@ -25,15 +25,37 @@ using PotatoAlert::File;
 
 static constexpr std::string_view timeFormat = "%Y-%m-%d_%H-%M-%S";
 
+void Serializer::ApplyDatabaseUpdates() const
+{
+	this->m_db.Execute("ALTER TABLE matches ADD arenaInfo TEXT;");
+}
+
 Serializer::Serializer()
 {
 	this->m_db = SQLite::Open(QDir(GetDir()).filePath("match_history.db").toStdString().c_str(), SQLite::Flags::ReadWrite | SQLite::Flags::Create);
 	if (this->m_db)
 	{
-		if (!this->m_db.Execute("CREATE TABLE IF NOT EXISTS matches (id INTEGER PRIMARY KEY, hash TEXT UNIQUE, date TEXT, ship TEXT, map TEXT, matchGroup TEXT, statsMode TEXT, player TEXT, region TEXT, json TEXT);"))
+		if (!this->m_db.Execute(R"(
+			CREATE TABLE IF NOT EXISTS matches
+			(
+				id INTEGER PRIMARY KEY,
+				hash TEXT UNIQUE,
+				date TEXT,
+				ship TEXT,
+				map TEXT,
+				matchGroup TEXT,
+				statsMode TEXT,
+				player TEXT,
+				region TEXT,
+				json TEXT,
+				arenaInfo TEXT
+			);
+		)"))
 		{
 			LOG_ERROR("Failed to check/create table for match history database: {}", this->m_db.GetLastError());
 		}
+
+		ApplyDatabaseUpdates();
 	}
 
 	this->BuildHashSet();
@@ -61,13 +83,13 @@ static std::string GetFilePath()
 	return QDir(Serializer::GetDir()).filePath(QString::fromStdString(std::format("match_{}.csv", PotatoAlert::Time::GetTimeStamp(timeFormat)))).toStdString();
 }
 
-bool Serializer::WriteJson(const StatsParser::Match::Info& info, const std::string& json, const std::string& hash) const
+bool Serializer::WriteJson(const StatsParser::Match::Info& info, const std::string& arenaInfo, const std::string& json, const std::string& hash) const
 {
 	if (!this->m_db)
 		return false;
 
 	LOG_TRACE("Writing match into match history database.");
-	auto statement = SQLite::Statement(this->m_db, "INSERT INTO matches (hash, date, ship, map, matchGroup, statsMode, player, region, json) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9);");
+	auto statement = SQLite::Statement(this->m_db, "INSERT INTO matches (hash, date, ship, map, matchGroup, statsMode, player, region, json, arenaInfo) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);");
 	
 	if (!statement.Bind(1, hash))
 	{
@@ -118,6 +140,12 @@ bool Serializer::WriteJson(const StatsParser::Match::Info& info, const std::stri
 	}
 	
 	if (!statement.Bind(9, json))
+	{
+		LOG_ERROR("Failed to bind to sql statement for match history database: {}", this->m_db.GetLastError());
+		return false;
+	}
+
+	if (!statement.Bind(10, arenaInfo))
 	{
 		LOG_ERROR("Failed to bind to sql statement for match history database: {}", this->m_db.GetLastError());
 		return false;
@@ -259,15 +287,15 @@ bool Serializer::WriteCsv(const std::string& csv)
 	}
 }
 
-void Serializer::SaveMatch(const StatsParser::Match::Info& info, const std::string& json, const std::string& csv)
+void Serializer::SaveMatch(const StatsParser::Match::Info& info, const std::string& arenaInfo, const std::string& json, const std::string& csv)
 {
-	const std::string hash = std::to_string(std::hash<std::string>{}(json));
+	const std::string hash = HashString(arenaInfo);
 	if (m_hashes.contains(hash))
 		return;
 	m_hashes.insert(hash);
 	
 	// save json to sqlite
-	WriteJson(info, json, hash);
+	WriteJson(info, arenaInfo, json, hash);
 
 	// save csv to file
 	WriteCsv(csv);
