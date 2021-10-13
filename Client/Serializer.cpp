@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Serializer.hpp"
+
 #include "File.hpp"
 #include "Hash.hpp"
 #include "Log.hpp"

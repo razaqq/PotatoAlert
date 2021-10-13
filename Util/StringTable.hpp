@@ -3,7 +3,7 @@
 
 #include <QString>
 
-#include <string>
+#include <string_view>
 
 
 namespace PotatoAlert::StringTable {
