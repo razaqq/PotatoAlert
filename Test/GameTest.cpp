@@ -1,5 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Directory.hpp"
 #include "Game.hpp"
 
 #include "catch.hpp"
@@ -21,8 +22,8 @@ enum class Test
 
 static fs::path GetGamePath(Test t)
 {
-	char path[MAX_PATH];
-	if (!GetModuleFileNameA(nullptr, path, MAX_PATH))
+	const auto rootPath = PotatoAlert::GetModuleRootPath();
+	if (!rootPath.has_value())
 	{
 		exit(1);
 	}
@@ -30,13 +31,13 @@ static fs::path GetGamePath(Test t)
 	switch (t)
 	{
 		case Test::nsnv:
-			return fs::path(path).remove_filename() / "gameDirectories" / "non_steam_non_versioned";
+			return fs::path(rootPath.value()).remove_filename() / "gameDirectories" / "non_steam_non_versioned";
 		case Test::nsv:
-			return fs::path(path).remove_filename() / "gameDirectories" / "non_steam_versioned";
+			return fs::path(rootPath.value()).remove_filename() / "gameDirectories" / "non_steam_versioned";
 		case Test::snvexe:
-			return fs::path(path).remove_filename() / "gameDirectories" / "steam_non_versioned_exe";
+			return fs::path(rootPath.value()).remove_filename() / "gameDirectories" / "steam_non_versioned_exe";
 		case Test::svcwd:
-			return fs::path(path).remove_filename() / "gameDirectories" / "steam_versioned_cwd";
+			return fs::path(rootPath.value()).remove_filename() / "gameDirectories" / "steam_versioned_cwd";
 	}
 }
 

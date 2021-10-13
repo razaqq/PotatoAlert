@@ -1,16 +1,17 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Blowfish.hpp"
+#include "String.hpp"
 #include "Zlib.hpp"
 #include "catch.hpp"
-#include "File.hpp"
+
 
 #include <span>
 #include <vector>
 
 
 using PotatoAlert::Blowfish;
-using PotatoAlert::File;
+using namespace PotatoAlert;
 
 std::vector<std::byte> from_string(const std::string& s) noexcept
 {
@@ -51,6 +52,19 @@ TEST_CASE( "BlowFishDecryptTest" )
 
 	REQUIRE(blowfish.Decrypt(text, out));
 	REQUIRE(std::equal(out.begin(), out.end(), solution.begin(), solution.end()));
+}
+
+TEST_CASE( "StringTest" )
+{
+	std::string t1 = " test \n\t";
+	REQUIRE(Trim(t1) == "test");
+
+	std::string t2 = "test123";
+	REQUIRE(ToUpper(t2) == "TEST123");
+	REQUIRE(ToLower(ToUpper(t2)) == t2);
+
+	std::string t3 = "SOME LONGER TEST";
+	REQUIRE(ToLower(t3) == "some longer test");
 }
 
 TEST_CASE( "ZlibTest" )

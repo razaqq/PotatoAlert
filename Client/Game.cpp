@@ -5,10 +5,10 @@
 #include "Config.hpp"
 #include "File.hpp"
 #include "Log.hpp"
+#include "String.hpp"
 
 #include <tinyxml2.h>
 
-#include <algorithm>
 #include <charconv>
 #include <filesystem>
 #include <regex>
@@ -102,13 +102,6 @@ bool ReadEngineConfig(FolderStatus& status, const char* resFolder)
 		return false;
 	}
 
-	auto toLower = [](const char* text)
-	{
-		auto textStr = std::string(text);
-		std::transform(textStr.begin(), textStr.end(), textStr.begin(), ::tolower);
-		return textStr;
-	};
-
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLError err = doc.LoadFile(engineConfig.string().c_str());
 	if (err != tinyxml2::XML_SUCCESS)
@@ -133,19 +126,19 @@ bool ReadEngineConfig(FolderStatus& status, const char* resFolder)
 	tinyxml2::XMLElement* replaysDirPath = replays->FirstChildElement("dirPath");
 	if (replaysDirPath == nullptr)
 		return false;
-	status.replaysDirPath = toLower(replaysDirPath->GetText());
+	status.replaysDirPath = ToLower(replaysDirPath->GetText());
 
 	// get base path
 	tinyxml2::XMLElement* replaysPathBase = replays->FirstChildElement("pathBase");
 	if (replaysPathBase == nullptr)
 		return false;
-	status.replaysPathBase = toLower(replaysPathBase->GetText());
+	status.replaysPathBase = ToLower(replaysPathBase->GetText());
 
 	// check for versioned replays
 	tinyxml2::XMLElement* versionedReplays = replays->FirstChildElement("versioned");
 	if (versionedReplays == nullptr)
 		return false;
-	std::istringstream(toLower(versionedReplays->GetText())) >> std::boolalpha >> status.versionedReplays;
+	std::istringstream(ToLower(versionedReplays->GetText())) >> std::boolalpha >> status.versionedReplays;
 
 	// get preferences node
 	tinyxml2::XMLElement* preferences = root->FirstChildElement("preferences");
@@ -156,7 +149,7 @@ bool ReadEngineConfig(FolderStatus& status, const char* resFolder)
 	tinyxml2::XMLElement* preferencesPathBase = replays->FirstChildElement("pathBase");
 	if (preferencesPathBase == nullptr)
 		return false;
-	status.preferencesPathBase = toLower(preferencesPathBase->GetText());
+	status.preferencesPathBase = ToLower(preferencesPathBase->GetText());
 
 	return true;
 }
@@ -209,8 +202,7 @@ bool ReadPreferences(FolderStatus& status, const std::string& basePath)
 
 	if (std::regex_search(pref, regionMatch, regionRegex) && regionMatch.size() > 1)
 	{
-		status.region = regionMatch.str(1);
-		std::transform(status.region.begin(), status.region.end(), status.region.begin(), ::tolower);  // to lower
+		status.region = ToLower(regionMatch.str(1));
 		status.region = std::regex_replace(status.region, std::regex("wows "), "");  // remove 'WOWS '
 		status.region = std::regex_replace(status.region, std::regex("cis"), "ru");  // cis server to ru
 		status.region.erase(std::remove(status.region.begin(), status.region.end(), '\t'), status.region.end());  // remove tabs

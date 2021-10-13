@@ -10,6 +10,7 @@ set(
         Blowfish.hpp
         Config.cpp
         Config.hpp
+        Directory.hpp
         File.hpp
         Flags.hpp
         Log.cpp
@@ -17,6 +18,8 @@ set(
         Process.hpp
         Screenshot.cpp
         Screenshot.hpp
+        String.cpp
+        String.hpp
         StringTable.cpp
         StringTable.hpp
         Sqlite.cpp
@@ -34,6 +37,7 @@ if(WIN32)
     set(
             util_src
             ${util_src}
+            Directory.win32.cpp
             File.win32.cpp
             Process.win32.cpp
             Time.win32.cpp
@@ -59,6 +63,8 @@ target_compile_options(zlib PRIVATE -Wno-deprecated)
 target_compile_options(zlibstatic PRIVATE -Wno-deprecated)
 
 add_library(util STATIC ${util_src})
+set_property(TARGET util PROPERTY CXX_STANDARD 20)
+set_property(TARGET util PROPERTY CXX_STANDARD_REQUIRED true)
 target_link_libraries(util PRIVATE sqlite3 tinyxml2 zip ZLIB::ZLIB)
 target_link_libraries(util PUBLIC Qt5::Core Qt5::Widgets)
 target_include_directories(
