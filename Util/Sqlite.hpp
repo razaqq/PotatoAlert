@@ -85,7 +85,7 @@ public:
 
 	[[nodiscard]] std::string GetLastError() const;
 
-	[[nodiscard]] bool Execute(std::string_view sql) const
+	bool Execute(std::string_view sql) const
 	{
 		return RawExecute(m_handle, sql);
 	}
