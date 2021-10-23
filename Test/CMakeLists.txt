@@ -18,7 +18,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/catch2)
 # enable CTest testing
 enable_testing()
 
-add_executable(PotatoTest PotatoTest.cpp GameTest.cpp ReplayTest.cpp UtilTest.cpp VersionTest.cpp)
+add_executable(PotatoTest PotatoTest.cpp GameTest.cpp ReplayTest.cpp UtilTest.cpp )
 
 target_link_libraries(PotatoTest util client replayparser Catch2::Test)
 target_include_directories(

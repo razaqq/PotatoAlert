@@ -1,6 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Version.hpp"
+
 #include <filesystem>
 #include <string>
 #include <optional>
@@ -14,7 +16,7 @@ namespace PotatoAlert::Game {
 struct FolderStatus
 {
 	std::string gamePath;
-	std::string gameVersion;
+	Version gameVersion;
 	std::string resFolderPath;
 	std::string preferencesPathBase;
 	std::string folderVersion;

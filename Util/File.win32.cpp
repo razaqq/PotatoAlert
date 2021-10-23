@@ -190,16 +190,15 @@ std::string File::LastError()
 	return std::string(lpMsgBuf);
 }
 
-bool File::GetVersion(std::string_view fileName, std::string& outVersion)
+bool File::GetVersion(std::string_view fileName, Version& outVersion)
 {
 	const DWORD size = GetFileVersionInfoSizeA(fileName.data(), nullptr);
 	if (size == 0)
 		return {};
 
-	char* versionInfo = new char[size];
-	if (!GetFileVersionInfoA(fileName.data(), 0, 255, versionInfo))
+	std::unique_ptr<char[]> versionInfo(new char[size]);
+	if (!GetFileVersionInfoA(fileName.data(), 0, 255, versionInfo.get()))
 	{
-		delete[] versionInfo;
 		return false;
 	}
 
@@ -207,17 +206,14 @@ bool File::GetVersion(std::string_view fileName, std::string& outVersion)
 	UINT outSize = 0;
 	if (!VerQueryValueA(&versionInfo[0], "\\", reinterpret_cast<LPVOID*>(&out), &outSize) && outSize > 0)
 	{
-		delete[] versionInfo;
 		return false;
 	}
 
-	outVersion = std::format("{}.{}.{}.{}",
-							 ( out->dwFileVersionMS >> 16 ) & 0xff,
-							 ( out->dwFileVersionMS >>  0 ) & 0xff,
-							 ( out->dwFileVersionLS >> 16 ) & 0xff,
-							 ( out->dwFileVersionLS >>  0 ) & 0xff
-	);
-	delete[] versionInfo;
+	outVersion = Version(std::format("{}.{}.{}.{}",
+									 (out->dwFileVersionMS >> 16) & 0xff,
+									 (out->dwFileVersionMS >> 0) & 0xff,
+									 (out->dwFileVersionLS >> 16) & 0xff,
+									 (out->dwFileVersionLS >> 0) & 0xff));
 
 	return true;
 }

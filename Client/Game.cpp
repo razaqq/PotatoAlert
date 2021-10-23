@@ -6,13 +6,12 @@
 #include "File.hpp"
 #include "Log.hpp"
 #include "String.hpp"
+#include "Version.hpp"
 
 #include <tinyxml2.h>
 
-#include <charconv>
 #include <filesystem>
 #include <regex>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -46,8 +45,8 @@ bool GetResFolderPath(FolderStatus& status)
 			continue;
 		}
 
-		std::string version;
-		if (!File::GetVersion(exe.string(), version))
+		Version version;
+		if (!File::GetVersion(exe.string(), version) || !version)
 		{
 			LOG_ERROR("Failed to read version info from file: {} - {}", exe.string(), File::LastError());
 			continue;
@@ -132,7 +131,16 @@ bool ReadEngineConfig(FolderStatus& status, const char* resFolder)
 	tinyxml2::XMLElement* versionedReplays = replays->FirstChildElement("versioned");
 	if (versionedReplays == nullptr)
 		return false;
-	std::istringstream(ToLower(versionedReplays->GetText())) >> std::boolalpha >> status.versionedReplays;
+
+	bool versioned;
+	if (!String::ParseBool(versionedReplays->GetText(), versioned))
+	{
+		LOG_ERROR("Cannot parse versionedReplays string to bool: '{}'", versionedReplays->GetText());
+	}
+	else
+	{
+		status.versionedReplays = versioned;
+	}
 
 	// get preferences node
 	tinyxml2::XMLElement* preferences = root->FirstChildElement("preferences");
@@ -182,11 +190,8 @@ bool ReadPreferences(FolderStatus& status, const std::string& basePath)
 
 	if (std::regex_search(pref, versionMatch, versionRegex) && versionMatch.size() > 1)
 	{
-		status.gameVersion = versionMatch.str(1);
-		std::replace(status.gameVersion.begin(), status.gameVersion.end(), ',', '.');
-		status.gameVersion.erase(
-				std::remove(status.gameVersion.begin(), status.gameVersion.end(), '\t'), status.gameVersion.end()
-		);
+		status.gameVersion = Version(versionMatch.str(1));
+		// std::replace(status.gameVersion.begin(), status.gameVersion.end(), ',', '.');
 	}
 	else
 	{
@@ -228,7 +233,7 @@ void SetReplaysFolder(FolderStatus& status)
 		std::vector<std::string> newReplaysPath;
 		for (auto& path : status.replaysPath)
 		{
-			newReplaysPath.push_back((fs::path(path) / status.gameVersion).string());
+			newReplaysPath.push_back((fs::path(path) / status.gameVersion.ToString()).string());
 		}
 		status.replaysPath = newReplaysPath;
 	}

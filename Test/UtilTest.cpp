@@ -2,6 +2,7 @@
 
 #include "Blowfish.hpp"
 #include "String.hpp"
+#include "Version.hpp"
 #include "Zlib.hpp"
 #include "catch.hpp"
 
@@ -10,6 +11,7 @@
 #include <vector>
 
 
+using PotatoAlert::Version;
 using PotatoAlert::Blowfish;
 using namespace PotatoAlert;
 
@@ -99,9 +101,26 @@ TEST_CASE( "StringTest" )
 	REQUIRE(String::Split(text, "") == std::vector<std::string>{ "this is some text" });
 }
 
-	std::string t3 = "SOME LONGER TEST";
-	REQUIRE(ToLower(t3) == "some longer test");
+TEST_CASE("VersionTest")
+{
+	REQUIRE(Version("3.7.8.0") == Version("3.7.8.0"));
+	REQUIRE(Version("3.7.8.0") == Version("3.7.8"));
+	REQUIRE(Version("3.7.9") > Version("3.7.8"));
+	REQUIRE(Version("3") < Version("3.7.9"));
+	REQUIRE(Version("1.7.9") < Version("3.1"));
+	REQUIRE(Version("zzz") < Version("0.0.1"));
+	REQUIRE(!Version("zzz"));
+	REQUIRE(Version("2.16.0") != Version("3.0.0"));
+	REQUIRE_FALSE(Version("3.0.0") < Version("2.16.0"));
+	REQUIRE(Version(1, 2, 3, 4) == Version("1,2,3,4"));
+	REQUIRE(!Version("abc 3,7,8"));
+	REQUIRE(Version("3,7,8 abc") == Version(3, 7, 8));
+	REQUIRE(Version("3, 7, 8") == Version(3, 7, 8));
+	REQUIRE(Version(1, 2, 3, 4).ToString() == "1.2.3.4");
+	REQUIRE(Version(0, 9, 4, 0).ToString() == "0.9.4.0");
+	REQUIRE(!Version("0.9.4.0.1"));
 }
+
 
 TEST_CASE( "ZlibTest" )
 {

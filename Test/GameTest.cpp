@@ -2,6 +2,7 @@
 
 #include "Directory.hpp"
 #include "Game.hpp"
+#include "Version.hpp"
 
 #include "catch.hpp"
 #include "win32.h"
@@ -9,6 +10,7 @@
 #include <filesystem>
 
 
+using PotatoAlert::Version;
 using namespace PotatoAlert::Game;
 namespace fs = std::filesystem;
 
@@ -68,11 +70,11 @@ TEST_CASE( "GameTest_ReadPreferencesTest" )
 {
 	FolderStatus status = {
 			GetGamePath(Test::nsnv).string(),
-			"", "", "cwd", "", "", "", {},
+			Version(""), "", "cwd", "", "", "", {},
 			"", false
 	};
 	REQUIRE( ReadPreferences(status, status.gamePath) );
-	REQUIRE( status.gameVersion == "0.9.4.0" );
+	REQUIRE( status.gameVersion == Version("0.9.4.0") );
 	REQUIRE( status.region == "eu" );
 }
 
@@ -80,7 +82,7 @@ TEST_CASE( "GameTest_GetResFolderPathTest" )
 {
 	FolderStatus status = {
 			GetGamePath(Test::nsnv).string(),
-			"", "", "", "", "", "", {},
+			Version(""), "", "", "", "", "", {},
 			"", false
 	};
 	REQUIRE( GetResFolderPath(status) );
@@ -97,7 +99,7 @@ TEST_CASE( "GameTest_ReadEngineConfigTest" )
 	// non steam non versioned
 	FolderStatus f1 = {
 			GetGamePath(Test::nsnv).string(),
-			"", "", "", "", "", "", {},
+			Version(""), "", "", "", "", "", {},
 			"", false
 	};
 	REQUIRE( GetResFolderPath(f1) );
@@ -109,7 +111,7 @@ TEST_CASE( "GameTest_ReadEngineConfigTest" )
 	// steam non versioned
 	FolderStatus f2 = {
 			GetGamePath(Test::snvexe).string(),
-			"", "", "", "", "", "", {},
+			Version(""), "", "", "", "", "", {},
 			"", false
 	};
 	REQUIRE( GetResFolderPath(f2) );
@@ -123,7 +125,7 @@ TEST_CASE( "GameTest_SetReplaysFolderTest" )
 {
 	FolderStatus f1 = {
 			GetGamePath(Test::nsnv).string(),
-			"0.9.4.0", (GetGamePath(Test::nsnv) / "res").string(), "", "", "cwd", "replays",
+			Version("0.9.4.0"), (GetGamePath(Test::nsnv) / "res").string(), "", "", "cwd", "replays",
 			{}, "eu", false
 	};
 	SetReplaysFolder(f1);
@@ -131,7 +133,7 @@ TEST_CASE( "GameTest_SetReplaysFolderTest" )
 
 	FolderStatus f2 = {
 			GetGamePath(Test::snvexe).string(),
-			"0.9.4.0", (GetGamePath(Test::snvexe) / "res").string(), "", "", "cwd", "replays",
+			Version("0.9.4.0"), (GetGamePath(Test::snvexe) / "res").string(), "", "", "cwd", "replays",
 			{}, "eu", false
 	};
 	SetReplaysFolder(f2);
@@ -139,7 +141,7 @@ TEST_CASE( "GameTest_SetReplaysFolderTest" )
 
 	FolderStatus f3 = {
 			GetGamePath(Test::snvexe).string(),
-			"0.9.4.0", (GetGamePath(Test::snvexe) / "res").string(), "", "1427460", "exe_path", "replays",
+			Version("0.9.4.0"), (GetGamePath(Test::snvexe) / "res").string(), "", "1427460", "exe_path", "replays",
 			{}, "eu", false
 	};
 	SetReplaysFolder(f3);
@@ -150,12 +152,12 @@ TEST_CASE( "GameTest_SetReplaysFolderTest" )
 
 	FolderStatus f4 = {
 			GetGamePath(Test::svcwd).string(),
-			"0.9.4.0", (GetGamePath(Test::svcwd) / "res").string(), "", "1427460", "exe_path", "replays",
+			Version("0.9.4.0"), (GetGamePath(Test::svcwd) / "res").string(), "", "1427460", "exe_path", "replays",
 			{}, "eu", true
 	};
 	SetReplaysFolder(f4);
 	REQUIRE( f4.replaysPath == std::vector<std::string>{
-			(GetGamePath(Test::svcwd) / "bin" / f4.folderVersion / "bin32" / "replays" / f4.gameVersion).string(),
-			(GetGamePath(Test::svcwd) / "bin" / f4.folderVersion / "bin64" / "replays" / f4.gameVersion).string()
+			(GetGamePath(Test::svcwd) / "bin" / f4.folderVersion / "bin32" / "replays" / f4.gameVersion.ToString()).string(),
+			(GetGamePath(Test::svcwd) / "bin" / f4.folderVersion / "bin64" / "replays" / f4.gameVersion.ToString()).string()
 	});
 }

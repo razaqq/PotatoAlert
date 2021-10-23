@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Flags.hpp"
+#include "Version.hpp"
 
 #include <filesystem>
 #include <span>
@@ -119,7 +120,7 @@ public:
 		return RawExists(fileName);
 	}
 
-	static bool GetVersion(std::string_view fileName, std::string& outVersion);
+	static bool GetVersion(std::string_view fileName, Version& outVersion);
 
 	static std::string LastError();
 

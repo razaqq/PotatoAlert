@@ -51,7 +51,7 @@ void FolderStatusGui::Init()
 	this->setLayout(gridLayout);
 }
 
-void FolderStatusGui::Update(const FolderStatus& status)
+void FolderStatusGui::Update(const FolderStatus& status) const
 {
 	this->m_replaysFolders->clear();
 	this->m_versionedReplays->clear();
@@ -63,7 +63,7 @@ void FolderStatusGui::Update(const FolderStatus& status)
 	{
 		this->m_statusText->setStyleSheet("QLabel { color : green; }");
 		this->m_region->setText(QString::fromStdString(status.region));
-		this->m_gameVersion->setText(QString::fromStdString(status.gameVersion));
+		this->m_gameVersion->setText(QString::fromStdString(status.gameVersion.ToString()));
 		status.versionedReplays ? this->m_versionedReplays->setText("yes") : this->m_versionedReplays->setText("no");  // TODO: localize
 
 		// create string from replays paths
