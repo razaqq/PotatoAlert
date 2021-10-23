@@ -22,12 +22,6 @@ namespace fs = std::filesystem;
 
 namespace PotatoAlert::Game {
 
-static bool AsInteger(const std::string& src, int& value)
-{
-	auto [ptr, ec] = std::from_chars(src.data(), src.data()+src.size(), value);
-	return ec == std::errc();
-}
-
 // finds the res folder path in the currently selected directory
 bool GetResFolderPath(FolderStatus& status)
 {
@@ -76,7 +70,7 @@ bool GetResFolderPath(FolderStatus& status)
 
 		std::string fileName = entry.path().filename().string();
 
-		if (int v = 0; AsInteger(fileName, v))
+		if (int v = 0; String::ParseNumber<int>(fileName, v))
 			if (v > folderVersion)
 				folderVersion = v;
 	}
@@ -126,13 +120,13 @@ bool ReadEngineConfig(FolderStatus& status, const char* resFolder)
 	tinyxml2::XMLElement* replaysDirPath = replays->FirstChildElement("dirPath");
 	if (replaysDirPath == nullptr)
 		return false;
-	status.replaysDirPath = ToLower(replaysDirPath->GetText());
+	status.replaysDirPath = String::ToLower(replaysDirPath->GetText());
 
 	// get base path
 	tinyxml2::XMLElement* replaysPathBase = replays->FirstChildElement("pathBase");
 	if (replaysPathBase == nullptr)
 		return false;
-	status.replaysPathBase = ToLower(replaysPathBase->GetText());
+	status.replaysPathBase = String::ToLower(replaysPathBase->GetText());
 
 	// check for versioned replays
 	tinyxml2::XMLElement* versionedReplays = replays->FirstChildElement("versioned");
@@ -149,7 +143,7 @@ bool ReadEngineConfig(FolderStatus& status, const char* resFolder)
 	tinyxml2::XMLElement* preferencesPathBase = replays->FirstChildElement("pathBase");
 	if (preferencesPathBase == nullptr)
 		return false;
-	status.preferencesPathBase = ToLower(preferencesPathBase->GetText());
+	status.preferencesPathBase = String::ToLower(preferencesPathBase->GetText());
 
 	return true;
 }
@@ -202,10 +196,9 @@ bool ReadPreferences(FolderStatus& status, const std::string& basePath)
 
 	if (std::regex_search(pref, regionMatch, regionRegex) && regionMatch.size() > 1)
 	{
-		status.region = ToLower(regionMatch.str(1));
+		status.region = String::ToLower(String::Trim(regionMatch.str(1)));
 		status.region = std::regex_replace(status.region, std::regex("wows "), "");  // remove 'WOWS '
 		status.region = std::regex_replace(status.region, std::regex("cis"), "ru");  // cis server to ru
-		status.region.erase(std::remove(status.region.begin(), status.region.end(), '\t'), status.region.end());  // remove tabs
 	}
 	else
 	{

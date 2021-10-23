@@ -56,12 +56,48 @@ TEST_CASE( "BlowFishDecryptTest" )
 
 TEST_CASE( "StringTest" )
 {
-	std::string t1 = " test \n\t";
-	REQUIRE(Trim(t1) == "test");
+	REQUIRE(String::Trim(" test \n\t") == "test");
 
 	std::string t2 = "test123";
-	REQUIRE(ToUpper(t2) == "TEST123");
-	REQUIRE(ToLower(ToUpper(t2)) == t2);
+	REQUIRE(String::ToUpper(t2) == "TEST123");
+	REQUIRE(String::ToLower(String::ToUpper(t2)) == t2);
+
+	REQUIRE(String::ToLower("SOME LONGER TEST") == "some longer test");
+
+	float pi;
+	REQUIRE((String::ParseNumber("3.14159265359", pi) && std::abs(pi - 3.14159265359f) <= std::numeric_limits<float>::epsilon()));
+
+	long long i;
+	REQUIRE((String::ParseNumber("485745389475347534", i) && i == 485745389475347534));
+
+	int j;
+	REQUIRE((String::ParseNumber("-48574538", j) && j == -48574538));
+
+	REQUIRE(!String::ParseNumber("CANT PARSE 5", i));
+
+	char k;
+	REQUIRE((String::ParseNumber("123", k) && k == 123));
+
+	uint32_t p = 0;
+	REQUIRE(!String::ParseNumber("-1", p));
+
+	bool l = false;
+	REQUIRE((String::ParseBool("true", l) && l));
+
+	bool m = true;
+	REQUIRE((String::ParseBool("false", m) && !m));
+
+	REQUIRE(!String::ParseBool("not true", l));
+
+	bool o = false;
+	REQUIRE((String::ParseBool("\n\r TRUE \t", o) && o));
+
+	std::string_view text = "this is some text";
+	REQUIRE(String::Split(text, " ") == std::vector<std::string>{ "this", "is", "some", "text" });
+	REQUIRE(String::Contains(text, "this"));
+	REQUIRE(!String::Contains(text, "test"));
+	REQUIRE(String::Split(text, "") == std::vector<std::string>{ "this is some text" });
+}
 
 	std::string t3 = "SOME LONGER TEST";
 	REQUIRE(ToLower(t3) == "some longer test");
