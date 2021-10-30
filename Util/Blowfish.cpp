@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <memory>
 #include <span>
 #include <string>
@@ -299,17 +300,21 @@ void Blowfish::InitKey(std::span<const std::byte> key)
 
 uint32_t Blowfish::F(uint32_t x) const
 {
-#ifdef __LITTLE_ENDIAN__
-	const auto d = static_cast<uint8_t>(x);
-	const auto c = static_cast<uint8_t>(x >>= 8);
-	const auto b = static_cast<uint8_t>(x >>= 8);
-	const auto a = static_cast<uint8_t>(x >>= 8);
-#else
-	const auto a = static_cast<uint8_t>(x);
-	const auto b = static_cast<uint8_t>(x >>= 8);
-	const auto c = static_cast<uint8_t>(x >>= 8);
-	const auto d = static_cast<uint8_t>(x >>= 8);
-#endif
+	uint8_t a, b, c, d;
+	if constexpr (std::endian::native == std::endian::little)
+	{
+		d = static_cast<uint8_t>(x);
+		c = static_cast<uint8_t>(x >>= 8);
+		b = static_cast<uint8_t>(x >>= 8);
+		a = static_cast<uint8_t>(x >>= 8);	
+	}
+	else
+	{
+		a = static_cast<uint8_t>(x);
+		b = static_cast<uint8_t>(x >>= 8);
+		c = static_cast<uint8_t>(x >>= 8);
+		d = static_cast<uint8_t>(x >>= 8);
+	}
 
 	return ((m_sBoxes[0][a] + m_sBoxes[1][b]) ^ m_sBoxes[2][c]) + m_sBoxes[3][d];
 }
