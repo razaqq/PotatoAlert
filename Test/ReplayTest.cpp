@@ -1,6 +1,9 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Directory.hpp"
+#include "GameFiles.hpp"
 #include "ReplayParser.hpp"
+#include "Version.hpp"
 
 #include "catch.hpp"
 #include "win32.h"
@@ -10,19 +13,20 @@
 #include <string>
 
 
+using PotatoAlert::Version;
 using namespace PotatoAlert::ReplayParser;
 namespace fs = std::filesystem;
 
 
 static std::string GetReplay(std::string_view name)
 {
-	char path[MAX_PATH];
-	if (!GetModuleFileNameA(nullptr, path, MAX_PATH))
+	const auto rootPath = PotatoAlert::GetModuleRootPath();
+	if (!rootPath.has_value())
 	{
 		exit(1);
 	}
 
-	return (fs::path(path).remove_filename() / "replays" / name).string();
+	return (fs::path(rootPath.value()).remove_filename() / "replays" / name).string();
 }
 
 TEST_CASE( "ReplayTest" )
@@ -81,4 +85,16 @@ TEST_CASE( "ReplayTest2" )
 		}
 	}
 	*/
+}
+
+TEST_CASE("ReplayGameFileTest")
+{
+	const std::vector<EntitySpec> spec = ParseScripts(Version(0, 10, 8, 0));
+	REQUIRE(spec.size() == 13);
+	REQUIRE(spec[0].properties.size() == 17);
+	REQUIRE(spec[0].baseMethods.size() == 33);
+	REQUIRE(spec[0].cellMethods.size() == 56);
+	REQUIRE(spec[0].clientMethods.size() == 153);
+	REQUIRE(spec[0].internalProperties.size() == 16);
+	REQUIRE(spec[0].name == "Avatar");
 }
