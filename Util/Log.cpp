@@ -24,8 +24,34 @@ QString Log::GetDir()
 	return path;
 }
 
+static void LogQtMessage(QtMsgType type, const QMessageLogContext& context, const QString& text)
+{
+	spdlog::level::level_enum level = spdlog::level::info;
+
+	switch (type)
+	{
+		case QtDebugMsg:
+			level = spdlog::level::trace;
+			break;
+		case QtWarningMsg:
+			level = spdlog::level::warn;
+			break;
+		case QtCriticalMsg:
+		case QtFatalMsg:
+			level = spdlog::level::err;
+			break;
+		case QtInfoMsg:
+			level = spdlog::level::info;
+			break;
+	}
+
+	Log::GetLogger()->log(spdlog::source_loc{ context.file, context.line, context.function }, level, text.toStdString());
+}
+
 void Log::Init()
 {
+	qInstallMessageHandler(LogQtMessage);
+
 	const std::string filePath = QDir(GetDir()).filePath("PotatoAlert.log").toStdString();
 	spdlog::set_error_handler([](const std::string& msg) { spdlog::get("console")->error("*** LOGGER ERROR ***: {}", msg); });
 

@@ -5,7 +5,8 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)  # new option() policy
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
-add_definitions(-D_HAS_EXCEPTIONS=0)
+add_definitions(-D_HAS_EXCEPTIONS=0)  # turn off exceptions
+add_definitions(-DQT_MESSAGELOGCONTEXT)  # qt log messages context
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
