@@ -12,6 +12,8 @@ std::string Trim(std::string_view str);
 std::string ToUpper(std::string_view str);
 std::string ToLower(std::string_view str);
 std::vector<std::string> Split(std::string_view str, std::string_view del);
+std::string ReplaceAll(std::string_view str, std::string_view before, std::string_view after);
+void ReplaceAll(std::string& str, std::string_view before, std::string_view after);
 bool Contains(std::string_view str, std::string_view del);
 
 template<typename T>

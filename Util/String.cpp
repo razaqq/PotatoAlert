@@ -12,7 +12,7 @@ namespace s = PotatoAlert::String;
 
 static std::string_view g_whitespaces = " \n\r\t\f\v";
 
-std::string ltrim(std::string_view str)
+static std::string ltrim(std::string_view str)
 {
 	if (size_t i = str.find_first_not_of(g_whitespaces); i != std::string::npos)
 	{
@@ -21,7 +21,7 @@ std::string ltrim(std::string_view str)
 	return "";
 }
 
-std::string rtrim(std::string_view str)
+static std::string rtrim(std::string_view str)
 {
 	if (size_t i = str.find_last_not_of(g_whitespaces); i != std::string::npos)
 	{
@@ -37,12 +37,12 @@ std::string s::Trim(std::string_view str)
 
 typedef std::string::value_type char_t;
 
-char_t upChar(char_t c)
+static char_t upChar(char_t c)
 {
 	return std::use_facet<std::ctype<char_t>>(std::locale()).toupper(c);
 }
 
-char_t lowerChar(char_t c)
+static char_t lowerChar(char_t c)
 {
 	return std::use_facet<std::ctype<char_t>>(std::locale()).tolower(c);
 }
@@ -102,4 +102,42 @@ std::vector<std::string> s::Split(std::string_view str, std::string_view del)
 bool s::Contains(std::string_view str, std::string_view del)
 {
 	return str.find(del) != std::string_view::npos;
+}
+
+std::string s::ReplaceAll(std::string_view str, std::string_view before, std::string_view after)
+{
+	std::string newString;
+	newString.reserve(str.length());
+
+	size_t i = 0, j = 0;
+
+	while ((i = str.find(before, j)) != std::string_view::npos)
+	{
+		newString.append(str, j, i - j);
+		newString.append(after);
+		j = i + before.length();
+	}
+
+	newString.append(str.substr(j));
+
+	return newString;
+}
+
+void s::ReplaceAll(std::string& str, std::string_view before, std::string_view after)
+{
+	std::string newString;
+	newString.reserve(str.length());
+
+	size_t i = 0, j = 0;
+
+	while ((i = str.find(before, j)) != std::string_view::npos)
+	{
+		newString.append(str, j, i - j);
+		newString.append(after);
+		j = i + before.length();
+	}
+
+	newString.append(str.substr(j));
+
+	str.swap(newString);
 }
