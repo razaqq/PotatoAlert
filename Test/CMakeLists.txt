@@ -32,6 +32,7 @@ message(${PROJECT_SOURCE_DIR}/Util)
 
 add_test(test_all PotatoTest)
 
+file(COPY ${PROJECT_SOURCE_DIR}/Resources/ReplayVersions DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY gameDirectories DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY replays DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 

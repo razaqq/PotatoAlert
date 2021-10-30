@@ -24,4 +24,19 @@ struct Mat3
 	
 };
 
+struct Mat4
+{
+	float m_data[4][4];
+
+	float& operator()(size_t i, size_t j)
+	{
+		return m_data[i][j];
+	}
+
+	const float& operator()(size_t i, size_t j) const
+	{
+		return m_data[i][j];
+	}
+};
+
 }  // namespace PotatoAlert

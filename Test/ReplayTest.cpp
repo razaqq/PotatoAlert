@@ -41,6 +41,7 @@ TEST_CASE( "ReplayTest" )
 
 TEST_CASE( "ReplayTest2" )
 {
+	/*
 	std::optional<ReplayFile> res = ReplayFile::FromFile(GetReplay("20201107_155356_PISC110-Venezia_19_OC_prey.wowsreplay"));  // WIN
 	REQUIRE(res.has_value());
 	ReplayFile replay1 = res.value();
@@ -62,6 +63,7 @@ TEST_CASE( "ReplayTest2" )
 	res = ReplayFile::FromFile(GetReplay("20210912_002554_PRSB110-Sovetskaya-Rossiya_53_Shoreside.wowsreplay"));  // WIN
 	REQUIRE(res.has_value());
 	ReplayFile replay4 = res.value();
+	replay4.Analyze();
 	auto wonRes4 = replay4.Won();
 	REQUIRE((wonRes4 && wonRes4.value()));
 
@@ -70,6 +72,7 @@ TEST_CASE( "ReplayTest2" )
 	ReplayFile replay5 = res.value();
 	auto wonRes5 = replay5.Won();
 	REQUIRE((wonRes5 && !wonRes5.value()));
+	*/
 
 	/*
 	for (auto& entry : fs::recursive_directory_iterator(fs::path("F:\\World_of_Warships_Eu\\replays")))

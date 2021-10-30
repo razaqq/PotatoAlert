@@ -8,8 +8,7 @@
 #include <vector>
 
 
-namespace PotatoAlert::ReplayParser
-{
+namespace PotatoAlert::ReplayParser {
 
 struct VehicleInfoMeta
 {

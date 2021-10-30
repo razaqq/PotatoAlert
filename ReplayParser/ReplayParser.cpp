@@ -4,29 +4,22 @@
 
 #include "Blowfish.hpp"
 #include "ByteUtil.hpp"
+#include "GameFiles.hpp"
 #include "Json.hpp"
+#include "PacketParser.hpp"
 #include "Packets.hpp"
-#include "ReplayVersion.hpp"
+#include "Version.hpp"
 #include "Zlib.hpp"
 
 #include <optional>
 #include <span>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 
-using PotatoAlert::ReplayParser::ReplayFile;
-using PotatoAlert::ReplayParser::RawPacket;
-using PotatoAlert::ReplayParser::DecodedPacket;
-using PotatoAlert::ReplayParser::PacketType;
-using PotatoAlert::ReplayParser::Packet;
-using PotatoAlert::ReplayParser::EntityMethodPacket;
-using PotatoAlert::ReplayParser::UnknownPacket;
-using PotatoAlert::ReplayParser::Take;
-using PotatoAlert::ReplayParser::TakeInto;
+using namespace PotatoAlert::ReplayParser;
 
-
+/*
 static std::unordered_map<std::string, uint32_t> g_battleEndMethod =
 {
 	{ "0.9.9", 17 },
@@ -43,9 +36,10 @@ static std::unordered_map<std::string, uint32_t> g_battleEndMethod =
 	{ "0.10.7", 19 },
 	{ "0.10.8", 19 },
 };
+*/
 
 template<typename R, typename T>
-R VariantCast(T&& t)
+static R VariantCast(T&& t)
 {
 	return std::visit(
 		[]<typename T0>(T0&& val) -> R
@@ -54,7 +48,7 @@ R VariantCast(T&& t)
 		}, std::forward<T>(t));
 }
 
-Packet ParsePacket(std::span<std::byte>& data)
+Packet ParsePacket(std::span<std::byte>& data, PacketParser& parser)
 {
 	uint32_t size;
 	if (!TakeInto(data, size))
@@ -70,30 +64,29 @@ Packet ParsePacket(std::span<std::byte>& data)
 
 	switch (type)
 	{
-		case static_cast<uint32_t>(PacketType::BasePlayerCreate):
-			break;
-		case static_cast<uint32_t>(PacketType::CellPlayerCreate):
-			break;
-		case static_cast<uint32_t>(PacketType::EntityControl):
-			break;
-		case static_cast<uint32_t>(PacketType::EntityEnter):
-			break;
-		case static_cast<uint32_t>(PacketType::EntityLeave):
-			break;
-		case static_cast<uint32_t>(PacketType::EntityCreate):
-			break;
-		case static_cast<uint32_t>(PacketType::EntityProperty):
-			break;
-		case static_cast<uint32_t>(PacketType::EntityMethod):
-		{
-			return VariantCast<Packet>(EntityMethodPacket::Parse(clock, raw));  // TODO: extra fields are thrown away
-		}
-		case static_cast<uint32_t>(PacketType::Position):
-			break;
-		case static_cast<uint32_t>(PacketType::NestedProperty):
-			break;
-		case static_cast<uint32_t>(PacketType::Orientation):
-			break;
+		// TODO: extra fields are thrown away
+		case static_cast<uint32_t>(PacketBaseType::BasePlayerCreate):
+			return VariantCast<Packet>(ParseBasePlayerCreatePacket(raw, parser, clock));
+		case static_cast<uint32_t>(PacketBaseType::CellPlayerCreate):
+			return VariantCast<Packet>(ParseCellPlayerCreatePacket(raw, parser, clock));
+		case static_cast<uint32_t>(PacketBaseType::EntityControl):
+			return VariantCast<Packet>(ParseEntityControlPacket(raw, clock));
+		case static_cast<uint32_t>(PacketBaseType::EntityEnter):
+			return VariantCast<Packet>(ParseEntityEnterPacket(raw, clock));
+		case static_cast<uint32_t>(PacketBaseType::EntityLeave):
+			return VariantCast<Packet>(ParseEntityLeavePacket(raw, clock));
+		case static_cast<uint32_t>(PacketBaseType::EntityCreate):
+			return VariantCast<Packet>(ParseEntityCreatePacket(raw, parser, clock));
+		case static_cast<uint32_t>(PacketBaseType::EntityProperty):
+			return VariantCast<Packet>(ParseEntityPropertyPacket(raw, parser, clock));
+		case static_cast<uint32_t>(PacketBaseType::EntityMethod):
+			return VariantCast<Packet>(ParseEntityMethodPacket(raw, parser, clock));
+		case static_cast<uint32_t>(PacketBaseType::PlayerPosition):
+			return VariantCast<Packet>(ParsePlayerPositionPacketPacket(raw, clock));
+		case static_cast<uint32_t>(PacketBaseType::NestedPropertyUpdate):
+			return VariantCast<Packet>(ParseNestedPropertyUpdatePacket(raw, parser, clock));
+		case static_cast<uint32_t>(PacketBaseType::PlayerOrientation):
+			return VariantCast<Packet>(ParsePlayerOrientationPacket(raw, clock));
 		default:  // unknown
 			break;
 	}
@@ -125,7 +118,6 @@ std::optional<ReplayFile> ReplayFile::FromFile(std::string_view fileName)
 	{
 		LOG_ERROR("Replay data missing first 8 bytes.");
 		return {};
-		
 	}
 	Take(remaining, 8);
 
@@ -137,7 +129,7 @@ std::optional<ReplayFile> ReplayFile::FromFile(std::string_view fileName)
 	}
 
 	std::string metaStr;
-	if (remaining.size() <  metaSize)
+	if (remaining.size() < metaSize)
 	{
 		LOG_ERROR("Replay is missing meta info.");
 		return {};
@@ -169,7 +161,7 @@ std::optional<ReplayFile> ReplayFile::FromFile(std::string_view fileName)
 	}
 
 	std::vector<std::byte> decrypted{};
-	decrypted.resize(remaining.size(), std::byte{0});
+	decrypted.resize(remaining.size(), std::byte{ 0 });
 
 	if (remaining.size() % Blowfish::BlockSize() != 0)
 	{
@@ -177,11 +169,11 @@ std::optional<ReplayFile> ReplayFile::FromFile(std::string_view fileName)
 		return {};
 	}
 
-	std::array<std::byte, 16> key = MakeBytes( 0x29, 0xB7, 0xC9, 0x09, 0x38, 0x3F, 0x84, 0x88, 0xFA, 0x98, 0xEC, 0x4E, 0x13, 0x19, 0x79, 0xFB );
+	std::array<std::byte, 16> key = MakeBytes(0x29, 0xB7, 0xC9, 0x09, 0x38, 0x3F, 0x84, 0x88, 0xFA, 0x98, 0xEC, 0x4E, 0x13, 0x19, 0x79, 0xFB);
 	const Blowfish blowfish(std::span<std::byte>{ key });
 
-	std::byte prev[8] = { std::byte{0} };
-	for (size_t i = 0; i < remaining.size() /  Blowfish::BlockSize(); i++)
+	std::byte prev[8] = { std::byte{ 0 } };
+	for (size_t i = 0; i < remaining.size() / Blowfish::BlockSize(); i++)
 	{
 		const size_t offset = i * Blowfish::BlockSize();
 
@@ -210,10 +202,12 @@ std::optional<ReplayFile> ReplayFile::FromFile(std::string_view fileName)
 		return {};
 	}
 
+	PacketParser parser{ ParseScripts(Version(replayMeta.clientVersionFromExe)) };
+
 	std::span out{ decompressed };
 	std::vector<Packet> packets;
 	do {
-		packets.emplace_back(ParsePacket(out ));
+		packets.emplace_back(ParsePacket(out, parser));
 	} while (!out.empty());
 	
 	return ReplayFile{ replayMeta, packets };
@@ -221,8 +215,10 @@ std::optional<ReplayFile> ReplayFile::FromFile(std::string_view fileName)
 
 std::optional<bool> ReplayFile::Won() const
 {
+	return false;
+	/*
 	Version v;
-	if (!v.ParseClientExe(this->meta.clientVersionFromExe))
+	if (!(v = Version(this->meta.clientVersionFromExe)))
 	{
 		return {};
 	}
@@ -252,5 +248,5 @@ std::optional<bool> ReplayFile::Won() const
 		}
 	}
 	return {};
+	*/
 }
-

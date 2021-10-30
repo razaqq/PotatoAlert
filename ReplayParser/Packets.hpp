@@ -1,7 +1,9 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+// #include "Analyzer.hpp"
 #include "Math.hpp"
+#include "Types.hpp"
 
 #include <optional>
 #include <span>
@@ -14,68 +16,17 @@ using PotatoAlert::Vec3;
 
 namespace PotatoAlert::ReplayParser {
 
-enum class RibbonType
-{
-	PlaneShotDown,
-	Incapacitation,
-	SetFire,
-	Citadel,
-	SecondaryHit,
-	OverPenetration,
-	Penetration,
-	NonPenetration,
-	Ricochet,
-	TorpedoProtectionHit,
-	Captured,
-	AssistedInCapture,
-	Spotted,
-	Destroyed,
-	TorpedoHit,
-	Defended,
-	Flooding,
-	DiveBombPenetration,
-	RocketPenetration,
-	RocketNonPenetration,
-	RocketTorpedoProtectionHit,
-	ShotDownByAircraft,
-	Unknown
-};
+/*
+#if defined(__GNUC__) || defined(__clang__)
+#define PACK(...) __VA_ARGS__ __attribute__((__packed__))
+#elif defined(_MSC_VER)
+#define PACK(...) __pragma("pack(push, 1)") __VA_ARGS__ __pragma("pack(pop)")
+#else
+#error Unsupported compiler!
+#endif
+*/
 
-enum class DeathCause
-{
-	Secondaries,
-	Artillery,
-	Fire,
-	Flooding,
-	Torpedo,
-	DiveBomber,
-	AerialRocket,
-	AerialTorpedo,
-	Detonation,
-	Ramming,
-	Unknown
-};
-
-enum class VoiceLineType
-{
-	IntelRequired,
-	FairWinds,
-	Wilco,
-	Negative,
-	WellDone,
-	Curses,
-	UsingRadar,
-	UsingHydroSearch,
-	DefendTheBase,
-	SetSmokeScreen,
-	ProvideAntiAircraft,
-	RequestingSupport,
-	Retreat,
-	AttentionToSquare,
-	ConcentrateFire
-};
-
-enum class PacketType : uint32_t
+enum class PacketBaseType : uint32_t
 {
 	BasePlayerCreate = 0x0,
 	CellPlayerCreate = 0x1,
@@ -85,46 +36,48 @@ enum class PacketType : uint32_t
 	EntityCreate = 0x5,
 	EntityProperty = 0x7,
 	EntityMethod = 0x8,
-	Position = 0xA,
-	NestedProperty = 0x22,
-	Orientation = 0x2B
+	PlayerPosition = 0xA,
+	NestedPropertyUpdate = 0x22,
+	// Chat = 0x23,
+	Camera = 0x24,
+	Map = 0x27,
+	PlayerOrientation = 0x2B
 };
 
 struct RawPacket
 {
-	uint32_t size;
-	PacketType type;
+	PacketBaseType type;
 	float clock;
 	std::vector<std::byte> raw;
 
 	static std::optional<RawPacket> FromBytes(std::span<std::byte>& data);
 };
 
-struct DecodedPacket
+struct Packet
 {
-	PacketType type;
+	PacketBaseType type;
 	float clock;
 };
 
-struct UnknownPacket : DecodedPacket
+struct UnknownPacket : Packet
 {
 };
 
-struct InvalidPacket : DecodedPacket
+struct InvalidPacket : Packet
 {
 	std::string message;
 	std::vector<std::byte> raw;
 };
 
-/*
+/**
  *	This function is called when we get a new player entity.
  *	The data on the stream contains only properties provided by the base.
  *
  *	@param	id			entity id.
  *	@param	type		entity type id.
  *	@param	data		entity data.
- */
-struct BasePlayerCreatePacket : DecodedPacket
+ **/
+struct BasePlayerCreatePacket : Packet
 {
 	uint32_t entityId;
 	uint16_t entityType;
@@ -132,7 +85,7 @@ struct BasePlayerCreatePacket : DecodedPacket
 	std::vector<std::byte> data;
 };
 
-/*
+/**
  *	This function is called to create the call part of the player entity.
  *	The data on the stream contains only properties provided by the cell.
  *
@@ -144,8 +97,8 @@ struct BasePlayerCreatePacket : DecodedPacket
  *	@param	pitch		pitch of entity.
  *	@param	roll		roll of entity.
  *	@param	data		entity's data.
- */
-struct CellPlayerCreatePacket : DecodedPacket
+ **/
+struct CellPlayerCreatePacket : Packet
 {
 	uint32_t entityId;
 	uint32_t spaceId;
@@ -153,24 +106,23 @@ struct CellPlayerCreatePacket : DecodedPacket
 	uint32_t vehicleId;
 	Vec3 position;
 	Vec3 direction;  // yaw, pitch, roll
-	uint32_t size;
-	std::vector<std::byte> data;
+	std::vector<ArgValue> values;
 };
 
-/*
+/**
  *	This function is called to tell us that we may now control the given
  *	entity (or not as the case may be).
  *
  *	@param	id			entity id.
  *	@param	control		true if entity is now controlled, false otherwise.
- */
-struct EntityControlPacket : DecodedPacket
+ **/
+struct EntityControlPacket : Packet
 {
 	uint32_t entityId;
 	bool isControlled;
 };
 
-/*
+/**
  *	This function is called when the server indicates that an entity has entered
  *	the player's AoI.
  *
@@ -180,27 +132,27 @@ struct EntityControlPacket : DecodedPacket
  *	@param	spaceID		id of space where to create the entity in.
  *	@param	vehicleID	id of an entity to use as vehicle.
  *
- */
-struct EntityEnterPacket : DecodedPacket
+ **/
+struct EntityEnterPacket : Packet
 {
 	uint32_t entityId;
 	uint32_t spaceId;
 	uint32_t vehicleId;
 };
 
-/*
+/**
  *	This function is called when the server indicates that an entity has left
  *	the player's AoI. It is complicated because it may be called out of order.
  *
  *	@param	id				entity id.
  *	@param	cacheStamps		Unused parameter.
- */
-struct EntityLeavePacket : DecodedPacket
+ **/
+struct EntityLeavePacket : Packet
 {
 	uint32_t entityId;
 };
 
-/*
+/**
  *	This function is called when the server provides us with the details
  *	necessary to create an entity here. The minimum data it could send
  *	is the type of the entity, but for the moment it sends everything.
@@ -217,150 +169,93 @@ struct EntityLeavePacket : DecodedPacket
  *
  *	type - index of python class stored in entities.xml
  *	state - really strange thing... I've tried to understood how data is stored, but have no luck. I guess it is a strange form of PyDict.
- */
-struct EntityCreatePacket : DecodedPacket
+ **/
+struct EntityCreatePacket : Packet
 {
 	uint32_t entityId;
-	uint16_t type;
+	uint16_t entityType;
 	uint32_t spaceId;
 	uint32_t vehicleId;
 	Vec3 position;
 	Vec3 direction;
 
-	uint32_t stateSize;
-	std::vector<std::byte> state;
+	// uint32_t stateSize;
+	// std::vector<std::byte> state;
+	std::unordered_map<std::string, ArgValue> properties;
 };
 
-/*
+/**
  *	This method is called when we receive a script method call message
  *	for one of our client-side entities from the server.
  *
  *	@param	id				entity id.
  *	@param	messageID		message id.
  *	@param	data			message data.
- */
-struct EntityMethodPacket : DecodedPacket
+ **/
+struct EntityMethodPacket : Packet
 {
 	uint32_t entityId;
 	uint32_t methodId;
-	uint32_t size;
-	std::vector<std::byte> data;
-
-	static std::variant<EntityMethodPacket, InvalidPacket> Parse(float clock, std::span<std::byte>& data);
+	std::vector<ArgValue> values;
+	// uint32_t size;
+	// std::vector<std::byte> data;
 };
 
-/*
+/**
  *	This method is called when we receive a property update message
  *	for one of our client-side entities from the server, aka server wants us to change a property on a client.
  *
  *	@param	id				entity id.
  *	@param	messageID		message id.
  *	@param	data			message data.
- */
-struct EntityPropertyPacket : DecodedPacket
+ **/
+struct EntityPropertyPacket : Packet
 {
 	uint32_t entityId;
 	uint32_t methodId;
-	uint32_t size;
-	std::vector<std::byte> data;
+	// uint32_t size;
+	// std::vector<std::byte> data;
+	ArgValue value;
+};
+
+struct PlayerOrientationPacket : Packet
+{
+	uint32_t pid;
+	uint32_t parentId;
+	Vec3 position;
+	Vec3 direction;
+};
+
+struct PlayerPositionPacket : Packet
+{
+	uint32_t entityId;
+	uint32_t vehicleId;
+	Vec3 position;
+	Vec3 positionError;
+	Vec3 direction;
+	bool isError;
 };
 
 /*
  * https://github.com/Monstrofil/replays_unpack/blob/parser2.0/docs/packets/0x22.md
  */
-struct NestedPropertyPacket : DecodedPacket
+struct NestedPropertyUpdatePacket : Packet
 {
 	
 };
 
-/*
- * 
- */
-struct PositionPacket : DecodedPacket
+struct MapPacket : Packet
 {
-	uint32_t entityId;
-	Vec3 position;
-	Vec3 positionError;
-	Vec3 rotation;
-	bool isError;
-};
-
-struct CameraPacket : DecodedPacket
-{
-	uint32_t unknown1;
-	uint32_t unknown2;
-	uint32_t unknown3;
-	uint32_t unknown4;
-	uint32_t unknown5;
-	uint32_t unknown6;
-	uint32_t unknown7;
-
-	uint32_t fov;
-	Vec3 position;
-	Vec3 direction;
-};
-
-/*
-struct ChatPacket : DecodedPacket
-{
-	struct
-	{
-		uint32_t entityID;
-		int32_t senderID;
-		std::string audience;
-		std::string message;
-	} payload;
-
-	static ChatPacket Parse(const RawPacket& packet);
-};
-
-struct VoiceLinePacket : DecodedPacket
-{
-	struct
-	{
-		uint32_t senderID;
-		bool isGlobal;
-		VoiceLineType message;
-	} payload;
-};
-
-struct RibbonPacket : DecodedPacket
-{
-	struct
-	{
-		RibbonType ribbon;
-	};
-};
-*/
-
-struct BattleEndPacket : DecodedPacket
-{
-	int8_t winningTeam;
-	uint8_t reason;
-};
-
-struct EntityPacket
-{
-	uint32_t superType;
-	uint32_t entityId;
-	uint32_t subType;
-	std::vector<std::byte> payload;
-};
-
-struct PlayerOrientationPacket
-{
-	uint32_t pid;
-	uint32_t parentId;
-
-	Vec3 position;
-	Vec3 direction;
+	uint32_t spaceId;
+	int64_t arenaId;
+	std::string name;
+	Mat4 matrix;
 };
 
 typedef std::variant<
 	BasePlayerCreatePacket, CellPlayerCreatePacket, EntityControlPacket, EntityEnterPacket,
 	EntityLeavePacket, EntityCreatePacket, EntityMethodPacket, EntityPropertyPacket,
-	UnknownPacket, InvalidPacket> Packet;
+	PlayerPositionPacket, PlayerOrientationPacket, MapPacket,
+	UnknownPacket, InvalidPacket> PacketType;
 
-// TODO
-
-}  // namespace DecodedPackets
+}  // namespace PotatoAlert::ReplayParser
