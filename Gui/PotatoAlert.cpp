@@ -29,13 +29,14 @@ static int RunMain(int argc, char* argv[])
 
 	PotatoAlert::Log::Init();
 
+	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
 	QApplication app(argc, argv);
 	
 	QApplication::setOrganizationName(PRODUCT_COMPANY_NAME);
 	QApplication::setApplicationVersion(PRODUCT_VERSION_FULL_STR);
 
-	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
 	QFile file(":/style.qss");
 	file.open(QFile::ReadOnly | QFile::Text);
