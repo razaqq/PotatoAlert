@@ -45,6 +45,7 @@ static int RunMain(int argc, char* argv[])
 	QApplication::setPalette(DarkPalette());
 	app.setStyleSheet(style);
 
+	/*
 	QFont font;
 	// qt5: family, pointSizeF, pixelSize, styleHint, weight, style, underline, strikeOut, fixedPitch, (int)false, styleName
 	// qt6: family, pointSizeF, pixelSize, styleHint, weight, style, underline, strikeOut, fixedPitch, (int)false, capitalization, letterSpacingType, letterSpacing, wordSpacing, stretch, styleStrategy, styleName
@@ -65,7 +66,8 @@ static int RunMain(int argc, char* argv[])
 	// font.setStyleStrategy(QFont::PreferAntialias);
 	font.setKerning(true);
 	app.setFont(font);
-	qDebug() << qApp->font();
+	// qDebug() << qApp->font();
+	*/
 
 	auto mainWindow = new MainWindow();
 	auto nativeWindow = new NativeWindow(mainWindow);
