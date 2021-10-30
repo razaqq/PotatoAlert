@@ -2,12 +2,14 @@
 #pragma once
 
 #include <cassert>
+#include <iomanip>
+#include <ios>
 #include <span>
+#include <sstream>
 #include <string>
 
 
-namespace PotatoAlert::ReplayParser
-{
+namespace PotatoAlert::ReplayParser {
 
 constexpr std::span<std::byte> Take(std::span<std::byte>& data, size_t n)
 {
@@ -18,13 +20,14 @@ constexpr std::span<std::byte> Take(std::span<std::byte>& data, size_t n)
 }
 
 template<typename T>
-static bool TakeInto(std::span<std::byte>& data, T&& dst)
+static bool TakeInto(std::span<std::byte>& data, T&& dst)  // requires std::is_fundamental_v<std::decay_t<T>> || std::is_fundamental_v<std::decay_t<std::underlying_type<T>>>
 {
 	if (data.size() >= sizeof(dst))
 	{
 		std::memcpy(&dst, Take(data, sizeof(dst)).data(), sizeof(dst));
 		return true;
 	}
+
 	/*
 	if (std::is_trivially_copyable<T>::value)
 	{
@@ -39,7 +42,23 @@ static bool TakeInto(std::span<std::byte>& data, T&& dst)
 	return false;
 }
 
-static bool TakeString(std::span<std::byte>& data, std::string& str, size_t size)
+inline std::string FormatBytes(std::span<const std::byte> data)
+{
+	std::ostringstream result;
+	for (auto begin = data.begin(); begin != data.end();)
+	{
+		result << "0x" << std::setw(2) << std::setfill('0') << std::hex << std::uppercase << std::to_integer<int>(*begin);
+		++begin;
+		if (begin != data.end())
+		{
+			result << " ";
+		}
+	}
+
+	return result.str();
+}
+
+[[maybe_unused]] static bool TakeString(std::span<std::byte>& data, std::string& str, size_t size)
 {
 	if (data.size() >= size)
 	{
@@ -50,7 +69,7 @@ static bool TakeString(std::span<std::byte>& data, std::string& str, size_t size
 	return false;
 }
 
-static bool TakeWString(std::span<std::byte>& data, std::wstring& str, size_t size)
+[[maybe_unused]] static bool TakeWString(std::span<std::byte>& data, std::wstring& str, size_t size)
 {
 	if (data.size() >= size)
 	{
