@@ -15,7 +15,7 @@ using PotatoAlert::Version;
 using PotatoAlert::Blowfish;
 using namespace PotatoAlert;
 
-std::vector<std::byte> from_string(const std::string& s) noexcept
+std::vector<std::byte> FromString(const std::string& s) noexcept
 {
 	std::vector<std::byte> arr(s.size());
 	std::transform(s.begin(), s.end(), arr.begin(), [](char c) { return std::byte(c); });
@@ -23,16 +23,16 @@ std::vector<std::byte> from_string(const std::string& s) noexcept
 }
 
 template<typename... Ts>
-std::array<std::byte, sizeof...(Ts)> from_hex(Ts&&... args) noexcept
+std::array<std::byte, sizeof...(Ts)> FromHex(Ts&&... args) noexcept
 {
 	return { std::byte(std::forward<Ts>(args))... };
 }
 
 TEST_CASE( "BlowFishEncryptTest" )
 {
-	auto key = from_string("just some random key lol");
-	auto text = from_string("just a test text");
-	auto solution = from_hex(0x6b, 0x40, 0x9e, 0x78, 0xb1, 0x7b, 0x58, 0x65, 0xd7, 0x4c, 0x28, 0x6e, 0xc4, 0xe0, 0xe6, 0x8d);
+	auto key = FromString("just some random key lol");
+	auto text = FromString("just a test text");
+	auto solution = FromHex(0x6b, 0x40, 0x9e, 0x78, 0xb1, 0x7b, 0x58, 0x65, 0xd7, 0x4c, 0x28, 0x6e, 0xc4, 0xe0, 0xe6, 0x8d);
 
 	Blowfish blowfish(key);
 	std::vector out = { std::byte{ 0 } };
@@ -44,9 +44,9 @@ TEST_CASE( "BlowFishEncryptTest" )
 
 TEST_CASE( "BlowFishDecryptTest" )
 {
-	auto key = from_string("just some random key lol");
-	auto text = from_hex(0x6b, 0x40, 0x9e, 0x78, 0xb1, 0x7b, 0x58, 0x65, 0xd7, 0x4c, 0x28, 0x6e, 0xc4, 0xe0, 0xe6, 0x8d);
-	auto solution = from_string("just a test text");
+	auto key = FromString("just some random key lol");
+	auto text = FromHex(0x6b, 0x40, 0x9e, 0x78, 0xb1, 0x7b, 0x58, 0x65, 0xd7, 0x4c, 0x28, 0x6e, 0xc4, 0xe0, 0xe6, 0x8d);
+	auto solution = FromString("just a test text");
 
 	Blowfish blowfish(key);
 	std::vector<std::byte> out;
@@ -99,6 +99,9 @@ TEST_CASE( "StringTest" )
 	REQUIRE(String::Contains(text, "this"));
 	REQUIRE(!String::Contains(text, "test"));
 	REQUIRE(String::Split(text, "") == std::vector<std::string>{ "this is some text" });
+
+	const std::string replace = "yes yes no no";
+	REQUIRE(String::ReplaceAll(replace, "yes", "no") == "no no no no");
 }
 
 TEST_CASE("VersionTest")
@@ -142,7 +145,7 @@ TEST_CASE( "ZlibTest" )
 			"ac, nisi. Aenean magna nisl, mollis quis, molestie eu, feugiat in, orci. In hac habitasse "
 			"platea dictumst.";
 
-	const auto binary = from_hex(
+	const auto binary = FromHex(
 			0x78, 0x9C, 0x4D, 0x54, 0x59, 0x8E, 0xDB, 0x30, 0x0C, 0xBD, 0x0A, 0x0F, 0x60, 0xF8, 0x0E, 0xC5,
 			0xB4, 0x1F, 0x05, 0xDA, 0xA2, 0x3F, 0x3D, 0x00, 0x23, 0x31, 0x09, 0x01, 0x2D, 0x1E, 0x49, 0x0C,
 			0xE6, 0xF8, 0x7D, 0x94, 0x9C, 0xCC, 0x7C, 0xD9, 0xD6, 0x42, 0xBE, 0x8D, 0xFE, 0x55, 0x9B, 0x64,
