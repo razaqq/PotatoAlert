@@ -74,8 +74,12 @@ File::Handle File::RawOpen(std::string_view path, Flags flags)
 
 	FileOpenParams params = GetFileOpenParams(flags);
 
+	DWORD extraFlags = FILE_ATTRIBUTE_NORMAL;
+	if (HasFlag(flags, Flags::NoBuffer))
+		extraFlags |= FILE_FLAG_NO_BUFFERING;
+
 	std::string pathString(path);
-	HANDLE hFile = CreateFileA(pathString.c_str(), params.access, params.share, nullptr, mode, FILE_ATTRIBUTE_NORMAL, nullptr);
+	HANDLE hFile = CreateFileA(pathString.c_str(), params.access, params.share, nullptr, mode, extraFlags, nullptr);
 
 	if (hFile == INVALID_HANDLE_VALUE)
 	{

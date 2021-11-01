@@ -28,6 +28,8 @@ public:
 
 		Open    = 0x04,
 		Create  = 0x08,
+
+		NoBuffer = 0x10,
 	};
 
 	File()
@@ -90,17 +92,17 @@ public:
 		return RawReadString(m_handle, out);
 	}
 
-	bool Write(std::span<const std::byte> data)
+	bool Write(std::span<const std::byte> data) const
 	{
 		return RawWrite(m_handle, data);
 	}
 
-	bool WriteString(const std::string& data)
+	bool WriteString(const std::string& data) const
 	{
 		return RawWriteString(m_handle, data);
 	}
 
-	bool FlushBuffer()
+	bool FlushBuffer() const
 	{
 		return RawFlushBuffer(m_handle);
 	}

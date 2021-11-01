@@ -107,7 +107,7 @@ void Config::Load()
 	LOG_TRACE("Config loaded.");
 }
 
-bool Config::Save()
+bool Config::Save() const
 {
 	LOG_TRACE("Saving Config");
 	if (!this->m_file)
@@ -170,7 +170,7 @@ bool Config::CreateDefault()
 	return saved;
 }
 
-bool Config::CreateBackup()
+bool Config::CreateBackup() const
 {
 	LOG_INFO("Creating config backup");
 	std::error_code ec;

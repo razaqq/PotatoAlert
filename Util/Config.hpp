@@ -24,15 +24,20 @@ enum class StatsMode
 	Clan
 };
 
-class Config : public QObject
+class Config final : public QObject
 {
 	Q_OBJECT
 public:
 	explicit Config(std::string_view fileName);
+	Config(const Config& config) = delete;
+	Config(Config&& config) noexcept = delete;
+	Config& operator=(const Config& config) = delete;
+	Config operator=(Config&& config) noexcept = delete;
+
 	~Config() override;
 
 	void Load();
-	bool Save();
+	bool Save() const;
 
 	template <typename T>
 	T Get(const char* key) const
@@ -56,7 +61,7 @@ private:
 	static std::optional<fs::path> GetPath(std::string_view fileName);
 	void AddMissingKeys();
 	bool CreateDefault();
-	bool CreateBackup();
+	bool CreateBackup() const;
 	[[nodiscard]] bool Exists() const;
 };
 
