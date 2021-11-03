@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <charconv>
 #include <locale>
+#include <numeric>
 #include <string>
 
 
@@ -97,6 +98,26 @@ std::vector<std::string> s::Split(std::string_view str, std::string_view del)
 	}
 	result.emplace_back(str.substr(i));
 	return result;
+}
+
+std::string Join(const std::vector<std::string>& v, std::string_view del)
+{
+	if (v.empty()) return "";
+	if (v.size() == 1) return v[1];
+
+	const size_t size = std::accumulate(v.begin(), v.end(), 0, [](size_t current, const std::string& str) -> size_t { return current + str.size(); });
+	std::string out;
+	out.reserve(size + ((v.size() - 1) * del.size()));
+
+	for (auto begin = v.begin(); begin != v.end();)
+	{
+		out += *begin;
+
+		++begin;
+		if (begin != v.end())
+			out += del;
+	}
+	return out;
 }
 
 bool s::Contains(std::string_view str, std::string_view del)

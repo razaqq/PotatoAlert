@@ -13,6 +13,7 @@ std::string ToUpper(std::string_view str);
 std::string ToLower(std::string_view str);
 std::vector<std::string> Split(std::string_view str, std::string_view del);
 std::string ReplaceAll(std::string_view str, std::string_view before, std::string_view after);
+std::string Join(const std::vector<std::string>& v, std::string_view del);
 void ReplaceAll(std::string& str, std::string_view before, std::string_view after);
 bool Contains(std::string_view str, std::string_view del);
 
