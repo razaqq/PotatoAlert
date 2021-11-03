@@ -101,14 +101,17 @@ uint64_t File::RawGetSize(Handle handle)
 	return largeInteger.QuadPart;
 }
 
-bool File::RawRead(Handle handle, std::vector<std::byte>& out)
+bool File::RawRead(Handle handle, std::vector<std::byte>& out, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
 	{
 		return false;
 	}
 
-	ResetFilePointer(handle);
+	if (resetFilePointer)
+	{
+		RawMoveFilePointer(handle, 0, FilePointerMoveMethod::Begin);
+	}
 
 	DWORD dwBytesRead;
 	const uint64_t size = RawGetSize(handle);
@@ -119,14 +122,17 @@ bool File::RawRead(Handle handle, std::vector<std::byte>& out)
 	return ReadFile(UnwrapHandle<HANDLE>(handle), buff, static_cast<DWORD>(size), &dwBytesRead, nullptr);
 }
 
-bool File::RawReadString(Handle handle, std::string& out)
+bool File::RawReadString(Handle handle, std::string& out, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
 	{
 		return false;
 	}
 
-	ResetFilePointer(handle);
+	if (resetFilePointer)
+	{
+		RawMoveFilePointer(handle, 0, FilePointerMoveMethod::Begin);
+	}
 
 	DWORD dwBytesRead;
 	const uint64_t size = RawGetSize(handle);
@@ -137,14 +143,17 @@ bool File::RawReadString(Handle handle, std::string& out)
 	return ReadFile(UnwrapHandle<HANDLE>(handle), buff, static_cast<DWORD>(size), &dwBytesRead, nullptr);
 }
 
-bool File::RawWrite(Handle handle, std::span<const std::byte> data)
+bool File::RawWrite(Handle handle, std::span<const std::byte> data, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
 	{
 		return false;
 	}
 	
-	ResetFilePointer(handle);
+	if (resetFilePointer)
+	{
+		RawMoveFilePointer(handle, 0, FilePointerMoveMethod::Begin);
+	}
 
 	DWORD dwBytesWritten = 0;
 	if (WriteFile(UnwrapHandle<HANDLE>(handle), data.data(), data.size(), &dwBytesWritten, nullptr))
@@ -154,14 +163,17 @@ bool File::RawWrite(Handle handle, std::span<const std::byte> data)
 	return false;
 }
 
-bool File::RawWriteString(Handle handle, const std::string& data)
+bool File::RawWriteString(Handle handle, const std::string& data, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
 	{
 		return false;
 	}
 
-	ResetFilePointer(handle);
+	if (resetFilePointer)
+	{
+		RawMoveFilePointer(handle, 0, FilePointerMoveMethod::Begin);
+	}
 
 	DWORD dwBytesWritten = 0;
 	if (WriteFile(UnwrapHandle<HANDLE>(handle), data.c_str(), data.length(), &dwBytesWritten, nullptr))
@@ -175,7 +187,6 @@ bool File::RawFlushBuffer(Handle handle)
 {
 	return FlushFileBuffers(UnwrapHandle<HANDLE>(handle));
 }
-
 
 std::string File::LastError()
 {
@@ -238,7 +249,36 @@ bool File::RawExists(std::string_view file)
 	return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-bool File::ResetFilePointer(Handle handle)
+bool File::RawMoveFilePointer(Handle handle, long offset, FilePointerMoveMethod method)
 {
-	return SetFilePointer(UnwrapHandle<HANDLE>(handle), 0, nullptr, FILE_BEGIN) != INVALID_SET_FILE_POINTER;
+	if (handle == Handle::Null)
+	{
+		return false;
+	}
+
+	DWORD moveMethod = FILE_BEGIN;
+	switch (method)
+	{
+		case FilePointerMoveMethod::Begin:
+			moveMethod = FILE_BEGIN;
+			break;
+		case FilePointerMoveMethod::Current:
+			moveMethod = FILE_CURRENT;
+			break;
+		case FilePointerMoveMethod::End:
+			moveMethod = FILE_END;
+			break;
+	}
+	
+	return SetFilePointer(UnwrapHandle<HANDLE>(handle), offset, nullptr, moveMethod) != INVALID_SET_FILE_POINTER;
+}
+
+unsigned long File::RawCurrentFilePointer(Handle handle)
+{
+	if (handle == Handle::Null)
+	{
+		return false;
+	}
+
+	return SetFilePointer(UnwrapHandle<HANDLE>(handle), 0, nullptr, FILE_CURRENT);
 }

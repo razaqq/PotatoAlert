@@ -82,29 +82,51 @@ public:
 		return RawGetSize(m_handle);
 	}
 
-	bool Read(std::vector<std::byte>& out) const
+	bool Read(std::vector<std::byte>& out, bool resetFilePointer = true) const
 	{
-		return RawRead(m_handle, out);
+		return RawRead(m_handle, out, resetFilePointer);
 	}
 
-	bool ReadString(std::string& out) const
+	bool ReadString(std::string& out, bool resetFilePointer = true) const
 	{
-		return RawReadString(m_handle, out);
+		return RawReadString(m_handle, out, resetFilePointer);
 	}
 
-	bool Write(std::span<const std::byte> data) const
+	bool Write(std::span<const std::byte> data, bool resetFilePointer = true) const
 	{
-		return RawWrite(m_handle, data);
+		return RawWrite(m_handle, data, resetFilePointer);
 	}
 
-	bool WriteString(const std::string& data) const
+	bool WriteString(const std::string& data, bool resetFilePointer = true) const
 	{
-		return RawWriteString(m_handle, data);
+		return RawWriteString(m_handle, data, resetFilePointer);
 	}
 
 	bool FlushBuffer() const
 	{
 		return RawFlushBuffer(m_handle);
+	}
+
+	enum class FilePointerMoveMethod
+	{
+		Begin,
+		Current,
+		End
+	};
+
+	bool MoveFilePointer(long offset, FilePointerMoveMethod method = FilePointerMoveMethod::Begin) const
+	{
+		return RawMoveFilePointer(m_handle, offset, method);
+	}
+
+	unsigned long CurrentFilePointer() const
+	{
+		return RawCurrentFilePointer(m_handle);
+	}
+
+	bool ResetFilePointer() const
+	{
+		return RawMoveFilePointer(m_handle, 0, FilePointerMoveMethod::Begin);
 	}
 
 	static bool Move(std::string_view src, std::string_view dst)
@@ -144,10 +166,10 @@ private:
 	Handle m_handle;
 
 	// these have to be implemented for each os
-	static bool RawRead(Handle handle, std::vector<std::byte>& out);
-	static bool RawReadString(Handle handle, std::string& out);
-	static bool RawWrite(Handle handle, std::span<const std::byte> data);
-	static bool RawWriteString(Handle handle, const std::string& data);
+	static bool RawRead(Handle handle, std::vector<std::byte>& out, bool resetFilePointer);
+	static bool RawReadString(Handle handle, std::string& out, bool resetFilePointer);
+	static bool RawWrite(Handle handle, std::span<const std::byte> data, bool resetFilePointer);
+	static bool RawWriteString(Handle handle, const std::string& data, bool resetFilePointer);
 	static bool RawFlushBuffer(Handle handle);
 	static uint64_t RawGetSize(Handle handle);
 	static Handle RawOpen(std::string_view path, Flags flags);
@@ -155,7 +177,8 @@ private:
 	static bool RawMove(std::string_view src, std::string_view dst);
 	static bool RawDelete(std::string_view file);
 	static bool RawExists(std::string_view file);
-	static bool ResetFilePointer(Handle handle);
+	static bool RawMoveFilePointer(Handle handle, long offset, FilePointerMoveMethod method);
+	static unsigned long RawCurrentFilePointer(Handle handle);
 };
 DEFINE_FLAGS(File::Flags);
 
