@@ -11,13 +11,20 @@
 
 namespace PotatoAlert::ReplayParser {
 
-struct ReplayFile
+class Replay
 {
+public:
 	ReplayMeta meta;
-	std::vector<Packet> packets;
+	std::vector<PacketType> packets;
 
-	static std::optional<ReplayFile> FromFile(std::string_view fileName);
-	std::optional<bool> Won() const;
+	static std::optional<Replay> FromFile(std::string_view fileName);
+	bool ReadPackets();
+
+private:
+	std::span<std::byte> m_data;
+	std::vector<std::byte> m_rawData;
 };
+
+void ProcessReplayDirectory();
 
 }  // namespace PotatoAlert::ReplayParser

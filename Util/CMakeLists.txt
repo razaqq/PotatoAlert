@@ -8,6 +8,7 @@ set(
 
         Blowfish.cpp
         Blowfish.hpp
+        Bytes.hpp
         Config.cpp
         Config.hpp
         Directory.hpp

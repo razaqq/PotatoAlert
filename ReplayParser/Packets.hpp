@@ -37,6 +37,7 @@ enum class PacketBaseType : uint32_t
 	EntityProperty = 0x7,
 	EntityMethod = 0x8,
 	PlayerPosition = 0xA,
+	Version = 0x16,
 	NestedPropertyUpdate = 0x22,
 	// Chat = 0x23,
 	Camera = 0x24,
@@ -105,7 +106,7 @@ struct CellPlayerCreatePacket : Packet
 	uint16_t unknown;
 	uint32_t vehicleId;
 	Vec3 position;
-	Vec3 direction;  // yaw, pitch, roll
+	Vec3 rotation;  // yaw, pitch, roll
 	std::vector<ArgValue> values;
 };
 
@@ -177,7 +178,7 @@ struct EntityCreatePacket : Packet
 	uint32_t spaceId;
 	uint32_t vehicleId;
 	Vec3 position;
-	Vec3 direction;
+	Vec3 rotation;
 
 	// uint32_t stateSize;
 	// std::vector<std::byte> state;
@@ -196,6 +197,7 @@ struct EntityMethodPacket : Packet
 {
 	uint32_t entityId;
 	uint32_t methodId;
+	std::string methodName;
 	std::vector<ArgValue> values;
 	// uint32_t size;
 	// std::vector<std::byte> data;
@@ -223,7 +225,7 @@ struct PlayerOrientationPacket : Packet
 	uint32_t pid;
 	uint32_t parentId;
 	Vec3 position;
-	Vec3 direction;
+	Vec3 rotation;
 };
 
 struct PlayerPositionPacket : Packet
@@ -232,7 +234,7 @@ struct PlayerPositionPacket : Packet
 	uint32_t vehicleId;
 	Vec3 position;
 	Vec3 positionError;
-	Vec3 direction;
+	Vec3 rotation;
 	bool isError;
 };
 
@@ -248,14 +250,32 @@ struct MapPacket : Packet
 {
 	uint32_t spaceId;
 	int64_t arenaId;
+	uint32_t unknown1;
+	uint32_t unknown2;
 	std::string name;
 	Mat4 matrix;
+	bool unknown3;
+};
+
+struct CameraPacket : Packet
+{
+	Vec3 unknown;
+	uint32_t unknown2;
+	Vec3 unknown3;
+	float fov;
+	Vec3 position;
+	Vec3 rotation;
+};
+
+struct VersionPacket : Packet
+{
+	std::string version;
 };
 
 typedef std::variant<
 	BasePlayerCreatePacket, CellPlayerCreatePacket, EntityControlPacket, EntityEnterPacket,
 	EntityLeavePacket, EntityCreatePacket, EntityMethodPacket, EntityPropertyPacket,
-	PlayerPositionPacket, PlayerOrientationPacket, MapPacket,
-	UnknownPacket, InvalidPacket> PacketType;
+	PlayerPositionPacket, PlayerOrientationPacket, MapPacket, NestedPropertyUpdatePacket,
+	VersionPacket, CameraPacket, UnknownPacket, InvalidPacket> PacketType;
 
 }  // namespace PotatoAlert::ReplayParser

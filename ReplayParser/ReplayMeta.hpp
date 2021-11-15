@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Json.hpp"
+#include "Version.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -30,11 +31,11 @@ struct ReplayMeta
 {
 	std::string matchGroup;
 	uint32_t gameMode;
-	std::string clientVersionFromExe;
+	Version clientVersionFromExe;
 	uint32_t scenarioUiCategoryId;
 	std::string mapDisplayName;
 	uint32_t mapId;
-	std::string clientVersionFromXml;
+	Version clientVersionFromXml;
 	std::unordered_map<std::string, std::vector<std::string>> weatherParams;
 	//mapBorder null;
 	uint32_t duration;
@@ -58,11 +59,11 @@ struct ReplayMeta
 {
 	j.at("matchGroup").get_to(m.matchGroup);
 	j.at("gameMode").get_to(m.gameMode);
-	j.at("clientVersionFromExe").get_to(m.clientVersionFromExe);
+	m.clientVersionFromExe = Version(j.at("clientVersionFromExe").get<std::string>());
 	j.at("scenarioUiCategoryId").get_to(m.scenarioUiCategoryId);
 	j.at("mapDisplayName").get_to(m.mapDisplayName);
 	j.at("mapId").get_to(m.mapId);
-	j.at("clientVersionFromXml").get_to(m.clientVersionFromXml);
+	m.clientVersionFromXml = Version(j.at("clientVersionFromXml").get<std::string>());
 	j.at("weatherParams").get_to(m.weatherParams);
 	j.at("duration").get_to(m.duration);
 	j.at("gameLogic").get_to(m.gameLogic);

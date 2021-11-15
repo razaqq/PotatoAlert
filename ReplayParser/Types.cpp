@@ -2,7 +2,8 @@
 
 #include "Types.hpp"
 
-#include "ByteUtil.hpp"
+#include "Bytes.hpp"
+#include "Log.hpp"
 #include "String.hpp"
 
 #include <optional>
@@ -13,7 +14,8 @@
 
 
 namespace rp = PotatoAlert::ReplayParser;
-using namespace PotatoAlert::ReplayParser;
+using namespace PotatoAlert;
+using namespace ReplayParser;
 
 ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 {
@@ -69,7 +71,14 @@ ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 	if (typeName == "FIXED_DICT")
 	{
 		FixedDictType dict;
-		dict.allowNone = elem->BoolAttribute("AllowNone", false);
+
+		if (XMLElement* allowNoneElem = elem->FirstChildElement("AllowNone"))
+		{
+			if (!String::ParseBool(String::Trim(allowNoneElem->GetText()), dict.allowNone))
+			{
+				LOG_ERROR("Failed to parse bool for FixtedDictType");
+			}
+		}
 
 		if (XMLElement* propElem = elem->FirstChildElement("Properties"))
 		{
@@ -156,95 +165,121 @@ size_t rp::TypeSize(const ArgType& type)
 	type);
 }
 
-static std::optional<ArgValue> ParsePrimitive(PrimitiveType type, std::span<std::byte>& data)
+static ArgValue ParsePrimitive(PrimitiveType type, std::span<std::byte>& data)
 {
 	switch (type.type)
 	{
 		case BasicType::Uint8:
-			uint8_t v1;
-			if (TakeInto(data, v1))
+		{
+			uint8_t v;
+			if (TakeInto(data, v))
 			{
-				return v1;
+				return v;
 			}
 			break;
+		}
 		case BasicType::Uint16:
-			uint16_t v2;
-			if (TakeInto(data, v2))
+		{
+			uint16_t v;
+			if (TakeInto(data, v))
 			{
-				return v2;
+				return v;
 			}
 			break;
+		}
 		case BasicType::Uint32:
-			uint32_t v3;
-			if (TakeInto(data, v3))
+		{
+			uint32_t v;
+			if (TakeInto(data, v))
 			{
-				return v3;
+				return v;
 			}
 			break;
+		}
 		case BasicType::Uint64:
-			uint64_t v4;
-			if (TakeInto(data, v4))
+		{
+			uint64_t v;
+			if (TakeInto(data, v))
 			{
-				return v4;
+				return v;
 			}
 			break;
+		}
 		case BasicType::Int8:
-			int8_t v5;
-			if (TakeInto(data, v5))
+		{
+			int8_t v;
+			if (TakeInto(data, v))
 			{
-				return v5;
+				return v;
 			}
 			break;
+		}
 		case BasicType::Int16:
-			uint16_t v6;
-			if (TakeInto(data, v6))
+		{
+			int16_t v;
+			if (TakeInto(data, v))
 			{
-				return v6;
+				return v;
 			}
 			break;
+		}
 		case BasicType::Int32:
-			uint32_t v7;
-			if (TakeInto(data, v7))
+		{
+			int32_t v;
+			if (TakeInto(data, v))
 			{
-				return v7;
+				return v;
 			}
 			break;
+		}
 		case BasicType::Int64:
-			uint64_t v8;
-			if (TakeInto(data, v8))
+		{
+			int64_t v;
+			if (TakeInto(data, v))
 			{
-				return v8;
+				return v;
 			}
 			break;
+		}
 		case BasicType::Float32:
-			float v9;
-			if (TakeInto(data, v9))
+		{
+			float v;
+			if (TakeInto(data, v))
 			{
-				return v9;
+				return v;
 			}
 			break;
+		}
 		case BasicType::Float64:
-			double v10;
-			if (TakeInto(data, v10))
+		{
+			double v;
+			if (TakeInto(data, v))
 			{
-				return v10;
+				return v;
 			}
 			break;
+		}
 		case BasicType::Vector2:
-			Vec2 v11;
-			if (TakeInto(data, v11))
+		{
+			Vec2 v;
+			if (TakeInto(data, v))
 			{
-				return v11;
+				return v;
 			}
 			break;
+		}
 		case BasicType::Vector3:
-			Vec3 v12;
-			if (TakeInto(data, v12))
+		{
+			Vec3 v;
+			if (TakeInto(data, v))
 			{
-				return v12;
+				return v;
 			}
 			break;
+		}
 		case BasicType::String:
+		case BasicType::UnicodeString:
+		{
 			uint8_t size;
 			if (!TakeInto(data, size))
 			{
@@ -278,48 +313,16 @@ static std::optional<ArgValue> ParsePrimitive(PrimitiveType type, std::span<std:
 				}
 			}
 			break;
-		case BasicType::UnicodeString:
-			uint8_t size2;
-			if (!TakeInto(data, size2))
-			{
-				break;
-			}
-
-			if (size2 == std::numeric_limits<uint8_t>::max())
-			{
-				uint16_t stringSize;
-				if (!TakeInto(data, stringSize))
-				{
-					break;
-				}
-				bool unknown;
-				if (!TakeInto(data, unknown))
-				{
-					break;
-				}
-				std::string str;
-				if (TakeString(data, str, stringSize))
-				{
-					return str;
-				}
-			}
-			else
-			{
-				std::wstring str;
-				if (TakeWString(data, str, size2))
-				{
-					return str;
-				}
-			}
-			break;
+		}
 		case BasicType::Blob:
-			uint8_t size3;
-			if (!TakeInto(data, size3))
+		{
+			uint8_t size;
+			if (!TakeInto(data, size))
 			{
 				break;
 			}
 
-			if (size3 == std::numeric_limits<uint8_t>::max())
+			if (size == std::numeric_limits<uint8_t>::max())
 			{
 				uint16_t blobSize;
 				if (!TakeInto(data, blobSize))
@@ -338,20 +341,76 @@ static std::optional<ArgValue> ParsePrimitive(PrimitiveType type, std::span<std:
 			}
 			else
 			{
-				if (data.size() >= size3)
+				if (data.size() >= size)
 				{
-					return Take(data, size3);
+					return Take(data, size);
 				}
 			}
 			break;
-		default:
-			break;
+		}
 	}
 	return {};
 }
 
-std::optional<ArgValue> rp::ParseValue(std::span<std::byte>& data, const ArgType& type)
+#ifndef NDEBUG
+static std::string PrintType(const ArgType& type)
 {
+	return std::visit([](auto&& t) -> std::string
+	{
+		using T = std::decay_t<decltype(t)>;
+		if constexpr (std::is_same_v<T, PrimitiveType>)
+		{
+			switch (t.type)
+			{
+				case BasicType::Uint8: return "uint8_t";
+				case BasicType::Uint16: return "uint16_t";
+				case BasicType::Uint32: return "uint32_t";
+				case BasicType::Uint64: return "uint64_t";
+				case BasicType::Int8: return "int8_t";
+				case BasicType::Int16:return "int16_t";
+				case BasicType::Int32: return "int32_t";
+				case BasicType::Int64: return "int64_t";
+				case BasicType::Float32: return "float32";
+				case BasicType::Float64: return "float64";
+				case BasicType::Vector2: return "Vector2";
+				case BasicType::Vector3: return "Vector3";
+				case BasicType::String: return "String";
+				case BasicType::UnicodeString: return "UnicodeString";
+				case BasicType::Blob: return "Blob";
+			}
+		}
+		else if constexpr (std::is_same_v<T, ArrayType>)
+		{
+			if (t.size)
+				return std::format("Array<{}, {}>", t.size.value(), PrintType(*t.subType));
+			return std::format("Array<-1, {}>", PrintType(*t.subType));
+		}
+		else if constexpr (std::is_same_v<T, FixedDictType>)
+		{
+			std::string dict = std::format("FixedDict<{}, [", t.allowNone);
+
+			for (auto begin = t.properties.begin(); begin != t.properties.end();)
+			{
+				const FixedDictProperty p = *begin;
+				dict += std::format("Property(name: {} type: {})", p.name, PrintType(*p.type));
+
+				++begin;
+				if (begin != t.properties.end())
+					dict += ", ";
+			}
+			dict += "]>";
+			return dict;
+		}
+		return "";
+		},
+	type);
+}
+#endif
+
+ArgValue rp::ParseValue(std::span<std::byte>& data, const ArgType& type)
+{
+	if (data.empty()) return {};
+
 	return std::visit([&data](auto&& t) -> ArgValue
 	{
 		using T = std::decay_t<decltype(t)>;
@@ -370,6 +429,10 @@ std::optional<ArgValue> rp::ParseValue(std::span<std::byte>& data, const ArgType
 					return {};
 				}
 			}
+			else
+			{
+				size = t.size.value();
+			}
 			for (size_t i = 0; i < size; i++)
 			{
 				values.emplace_back(ParseValue(data, *t.subType));
@@ -378,7 +441,7 @@ std::optional<ArgValue> rp::ParseValue(std::span<std::byte>& data, const ArgType
 		}
 		else if constexpr (std::is_same_v<T, FixedDictType>)
 		{
-			std::unordered_map<std::string, ArgValue> dict;
+ 			std::unordered_map<std::string, ArgValue> dict;
 			if (t.allowNone)
 			{
 				uint8_t flag;
@@ -399,6 +462,7 @@ std::optional<ArgValue> rp::ParseValue(std::span<std::byte>& data, const ArgType
 
 			for (const FixedDictProperty& property : t.properties)
 			{
+				// LOG_TRACE("{}: {} {}", property.name, PrintType(*property.type), FormatBytes(data));
 				dict.emplace(property.name, ParseValue(data, *property.type));
 			}
 
@@ -406,7 +470,8 @@ std::optional<ArgValue> rp::ParseValue(std::span<std::byte>& data, const ArgType
 		}
 		else if constexpr (std::is_same_v<T, TupleType>)
 		{
-			// TODO
+			// TODO: parse this
+			LOG_ERROR("TupleType encountered");
 			return {};
 		}
 		return {};

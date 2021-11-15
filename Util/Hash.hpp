@@ -3,8 +3,7 @@
 
 #include <string>
 
-namespace PotatoAlert
-{
+namespace PotatoAlert {
 
 inline size_t Hash(const std::string& val)
 {

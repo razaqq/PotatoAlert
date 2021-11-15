@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Math.hpp"
+#include "String.hpp"
 
 #include <memory>
 #include <tinyxml2.h>
@@ -64,6 +65,7 @@ inline size_t PrimitiveSize(BasicType type)
 		case BasicType::UnicodeString:
 		case BasicType::Blob: return Infinity;
 	}
+	return Infinity;
 }
 
 struct PrimitiveType;
@@ -73,7 +75,8 @@ struct TupleType;
 struct UnknownType;
 typedef std::variant<PrimitiveType, ArrayType, FixedDictType, TupleType, UnknownType> ArgType;
 typedef std::any ArgValue;
-		/*
+
+/*
 typedef std::span<std::byte> Blob;
 typedef std::variant<uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, float, double, Vec2, Vec3> PrimitiveValue;
 typedef std::variant<PrimitiveValue, std::vector<PrimitiveValue>, std::unordered_map<std::string, PrimitiveValue>, std::tuple<std::string, PrimitiveValue>> ArgValue;
@@ -102,7 +105,7 @@ struct FixedDictProperty
 
 struct FixedDictType
 {
-	bool allowNone;
+	bool allowNone = false;
 	std::vector<FixedDictProperty> properties = {};
 };
 
@@ -118,6 +121,6 @@ typedef std::unordered_map<std::string, ArgType> AliasType;
 
 ArgType ParseType(XMLElement* elem, const AliasType& aliases);
 size_t TypeSize(const ArgType& type);
-std::optional<ArgValue> ParseValue(std::span<std::byte>& data, const ArgType& type);
+ArgValue ParseValue(std::span<std::byte>& data, const ArgType& type);
 
 }  // namespace PotatoAlert::ReplayParser

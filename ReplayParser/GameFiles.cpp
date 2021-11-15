@@ -117,7 +117,6 @@ std::vector<EntitySpec> rp::ParseScripts(const Version& version)
 			std::ranges::stable_sort(properties, [](const Property& a, const Property& b) -> bool { return TypeSize(a.type) < TypeSize(b.type); });
 			std::ranges::stable_sort(merged.clientMethods, [](const Method& a, const Method& b) -> bool { return a.SortSize() < b.SortSize(); });
 
-
 			specs.emplace_back(EntitySpec{ entityName, std::move(merged.baseMethods), std::move(merged.cellMethods), std::move(merged.clientMethods), properties, internalProperties });
 		}
 	}

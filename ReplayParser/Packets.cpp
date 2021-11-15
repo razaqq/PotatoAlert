@@ -2,7 +2,7 @@
 
 #include "Packets.hpp"
 
-#include "ByteUtil.hpp"
+#include "Bytes.hpp"
 
 #include <optional>
 #include <span>
