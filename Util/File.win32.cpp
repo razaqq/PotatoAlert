@@ -101,7 +101,8 @@ uint64_t File::RawGetSize(Handle handle)
 	return largeInteger.QuadPart;
 }
 
-bool File::RawRead(Handle handle, std::vector<std::byte>& out, bool resetFilePointer)
+template<typename T>
+bool File::RawRead(Handle handle, std::vector<T>& out, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
 	{
@@ -121,6 +122,11 @@ bool File::RawRead(Handle handle, std::vector<std::byte>& out, bool resetFilePoi
 
 	return ReadFile(UnwrapHandle<HANDLE>(handle), buff, static_cast<DWORD>(size), &dwBytesRead, nullptr);
 }
+template bool File::RawRead(Handle, std::vector<uint8_t>&, bool);
+template bool File::RawRead(Handle, std::vector<int8_t>&, bool);
+template bool File::RawRead(Handle, std::vector<std::byte>&, bool);
+template bool File::RawRead(Handle, std::vector<unsigned char>&, bool);
+template bool File::RawRead(Handle, std::vector<char>&, bool);
 
 bool File::RawReadString(Handle handle, std::string& out, bool resetFilePointer)
 {

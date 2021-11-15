@@ -82,7 +82,8 @@ public:
 		return RawGetSize(m_handle);
 	}
 
-	bool Read(std::vector<std::byte>& out, bool resetFilePointer = true) const
+	template<typename T> requires(sizeof(T) == 1)
+	bool Read(std::vector<T>& out, bool resetFilePointer = true) const
 	{
 		return RawRead(m_handle, out, resetFilePointer);
 	}
@@ -166,7 +167,8 @@ private:
 	Handle m_handle;
 
 	// these have to be implemented for each os
-	static bool RawRead(Handle handle, std::vector<std::byte>& out, bool resetFilePointer);
+	template<typename T>
+	static bool RawRead(Handle handle, std::vector<T>& out, bool resetFilePointer);
 	static bool RawReadString(Handle handle, std::string& out, bool resetFilePointer);
 	static bool RawWrite(Handle handle, std::span<const std::byte> data, bool resetFilePointer);
 	static bool RawWriteString(Handle handle, const std::string& data, bool resetFilePointer);
