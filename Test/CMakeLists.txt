@@ -20,7 +20,8 @@ enable_testing()
 
 add_executable(PotatoTest PotatoTest.cpp GameTest.cpp ReplayTest.cpp UtilTest.cpp )
 
-target_link_libraries(PotatoTest util client replayparser Catch2::Test)
+set_target_properties(PotatoTest PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
+target_link_libraries(PotatoTest PRIVATE util client replayparser Catch2::Test)
 target_include_directories(
         PotatoTest
         PUBLIC

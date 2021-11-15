@@ -19,7 +19,4 @@ set(
 )
 
 add_library(replayparser STATIC ${replayparser_src})
-set_property(TARGET replayparser PROPERTY CXX_STANDARD 20)
-set_property(TARGET replayparser PROPERTY CXX_STANDARD_REQUIRED true)
-target_include_directories(replayparser PRIVATE ${CMAKE_SOURCE_DIR}/Util)
-target_link_libraries(replayparser PRIVATE util)
+set_target_properties(replayparser PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)

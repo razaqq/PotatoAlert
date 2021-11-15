@@ -55,7 +55,7 @@ endif(UNIX)
 
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2 ${CMAKE_BINARY_DIR}/ThirdParty/tinyxml2)
+add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/tinyxml2 ${CMAKE_BINARY_DIR}/ThirdParty/tinyxml2)
 add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/sqlite3 ${CMAKE_BINARY_DIR}/ThirdParty/sqlite3)
 set(CMAKE_DISABLE_TESTING ON)
 add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/zip ${CMAKE_BINARY_DIR}/ThirdParty/zip)
@@ -64,8 +64,7 @@ target_compile_options(zlib PRIVATE -Wno-deprecated)
 target_compile_options(zlibstatic PRIVATE -Wno-deprecated)
 
 add_library(util STATIC ${util_src})
-set_property(TARGET util PROPERTY CXX_STANDARD 20)
-set_property(TARGET util PROPERTY CXX_STANDARD_REQUIRED true)
+set_target_properties(util PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
 target_link_libraries(util PRIVATE sqlite3 tinyxml2 zip ZLIB::ZLIB)
 target_link_libraries(util PUBLIC Qt5::Core Qt5::Widgets)
 target_include_directories(

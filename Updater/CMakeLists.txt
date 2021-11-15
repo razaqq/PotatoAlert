@@ -37,6 +37,7 @@ endif()
 
 target_link_libraries(PotatoUpdater PRIVATE gui util)
 target_link_libraries(PotatoUpdater PRIVATE Qt5::Network)
+set_target_properties(PotatoUpdater PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
 
 add_custom_command(
         TARGET PotatoUpdater

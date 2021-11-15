@@ -61,6 +61,8 @@ endif(WIN32)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_library(gui STATIC ${gui_src})
+
+set_target_properties(gui PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
 target_link_libraries(gui PRIVATE client util framelessHelper Qt5::Widgets)
 target_include_directories(
         gui
