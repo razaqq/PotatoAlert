@@ -3,8 +3,10 @@
 
 #define SPDLOG_NO_EXCEPTIONS
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+#pragma warning(push, 0)
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
+#pragma warning(pop)
 
 #include <QString>
 
