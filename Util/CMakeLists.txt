@@ -13,6 +13,7 @@ set(
         Directory.hpp
         File.hpp
         Flags.hpp
+        Instrumentor.hpp
         Log.cpp
         Log.hpp
         Process.hpp
