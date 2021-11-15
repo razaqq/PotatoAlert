@@ -10,6 +10,7 @@ set(
         GameFiles.hpp
         Packets.hpp
         Packets.cpp
+        PacketParser.cpp
         PacketParser.hpp
         ReplayMeta.hpp
         ReplayParser.cpp

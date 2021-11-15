@@ -3,6 +3,7 @@ project(PotatoAlert)
 
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)  # new option() policy
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 add_definitions(-D_HAS_EXCEPTIONS=0)  # turn off exceptions
@@ -35,6 +36,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/Updater)
 add_subdirectory(${PROJECT_SOURCE_DIR}/FramelessHelper)
 
 add_executable(PotatoAlert Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
+set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set_property(TARGET PotatoAlert PROPERTY WIN32_EXECUTABLE true)
