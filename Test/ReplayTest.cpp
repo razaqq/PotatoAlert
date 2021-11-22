@@ -31,66 +31,48 @@ static std::string GetReplay(std::string_view name)
 
 TEST_CASE( "ReplayTest" )
 {
-	std::optional<ReplayFile> res = ReplayFile::FromFile(GetReplay("20201107_155356_PISC110-Venezia_19_OC_prey.wowsreplay"));
+	std::optional<Replay> res = Replay::FromFile(GetReplay("20201107_155356_PISC110-Venezia_19_OC_prey.wowsreplay"));
 	REQUIRE(res.has_value());
-	ReplayFile replay = res.value();
+	Replay replay = res.value();
 	REQUIRE(replay.meta.name == "12x12");
 	REQUIRE(replay.meta.dateTime == "07.11.2020 15:53:56");
+	REQUIRE(replay.packets.empty());
+	REQUIRE(replay.ReadPackets());
 	REQUIRE(replay.packets.size() == 153376);
+	MatchSummary result = replay.Analyze();
+	REQUIRE((result && result.won));
+
+	res = Replay::FromFile(GetReplay("20210914_212320_PRSC610-Smolensk_25_sea_hope.wowsreplay"));  // WIN
+	REQUIRE(res.has_value());
+	Replay replay2 = res.value();
+	REQUIRE(replay2.ReadPackets());
+	MatchSummary result2 = replay2.Analyze();
+	REQUIRE((result2 && result2.won));
+
+	res = Replay::FromFile(GetReplay("20210913_011502_PASD510-Somers_53_Shoreside.wowsreplay"));  // LOSS
+	REQUIRE(res.has_value());
+	Replay replay3 = res.value();
+	REQUIRE(replay3.ReadPackets());
+	MatchSummary result3 = replay3.Analyze();
+	REQUIRE((result3 && !result3.won));
+
+
+	res = Replay::FromFile(GetReplay("20210912_002554_PRSB110-Sovetskaya-Rossiya_53_Shoreside.wowsreplay"));  // WIN
+	REQUIRE(res.has_value());
+	Replay replay4 = res.value();
+	REQUIRE(replay4.ReadPackets());
+	MatchSummary result4 = replay4.Analyze();
+	REQUIRE((result4 && result4.won));
+
+	res = Replay::FromFile(GetReplay("20210915_180756_PRSC610-Smolensk_35_NE_north_winter.wowsreplay"));  // LOSS
+	REQUIRE(res.has_value());
+	Replay replay5 = res.value();
+	REQUIRE(replay5.ReadPackets());
+	MatchSummary result5 = replay5.Analyze();
+	REQUIRE((result5 && !result5.won));
 }
 
-TEST_CASE( "ReplayTest2" )
-{
-	/*
-	std::optional<ReplayFile> res = ReplayFile::FromFile(GetReplay("20201107_155356_PISC110-Venezia_19_OC_prey.wowsreplay"));  // WIN
-	REQUIRE(res.has_value());
-	ReplayFile replay1 = res.value();
-	auto wonRes = replay1.Won();
-	REQUIRE((wonRes && wonRes.value()));
-
-	res = ReplayFile::FromFile(GetReplay("20210914_212320_PRSC610-Smolensk_25_sea_hope.wowsreplay"));  // WIN
-	REQUIRE(res.has_value());
-	ReplayFile replay2 = res.value();
-	auto wonRes2 = replay2.Won();
-	REQUIRE((wonRes2 && wonRes2.value()));
-
-	res = ReplayFile::FromFile(GetReplay("20210913_011502_PASD510-Somers_53_Shoreside.wowsreplay"));  // LOSS
-	REQUIRE(res.has_value());
-	ReplayFile replay3 = res.value();
-	auto wonRes3 = replay3.Won();
-	REQUIRE((wonRes3 && !wonRes3.value()));
-
-	res = ReplayFile::FromFile(GetReplay("20210912_002554_PRSB110-Sovetskaya-Rossiya_53_Shoreside.wowsreplay"));  // WIN
-	REQUIRE(res.has_value());
-	ReplayFile replay4 = res.value();
-	replay4.Analyze();
-	auto wonRes4 = replay4.Won();
-	REQUIRE((wonRes4 && wonRes4.value()));
-
-	res = ReplayFile::FromFile(GetReplay("20210915_180756_PRSC610-Smolensk_35_NE_north_winter.wowsreplay"));  // LOSS
-	REQUIRE(res.has_value());
-	ReplayFile replay5 = res.value();
-	auto wonRes5 = replay5.Won();
-	REQUIRE((wonRes5 && !wonRes5.value()));
-	*/
-
-	/*
-	for (auto& entry : fs::recursive_directory_iterator(fs::path("F:\\World_of_Warships_Eu\\replays")))
-	{
-		if (entry.is_regular_file() && entry.path().extension() == ".wowsreplay")
-		{
-			std::optional<ReplayFile> res = ReplayFile::FromFile(GetReplay(entry.path().string()));
-			if (res.has_value())
-			{
-				ReplayFile replay = res.value();
-				std::cout << entry.path().string() << " -> " << static_cast<int>(replay.WinningTeam()) << std::endl;
-			}
-		}
-	}
-	*/
-}
-
-TEST_CASE("ReplayGameFileTest")
+TEST_CASE( "ReplayGameFileTest" )
 {
 	const std::vector<EntitySpec> spec = ParseScripts(Version(0, 10, 8, 0));
 	REQUIRE(spec.size() == 13);
