@@ -19,6 +19,11 @@ struct Vec4
 	
 };
 
+struct Rot3
+{
+	float roll, pitch, yaw;
+};
+
 struct Mat3
 {
 	
