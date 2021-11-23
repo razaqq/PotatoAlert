@@ -1,0 +1,44 @@
+name: Build & Test
+
+on: push
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup Visual Studio Shell
+      uses: egor-tensin/vs-shell@v2
+      with:
+        arch: x64
+    - name: Setup Ninja
+      uses: ashutoshvarma/setup-ninja@master
+      with:
+        version: 1.10.2
+    - name: Cache Qt
+      id: cache-qt
+      uses: actions/cache@v1
+      with:
+        path: ../Qt
+        key: ${{ runner.os }}-QtCache
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: 5.15.2
+        cached: ${{ steps.cache-qt.outputs.cache-hit }}
+    - name: CMake Version
+      run: cmake --version
+    - name: Clang Version
+      run: clang-cl --version
+    - name: Generate Stringtable
+      run: python .\\Resources\\generate_translations.py
+    - name: Run CMake
+      env:
+        CC: clang-cl
+        CXX: clang-cl
+      run: cmake -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release
+    - name: Run Build
+      run: cmake --build build --config Release --target PotatoAlert PotatoUpdater PotatoTest
+    - name: Run Tests
+      run: .\\build\\test\\PotatoTest.exe
