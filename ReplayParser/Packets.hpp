@@ -1,11 +1,10 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-// #include "Analyzer.hpp"
+#include "GameFiles.hpp"
 #include "Math.hpp"
 #include "Types.hpp"
 
-#include <optional>
 #include <span>
 #include <string>
 #include <variant>
@@ -38,20 +37,12 @@ enum class PacketBaseType : uint32_t
 	EntityMethod = 0x8,
 	PlayerPosition = 0xA,
 	Version = 0x16,
+	PlayerEntity = 0x20,
 	NestedPropertyUpdate = 0x22,
 	// Chat = 0x23,
 	Camera = 0x24,
 	Map = 0x27,
 	PlayerOrientation = 0x2B
-};
-
-struct RawPacket
-{
-	PacketBaseType type;
-	float clock;
-	std::vector<std::byte> raw;
-
-	static std::optional<RawPacket> FromBytes(std::span<std::byte>& data);
 };
 
 struct Packet
@@ -82,7 +73,6 @@ struct BasePlayerCreatePacket : Packet
 {
 	uint32_t entityId;
 	uint16_t entityType;
-	uint32_t size;
 	std::vector<std::byte> data;
 };
 
@@ -106,8 +96,8 @@ struct CellPlayerCreatePacket : Packet
 	uint16_t unknown;
 	uint32_t vehicleId;
 	Vec3 position;
-	Vec3 rotation;  // yaw, pitch, roll
-	std::vector<ArgValue> values;
+	Rot3 rotation;
+	std::unordered_map<std::string, ArgValue> values;
 };
 
 /**
@@ -178,11 +168,8 @@ struct EntityCreatePacket : Packet
 	uint32_t spaceId;
 	uint32_t vehicleId;
 	Vec3 position;
-	Vec3 rotation;
-
-	// uint32_t stateSize;
-	// std::vector<std::byte> state;
-	std::unordered_map<std::string, ArgValue> properties;
+	Rot3 rotation;
+	std::unordered_map<std::string, ArgValue> values;
 };
 
 /**
@@ -225,7 +212,7 @@ struct PlayerOrientationPacket : Packet
 	uint32_t pid;
 	uint32_t parentId;
 	Vec3 position;
-	Vec3 rotation;
+	Rot3 rotation;
 };
 
 struct PlayerPositionPacket : Packet
@@ -234,7 +221,7 @@ struct PlayerPositionPacket : Packet
 	uint32_t vehicleId;
 	Vec3 position;
 	Vec3 positionError;
-	Vec3 rotation;
+	Rot3 rotation;
 	bool isError;
 };
 
@@ -243,7 +230,8 @@ struct PlayerPositionPacket : Packet
  */
 struct NestedPropertyUpdatePacket : Packet
 {
-	
+	uint32_t entityId;
+	std::string propertyName;
 };
 
 struct MapPacket : Packet
@@ -261,10 +249,10 @@ struct CameraPacket : Packet
 {
 	Vec3 unknown;
 	uint32_t unknown2;
-	Vec3 unknown3;
+	Vec3 absolutePosition;
 	float fov;
 	Vec3 position;
-	Vec3 rotation;
+	Rot3 rotation;
 };
 
 struct VersionPacket : Packet
@@ -272,10 +260,15 @@ struct VersionPacket : Packet
 	std::string version;
 };
 
+struct PlayerEntityPacket : Packet
+{
+	uint32_t entityId;
+};
+
 typedef std::variant<
 	BasePlayerCreatePacket, CellPlayerCreatePacket, EntityControlPacket, EntityEnterPacket,
 	EntityLeavePacket, EntityCreatePacket, EntityMethodPacket, EntityPropertyPacket,
 	PlayerPositionPacket, PlayerOrientationPacket, MapPacket, NestedPropertyUpdatePacket,
-	VersionPacket, CameraPacket, UnknownPacket, InvalidPacket> PacketType;
+	VersionPacket, CameraPacket, PlayerEntityPacket, UnknownPacket, InvalidPacket> PacketType;
 
 }  // namespace PotatoAlert::ReplayParser

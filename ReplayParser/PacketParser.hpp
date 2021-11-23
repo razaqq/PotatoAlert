@@ -24,6 +24,8 @@ struct PacketParser
 	std::unordered_map<uint32_t, Entity> entities;
 };
 
+PacketType ParsePacket(std::span<std::byte>& data, PacketParser& parser);
+
 std::variant<EntityMethodPacket, InvalidPacket> ParseEntityMethodPacket(std::span<std::byte>& data, PacketParser& parser, float clock);
 std::variant<EntityCreatePacket, InvalidPacket> ParseEntityCreatePacket(std::span<std::byte>& data, PacketParser& parser, float clock);
 std::variant<EntityPropertyPacket, InvalidPacket> ParseEntityPropertyPacket(std::span<std::byte>& data, const PacketParser& parser, float clock);
@@ -38,5 +40,6 @@ std::variant<PlayerPositionPacket, InvalidPacket> ParsePlayerPositionPacketPacke
 std::variant<CameraPacket, InvalidPacket> ParseCameraPacket(std::span<std::byte>& data, float clock);
 std::variant<MapPacket, InvalidPacket> ParseMapPacket(std::span<std::byte>& data, float clock);
 std::variant<VersionPacket, InvalidPacket> ParseVersionPacket(std::span<std::byte>& data, float clock);
+std::variant<PlayerEntityPacket, InvalidPacket> ParsePlayerEntityPacket(std::span<std::byte>& data, float clock);
 
 }  // namespace PotatoAlert::ReplayParser

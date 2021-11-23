@@ -19,137 +19,6 @@
 
 using namespace PotatoAlert::ReplayParser;
 
-template<typename R, typename T>
-static R VariantCast(T&& t)
-{
-	return std::visit([]<typename T0>(T0&& val) -> R
-	{
-		return { std::forward<T0>(val) };
-	}, std::forward<T>(t));
-}
-
-static PacketType ParsePacket(std::span<std::byte>& data, PacketParser& parser)
-{
-	uint32_t size;
-	if (!TakeInto(data, size))
-		return InvalidPacket{};
-	uint32_t type;
-	if (!TakeInto(data, type))
-		return InvalidPacket{};
-	float clock;
-	if (!TakeInto(data, clock))
-		return InvalidPacket{};
-
-	auto raw = Take(data, size);
-
-#ifndef NDEBUG
-	size_t rawSize = raw.size();
-#endif
-
-	switch (type)
-	{
-#ifndef NDEBUG
-		case 0x10:
-		{
-			bool b1;
-			TakeInto(raw, b1);
-			LOG_TRACE("0x10: {} -> {} bytes", b1, rawSize);
-			break;
-		}
-		case 0xE:
-		{
-			uint32_t f1, f2;
-			// 2454267026 1069697316
-			TakeInto(raw, f1);
-			TakeInto(raw, f2);
-			// LOG_TRACE("0xE: {} {}", f1, f2);
-			break;
-		}
-		case 0x18:
-		{
-			// LOG_TRACE("0x18: {}", FormatBytes(raw));
-			break;
-		}
-		case 0x2E:
-		{
-			bool b2;
-			TakeInto(raw, b2);
-			LOG_TRACE("0x2E: {} -> {} bytes", b2, rawSize);
-			break;
-		}
-		case 0xF:
-		{
-			LOG_TRACE("0xF: {} bytes", raw.size());
-			break;
-		}
-		case 0x26:
-		{
-			uint32_t unknown;
-			TakeInto(raw, unknown);
-			LOG_TRACE("0x26: {} -> {} bytes", unknown, rawSize);
-			break;
-		}
-		case 0x20:
-		{
-			uint32_t unknown;
-			TakeInto(raw, unknown);
-			LOG_TRACE("0x20: {} -> {} bytes", unknown, rawSize);
-			break;
-		}
-		case 0x29:
-		{
-			// 32 bytes
-			LOG_TRACE("0x29: {} bytes", rawSize);
-			break;
-		}
-		case 0x2F:
-		{
-			Vec3 v;
-			TakeInto(raw, v);
-			LOG_TRACE("0x2F: {{{}, {}, {}}} -> {} bytes", v.x, v.y, v.z, rawSize);
-			break;
-		}
-		case 0xFFFFFFFF:
-		{
-			LOG_TRACE("0xFFFFFFFF: {} bytes", rawSize);
-			break;
-		}
-#endif
-		case static_cast<uint32_t>(PacketBaseType::Version):
-			return VariantCast<PacketType>(ParseVersionPacket(raw, clock));
-		case static_cast<uint32_t>(PacketBaseType::BasePlayerCreate):
-			return VariantCast<PacketType>(ParseBasePlayerCreatePacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::CellPlayerCreate):
-			return VariantCast<PacketType>(ParseCellPlayerCreatePacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::EntityControl):
-			return VariantCast<PacketType>(ParseEntityControlPacket(raw, clock));
-		case static_cast<uint32_t>(PacketBaseType::EntityEnter):
-			return VariantCast<PacketType>(ParseEntityEnterPacket(raw, clock));
-		case static_cast<uint32_t>(PacketBaseType::EntityLeave):
-			return VariantCast<PacketType>(ParseEntityLeavePacket(raw, clock));
-		case static_cast<uint32_t>(PacketBaseType::EntityCreate):
-			return VariantCast<PacketType>(ParseEntityCreatePacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::EntityProperty):
-			return VariantCast<PacketType>(ParseEntityPropertyPacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::EntityMethod):
-			return VariantCast<PacketType>(ParseEntityMethodPacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::PlayerPosition):
-			return VariantCast<PacketType>(ParsePlayerPositionPacketPacket(raw, clock));
-		case static_cast<uint32_t>(PacketBaseType::NestedPropertyUpdate):
-			return VariantCast<PacketType>(ParseNestedPropertyUpdatePacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::PlayerOrientation):
-			return VariantCast<PacketType>(ParsePlayerOrientationPacket(raw, clock));
-		case static_cast<uint32_t>(PacketBaseType::Camera):
-			return VariantCast<PacketType>(ParseCameraPacket(raw, clock));
-		case static_cast<uint32_t>(PacketBaseType::Map):
-			return VariantCast<PacketType>(ParseMapPacket(raw, clock));
-		default:  // unknown
-			break;
-	}
-
-	return UnknownPacket{};
-}
-
 std::optional<Replay> Replay::FromFile(std::string_view fileName)
 {
 	PA_PROFILE_FUNCTION();
@@ -267,7 +136,8 @@ bool Replay::ReadPackets()
 		return false;
 	}
 
-	PacketParser parser{ ParseScripts(meta.clientVersionFromExe), {} };
+	specs = ParseScripts(meta.clientVersionFromExe);
+	PacketParser parser{ specs, {} };
 
 	std::span out{ decompressed };
 	do {

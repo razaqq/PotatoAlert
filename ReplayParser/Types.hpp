@@ -76,16 +76,6 @@ struct UnknownType;
 typedef std::variant<PrimitiveType, ArrayType, FixedDictType, TupleType, UnknownType> ArgType;
 typedef std::any ArgValue;
 
-/*
-typedef std::span<std::byte> Blob;
-typedef std::variant<uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, float, double, Vec2, Vec3> PrimitiveValue;
-typedef std::variant<PrimitiveValue, std::vector<PrimitiveValue>, std::unordered_map<std::string, PrimitiveValue>, std::tuple<std::string, PrimitiveValue>> ArgValue;
-
-typedef std::variant<uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, float, double, Vec2, Vec3, std::string, std::wstring, Blob, std::vector<ArgValue>, std::unordered_map<std::string, ArgVa>> ArgValue;
-
-
-*/
-
 struct PrimitiveType
 {
 	BasicType type;

@@ -316,6 +316,7 @@ static ArgValue ParsePrimitive(PrimitiveType type, std::span<std::byte>& data)
 		}
 		case BasicType::Blob:
 		{
+			// we need to copy the final data, because the entire data span will be cleared
 			uint8_t size;
 			if (!TakeInto(data, size))
 			{
@@ -336,14 +337,16 @@ static ArgValue ParsePrimitive(PrimitiveType type, std::span<std::byte>& data)
 				}
 				if (data.size() >= blobSize)
 				{
-					return Take(data, blobSize);
+					auto s = Take(data, blobSize);
+					return std::vector<std::byte>{ s.begin(), s.end() };
 				}
 			}
 			else
 			{
 				if (data.size() >= size)
 				{
-					return Take(data, size);
+					auto s = Take(data, size);
+					return std::vector<std::byte>{ s.begin(), s.end() };
 				}
 			}
 			break;
@@ -462,7 +465,6 @@ ArgValue rp::ParseValue(std::span<std::byte>& data, const ArgType& type)
 
 			for (const FixedDictProperty& property : t.properties)
 			{
-				// LOG_TRACE("{}: {} {}", property.name, PrintType(*property.type), FormatBytes(data));
 				dict.emplace(property.name, ParseValue(data, *property.type));
 			}
 
