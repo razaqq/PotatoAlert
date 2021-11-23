@@ -6,7 +6,7 @@
 #include "Zlib.hpp"
 #include "catch.hpp"
 
-
+#include <ranges>
 #include <span>
 #include <vector>
 
@@ -15,10 +15,10 @@ using PotatoAlert::Version;
 using PotatoAlert::Blowfish;
 using namespace PotatoAlert;
 
-std::vector<std::byte> FromString(const std::string& s) noexcept
+std::vector<std::byte> FromString(std::string_view s) noexcept
 {
 	std::vector<std::byte> arr(s.size());
-	std::transform(s.begin(), s.end(), arr.begin(), [](char c) { return std::byte(c); });
+	std::ranges::transform(s, arr.begin(), [](char c) { return static_cast<std::byte>(c); });
 	return arr;
 }
 
@@ -100,8 +100,11 @@ TEST_CASE( "StringTest" )
 	REQUIRE(!String::Contains(text, "test"));
 	REQUIRE(String::Split(text, "") == std::vector<std::string>{ "this is some text" });
 
-	const std::string replace = "yes yes no no";
+	std::string_view replace = "yes yes no no";
 	REQUIRE(String::ReplaceAll(replace, "yes", "no") == "no no no no");
+
+	std::string_view removeTest = "xyzabc";
+	REQUIRE(String::ReplaceAll(removeTest, "xyz", "") == "abc");
 }
 
 TEST_CASE("VersionTest")
@@ -112,16 +115,16 @@ TEST_CASE("VersionTest")
 	REQUIRE(Version("3") < Version("3.7.9"));
 	REQUIRE(Version("1.7.9") < Version("3.1"));
 	REQUIRE(Version("zzz") < Version("0.0.1"));
-	REQUIRE(!Version("zzz"));
+	REQUIRE_FALSE(Version("zzz"));
 	REQUIRE(Version("2.16.0") != Version("3.0.0"));
 	REQUIRE_FALSE(Version("3.0.0") < Version("2.16.0"));
 	REQUIRE(Version(1, 2, 3, 4) == Version("1,2,3,4"));
-	REQUIRE(!Version("abc 3,7,8"));
+	REQUIRE_FALSE(Version("abc 3,7,8"));
 	REQUIRE(Version("3,7,8 abc") == Version(3, 7, 8));
 	REQUIRE(Version("3, 7, 8") == Version(3, 7, 8));
 	REQUIRE(Version(1, 2, 3, 4).ToString() == "1.2.3.4");
 	REQUIRE(Version(0, 9, 4, 0).ToString() == "0.9.4.0");
-	REQUIRE(!Version("0.9.4.0.1"));
+	REQUIRE_FALSE(Version("0.9.4.0.1"));
 }
 
 
@@ -190,7 +193,7 @@ TEST_CASE( "ZlibTest" )
 			0x88, 0x1C, 0x9F, 0x4A, 0xF5, 0xB1, 0xFF, 0x07, 0xAC, 0x4C, 0xE7, 0xD3
 	);
 
-	auto vec = PotatoAlert::Zlib::Inflate(binary);
+	auto vec = Zlib::Inflate(binary);
 
 	REQUIRE(vec.size() == string.size());
 	CHECK(memcmp(vec.data(), string.data(), vec.size()) == 0);
