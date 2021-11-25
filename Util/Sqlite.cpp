@@ -73,9 +73,9 @@ bool SQLite::Statement::Bind(int index, const char* value) const
 	return sqlite3_bind_text(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value, -1, nullptr) == SQLITE_OK;
 }
 
-bool SQLite::Statement::Bind(int index, const std::string& value) const
+bool SQLite::Statement::Bind(int index, std::string_view value) const
 {
-	return sqlite3_bind_text(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value.c_str(), -1, nullptr) == SQLITE_OK;
+	return sqlite3_bind_text(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value.data(), -1, nullptr) == SQLITE_OK;
 }
 
 void SQLite::Statement::ExecuteStep()
@@ -106,7 +106,8 @@ bool SQLite::Statement::GetText(int index, std::string& outStr) const
 	}
 
 	auto stmt = reinterpret_cast<sqlite3_stmt*>(m_stmt);
-	const char* text = static_cast<const char*>(sqlite3_column_blob(stmt, index));
+	// careful this only works if the string is all ASCII, which we know it is
+	const char* text = reinterpret_cast<const char*>(sqlite3_column_text(stmt, index));
 	outStr = std::string(text, sqlite3_column_bytes(stmt, index));
 	return true;
 }

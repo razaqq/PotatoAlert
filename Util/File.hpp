@@ -98,7 +98,7 @@ public:
 		return RawWrite(m_handle, data, resetFilePointer);
 	}
 
-	bool WriteString(const std::string& data, bool resetFilePointer = true) const
+	bool WriteString(std::string_view data, bool resetFilePointer = true) const
 	{
 		return RawWriteString(m_handle, data, resetFilePointer);
 	}
@@ -171,7 +171,7 @@ private:
 	static bool RawRead(Handle handle, std::vector<T>& out, bool resetFilePointer);
 	static bool RawReadString(Handle handle, std::string& out, bool resetFilePointer);
 	static bool RawWrite(Handle handle, std::span<const std::byte> data, bool resetFilePointer);
-	static bool RawWriteString(Handle handle, const std::string& data, bool resetFilePointer);
+	static bool RawWriteString(Handle handle, std::string_view data, bool resetFilePointer);
 	static bool RawFlushBuffer(Handle handle);
 	static uint64_t RawGetSize(Handle handle);
 	static Handle RawOpen(std::string_view path, Flags flags);

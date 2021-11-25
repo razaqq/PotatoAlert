@@ -30,7 +30,7 @@ public:
 	
 	static QString GetDir();
 
-	void SaveMatch(const StatsParser::Match::Info& info, const std::string& arenaInfo, const std::string& json, const std::string& csv);
+	bool SaveMatch(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view csv);
 
 	struct MatchHistoryEntry
 	{
@@ -52,8 +52,8 @@ public:
 private:
 	Serializer();
 	~Serializer();
-	bool WriteJson(const StatsParser::Match::Info& info, const std::string& arenaInfo, const std::string& json, const std::string& hash) const;
-	static bool WriteCsv(const std::string& csv);
+	bool WriteJson(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view hash) const;
+	static bool WriteCsv(std::string_view csv);
 
 	void ApplyDatabaseUpdates() const;
 	void BuildHashSet();

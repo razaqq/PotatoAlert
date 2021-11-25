@@ -3,16 +3,17 @@
 
 #include <string>
 
+
 namespace PotatoAlert {
 
-inline size_t Hash(const std::string& val)
+inline size_t Hash(std::string_view val)
 {
-	return std::hash<std::string>{}(val);
+	return std::hash<std::string_view>{}(val);
 }
 
-inline std::string HashString(const std::string& val)
+inline std::string HashString(std::string_view val)
 {
-	return std::to_string(std::hash<std::string>{}(val));
+	return std::to_string(std::hash<std::string_view>{}(val));
 }
 
 }  // namespace PotatoAlert

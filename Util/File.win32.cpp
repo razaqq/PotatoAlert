@@ -169,7 +169,7 @@ bool File::RawWrite(Handle handle, std::span<const std::byte> data, bool resetFi
 	return false;
 }
 
-bool File::RawWriteString(Handle handle, const std::string& data, bool resetFilePointer)
+bool File::RawWriteString(Handle handle, std::string_view data, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
 	{
@@ -182,7 +182,7 @@ bool File::RawWriteString(Handle handle, const std::string& data, bool resetFile
 	}
 
 	DWORD dwBytesWritten = 0;
-	if (WriteFile(UnwrapHandle<HANDLE>(handle), data.c_str(), data.length(), &dwBytesWritten, nullptr))
+	if (WriteFile(UnwrapHandle<HANDLE>(handle), data.data(), data.length(), &dwBytesWritten, nullptr))
 	{
 		return dwBytesWritten == data.length();
 	}

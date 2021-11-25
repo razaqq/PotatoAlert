@@ -182,8 +182,10 @@ void PotatoClient::OnResponse(const QString& message)
 
 	if (PotatoConfig().Get<bool>("match_history"))
 	{
-		Serializer::Instance().SaveMatch(res.match.info, this->m_tempArenaInfo.toStdString(), raw, res.csv.value());
-		emit this->MatchHistoryChanged();
+		if (Serializer::Instance().SaveMatch(res.match.info, this->m_tempArenaInfo.toStdString(), raw, res.csv.value()))
+		{
+			emit this->MatchHistoryChanged();
+		}
 	}
 
 	LOG_TRACE("Updating tables.");

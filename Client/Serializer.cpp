@@ -84,7 +84,7 @@ static std::string GetFilePath()
 	return QDir(Serializer::GetDir()).filePath(QString::fromStdString(std::format("match_{}.csv", PotatoAlert::Time::GetTimeStamp(timeFormat)))).toStdString();
 }
 
-bool Serializer::WriteJson(const StatsParser::Match::Info& info, const std::string& arenaInfo, const std::string& json, const std::string& hash) const
+bool Serializer::WriteJson(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view hash) const
 {
 	if (!this->m_db)
 		return false;
@@ -266,7 +266,7 @@ std::optional<sp::Match> Serializer::GetMatch(int id) const
 	}
 }
 
-bool Serializer::WriteCsv(const std::string& csv)
+bool Serializer::WriteCsv(std::string_view csv)
 {
 	if (File file = File::Open(GetFilePath(), File::Flags::Write | File::Flags::Create))
 	{
@@ -275,24 +275,23 @@ bool Serializer::WriteCsv(const std::string& csv)
 			LOG_TRACE("Wrote match as CSV.");
 			return true;
 		}
-		else
-		{
-			LOG_ERROR("Failed to save match as csv: {}", File::LastError());
-			return false;
-		}
-	}
-	else
-	{
-		LOG_ERROR("Failed to open csv file for writing: {}", File::LastError());
+		
+		LOG_ERROR("Failed to save match as csv: {}", File::LastError());
 		return false;
 	}
+
+	LOG_ERROR("Failed to open csv file for writing: {}", File::LastError());
+	return false;
 }
 
-void Serializer::SaveMatch(const StatsParser::Match::Info& info, const std::string& arenaInfo, const std::string& json, const std::string& csv)
+bool Serializer::SaveMatch(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view csv)
 {
 	const std::string hash = HashString(arenaInfo);
 	if (m_hashes.contains(hash))
-		return;
+	{
+		LOG_TRACE("Match with hash {} is already in database.", hash);
+		return false;
+	}
 	m_hashes.insert(hash);
 	
 	// save json to sqlite
@@ -300,6 +299,8 @@ void Serializer::SaveMatch(const StatsParser::Match::Info& info, const std::stri
 
 	// save csv to file
 	WriteCsv(csv);
+
+	return true;
 }
 
 void Serializer::BuildHashSet()
@@ -317,7 +318,7 @@ void Serializer::BuildHashSet()
 		if (statement.HasRow())
 		{
 			std::string hash;
-			statement.GetText(1, hash);
+			statement.GetText(0, hash);
 			m_hashes.insert(hash);
 		}
 	}

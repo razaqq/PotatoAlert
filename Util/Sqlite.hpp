@@ -104,7 +104,7 @@ public:
 		[[nodiscard]] bool Bind(int index, int value) const;
 		[[nodiscard]] bool Bind(int index, double value) const;
 		[[nodiscard]] bool Bind(int index, const char* value) const;
-		[[nodiscard]] bool Bind(int index, const std::string& value) const;
+		[[nodiscard]] bool Bind(int index, std::string_view value) const;
 
 		bool GetText(int index, std::string& outStr) const;
 		bool GetInt(int index, int& outInt) const;
