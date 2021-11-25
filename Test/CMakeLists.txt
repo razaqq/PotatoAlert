@@ -7,12 +7,6 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-if (MSVC)
-    add_compile_options(/W4 /WX /EHsc)
-else()
-    add_compile_options(-Wall -Wextra -pedantic -Werror -fno-exceptions)
-endif()
-
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/catch2)
 
 # enable CTest testing
@@ -20,11 +14,28 @@ enable_testing()
 
 add_executable(PotatoTest PotatoTest.cpp GameTest.cpp ReplayTest.cpp UtilTest.cpp)
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if ("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")  # clang-cl
+        target_compile_options(PotatoTest PRIVATE $<$<CONFIG:DEBUG>:/Wall -Wno-unknown-pragmas -Wno-error=unused-variable -Wno-c++98-compat -Wno-c++98-compat-pedantic /Ob0 /Od>)
+        target_compile_options(PotatoTest PRIVATE $<$<CONFIG:RELEASE>:/O2 /Ob2>)
+    elseif("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU")  # clang
+        target_compile_options(PotatoTest PRIVATE -fno-exceptions)
+        target_compile_options(PotatoTest PRIVATE $<$<CONFIG:DEBUG>:-Wall -pedantic -fno-exceptions -Wno-unknown-pragmas -O0>)
+        target_compile_options(PotatoTest PRIVATE $<$<CONFIG:RELEASE>:-O3>)
+    endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    target_compile_options(PotatoTest PRIVATE $<$<CONFIG:DEBUG>:/Wall /Od /Ob0>)  # TODO: completely untested
+    target_compile_options(PotatoTest PRIVATE $<$<CONFIG:RELEASE>:/O2 /Ob2>)
+    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+else()
+    message(FATAL_ERROR "Unsupported compiler!")
+endif()
+
 set_target_properties(PotatoTest PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
 target_link_libraries(PotatoTest PRIVATE util client replayparser Catch2::Test)
 target_include_directories(
         PotatoTest
-        PUBLIC
+        PRIVATE
         ${PROJECT_SOURCE_DIR}/Client
         ${PROJECT_SOURCE_DIR}/ReplayParser
         ${PROJECT_SOURCE_DIR}/Util

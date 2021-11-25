@@ -24,13 +24,18 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")  # clang-cl
-        target_compile_options(PotatoUpdater PRIVATE -Wall -Wno-unknown-pragmas -EHsc -Wno-error=unused-variable -Wno-c++98-compat -Wno-c++98-compat-pedantic)
-    elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")  # clang
-        target_compile_options(PotatoUpdater PRIVATE -Wall -pedantic -Werror -fno-exceptions -Wno-unknown-pragmas -Os)
+    if ("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")  # clang-cl
+        target_compile_options(PotatoUpdater PRIVATE $<$<CONFIG:DEBUG>:/Wall -Wno-unknown-pragmas -Wno-error=unused-variable -Wno-c++98-compat -Wno-c++98-compat-pedantic /Ob0 /Od>)
+        target_compile_options(PotatoUpdater PRIVATE $<$<CONFIG:RELEASE>:/O2 /Ob2>)
+    elseif("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU")  # clang
+        target_compile_options(PotatoUpdater PRIVATE -fno-exceptions)
+        target_compile_options(PotatoUpdater PRIVATE $<$<CONFIG:DEBUG>:-Wall -pedantic -fno-exceptions -Wno-unknown-pragmas -O0>)
+        target_compile_options(PotatoUpdater PRIVATE $<$<CONFIG:RELEASE>:-O3>)
     endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    target_compile_options(PotatoUpdater PRIVATE /W4 /WX /EHsc)  # TODO: completely untested
+    target_compile_options(PotatoUpdater PRIVATE $<$<CONFIG:DEBUG>:/Wall /Od /Ob0>)  # TODO: completely untested
+    target_compile_options(PotatoUpdater PRIVATE $<$<CONFIG:RELEASE>:/O2 /Ob2>)
+    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
