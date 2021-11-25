@@ -79,9 +79,9 @@ static int RunMain(int argc, char* argv[])
 
 	// check if there is a new version available
 	if (PotatoConfig().Get<bool>("update_notifications"))
-		if (PotatoUpdater::Updater::UpdateAvailable())
+		if (Updater::UpdateAvailable())
 			if (mainWindow->ConfirmUpdate())
-				if (PotatoUpdater::Updater::StartUpdater())
+				if (Updater::StartUpdater())
 					ExitProcess(0);
 
 	if (QApplication::arguments().contains("--changelog"))
