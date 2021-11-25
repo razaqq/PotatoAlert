@@ -8,7 +8,7 @@ platform:
 environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      CMAKE_OPTIONS: -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe
+      CMAKE_OPTIONS: -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_BUILD_TYPE=Release
       MSVC_SETUP_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat
       MSVC_SETUP_ARG: amd64
       CC: clang-cl
@@ -21,7 +21,7 @@ init:
 before_build:
   - cmake --version
   - clang-cl --version
-  - if DEFINED MSVC_SETUP_PATH call "%MSVC_SETUP_PATH%" %MSVC_SETUP_ARG%
+  - call "%MSVC_SETUP_PATH%" %MSVC_SETUP_ARG%
   - "%PYTHON%\\python.exe .\\Resources\\generate_translations.py"
 
 build_script:
@@ -35,7 +35,7 @@ after_build:
   - 7z a PotatoAlert.zip -r .\PotatoAlert.exe .\PotatoUpdater.exe .\package\*
 
 test_script:
-  - "%APPVEYOR_BUILD_FOLDER%\\build\\test\\PotatoTest.exe"
+  - "%APPVEYOR_BUILD_FOLDER%\\build\\Test\\PotatoTest.exe"
 
 artifacts:
   - path: 'build\PotatoAlert.zip'
