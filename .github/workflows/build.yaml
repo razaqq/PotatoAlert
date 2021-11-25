@@ -56,10 +56,10 @@ jobs:
       run: |
         cd .\build
         mv Updater\PotatoUpdater.exe .
-        7z a PotatoAlert.zip -r .\PotatoAlert.exe .\PotatoUpdater.exe .\package\*
+        7z a -mx9 -r PotatoAlert.zip .\PotatoAlert.exe .\PotatoUpdater.exe .\package\*
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2.2.4
+      uses: actions/upload-artifact@v2
       with:
         name: PotatoAlert
         path: build\PotatoAlert.zip
