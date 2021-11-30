@@ -7,9 +7,10 @@
 
 namespace PotatoAlert {
 
-struct Version
+class Version
 {
-	Version(uint32_t major = 0, uint32_t minor = 0, uint32_t patch = 0, uint32_t build = 0)
+public:
+	explicit Version(uint32_t major = 0, uint32_t minor = 0, uint32_t patch = 0, uint32_t build = 0)
 		: m_data({major, minor, patch, build}) {}
 	explicit Version(std::string_view versionString);
 	explicit Version(const char* versionString);
@@ -25,7 +26,6 @@ struct Version
 private:
 	void Parse(std::string_view versionString);
 	std::array<uint32_t, 4> m_data = {0};
-	// uint32_t m_major = 0, m_minor = 0, m_patch = 0, m_build = 0;
 	bool m_success = true;
 };
 
