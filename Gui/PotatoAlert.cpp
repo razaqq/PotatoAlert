@@ -27,11 +27,14 @@ static int RunMain(int argc, char* argv[])
 {
 	Q_INIT_RESOURCE(PotatoAlert);
 
+	QApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
+	if (qgetenv("QT_FONT_DPI").isEmpty())
+	{
+		qputenv("QT_FONT_DPI", "96");
+	}
+
 	PotatoAlert::Log::Init();
-
-	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-
+	
 	QApplication app(argc, argv);
 	
 	QApplication::setOrganizationName(PRODUCT_COMPANY_NAME);
