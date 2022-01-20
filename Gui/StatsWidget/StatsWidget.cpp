@@ -2,9 +2,9 @@
 
 #include "StatsWidget.hpp"
 
-#include "PotatoClient.hpp"
+#include "Client/PotatoClient.hpp"
+#include "Client/StatsParser.hpp"
 #include "StatsHeader.hpp"
-#include "StatsParser.hpp"
 
 #include <QDesktopServices>
 #include <QTableWidgetItem>

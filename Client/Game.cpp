@@ -2,11 +2,11 @@
 
 #include "Game.hpp"
 
-#include "Config.hpp"
-#include "File.hpp"
-#include "Log.hpp"
-#include "String.hpp"
-#include "Version.hpp"
+#include "Core/Config.hpp"
+#include "Core/File.hpp"
+#include "Core/Log.hpp"
+#include "Core/String.hpp"
+#include "Core/Version.hpp"
 
 #include <tinyxml2.h>
 

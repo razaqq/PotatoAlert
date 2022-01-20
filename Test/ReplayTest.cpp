@@ -1,9 +1,9 @@
 // Copyright 2021 <github.com/razaqq>
 
-#include "Directory.hpp"
-#include "GameFiles.hpp"
-#include "ReplayParser.hpp"
-#include "Version.hpp"
+#include "Core/Directory.hpp"
+#include "Core/Version.hpp"
+#include "ReplayParser/GameFiles.hpp"
+#include "ReplayParser/ReplayParser.hpp"
 
 #include "catch.hpp"
 #include "win32.h"

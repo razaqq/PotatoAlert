@@ -1,7 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include "String.hpp"
+#include "Core/String.hpp"
 #include "Types.hpp"
 
 #include <filesystem>

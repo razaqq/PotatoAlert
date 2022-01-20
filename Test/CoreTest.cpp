@@ -1,9 +1,12 @@
 // Copyright 2021 <github.com/razaqq>
 
-#include "Blowfish.hpp"
-#include "String.hpp"
-#include "Version.hpp"
-#include "Zlib.hpp"
+#include "Core/Blowfish.hpp"
+#include "Core/Directory.hpp"
+#include "Core/Sha1.hpp"
+#include "Core/String.hpp"
+#include "Core/Version.hpp"
+#include "Core/Zlib.hpp"
+
 #include "catch.hpp"
 
 #include <ranges>
@@ -13,7 +16,9 @@
 
 using PotatoAlert::Version;
 using PotatoAlert::Blowfish;
+using PotatoAlert::Unpickler;
 using namespace PotatoAlert;
+namespace fs = std::filesystem;
 
 std::vector<std::byte> FromString(std::string_view s) noexcept
 {
@@ -54,6 +59,14 @@ TEST_CASE( "BlowFishDecryptTest" )
 
 	REQUIRE(blowfish.Decrypt(text, out));
 	REQUIRE(std::equal(out.begin(), out.end(), solution.begin(), solution.end()));
+}
+
+TEST_CASE( "Sha1Test" )
+{
+	auto test = FromString("The quick brown fox jumps over the lazy dog");
+	Sha1 sha;
+	sha.ProcessBytes(test);
+	REQUIRE(sha.GetHash() == "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12");
 }
 
 TEST_CASE( "StringTest" )

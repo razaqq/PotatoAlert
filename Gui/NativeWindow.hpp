@@ -1,7 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "Config.hpp"
+#include "Core/Config.hpp"
 #include "TitleBar.hpp"
 
 #include <QMainWindow>

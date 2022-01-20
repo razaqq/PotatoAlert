@@ -1,7 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "Version.hpp"
+#include "Core/Version.hpp"
 
 #include <filesystem>
 #include <string>

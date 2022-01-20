@@ -2,7 +2,7 @@
 
 #include "StatsTable.hpp"
 
-#include "StringTable.hpp"
+#include "Core/StringTable.hpp"
 
 #include <QEvent>
 #include <QHeaderView>

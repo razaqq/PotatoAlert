@@ -1,8 +1,8 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Core/Math.hpp"
 #include "GameFiles.hpp"
-#include "Math.hpp"
 #include "Types.hpp"
 
 #include <span>

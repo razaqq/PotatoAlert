@@ -2,11 +2,13 @@
 
 #include "ReplayParser.hpp"
 
-#include "Blowfish.hpp"
-#include "Bytes.hpp"
+#include "Core/Blowfish.hpp"
+#include "Core/Bytes.hpp"
+#include "Core/File.hpp"
+#include "Core/Instrumentor.hpp"
+#include "Core/Json.hpp"
+#include "Core/Zlib.hpp"
 #include "GameFiles.hpp"
-#include "Instrumentor.hpp"
-#include "Json.hpp"
 #include "PacketParser.hpp"
 #include "Packets.hpp"
 #include "Zlib.hpp"

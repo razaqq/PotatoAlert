@@ -43,8 +43,7 @@ target_link_libraries(client PRIVATE core replayparser)
 target_link_libraries(client PUBLIC Qt5::Core Qt5::WebSockets Qt5::Widgets)
 target_include_directories(client
         PUBLIC
-        ${PROJECT_SOURCE_DIR}/Core
-        ${PROJECT_SOURCE_DIR}/ReplayParser
+        ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/ThirdParty/win32
 )
 if(WIN32)

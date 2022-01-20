@@ -2,8 +2,8 @@
 
 #include "PacketParser.hpp"
 
-#include "Bytes.hpp"
-#include "Log.hpp"
+#include "Core/Bytes.hpp"
+#include "Core/Log.hpp"
 
 #include <optional>
 #include <span>

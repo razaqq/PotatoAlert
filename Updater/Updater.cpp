@@ -2,11 +2,11 @@
 
 #include "Updater.hpp"
 
-#include "Json.hpp"
-#include "Log.hpp"
-#include "Process.hpp"
-#include "Version.hpp"
-#include "Zip.hpp"
+#include "Core/Json.hpp"
+#include "Core/Log.hpp"
+#include "Core/Process.hpp"
+#include "Core/Version.hpp"
+#include "Core/Zip.hpp"
 
 #include <QApplication>
 #include <QElapsedTimer>

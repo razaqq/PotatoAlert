@@ -2,7 +2,7 @@
 
 #include "StatsParser.hpp"
 
-#include "Json.hpp"
+#include "Core/Json.hpp"
 
 #include <QLabel>
 

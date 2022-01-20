@@ -2,8 +2,8 @@
 
 #include "StatsTeamFooter.hpp"
 
-#include "StatsParser.hpp"
-#include "StringTable.hpp"
+#include "Client/StatsParser.hpp"
+#include "Core/StringTable.hpp"
 
 #include <QEvent>
 #include <QHBoxLayout>

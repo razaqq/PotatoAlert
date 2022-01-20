@@ -2,12 +2,12 @@
 
 #include "PotatoClient.hpp"
 
-#include "Config.hpp"
-#include "Defer.hpp"
+#include "Core/Config.hpp"
+#include "Core/Defer.hpp"
+#include "Core/Hash.hpp"
+#include "Core/Json.hpp"
+#include "Core/Log.hpp"
 #include "Game.hpp"
-#include "Hash.hpp"
-#include "Json.hpp"
-#include "Log.hpp"
 #include "ReplayAnalyzer.hpp"
 #include "MatchHistory.hpp"
 #include "StatsParser.hpp"

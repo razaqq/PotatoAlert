@@ -15,8 +15,7 @@ add_executable(PotatoUpdater PotatoUpdater.cpp ${PROJECT_SOURCE_DIR}/Resources/P
 target_include_directories(
         PotatoUpdater
         PUBLIC
-        ${PROJECT_SOURCE_DIR}/Core
-        ${PROJECT_SOURCE_DIR}/Gui
+        ${PROJECT_SOURCE_DIR}
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")

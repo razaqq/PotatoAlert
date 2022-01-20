@@ -2,8 +2,8 @@
 
 #include "Entity.hpp"
 
-#include "Log.hpp"
-#include "String.hpp"
+#include "Core/Log.hpp"
+#include "Core/String.hpp"
 #include "Types.hpp"
 
 #include <tinyxml2.h>

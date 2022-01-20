@@ -1,7 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "Game.hpp"
+#include "Client/Game.hpp"
 
 #include <QEvent>
 #include <QLabel>

@@ -1,10 +1,10 @@
 // Copyright 2021 <github.com/razaqq>
 
-#include "Config.hpp"
+#include "Core/Config.hpp"
 #include "MainWindow.hpp"
 #include "NativeWindow.hpp"
 #include "Palette.hpp"
-#include "Updater.hpp"
+#include "Updater/Updater.hpp"
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreserved-id-macro"
 #include "VersionInfo.h"

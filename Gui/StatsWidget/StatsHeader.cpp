@@ -2,9 +2,9 @@
 
 #include "StatsHeader.hpp"
 
-#include "Config.hpp"
-#include "PotatoClient.hpp"
-#include "StringTable.hpp"
+#include "Client/PotatoClient.hpp"
+#include "Core/Config.hpp"
+#include "Core/StringTable.hpp"
 
 #include <QFont>
 #include <QHBoxLayout>

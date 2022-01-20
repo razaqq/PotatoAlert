@@ -2,9 +2,9 @@
 
 #include "Types.hpp"
 
-#include "Bytes.hpp"
-#include "Log.hpp"
-#include "String.hpp"
+#include "Core/Bytes.hpp"
+#include "Core/Log.hpp"
+#include "Core/String.hpp"
 
 #include <optional>
 #include <string>

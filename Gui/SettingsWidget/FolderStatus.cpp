@@ -2,8 +2,8 @@
 
 #include "FolderStatus.hpp"
 
-#include "Game.hpp"
-#include "StringTable.hpp"
+#include "Client/Game.hpp"
+#include "Core/StringTable.hpp"
 
 #include <QEvent>
 #include <QGridLayout>

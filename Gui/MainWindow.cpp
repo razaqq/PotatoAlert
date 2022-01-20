@@ -2,16 +2,16 @@
 
 #include "MainWindow.hpp"
 
-#include "Config.hpp"
+#include "Client/MatchHistory.hpp"
+#include "Client/PotatoClient.hpp"
+#include "Core/Config.hpp"
+#include "Core/Log.hpp"
+#include "Core/Screenshot.hpp"
+#include "Core/StringTable.hpp"
 #include "FramelessDialog.hpp"
-#include "Log.hpp"
-#include "MatchHistory.hpp"
 #include "MatchHistoryGui.hpp"
 #include "MenuBar/VerticalMenuBar.hpp"
-#include "PotatoClient.hpp"
-#include "Screenshot.hpp"
 #include "StatsWidget/StatsWidget.hpp"
-#include "StringTable.hpp"
 
 #include <QApplication>
 #include <QDesktopServices>

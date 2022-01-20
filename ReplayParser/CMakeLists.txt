@@ -20,5 +20,5 @@ set(
 )
 
 add_library(replayparser STATIC ${replayparser_src})
-target_include_directories(replayparser PRIVATE ${CMAKE_SOURCE_DIR}/Core)
+target_include_directories(replayparser PRIVATE ${CMAKE_SOURCE_DIR})
 target_link_libraries(replayparser PRIVATE core)

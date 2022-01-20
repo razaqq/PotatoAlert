@@ -12,7 +12,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/catch2)
 # enable CTest testing
 enable_testing()
 
-add_executable(PotatoTest PotatoTest.cpp GameTest.cpp ReplayTest.cpp UtilTest.cpp)
+add_executable(PotatoTest PotatoTest.cpp CoreTest.cpp GameTest.cpp ReplayTest.cpp)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     if ("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")  # clang-cl
@@ -36,9 +36,7 @@ target_link_libraries(PotatoTest PRIVATE core client replayparser Catch2::Test)
 target_include_directories(
         PotatoTest
         PRIVATE
-        ${PROJECT_SOURCE_DIR}/Core
-        ${PROJECT_SOURCE_DIR}/Client
-        ${PROJECT_SOURCE_DIR}/ReplayParser
+        ${PROJECT_SOURCE_DIR}
 )
 
 add_test(test_all PotatoTest)

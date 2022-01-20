@@ -1,8 +1,8 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Core/Version.hpp"
 #include "Entity.hpp"
-#include "Version.hpp"
 
 #include <string>
 #include <vector>

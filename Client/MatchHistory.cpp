@@ -2,13 +2,13 @@
 
 #include "MatchHistory.hpp"
 
-#include "File.hpp"
-#include "Hash.hpp"
-#include "Log.hpp"
-#include "ReplayParser.hpp"
-#include "Sqlite.hpp"
-#include "ThreadPool.hpp"
-#include "Time.hpp"
+#include "Core/File.hpp"
+#include "Core/Hash.hpp"
+#include "Core/Log.hpp"
+#include "Core/Sqlite.hpp"
+#include "Core/ThreadPool.hpp"
+#include "Core/Time.hpp"
+#include "ReplayParser/ReplayParser.hpp"
 
 #include <QDir>
 #include <QStandardPaths>

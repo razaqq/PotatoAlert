@@ -2,8 +2,8 @@
 
 #include "MatchHistoryGui.hpp"
 
-#include "MatchHistory.hpp"
-#include "StringTable.hpp"
+#include "Client/MatchHistory.hpp"
+#include "Core/StringTable.hpp"
 
 #include <QDateTime>
 #include <QHeaderView>

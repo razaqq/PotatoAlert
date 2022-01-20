@@ -2,8 +2,8 @@
 
 #include "NativeWindow.hpp"
 
-#include "Config.hpp"
-#include "FramelessWindowsManager.hpp"
+#include "Core/Config.hpp"
+#include "FramelessHelper/FramelessWindowsManager.hpp"
 #include "TitleBar.hpp"
 
 #include <QMainWindow>

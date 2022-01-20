@@ -1,8 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include "Math.hpp"
-#include "String.hpp"
+#include "Core/Math.hpp"
 
 #include <memory>
 #include <tinyxml2.h>

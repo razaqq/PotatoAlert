@@ -2,13 +2,13 @@
 
 #include "SettingsWidget.hpp"
 
-#include "Config.hpp"
+#include "Client/PotatoClient.hpp"
+#include "Core/Config.hpp"
+#include "Core/StringTable.hpp"
 #include "FolderStatus.hpp"
 #include "HorizontalLine.hpp"
-#include "PotatoClient.hpp"
 #include "SettingsChoice.hpp"
 #include "SettingsSwitch.hpp"
-#include "StringTable.hpp"
 
 #include <QApplication>
 #include <QEvent>

@@ -1,9 +1,9 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "PotatoClient.hpp"
+#include "Client/PotatoClient.hpp"
+#include "Client/StatsParser.hpp"
 #include "StatsHeader.hpp"
-#include "StatsParser.hpp"
 #include "StatsTable.hpp"
 #include "StatsTeamFooter.hpp"
 

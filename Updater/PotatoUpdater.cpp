@@ -1,12 +1,13 @@
 // Copyright 2021 <github.com/razaqq>
 
-#include "Log.hpp"
-#include "Palette.hpp"
+#include "Core/Log.hpp"
+#include "Gui/Palette.hpp"
 #include "Updater.hpp"
 #include "UpdaterGui.hpp"
 #include "win32.h"
 
 #include <QApplication>
+#include <QFile>
 
 
 using PotatoUpdater::Updater;

@@ -1,7 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include "Singleton.hpp"
+#include "Core/Singleton.hpp"
 
 #include <QtNetwork/QNetworkAccessManager>
 #include <QWidget>

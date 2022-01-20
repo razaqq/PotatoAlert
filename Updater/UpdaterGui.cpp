@@ -2,7 +2,8 @@
 
 #include "UpdaterGui.hpp"
 
-#include "StringTable.hpp"
+#include "Core/StringTable.hpp"
+#include "Gui/FramelessDialog.hpp"
 #include "Updater.hpp"
 
 #include <QLabel>

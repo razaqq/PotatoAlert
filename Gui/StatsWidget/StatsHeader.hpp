@@ -1,7 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "PotatoClient.hpp"
+#include "Client/PotatoClient.hpp"
 
 #include <QLabel>
 #include <QMovie>

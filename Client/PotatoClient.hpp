@@ -1,8 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Core/Singleton.hpp"
 #include "Game.hpp"
-#include "Singleton.hpp"
 #include "StatsParser.hpp"
 
 #include <QFileSystemWatcher>

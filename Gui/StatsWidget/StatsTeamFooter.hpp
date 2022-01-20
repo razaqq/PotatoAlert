@@ -1,7 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "StatsParser.hpp"
+#include "Client/StatsParser.hpp"
 
 #include <QLabel>
 #include <QWidget>

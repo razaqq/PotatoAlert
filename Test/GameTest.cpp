@@ -1,8 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "Directory.hpp"
-#include "Game.hpp"
-#include "Version.hpp"
+#include "Client/Game.hpp"
+#include "Core/Directory.hpp"
+#include "Core/Version.hpp"
 
 #include "catch.hpp"
 #include "win32.h"

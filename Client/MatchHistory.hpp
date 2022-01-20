@@ -1,10 +1,10 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include "Singleton.hpp"
+#include "Core/Singleton.hpp"
+#include "Core/Sqlite.hpp"
+#include "Core/ThreadPool.hpp"
 #include "StatsParser.hpp"
-#include "Sqlite.hpp"
-#include "ThreadPool.hpp"
 
 #include <QString>
 

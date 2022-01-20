@@ -1,8 +1,8 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include "MatchHistory.hpp"
-#include "StatsParser.hpp"
+#include "Client/MatchHistory.hpp"
+#include "Client/StatsParser.hpp"
 
 #include <QEvent>
 #include <QTableWidget>

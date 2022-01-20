@@ -2,10 +2,10 @@
 
 #include "GameFiles.hpp"
 
-#include "Directory.hpp"
+#include "Core/Directory.hpp"
+#include "Core/File.hpp"
+#include "Core/Log.hpp"
 #include "Entity.hpp"
-#include "File.hpp"
-#include "Log.hpp"
 
 #include <tinyxml2.h>
 
