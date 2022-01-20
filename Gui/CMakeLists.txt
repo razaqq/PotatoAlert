@@ -11,8 +11,8 @@ set(
         FramelessDialog.hpp
         MainWindow.cpp
         MainWindow.hpp
-        MatchHistoryGui.cpp
-        MatchHistoryGui.hpp
+        MatchHistory.cpp
+        MatchHistory.hpp
         NativeWindow.cpp
         NativeWindow.hpp
         Palette.cpp

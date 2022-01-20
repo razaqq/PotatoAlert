@@ -2,7 +2,7 @@
 #pragma once
 
 #include "AboutWidget.hpp"
-#include "MatchHistoryGui.hpp"
+#include "MatchHistory.hpp"
 #include "MenuBar/VerticalMenuBar.hpp"
 #include "SettingsWidget/SettingsWidget.hpp"
 #include "StatsWidget/StatsWidget.hpp"
@@ -33,7 +33,7 @@ private:
 	VerticalMenuBar* m_menuBar = new VerticalMenuBar(this);
 	StatsWidget* m_statsWidget = new StatsWidget(this);
 	SettingsWidget* m_settingsWidget = new SettingsWidget(this);
-	MatchHistoryGui* m_matchHistory = new MatchHistoryGui(this);
+	MatchHistory* m_matchHistory = new MatchHistory(this);
 	AboutWidget* m_aboutWidget = new AboutWidget(this);
 
 	QWidget* m_activeWidget = this->m_statsWidget;

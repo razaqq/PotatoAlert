@@ -9,7 +9,7 @@
 #include "Core/Screenshot.hpp"
 #include "Core/StringTable.hpp"
 #include "FramelessDialog.hpp"
-#include "MatchHistoryGui.hpp"
+#include "MatchHistory.hpp"
 #include "MenuBar/VerticalMenuBar.hpp"
 #include "StatsWidget/StatsWidget.hpp"
 
@@ -28,7 +28,7 @@
 
 using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Gui::MainWindow;
-using PotatoAlert::Gui::MatchHistoryGui;
+using PotatoAlert::Gui::MatchHistory;
 
 MainWindow::MainWindow() : QMainWindow()
 {
@@ -96,7 +96,7 @@ void MainWindow::SwitchTab(MenuEntry i)
 		Screenshot::Capture(this->window());
 		return;
 	case MenuEntry::CSV:
-		QDesktopServices::openUrl(QUrl(MatchHistory::GetDir()));
+		QDesktopServices::openUrl(QUrl(Client::MatchHistory::GetDir()));
 		return;
 	case MenuEntry::Log:
 		QDesktopServices::openUrl(QUrl(Log::GetDir()));
@@ -119,9 +119,9 @@ void MainWindow::ConnectSignals()
 	connect(&PotatoClient::Instance(), &PotatoClient::StatusReady, this->m_statsWidget, &StatsWidget::SetStatus);
 	connect(&PotatoClient::Instance(), &PotatoClient::MatchReady, this->m_statsWidget, &StatsWidget::Update);
 
-	connect(&PotatoClient::Instance(), &PotatoClient::MatchHistoryChanged, this->m_matchHistory, &MatchHistoryGui::UpdateLatest);
+	connect(&PotatoClient::Instance(), &PotatoClient::MatchHistoryChanged, this->m_matchHistory, &MatchHistory::UpdateLatest);
 
-	connect(this->m_matchHistory, &MatchHistoryGui::ReplaySelected, [this](const Match& match)
+	connect(this->m_matchHistory, &MatchHistory::ReplaySelected, [this](const Match& match)
 	{
 		this->m_statsWidget->Update(match);
 		this->SwitchTab(MenuEntry::Table);

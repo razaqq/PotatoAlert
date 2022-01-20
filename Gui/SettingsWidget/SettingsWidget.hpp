@@ -49,7 +49,7 @@ private:
 	// game directory selection
 	QLineEdit* m_gamePathEdit = new QLineEdit();
 	QToolButton* m_gamePathButton = new QToolButton();
-	FolderStatusGui* m_folderStatusGui = new FolderStatusGui(this);
+	FolderStatus* m_folderStatusGui = new FolderStatus(this);
 
 	// manual replays folder
 	QLineEdit* m_replaysFolderEdit = new QLineEdit();

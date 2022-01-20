@@ -15,15 +15,14 @@
 #include <sstream>
 
 
-using PotatoAlert::Gui::FolderStatusGui;
-using PotatoAlert::Client::Game::FolderStatus;
+using PotatoAlert::Gui::FolderStatus;
 
-FolderStatusGui::FolderStatusGui(QWidget* parent) : QWidget(parent)
+FolderStatus::FolderStatus(QWidget* parent) : QWidget(parent)
 {
 	this->Init();
 }
 
-void FolderStatusGui::Init()
+void FolderStatus::Init()
 {
 	auto gridLayout = new QGridLayout();
 	gridLayout->setContentsMargins(10, 0, 10, 0);
@@ -51,7 +50,7 @@ void FolderStatusGui::Init()
 	this->setLayout(gridLayout);
 }
 
-void FolderStatusGui::Update(const FolderStatus& status) const
+void FolderStatus::Update(const Client::Game::FolderStatus& status) const
 {
 	this->m_replaysFolders->clear();
 	this->m_versionedReplays->clear();
@@ -84,7 +83,7 @@ void FolderStatusGui::Update(const FolderStatus& status) const
 	}
 }
 
-void FolderStatusGui::changeEvent(QEvent* event)
+void FolderStatus::changeEvent(QEvent* event)
 {
 	if (event->type() == QEvent::LanguageChange)
 	{

@@ -1,6 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "MatchHistoryGui.hpp"
+#include "MatchHistory.hpp"
 
 #include "Client/MatchHistory.hpp"
 #include "Core/StringTable.hpp"
@@ -12,10 +12,9 @@
 #include <QVBoxLayout>
 
 
-using PotatoAlert::Client::MatchHistory;
-using PotatoAlert::Gui::MatchHistoryGui;
+using PotatoAlert::Gui::MatchHistory;
 
-void MatchHistoryGui::paintEvent(QPaintEvent* _)
+void MatchHistory::paintEvent(QPaintEvent* _)
 {
 	QStyleOption opt;
 	opt.init(this);
@@ -23,14 +22,14 @@ void MatchHistoryGui::paintEvent(QPaintEvent* _)
 	style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
-MatchHistoryGui::MatchHistoryGui(QWidget* parent) : QWidget(parent)
+MatchHistory::MatchHistory(QWidget* parent) : QWidget(parent)
 {
 	this->Init();
 	this->InitHeaders();
 	this->UpdateAll();
 }
 
-void MatchHistoryGui::Init()
+void MatchHistory::Init()
 {
 	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	
@@ -62,7 +61,7 @@ void MatchHistoryGui::Init()
 	{
 		if (const auto item = this->m_table->item(row, 7))
 		{
-			auto match = MatchHistory::Instance().GetMatch(item->data(Qt::DisplayRole).toInt());
+			auto match = Client::MatchHistory::Instance().GetMatch(item->data(Qt::DisplayRole).toInt());
 			if (match.has_value())
 			{
 				emit this->ReplaySelected(match.value());
@@ -73,7 +72,7 @@ void MatchHistoryGui::Init()
 	this->setLayout(centralLayout);
 }
 
-void MatchHistoryGui::InitHeaders() const
+void MatchHistory::InitHeaders() const
 {
 	for (int i = 0; i < this->m_table->columnCount(); i++)
 	{
@@ -92,7 +91,7 @@ void MatchHistoryGui::InitHeaders() const
 	this->m_table->setCursor(Qt::PointingHandCursor);
 }
 
-void MatchHistoryGui::changeEvent(QEvent* event)
+void MatchHistory::changeEvent(QEvent* event)
 {
 	if (event->type() == QEvent::LanguageChange)
 	{
@@ -110,12 +109,12 @@ void MatchHistoryGui::changeEvent(QEvent* event)
 	}
 }
 
-void MatchHistoryGui::UpdateAll()
+void MatchHistory::UpdateAll()
 {
 	this->m_table->clearContents();
 	this->m_table->setRowCount(0);
 
-	auto matches = MatchHistory::Instance().GetEntries();
+	auto matches = Client::MatchHistory::Instance().GetEntries();
 
 	this->m_table->setSortingEnabled(false);
 	for (auto& match : matches)
@@ -128,12 +127,12 @@ void MatchHistoryGui::UpdateAll()
 	this->m_table->setSortingEnabled(true);
 }
 
-void MatchHistoryGui::UpdateLatest()
+void MatchHistory::UpdateLatest()
 {
-	auto res = MatchHistory::Instance().GetLatest();
+	auto res = Client::MatchHistory::Instance().GetLatest();
 	if (res)
 	{
-		const MatchHistory::MatchHistoryEntry entry = res.value();
+		const Client::MatchHistory::MatchHistoryEntry entry = res.value();
 
 		// check that we don't have that entry already somehow
 		if (entry.id > this->m_latestId)
@@ -147,7 +146,7 @@ void MatchHistoryGui::UpdateLatest()
 	}
 }
 
-void MatchHistoryGui::AddEntry(const MatchHistory::MatchHistoryEntry& entry) const
+void MatchHistory::AddEntry(const Client::MatchHistory::MatchHistoryEntry& entry) const
 {
 	this->m_table->insertRow(this->m_table->rowCount());
 	const int row = this->m_table->rowCount() - 1;

@@ -10,10 +10,10 @@
 
 namespace PotatoAlert::Gui {
 
-class FolderStatusGui : public QWidget
+class FolderStatus : public QWidget
 {
 public:
-	explicit FolderStatusGui(QWidget* parent = nullptr);
+	explicit FolderStatus(QWidget* parent = nullptr);
 	void Update(const Client::Game::FolderStatus& status) const;
 private:
 	void Init();
