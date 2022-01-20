@@ -26,8 +26,8 @@
 static const int LABEL_WIDTH = 280;
 static const int ROW_HEIGHT = 20;
 
-using PotatoAlert::SettingsWidget;
-using PotatoAlert::SettingsChoice;
+using PotatoAlert::Gui::SettingsWidget;
+using PotatoAlert::Gui::SettingsChoice;
 
 SettingsWidget::SettingsWidget(QWidget* parent) : QWidget(parent)
 {

@@ -17,7 +17,7 @@
 #include <vector>
 
 
-using PotatoAlert::StatsWidget;
+using PotatoAlert::Gui::StatsWidget;
 
 StatsWidget::StatsWidget(QWidget* parent) : QWidget(parent)
 {

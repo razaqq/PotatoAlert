@@ -11,7 +11,7 @@
 #include <string>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class StatsHeader : public QWidget
 {
@@ -34,4 +34,4 @@ private:
 	QPixmap m_error = QPixmap(":/error.png");
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

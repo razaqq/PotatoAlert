@@ -15,7 +15,7 @@
 #include <sstream>
 
 
-using PotatoAlert::FolderStatusGui;
+using PotatoAlert::Gui::FolderStatusGui;
 using PotatoAlert::Game::FolderStatus;
 
 FolderStatusGui::FolderStatusGui(QWidget* parent) : QWidget(parent)

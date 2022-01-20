@@ -13,7 +13,7 @@
 
 const int WIDGET_HEIGHT = 20;
 
-using PotatoAlert::SettingsChoice;
+using PotatoAlert::Gui::SettingsChoice;
 
 SettingsChoice::SettingsChoice(QWidget* parent, const std::vector<QString>& buttons) : QWidget(parent)
 {

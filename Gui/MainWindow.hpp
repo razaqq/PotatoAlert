@@ -12,7 +12,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class MainWindow : public QMainWindow
 {
@@ -39,4 +39,4 @@ private:
 	QWidget* m_activeWidget = this->m_statsWidget;
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

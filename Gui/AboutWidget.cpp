@@ -9,7 +9,7 @@
 #include <QWidget>
 
 
-using PotatoAlert::AboutWidget;
+using PotatoAlert::Gui::AboutWidget;
 
 AboutWidget::AboutWidget(QWidget* parent) : QWidget(parent)
 {

@@ -10,7 +10,7 @@
 #include <QWidget>
 
 
-using PotatoAlert::MenuEntryButton;
+using PotatoAlert::Gui::MenuEntryButton;
 
 MenuEntryButton::MenuEntryButton(QWidget* parent, const QIcon& icon, bool checkable) : QWidget(parent)
 {

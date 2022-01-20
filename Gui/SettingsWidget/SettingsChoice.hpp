@@ -6,7 +6,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class SettingsChoice : public QWidget
 {
@@ -15,4 +15,4 @@ public:
 	QButtonGroup* m_btnGroup;
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

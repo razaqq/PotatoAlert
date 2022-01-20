@@ -20,7 +20,7 @@ typedef std::map<bool, QColor> ColorType;
 typedef std::map<bool, QString> TextType;
 typedef std::map<bool, std::function<int()>> OffsetType;
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class SettingsSwitch : public QAbstractButton
 {

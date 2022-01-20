@@ -16,9 +16,9 @@
 #include <QFile>
 
 
-using PotatoAlert::DarkPalette;
-using PotatoAlert::MainWindow;
-using PotatoAlert::NativeWindow;
+using PotatoAlert::Gui::DarkPalette;
+using PotatoAlert::Gui::MainWindow;
+using PotatoAlert::Gui::NativeWindow;
 using PotatoAlert::PotatoConfig;
 using PotatoUpdater::Updater;
 

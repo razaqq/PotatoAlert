@@ -19,7 +19,7 @@
 #include <QWindow>
 
 
-using PotatoAlert::FramelessDialog;
+using PotatoAlert::Gui::FramelessDialog;
 
 FramelessDialog::FramelessDialog(QWidget* parent) : QDialog(parent)
 {

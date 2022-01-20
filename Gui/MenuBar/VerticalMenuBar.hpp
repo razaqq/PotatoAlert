@@ -10,7 +10,7 @@
 #include <array>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 enum class MenuEntry
 {
@@ -43,4 +43,4 @@ signals:
 #pragma clang diagnostic pop
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

@@ -9,7 +9,7 @@
 #include <QTableWidgetItem>
 
 
-using PotatoAlert::Gui::StatsTable;
+using PotatoAlert::StatsTable;
 
 StatsTable::StatsTable(QWidget* parent) : QTableWidget(parent)
 {

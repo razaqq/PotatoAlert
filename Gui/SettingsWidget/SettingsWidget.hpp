@@ -13,7 +13,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class SettingsWidget : public QWidget
 {
@@ -62,4 +62,4 @@ signals:
 #pragma clang diagnostic pop
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

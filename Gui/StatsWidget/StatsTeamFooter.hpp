@@ -7,7 +7,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 using PotatoAlert::StatsParser::Match;
 
@@ -40,4 +40,4 @@ private:
 	QLabel* m_team2Region = new QLabel();
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

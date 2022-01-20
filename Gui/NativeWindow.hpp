@@ -8,7 +8,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class NativeWindow : public QWidget
 {
@@ -26,4 +26,4 @@ private:
 	void closeEvent(QCloseEvent* event) override;
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

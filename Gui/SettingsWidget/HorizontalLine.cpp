@@ -6,7 +6,7 @@
 #include <QWidget>
 
 
-using PotatoAlert::HorizontalLine;
+using PotatoAlert::Gui::HorizontalLine;
 
 HorizontalLine::HorizontalLine(QWidget* parent) : QFrame(parent)
 {

@@ -6,7 +6,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class FramelessDialog : public QDialog
 {
@@ -17,4 +17,4 @@ private:
 	bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

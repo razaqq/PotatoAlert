@@ -4,7 +4,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class AboutWidget : public QWidget
 {
@@ -14,4 +14,4 @@ private:
 	void Init();
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

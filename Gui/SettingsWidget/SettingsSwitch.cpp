@@ -14,7 +14,7 @@
 #include <QWidget>
 
 
-using PotatoAlert::SettingsSwitch;
+using PotatoAlert::Gui::SettingsSwitch;
 
 SettingsSwitch::SettingsSwitch(QWidget* parent) : QAbstractButton(parent), m_trackRadius(10), m_thumbRadius(8)
 {

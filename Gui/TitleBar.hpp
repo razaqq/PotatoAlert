@@ -9,7 +9,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class TitleBar : public QWidget
 {
@@ -36,4 +36,4 @@ private:
 	QObjectList m_ignore = { m_btnClose, m_btnMaximize, m_btnMinimize, m_btnRestore };
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

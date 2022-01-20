@@ -6,7 +6,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class StatsTable : public QTableWidget
 {
@@ -18,4 +18,4 @@ private:
 	void changeEvent(QEvent* event) override;
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

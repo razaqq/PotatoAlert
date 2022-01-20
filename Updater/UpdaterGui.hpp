@@ -3,7 +3,7 @@
 
 #include "FramelessDialog.hpp"
 
-using PotatoAlert::FramelessDialog;
+using PotatoAlert::Gui::FramelessDialog;
 
 namespace PotatoUpdater {
 

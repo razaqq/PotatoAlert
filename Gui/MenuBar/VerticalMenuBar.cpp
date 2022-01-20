@@ -13,7 +13,7 @@
 #include <QWidget>
 
 
-using PotatoAlert::VerticalMenuBar;
+using PotatoAlert::Gui::VerticalMenuBar;
 
 VerticalMenuBar::VerticalMenuBar(QWidget* parent) : QDockWidget(parent)
 {

@@ -31,7 +31,7 @@ static int RunMain(int argc, char* argv[])
 	file.open(QFile::ReadOnly | QFile::Text);
 	QString style = QLatin1String(file.readAll());
 	QApplication::setStyle("fusion");
-	QApplication::setPalette(PotatoAlert::DarkPalette());
+	QApplication::setPalette(PotatoAlert::Gui::DarkPalette());
 	app.setStyleSheet(style);
 
 	new UpdaterGui();

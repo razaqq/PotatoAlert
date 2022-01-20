@@ -26,7 +26,7 @@
 #include <QWindow>
 
 
-using PotatoAlert::MainWindow;
+using PotatoAlert::Gui::MainWindow;
 
 MainWindow::MainWindow() : QMainWindow()
 {

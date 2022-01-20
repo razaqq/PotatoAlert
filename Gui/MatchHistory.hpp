@@ -9,7 +9,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class MatchHistory : public QWidget
 {
@@ -32,4 +32,4 @@ signals:
 	void ReplaySelected(const StatsParser::Match& match);
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

@@ -10,7 +10,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class StatsWidget : public QWidget
 {
@@ -29,4 +29,4 @@ private:
 	Match m_lastMatch;
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

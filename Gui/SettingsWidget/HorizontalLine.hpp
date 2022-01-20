@@ -5,7 +5,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class HorizontalLine : public QFrame
 {
@@ -13,4 +13,4 @@ public:
 	explicit HorizontalLine(QWidget* parent = nullptr);
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

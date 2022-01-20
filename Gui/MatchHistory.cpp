@@ -12,7 +12,7 @@
 #include <QVBoxLayout>
 
 
-using PotatoAlert::MatchHistory;
+using PotatoAlert::Gui::MatchHistory;
 
 void MatchHistory::paintEvent(QPaintEvent* _)
 {

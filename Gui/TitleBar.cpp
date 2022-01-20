@@ -14,7 +14,7 @@
 #include <QWidget>
 
 
-using PotatoAlert::TitleBar;
+using PotatoAlert::Gui::TitleBar;
 
 TitleBar::TitleBar(QWidget* parent) : QWidget(parent), m_parentWindow(parent)
 {

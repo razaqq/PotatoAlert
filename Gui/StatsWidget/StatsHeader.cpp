@@ -15,7 +15,7 @@
 #include <string>
 
 
-using PotatoAlert::StatsHeader;
+using PotatoAlert::Gui::StatsHeader;
 
 StatsHeader::StatsHeader(QWidget* parent) : QWidget(parent)
 {

@@ -10,7 +10,7 @@
 #include <QVBoxLayout>
 
 
-using PotatoAlert::FramelessDialog;
+using PotatoAlert::Gui::FramelessDialog;
 using PotatoUpdater::UpdaterGui;
 
 UpdaterGui::UpdaterGui() : FramelessDialog(nullptr)

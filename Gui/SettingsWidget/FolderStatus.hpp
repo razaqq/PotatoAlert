@@ -8,7 +8,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class FolderStatusGui : public QWidget
 {
@@ -34,4 +34,4 @@ private:
 	QLabel* m_statusText = new QLabel();
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui

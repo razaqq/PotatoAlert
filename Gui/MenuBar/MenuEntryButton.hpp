@@ -6,7 +6,7 @@
 #include <QWidget>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Gui {
 
 class MenuEntryButton : public QWidget
 {
@@ -19,4 +19,4 @@ private:
 	QPushButton* m_button = new QPushButton();
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui
