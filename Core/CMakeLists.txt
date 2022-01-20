@@ -6,40 +6,17 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(
         core_src
 
-        AsciiTable.hpp
         Blowfish.cpp
-        Blowfish.hpp
-        Bytes.hpp
         Config.cpp
-        Config.hpp
-        Directory.hpp
-        File.hpp
-        Flags.hpp
-        Instrumentor.hpp
         Log.cpp
-        Log.hpp
-        Process.hpp
         Screenshot.cpp
-        Screenshot.hpp
         Sha1.cpp
-        Sha1.hpp
         String.cpp
-        String.hpp
         StringTable.cpp
-        StringTable.hpp
         Sqlite.cpp
-        Sqlite.hpp
-        Unpickler.cpp
-        Unpickler.hpp
-        ThreadPool.cpp
-        ThreadPool.hpp
-        Time.hpp
         Version.cpp
-        Version.hpp
-        Zip.hpp
         Zip.cpp
         Zlib.cpp
-        Zlib.hpp
 )
 
 if(WIN32)

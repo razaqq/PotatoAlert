@@ -7,17 +7,10 @@ set(
         client_src
 
         Game.cpp
-        Game.hpp
         MatchHistory.cpp
-        MatchHistory.hpp
         PotatoClient.cpp
-        PotatoClient.hpp
-        Serializer.cpp
-        Serializer.hpp
         StatsParser.cpp
-        StatsParser.hpp
         ../Updater/Updater.cpp
-        ../Updater/Updater.hpp
 )
 
 if(WIN32)

@@ -4,19 +4,11 @@ set(
         replayparser_src
 
         Analyzer.cpp
-        Analyzer.hpp
         Entity.cpp
-        Entity.hpp
         GameFiles.cpp
-        GameFiles.hpp
-        Packets.hpp
         PacketParser.cpp
-        PacketParser.hpp
-        ReplayMeta.hpp
         ReplayParser.cpp
-        ReplayParser.hpp
         Types.cpp
-        Types.hpp
 )
 
 add_library(replayparser STATIC ${replayparser_src})

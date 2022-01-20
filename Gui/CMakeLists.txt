@@ -7,47 +7,28 @@ set(
         gui_src
 
         AboutWidget.cpp
-        AboutWidget.hpp
-        FramelessDialog.hpp
         MainWindow.cpp
-        MainWindow.hpp
         MatchHistory.cpp
-        MatchHistory.hpp
         NativeWindow.cpp
-        NativeWindow.hpp
         Palette.cpp
-        Palette.hpp
         PotatoAlert.cpp
         TitleBar.cpp
-        TitleBar.hpp
         
         MenuBar/MenuEntryButton.cpp
-        MenuBar/MenuEntryButton.hpp
         MenuBar/VerticalMenuBar.cpp
-        MenuBar/VerticalMenuBar.hpp
 
         SettingsWidget/FolderStatus.cpp
-        SettingsWidget/FolderStatus.hpp
         SettingsWidget/HorizontalLine.cpp
-        SettingsWidget/HorizontalLine.hpp
         SettingsWidget/SettingsChoice.cpp
-        SettingsWidget/SettingsChoice.hpp
         SettingsWidget/SettingsSwitch.cpp
-        SettingsWidget/SettingsSwitch.hpp
         SettingsWidget/SettingsWidget.cpp
-        SettingsWidget/SettingsWidget.hpp
 
         StatsWidget/StatsHeader.cpp
-        StatsWidget/StatsHeader.hpp
         StatsWidget/StatsTable.cpp
-        StatsWidget/StatsTable.hpp
         StatsWidget/StatsTeamFooter.cpp
-        StatsWidget/StatsTeamFooter.hpp
         StatsWidget/StatsWidget.cpp
-        StatsWidget/StatsWidget.hpp
 
         ../Updater/UpdaterGui.cpp
-        ../Updater/UpdaterGui.hpp
 )
 
 if(WIN32)
