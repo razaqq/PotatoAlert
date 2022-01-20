@@ -2,7 +2,10 @@
 
 #include "Log.hpp"
 
+#include "String.hpp"
+
 #pragma warning(push, 0)
+#include <spdlog/pattern_formatter.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #pragma warning(pop)
@@ -50,6 +53,42 @@ static void LogQtMessage(QtMsgType type, const QMessageLogContext& context, cons
 	Log::GetLogger()->log(spdlog::source_loc{ context.file, context.line, context.function }, level, text.toStdString());
 }
 
+template<typename ScopedPadder>
+class SourceLocationFlag : public spdlog::custom_flag_formatter
+{
+public:
+	void format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) override
+	{
+		if (msg.source.empty())
+		{
+			return;
+		}
+
+		std::string fileName = PotatoAlert::String::ReplaceAll(msg.source.filename, "..\\", "");
+
+		size_t text_size;
+		if (padinfo_.enabled())
+		{
+			text_size = fileName.size() + ScopedPadder::count_digits(msg.source.line) + 1;
+		}
+		else
+		{
+			text_size = 0;
+		}
+
+		ScopedPadder p(text_size, padinfo_, dest);
+		
+		spdlog::details::fmt_helper::append_string_view(fileName, dest);
+		dest.push_back(':');
+		spdlog::details::fmt_helper::append_int(msg.source.line, dest);
+	}
+
+	[[nodiscard]] std::unique_ptr<custom_flag_formatter> clone() const override
+	{
+		return spdlog::details::make_unique<SourceLocationFlag>();
+	}
+};
+
 void Log::Init()
 {
 	qInstallMessageHandler(LogQtMessage);
@@ -66,8 +105,12 @@ void Log::Init()
 	stdoutSink->set_level(spdlog::level::info);
 #endif
 
+	auto formatter = std::make_unique<spdlog::pattern_formatter>();
+	formatter->add_flag<SourceLocationFlag<spdlog::details::scoped_padder>>('S');
+	formatter->set_pattern("[%d-%m-%Y %T] [%=7l] %n [thread %-5t] (%-30!S): %v");
+
 	auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filePath);
-	fileSink->set_pattern("[%d-%m-%Y %T] [%=7l] %n (%-30!@): %v");
+	fileSink->set_formatter(std::move(formatter));
 	fileSink->set_level(spdlog::level::info);
 
 	std::vector<spdlog::sink_ptr> sinks{ stdoutSink, fileSink };

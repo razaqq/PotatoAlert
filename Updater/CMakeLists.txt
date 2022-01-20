@@ -15,11 +15,11 @@ add_executable(PotatoUpdater PotatoUpdater.cpp ${PROJECT_SOURCE_DIR}/Resources/P
 target_include_directories(
         PotatoUpdater
         PUBLIC
+        ${PROJECT_SOURCE_DIR}/Core
         ${PROJECT_SOURCE_DIR}/Gui
-        ${PROJECT_SOURCE_DIR}/Util
 )
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
+if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     set_property(TARGET PotatoUpdater PROPERTY WIN32_EXECUTABLE true)
 endif()
 
@@ -40,7 +40,7 @@ else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
-target_link_libraries(PotatoUpdater PRIVATE gui util)
+target_link_libraries(PotatoUpdater PRIVATE gui core)
 target_link_libraries(PotatoUpdater PRIVATE Qt5::Network)
 set_target_properties(PotatoUpdater PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
 

@@ -32,13 +32,13 @@ else()
 endif()
 
 set_target_properties(PotatoTest PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
-target_link_libraries(PotatoTest PRIVATE util client replayparser Catch2::Test)
+target_link_libraries(PotatoTest PRIVATE core client replayparser Catch2::Test)
 target_include_directories(
         PotatoTest
         PRIVATE
+        ${PROJECT_SOURCE_DIR}/Core
         ${PROJECT_SOURCE_DIR}/Client
         ${PROJECT_SOURCE_DIR}/ReplayParser
-        ${PROJECT_SOURCE_DIR}/Util
 )
 
 add_test(test_all PotatoTest)

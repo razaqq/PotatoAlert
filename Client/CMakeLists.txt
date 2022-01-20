@@ -39,12 +39,11 @@ endif(UNIX)
 find_package(Qt5 COMPONENTS Core Widgets WebSockets REQUIRED)
 
 add_library(client STATIC ${client_src})
-set_target_properties(client PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
-target_link_libraries(client PRIVATE util replayparser)
+target_link_libraries(client PRIVATE core replayparser)
 target_link_libraries(client PUBLIC Qt5::Core Qt5::WebSockets Qt5::Widgets)
 target_include_directories(client
         PUBLIC
-        ${PROJECT_SOURCE_DIR}/Util
+        ${PROJECT_SOURCE_DIR}/Core
         ${PROJECT_SOURCE_DIR}/ReplayParser
         ${PROJECT_SOURCE_DIR}/ThirdParty/win32
 )

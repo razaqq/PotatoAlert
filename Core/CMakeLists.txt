@@ -4,8 +4,9 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(
-        util_src
+        core_src
 
+        AsciiTable.hpp
         Blowfish.cpp
         Blowfish.hpp
         Bytes.hpp
@@ -20,12 +21,18 @@ set(
         Process.hpp
         Screenshot.cpp
         Screenshot.hpp
+        Sha1.cpp
+        Sha1.hpp
         String.cpp
         String.hpp
         StringTable.cpp
         StringTable.hpp
         Sqlite.cpp
         Sqlite.hpp
+        Unpickler.cpp
+        Unpickler.hpp
+        ThreadPool.cpp
+        ThreadPool.hpp
         Time.hpp
         Version.cpp
         Version.hpp
@@ -37,8 +44,8 @@ set(
 
 if(WIN32)
     set(
-            util_src
-            ${util_src}
+            core_src
+            ${core_src}
             Directory.win32.cpp
             File.win32.cpp
             Process.win32.cpp
@@ -48,8 +55,8 @@ endif(WIN32)
 
 if(UNIX)
     set(
-            util_src
-            ${utils_src}
+            core_src
+            ${core_src}
             Time.linux.cpp
     )
 endif(UNIX)
@@ -64,12 +71,12 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/zlib ${CMAKE_BINARY_DIR}/ThirdPa
 target_compile_options(zlib PRIVATE -Wno-deprecated)
 target_compile_options(zlibstatic PRIVATE -Wno-deprecated)
 
-add_library(util STATIC ${util_src})
-set_target_properties(util PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
-target_link_libraries(util PRIVATE sqlite3 tinyxml2 zip ZLIB::ZLIB)
-target_link_libraries(util PUBLIC Qt5::Core Qt5::Widgets)
+add_library(core STATIC ${core_src})
+set_target_properties(core PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
+target_link_libraries(core PRIVATE sqlite3 tinyxml2 zip ZLIB::ZLIB)
+target_link_libraries(core PUBLIC Qt5::Core Qt5::Widgets)
 target_include_directories(
-        util
+        core
         PUBLIC
         ${PROJECT_SOURCE_DIR}/Resources
         SYSTEM
@@ -83,5 +90,5 @@ target_include_directories(
 )
 
 if(WIN32)
-    target_link_libraries(util PRIVATE Version)
+    target_link_libraries(core PRIVATE Version)
 endif(WIN32)
