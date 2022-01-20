@@ -149,6 +149,11 @@ public:
 
 	static std::string LastError();
 
+	bool IsOpen() const
+	{
+		return m_handle != Handle::Null;
+	}
+
 	explicit operator bool() const
 	{
 		return m_handle != Handle::Null;

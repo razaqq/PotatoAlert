@@ -3,11 +3,13 @@
 #include "PotatoClient.hpp"
 
 #include "Config.hpp"
+#include "Defer.hpp"
 #include "Game.hpp"
 #include "Hash.hpp"
 #include "Json.hpp"
 #include "Log.hpp"
-#include "Serializer.hpp"
+#include "ReplayAnalyzer.hpp"
+#include "MatchHistory.hpp"
 #include "StatsParser.hpp"
 
 #include <QFileSystemWatcher>
@@ -23,28 +25,84 @@
 #include <optional>
 #include <string>
 #include <thread>
-#include <utility>
 
 
-using PotatoAlert::PotatoClient;
-namespace fs = std::filesystem;
+using PotatoAlert::Client::PotatoClient;
+using PotatoAlert::File;
 
 static const char* g_wsAddress = "ws://www.perry-swift.de:33333";
 // static const char* g_wsAddress = "ws://192.168.178.36:10000";
+
+namespace {
+
+struct TempArenaInfoResult
+{
+	bool exists = true;
+	bool error = false;
+	std::string data;
+};
+
+// opens and reads a file
+static TempArenaInfoResult ReadArenaInfo(std::string_view filePath)
+{
+	LOG_TRACE("Reading arena info from: {}", filePath);
+
+	TempArenaInfoResult result;
+
+	using namespace std::chrono_literals;
+	const auto startTime = std::chrono::high_resolution_clock::now();
+	auto now = std::chrono::high_resolution_clock::now();
+
+	File file = File::Open(filePath, File::Flags::Open | File::Flags::Read);
+
+	if (!file)
+		return { File::Exists(filePath), true, "" };
+
+	// close the file when the scope ends
+	auto defer = PotatoAlert::MakeDefer([&file]() { if (file) file.Close(); });
+
+	while (std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime) < 1000ms)
+	{
+		if (!File::Exists(filePath))
+		{
+			// we have to assume its not an error, because the game sometimes touches it at the end of a match
+			// when in reality its about to get deleted
+			return { false, false, "" };
+		}
+
+		// the game has written to the file
+		if (file.Size() > 0)
+		{
+			std::string arenaInfo;
+			if (file.ReadString(arenaInfo))
+			{
+				return { true, false, arenaInfo };
+			}
+			LOG_ERROR("Failed to read arena info: {}", File::LastError());
+			return { true, true, "" };
+		}
+		std::this_thread::sleep_for(100ms);
+		now = std::chrono::high_resolution_clock::now();
+	}
+	LOG_ERROR("Game failed to write arena info within 1 second.");
+	return { File::Exists(filePath), true, "" };
+}
+
+}
 
 void PotatoClient::Init()
 {
 	emit this->StatusReady(Status::Ready, "Ready");
 
 	// handle connection
-	connect(this->m_socket, &QWebSocket::connected, [this]
+	connect(&m_socket, &QWebSocket::connected, [this]
 	{
 		LOG_TRACE("Websocket open, sending arena info...");
-		this->m_socket->sendTextMessage(this->m_tempArenaInfo);
+		m_socket.sendTextMessage(this->m_tempArenaInfo);
 	});
 
 	// handle error
-	connect(this->m_socket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), [this](QAbstractSocket::SocketError error)
+	connect(&m_socket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), [this](QAbstractSocket::SocketError error)
 	{
 		switch (error)
 		{
@@ -59,7 +117,7 @@ void PotatoClient::Init()
 				break;
 			case QAbstractSocket::NetworkError:
 				// TODO: this is a shit way of doing this, maybe create a Qt bug report?
-				if (this->m_socket->errorString().contains("timed", Qt::CaseInsensitive))
+				if (m_socket.errorString().contains("timed", Qt::CaseInsensitive))
 					emit this->StatusReady(Status::Error, "Connection Timeout");
 				else
 					emit this->StatusReady(Status::Error, "Network Error");
@@ -71,11 +129,11 @@ void PotatoClient::Init()
 				emit this->StatusReady(Status::Error, "Websocket Error");
 				break;
 		}
-		LOG_ERROR(this->m_socket->errorString().toStdString());
+		LOG_ERROR(m_socket.errorString().toStdString());
 	});
 
-	connect(this->m_socket, &QWebSocket::textMessageReceived, this, &PotatoClient::OnResponse);
-	connect(this->m_watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::OnDirectoryChanged);
+	connect(&m_socket, &QWebSocket::textMessageReceived, this, &PotatoClient::OnResponse);
+	connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::OnDirectoryChanged);
 
 	this->TriggerRun();
 }
@@ -83,7 +141,7 @@ void PotatoClient::Init()
 // triggers a run with the current replays folders
 void PotatoClient::TriggerRun()
 {
-	for (auto& path : this->m_watcher->directories())
+	for (auto& path : m_watcher.directories())
 		this->OnDirectoryChanged(path);
 }
 
@@ -94,74 +152,88 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 
 	const std::string filePath = std::format("{}\\tempArenaInfo.json", path.toStdString());
 
-	if (fs::exists(filePath))
+	if (!File::Exists(filePath))
 	{
-		// read arena info from file
-		auto arenaInfo = PotatoClient::ReadArenaInfo(filePath);
-		if (!arenaInfo.has_value())
-		{
-			LOG_ERROR("Failed to read arena info from file.");
-			emit this->StatusReady(Status::Error, "Reading ArenaInfo");
-			return;
-		}
-
-		json j;
-		sax_no_exception sax(j);
-		if (!json::sax_parse(arenaInfo.value(), &sax))
-		{
-			LOG_ERROR("Failed to Parse arena info file as JSON.");
-			emit this->StatusReady(Status::Error, "JSON Parse Error");
-			return;
-		}
-
-		LOG_TRACE("ArenaInfo read from file. Content: {}", j.dump());
-
-		// add region
-		j["region"] = this->m_folderStatus.region;
-
-		// set stats mode from config
-		switch (PotatoConfig().Get<StatsMode>("stats_mode"))
-		{
-			case StatsMode::Current:
-				if (j.contains("matchGroup"))
-					j["StatsMode"] = j["matchGroup"];
-				else
-					j["StatsMode"] = "pvp";
-				break;
-			case StatsMode::Pvp:
-				j["StatsMode"] = "pvp";
-				break;
-			case StatsMode::Ranked:
-				j["StatsMode"] = "ranked";
-				break;
-			case StatsMode::Clan:
-				j["StatsMode"] = "clan";
-				break;
-		}
-
-		// make sure we don't pull the same match twice
-		if (std::string raw = j.dump(); Hash(raw) != Hash(this->m_tempArenaInfo.toStdString()))
-		{
-			const QString tempArenaInfo = QString::fromStdString(j.dump());
-			this->m_tempArenaInfo = tempArenaInfo;
-		}
-		else
-		{
-			return;
-		}
-
-		emit this->StatusReady(Status::Loading, "Loading");
-		LOG_TRACE("Opening websocket...");
-
-		this->m_socket->open(QUrl(QString(g_wsAddress)));  // starts the request cycle
+		return;
 	}
+
+	// read arena info from file
+	TempArenaInfoResult arenaInfo = ReadArenaInfo(filePath);
+	if (arenaInfo.error)
+	{
+		LOG_ERROR("Failed to read arena info from file.");
+		emit this->StatusReady(Status::Error, "Reading ArenaInfo");
+		return;
+	}
+
+	if (!arenaInfo.exists)
+	{
+		LOG_TRACE("Arena info did not exist when directory changed.");
+		return;
+	}
+
+	if (arenaInfo.data.empty())
+	{
+		LOG_TRACE("tempArenaInfo.json was empty.");
+		return;
+	}
+
+	json j;
+	sax_no_exception sax(j);
+	if (!json::sax_parse(arenaInfo.data, &sax))
+	{
+		LOG_ERROR("Failed to Parse arena info file as JSON.");
+		emit this->StatusReady(Status::Error, "JSON Parse Error");
+		return;
+	}
+
+	LOG_TRACE("ArenaInfo read from file. Content: {}", j.dump());
+
+	// add region
+	j["region"] = this->m_folderStatus.region;
+
+	// set stats mode from config
+	switch (PotatoConfig().Get<StatsMode>("stats_mode"))
+	{
+		case StatsMode::Current:
+			if (j.contains("matchGroup"))
+				j["StatsMode"] = j["matchGroup"];
+			else
+				j["StatsMode"] = "pvp";
+			break;
+		case StatsMode::Pvp:
+			j["StatsMode"] = "pvp";
+			break;
+		case StatsMode::Ranked:
+			j["StatsMode"] = "ranked";
+			break;
+		case StatsMode::Clan:
+			j["StatsMode"] = "clan";
+			break;
+	}
+
+	// make sure we don't pull the same match twice
+	if (std::string raw = j.dump(); Hash(raw) != Hash(this->m_tempArenaInfo.toStdString()))
+	{
+		const QString tempArenaInfo = QString::fromStdString(j.dump());
+		this->m_tempArenaInfo = tempArenaInfo;
+	}
+	else
+	{
+		return;
+	}
+
+	emit this->StatusReady(Status::Loading, "Loading");
+	LOG_TRACE("Opening websocket...");
+
+	m_socket.open(QUrl(QString(g_wsAddress)));  // starts the request cycle
 }
 
 // triggered when server response is received. processes the response, updates gui tables
 void PotatoClient::OnResponse(const QString& message)
 {
 	LOG_TRACE("Closing websocket connection.");
-	this->m_socket->close();
+	m_socket.close();
 
 	LOG_TRACE("Received response from server: {}", message.toStdString());
 
@@ -182,7 +254,7 @@ void PotatoClient::OnResponse(const QString& message)
 
 	if (PotatoConfig().Get<bool>("match_history"))
 	{
-		if (Serializer::Instance().SaveMatch(res.match.info, this->m_tempArenaInfo.toStdString(), raw, res.csv.value()))
+		if (MatchHistory::Instance().SaveMatch(res.match.info, this->m_tempArenaInfo.toStdString(), raw, res.csv.value()))
 		{
 			emit this->MatchHistoryChanged();
 		}
@@ -199,12 +271,12 @@ FolderStatus PotatoClient::CheckPath()
 {
 	FolderStatus folderStatus;
 
-	if (!this->m_watcher->directories().isEmpty())
-		this->m_watcher->removePaths(this->m_watcher->directories());
+	if (!m_watcher.directories().isEmpty())
+		m_watcher.removePaths(m_watcher.directories());
 
 	if (PotatoConfig().Get<bool>("override_replays_folder"))
 	{
-		this->m_watcher->addPath(QString::fromStdString(PotatoConfig().Get<std::string>("replays_folder")));
+		m_watcher.addPath(QString::fromStdString(PotatoConfig().Get<std::string>("replays_folder")));
 		folderStatus.statusText = "";
 		this->TriggerRun();
 		return folderStatus;
@@ -217,39 +289,10 @@ FolderStatus PotatoClient::CheckPath()
 		{
 			if (!folder.empty())
 			{
-				this->m_watcher->addPath(QString::fromStdString(folder));
+				m_watcher.addPath(QString::fromStdString(folder));
 			}
 		}
 		this->TriggerRun();
 	}
 	return folderStatus;
-}
-
-// opens and reads a file
-std::optional<std::string> PotatoClient::ReadArenaInfo(const std::string& filePath)
-{
-	LOG_TRACE("Reading arena info from: {}", filePath);
-
-	using namespace std::chrono_literals;
-	const auto startTime = std::chrono::high_resolution_clock::now();
-	auto now = std::chrono::high_resolution_clock::now();
-
-	const File file = File::Open(filePath, File::Flags::Open | File::Flags::Read);
-
-	while (std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime) < 1000ms)
-	{
-		if (file.Size() > 0)
-		{
-			if (std::string arenaInfo; file.ReadString(arenaInfo))
-			{
-				return std::move(arenaInfo);
-			}
-			LOG_ERROR("Failed to read arena info: {}", File::LastError());
-			return {};
-		}
-		std::this_thread::sleep_for(100ms);
-		now = std::chrono::high_resolution_clock::now();
-	}
-	LOG_ERROR("Game failed to write arena info within 1 second.");
-	return {};
 }

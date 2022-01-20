@@ -10,7 +10,7 @@
 
 namespace fs = std::filesystem;
 
-std::optional<fs::path> PotatoAlert::Game::GetGamePath()
+std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
 {
 	HKEY key;
 	if (RegOpenKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\WOWS.WW.PRODUCTION", 0, KEY_READ, &key) == ERROR_SUCCESS)

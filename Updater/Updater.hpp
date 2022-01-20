@@ -1,6 +1,8 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Singleton.hpp"
+
 #include <QtNetwork/QNetworkAccessManager>
 #include <QWidget>
 // #include <QtNetwork>
@@ -17,16 +19,7 @@ class Updater : public QWidget
 {
 	Q_OBJECT
 public:
-	Updater(const Updater&) = delete;
-	Updater(Updater&&) noexcept = delete;
-	Updater& operator=(const Updater&) = delete;
-	Updater& operator=(Updater&&) noexcept = delete;
-
-	static Updater& Instance()
-	{
-		static Updater u;
-		return u;
-	}
+	PA_SINGLETON(Updater);
 
 	static bool UpdateAvailable();
 

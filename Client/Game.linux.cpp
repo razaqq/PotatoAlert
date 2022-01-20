@@ -8,7 +8,7 @@
 
 namespace fs = std::filesystem;
 
-std::optional<fs::path> PotatoAlert::Game::GetGamePath()
+std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
 {
 	return {};
 }

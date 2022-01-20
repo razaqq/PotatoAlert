@@ -271,7 +271,7 @@ void SettingsWidget::ConnectSignals()
 
 void SettingsWidget::CheckPath() const
 {
-	this->m_folderStatusGui->Update(PotatoClient::Instance().CheckPath());
+	this->m_folderStatusGui->Update(Client::PotatoClient::Instance().CheckPath());
 }
 
 void SettingsWidget::changeEvent(QEvent* event)

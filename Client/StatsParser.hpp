@@ -12,7 +12,7 @@
 #include <vector>
 
 
-namespace PotatoAlert::StatsParser
+namespace PotatoAlert::Client::StatsParser
 {
 
 typedef std::variant<QLabel*, QTableWidgetItem*> FieldType;
@@ -73,4 +73,4 @@ struct StatsParseResult
 
 StatsParseResult ParseMatch(const std::string& raw, bool parseCsv) noexcept;
 
-}  // namespace PotatoAlert::StatsParser
+}  // namespace PotatoAlert::Client::StatsParser

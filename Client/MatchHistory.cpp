@@ -1,11 +1,13 @@
 // Copyright 2021 <github.com/razaqq>
 
-#include "Serializer.hpp"
+#include "MatchHistory.hpp"
 
 #include "File.hpp"
 #include "Hash.hpp"
 #include "Log.hpp"
+#include "ReplayParser.hpp"
 #include "Sqlite.hpp"
+#include "ThreadPool.hpp"
 #include "Time.hpp"
 
 #include <QDir>
@@ -13,25 +15,67 @@
 #include <QString>
 
 #include <format>
+#include <future>
 #include <optional>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
 
-using PotatoAlert::Serializer;
-namespace sp = PotatoAlert::StatsParser;
 using PotatoAlert::File;
+using PotatoAlert::ReplayParser::ReplaySummary;
+using PotatoAlert::Client::MatchHistory;
+using PotatoAlert::ThreadPool;
+namespace sp = PotatoAlert::Client::StatsParser;
 
 
 static constexpr std::string_view timeFormat = "%Y-%m-%d_%H-%M-%S";
 
-void Serializer::ApplyDatabaseUpdates() const
+namespace {
+
+void AnalyzeReplays(ThreadPool& tp)
 {
-	this->m_db.Execute("ALTER TABLE matches ADD arenaInfo TEXT;");
+	std::vector<std::string> replays;
+	std::string_view dir = "F:\\World_of_Warships_Eu\\replays";
+
+	for (const auto& entry : fs::recursive_directory_iterator(dir))
+	{
+		if (entry.is_regular_file() && entry.path().extension() == ".wowsreplay")
+		{
+			replays.push_back(entry.path().string());
+		}
+	}
+
+	LOG_INFO("Found {} replays in {}", replays.size(), dir);
+	size_t i = 1;
+
+	ThreadPool threadPool;
+	std::vector<std::future<void>> futures{ replays.size() };
+
+	for (std::string_view file : replays)
+	{
+		futures.emplace_back(threadPool.Enqueue([&i](std::string_view file)
+												{
+													if (std::optional<ReplaySummary> res = PotatoAlert::ReplayParser::AnalyzeReplay(file))
+													{
+														const ReplaySummary summary = res.value();
+														LOG_INFO("{}: {} {}", i, file, summary.outcome == ReplaySummary::Outcome::Win ? "WON" : "LOST");
+													}
+													i++;
+												},
+												file));
+	}
+	// threadPool.WaitUntilEmpty();
 }
 
-Serializer::Serializer()
+static std::string GetFilePath()
+{
+	return QDir(MatchHistory::GetDir()).filePath(QString::fromStdString(std::format("match_{}.csv", PotatoAlert::Time::GetTimeStamp(timeFormat)))).toStdString();
+}
+
+}
+
+MatchHistory::MatchHistory()
 {
 	this->m_db = SQLite::Open(QDir(GetDir()).filePath("match_history.db").toStdString().c_str(), SQLite::Flags::ReadWrite | SQLite::Flags::Create);
 	if (this->m_db)
@@ -60,9 +104,11 @@ Serializer::Serializer()
 	}
 
 	this->BuildHashSet();
+
+	// AnalyzeReplays(m_threadPool);
 }
 
-Serializer::~Serializer()
+MatchHistory::~MatchHistory()
 {
 	if (this->m_db)
 	{
@@ -72,19 +118,14 @@ Serializer::~Serializer()
 	}
 }
 
-QString Serializer::GetDir()
+QString MatchHistory::GetDir()
 {
 	QString path = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert/Matches");
 	QDir(path).mkdir(".");
 	return path;
 }
 
-static std::string GetFilePath()
-{
-	return QDir(Serializer::GetDir()).filePath(QString::fromStdString(std::format("match_{}.csv", PotatoAlert::Time::GetTimeStamp(timeFormat)))).toStdString();
-}
-
-bool Serializer::WriteJson(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view hash) const
+bool MatchHistory::WriteJson(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view hash) const
 {
 	if (!this->m_db)
 		return false;
@@ -163,7 +204,7 @@ bool Serializer::WriteJson(const StatsParser::Match::Info& info, std::string_vie
 	return true;
 }
 
-std::vector<Serializer::MatchHistoryEntry> Serializer::GetEntries() const
+std::vector<MatchHistory::MatchHistoryEntry> MatchHistory::GetEntries() const
 {
 	if (!this->m_db)
 		return {};
@@ -195,7 +236,7 @@ std::vector<Serializer::MatchHistoryEntry> Serializer::GetEntries() const
 	return matches;
 }
 
-std::optional<Serializer::MatchHistoryEntry> Serializer::GetLatest() const
+std::optional<MatchHistory::MatchHistoryEntry> MatchHistory::GetLatest() const
 {
 	if (!this->m_db)
 		return {};
@@ -225,7 +266,7 @@ std::optional<Serializer::MatchHistoryEntry> Serializer::GetLatest() const
 	return {};
 }
 
-std::optional<sp::Match> Serializer::GetMatch(int id) const
+std::optional<sp::Match> MatchHistory::GetMatch(int id) const
 {
 	if (!this->m_db)
 		return {};
@@ -266,7 +307,7 @@ std::optional<sp::Match> Serializer::GetMatch(int id) const
 	}
 }
 
-bool Serializer::WriteCsv(std::string_view csv)
+bool MatchHistory::WriteCsv(std::string_view csv)
 {
 	if (File file = File::Open(GetFilePath(), File::Flags::Write | File::Flags::Create))
 	{
@@ -284,7 +325,7 @@ bool Serializer::WriteCsv(std::string_view csv)
 	return false;
 }
 
-bool Serializer::SaveMatch(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view csv)
+bool MatchHistory::SaveMatch(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view csv)
 {
 	const std::string hash = HashString(arenaInfo);
 	if (m_hashes.contains(hash))
@@ -303,7 +344,7 @@ bool Serializer::SaveMatch(const StatsParser::Match::Info& info, std::string_vie
 	return true;
 }
 
-void Serializer::BuildHashSet()
+void MatchHistory::BuildHashSet()
 {
 	if (!this->m_db)
 		return;
@@ -322,4 +363,9 @@ void Serializer::BuildHashSet()
 			m_hashes.insert(hash);
 		}
 	}
+}
+
+void MatchHistory::ApplyDatabaseUpdates() const
+{
+	this->m_db.Execute("ALTER TABLE matches ADD arenaInfo TEXT;");
 }

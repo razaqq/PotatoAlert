@@ -1,8 +1,10 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Singleton.hpp"
 #include "StatsParser.hpp"
 #include "Sqlite.hpp"
+#include "ThreadPool.hpp"
 
 #include <QString>
 
@@ -12,21 +14,12 @@
 #include <vector>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Client {
 
-class Serializer
+class MatchHistory
 {
 public:
-	Serializer(const Serializer&) = delete;
-	Serializer(Serializer&&) noexcept = delete;
-	Serializer& operator=(const Serializer&) = delete;
-	Serializer& operator=(Serializer&&) noexcept = delete;
-	
-	static Serializer& Instance()
-	{
-		static Serializer s;
-		return s;
-	}
+	PA_SINGLETON(MatchHistory);
 	
 	static QString GetDir();
 
@@ -50,8 +43,8 @@ public:
 	[[nodiscard]] std::optional<MatchHistoryEntry> GetLatest() const;
 
 private:
-	Serializer();
-	~Serializer();
+	MatchHistory();
+	~MatchHistory();
 	bool WriteJson(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view hash) const;
 	static bool WriteCsv(std::string_view csv);
 
@@ -60,6 +53,7 @@ private:
 
 	SQLite m_db;
 	std::unordered_set<std::string> m_hashes;
+	ThreadPool m_threadPool;
 };
 
-}  // namespace PotatoAlert::MatchHistory
+}  // namespace PotatoAlert::Client::MatchHistory

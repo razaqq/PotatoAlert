@@ -16,10 +16,10 @@
 #include <vector>
 
 
-using PotatoAlert::Game::FolderStatus;
+using PotatoAlert::Client::Game::FolderStatus;
 namespace fs = std::filesystem;
 
-namespace PotatoAlert::Game {
+namespace PotatoAlert::Client::Game {
 
 // finds the res folder path in the currently selected directory
 bool GetResFolderPath(FolderStatus& status)
@@ -291,4 +291,4 @@ bool CheckPath(const std::string& selectedPath, FolderStatus& status)
 	return true;
 }
 
-}  // namespace PotatoAlert::Game
+}  // namespace PotatoAlert::Client::Game

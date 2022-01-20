@@ -13,7 +13,7 @@
 #include <vector>
 
 
-using namespace PotatoAlert::StatsParser;
+using namespace PotatoAlert::Client::StatsParser;
 
 static QString ToQString(const std::string_view& str)
 {
@@ -313,7 +313,7 @@ static std::string GetCSV(const Match& match)
 }  // namespace _JSON
 
 
-namespace pn = PotatoAlert::StatsParser;
+namespace pn = PotatoAlert::Client::StatsParser;
 
 void pn::Label::UpdateLabel(QLabel* label) const
 {

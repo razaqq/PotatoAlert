@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Game.hpp"
+#include "Singleton.hpp"
 #include "StatsParser.hpp"
 
 #include <QFileSystemWatcher>
@@ -15,9 +16,9 @@
 #include <variant>
 
 
-using PotatoAlert::Game::FolderStatus;
+using PotatoAlert::Client::Game::FolderStatus;
 
-namespace PotatoAlert {
+namespace PotatoAlert::Client {
 
 enum class Status
 {
@@ -30,17 +31,10 @@ class PotatoClient : public QObject
 {
 	Q_OBJECT
 public:
-	PotatoClient(const PotatoClient&) = delete;
-	PotatoClient(PotatoClient&&) noexcept = delete;
-	PotatoClient& operator=(const PotatoClient&) = delete;
-	PotatoClient& operator=(PotatoClient&&) noexcept = delete;
 	~PotatoClient() override = default;
 
-	static PotatoClient& Instance()
-	{
-		static PotatoClient pc;
-		return pc;
-	}
+	PA_SINGLETON(PotatoClient);
+
 	void Init();
 	void TriggerRun();
 	FolderStatus CheckPath();
@@ -48,10 +42,9 @@ private:
 	PotatoClient() = default;
 	void OnResponse(const QString& message);
 	void OnDirectoryChanged(const QString& path);
-	static std::optional<std::string> ReadArenaInfo(const std::string& filePath);
 
-	QWebSocket* m_socket = new QWebSocket();
-	QFileSystemWatcher* m_watcher = new QFileSystemWatcher();
+	QWebSocket m_socket;
+	QFileSystemWatcher m_watcher;
 
 	QString m_tempArenaInfo;
 	FolderStatus m_folderStatus;
@@ -64,4 +57,4 @@ signals:
 #pragma clang diagnostic pop
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Client

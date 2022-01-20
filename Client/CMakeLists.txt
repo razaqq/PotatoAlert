@@ -8,6 +8,8 @@ set(
 
         Game.cpp
         Game.hpp
+        MatchHistory.cpp
+        MatchHistory.hpp
         PotatoClient.cpp
         PotatoClient.hpp
         Serializer.cpp

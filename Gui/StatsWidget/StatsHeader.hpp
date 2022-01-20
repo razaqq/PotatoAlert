@@ -11,6 +11,8 @@
 #include <string>
 
 
+using PotatoAlert::Client::Status;
+
 namespace PotatoAlert::Gui {
 
 class StatsHeader : public QWidget

@@ -11,7 +11,7 @@
 
 
 using PotatoAlert::Version;
-using namespace PotatoAlert::Game;
+using namespace PotatoAlert::Client::Game;
 namespace fs = std::filesystem;
 
 enum class Test

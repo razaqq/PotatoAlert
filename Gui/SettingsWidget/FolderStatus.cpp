@@ -16,7 +16,7 @@
 
 
 using PotatoAlert::Gui::FolderStatusGui;
-using PotatoAlert::Game::FolderStatus;
+using PotatoAlert::Client::Game::FolderStatus;
 
 FolderStatusGui::FolderStatusGui(QWidget* parent) : QWidget(parent)
 {

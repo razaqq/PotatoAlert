@@ -1,7 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include "Serializer.hpp"
+#include "MatchHistory.hpp"
 #include "StatsParser.hpp"
 
 #include <QEvent>
@@ -9,13 +9,15 @@
 #include <QWidget>
 
 
+using PotatoAlert::Client::MatchHistory;
+
 namespace PotatoAlert::Gui {
 
-class MatchHistory : public QWidget
+class MatchHistoryGui : public QWidget
 {
 	Q_OBJECT
 public:
-	explicit MatchHistory(QWidget* parent = nullptr);
+	explicit MatchHistoryGui(QWidget* parent = nullptr);
 	void UpdateAll();
 	void UpdateLatest();
 
@@ -25,11 +27,11 @@ private:
 	void changeEvent(QEvent* event) override;
 	void paintEvent(QPaintEvent* _) override;
 	QTableWidget* m_table = new QTableWidget();
-	void AddEntry(const Serializer::MatchHistoryEntry& entry) const;
+	void AddEntry(const MatchHistory::MatchHistoryEntry& entry) const;
 	int m_latestId = 0;
 
 signals:
-	void ReplaySelected(const StatsParser::Match& match);
+	void ReplaySelected(const Client::StatsParser::Match& match);
 };
 
 }  // namespace PotatoAlert::Gui

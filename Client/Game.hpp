@@ -11,7 +11,7 @@
 
 namespace fs = std::filesystem;
 
-namespace PotatoAlert::Game {
+namespace PotatoAlert::Client::Game {
 
 struct FolderStatus
 {
@@ -36,4 +36,4 @@ bool ReadPreferences(FolderStatus& status, const std::string& basePath);
 void SetReplaysFolder(FolderStatus& status);
 std::optional<fs::path> GetGamePath();
 
-}  // namespace PotatoAlert::Game
+}  // namespace PotatoAlert::Client::Game

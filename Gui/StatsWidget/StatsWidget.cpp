@@ -46,7 +46,7 @@ void StatsWidget::Init()
 
 
 	// add hooks to open wows-numbers link when double clicking cell
-	auto openWowsNumbers = [](int row, const StatsParser::Team& team)
+	auto openWowsNumbers = [](int row, const Client::StatsParser::Team& team)
 	{
 		auto wowsNumbers = team.wowsNumbers;
 
@@ -75,7 +75,7 @@ void StatsWidget::Update(const Match& match)
 	this->m_leftTable->clearContents();
 	this->m_rightTable->clearContents();
 
-	auto fillTable = [](QTableWidget* table, const StatsParser::TeamType& team)
+	auto fillTable = [](QTableWidget* table, const Client::StatsParser::TeamType& team)
 	{
 		int row = 0;
 		for (auto& player : team)
