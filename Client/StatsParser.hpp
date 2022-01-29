@@ -56,6 +56,7 @@ struct Match
 	{
 		std::string map;
 		std::string ship;
+		std::string shipIdent;
 		std::string dateTime;
 		std::string matchGroup;
 		std::string statsMode;

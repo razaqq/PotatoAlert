@@ -61,7 +61,7 @@ struct Color
 
 struct Stat
 {
-	std::string_view string;
+	std::string string;
 	Color color;
 
 	[[nodiscard]] QTableWidgetItem* GetField(const QFont& font, const QColor& bg, const QFlags<Qt::AlignmentFlag>& align) const
@@ -88,10 +88,10 @@ struct Stat
 
 struct Clan
 {
-	std::string_view name;
-	std::string_view tag;
+	std::string name;
+	std::string tag;
 	Color color;
-	std::string_view region;
+	std::string region;
 
 	[[nodiscard]] Label GetTagLabel() const
 	{
@@ -117,7 +117,7 @@ struct Clan
 
 struct Ship
 {
-	std::string_view name;
+	std::string name;
 	Color color;
 
 	[[nodiscard]] QTableWidgetItem* GetField(const QFont& font, const QColor& bg, const QFlags<Qt::AlignmentFlag>& align) const
@@ -141,7 +141,7 @@ struct Player
 {
 	std::optional<Clan> clan;
 	bool hiddenPro;
-	std::string_view name;
+	std::string name;
 	Color nameColor;
 	std::optional<Ship> ship;
 	Stat battles;
@@ -151,7 +151,7 @@ struct Player
 	Stat winrateShip;
 	Stat avgDmgShip;
 	Color prColor;
-	std::string_view wowsNumbers;
+	std::string wowsNumbers;
 
 	[[nodiscard]] PlayerType GetTableRow() const
 	{
@@ -257,13 +257,14 @@ struct Match
 {
 	Team team1;
 	Team team2;
-	std::string_view matchGroup;
-	std::string_view statsMode;
-	std::string_view region;
-	std::string_view player;
-	std::string_view ship;
-	std::string_view map;
-	std::string_view dateTime;
+	std::string matchGroup;
+	std::string statsMode;
+	std::string region;
+	std::string player;
+	std::string ship;
+	std::string shipIdent;
+	std::string map;
+	std::string dateTime;
 };
 
 [[maybe_unused]] static void from_json(const json& j, Match& m)
@@ -275,6 +276,7 @@ struct Match
 	j.at("region").get_to(m.region);
 	j.at("player").get_to(m.player);
 	j.at("ship").get_to(m.ship);
+	j.at("shipIdent").get_to(m.shipIdent);
 	j.at("map").get_to(m.map);
 	j.at("dateTime").get_to(m.dateTime);
 }
@@ -385,6 +387,7 @@ StatsParseResult pn::ParseMatch(const std::string& raw, bool parseCsv) noexcept
 	result.match.info.statsMode = match.statsMode;
 	result.match.info.map = match.map;
 	result.match.info.ship = match.ship;
+	result.match.info.shipIdent = match.shipIdent;
 	result.match.info.dateTime = match.dateTime;
 	result.match.info.region = match.region;
 	result.match.info.player = match.player;
