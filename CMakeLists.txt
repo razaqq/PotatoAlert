@@ -6,6 +6,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
+option(PA_PROFILE "Enable Profiling Output" OFF)
+if(PA_PROFILE)
+    add_definitions(-DPA_PROFILE=1)
+endif()
+
 add_definitions(-D_HAS_EXCEPTIONS=0)  # turn off exceptions
 add_definitions(-DQT_MESSAGELOGCONTEXT)  # qt log messages context
 
@@ -27,7 +32,7 @@ generate_product_version(
         VERSION_REVISION ${BUILD_REVISION}
 )
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/Util)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Core)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Client)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Gui)
 add_subdirectory(${PROJECT_SOURCE_DIR}/ReplayParser)
@@ -38,7 +43,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/FramelessHelper)
 add_executable(PotatoAlert Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
 set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
+if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     set_property(TARGET PotatoAlert PROPERTY WIN32_EXECUTABLE true)
 endif()
 
@@ -63,5 +68,8 @@ target_link_libraries(PotatoAlert PRIVATE gui)
 
 include(packaging)
 windeployqt(PotatoAlert)
+
+file(COPY ${PROJECT_SOURCE_DIR}/Resources/ReplayVersions DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 ssllibraries(PotatoAlert)
 # makeinstaller(PotatoAlert)
