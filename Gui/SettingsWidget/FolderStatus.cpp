@@ -50,7 +50,7 @@ void FolderStatus::Init()
 	this->setLayout(gridLayout);
 }
 
-void FolderStatus::Update(const Client::Game::FolderStatus& status) const
+void FolderStatus::Update(const Client::Game::DirectoryStatus& status) const
 {
 	this->m_replaysFolders->clear();
 	this->m_versionedReplays->clear();

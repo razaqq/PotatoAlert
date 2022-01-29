@@ -1,4 +1,4 @@
-﻿// Copyright 2020 <github.com/razaqq>
+// Copyright 2020 <github.com/razaqq>
 
 #include "PotatoClient.hpp"
 
@@ -190,7 +190,7 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 	LOG_TRACE("ArenaInfo read from file. Content: {}", j.dump());
 
 	// add region
-	j["region"] = this->m_folderStatus.region;
+	j["region"] = this->m_dirStatus.region;
 
 	// set stats mode from config
 	switch (PotatoConfig().Get<StatsMode>("stats_mode"))
@@ -267,32 +267,35 @@ void PotatoClient::OnResponse(const QString& message)
 }
 
 // checks the game path for a valid replays folder and triggers a new match run
-FolderStatus PotatoClient::CheckPath()
+DirectoryStatus PotatoClient::CheckPath()
 {
-	FolderStatus folderStatus;
+	DirectoryStatus dirStatus;
 
 	if (!m_watcher.directories().isEmpty())
 		m_watcher.removePaths(m_watcher.directories());
 
 	if (PotatoConfig().Get<bool>("override_replays_folder"))
 	{
-		m_watcher.addPath(QString::fromStdString(PotatoConfig().Get<std::string>("replays_folder")));
-		folderStatus.statusText = "";
+		const std::string replaysPath = PotatoConfig().Get<std::string>("replays_folder");
+		m_watcher.addPath(QString::fromStdString(replaysPath));
+		dirStatus.statusText = "";
 		this->TriggerRun();
-		return folderStatus;
+
+		return dirStatus;
 	}
 
-	if (Game::CheckPath(PotatoConfig().Get<std::string>("game_folder"), folderStatus))
+	if (Game::CheckPath(PotatoConfig().Get<std::string>("game_folder"), dirStatus))
 	{
-		this->m_folderStatus = folderStatus;
-		for (auto& folder : folderStatus.replaysPath)
+		this->m_dirStatus = dirStatus;
+		for (auto& folder : dirStatus.replaysPath)
 		{
 			if (!folder.empty())
 			{
 				m_watcher.addPath(QString::fromStdString(folder));
 			}
 		}
+
 		this->TriggerRun();
 	}
-	return folderStatus;
+	return dirStatus;
 }

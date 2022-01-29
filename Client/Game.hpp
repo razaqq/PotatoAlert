@@ -13,13 +13,13 @@ namespace fs = std::filesystem;
 
 namespace PotatoAlert::Client::Game {
 
-struct FolderStatus
+struct DirectoryStatus
 {
 	std::string gamePath;
 	Version gameVersion;
 	std::string resFolderPath;
 	std::string preferencesPathBase;
-	std::string folderVersion;
+	std::string directoryVersion;
 	std::string replaysPathBase;
 	std::string replaysDirPath;
 	std::vector<std::string> replaysPath;
@@ -29,11 +29,11 @@ struct FolderStatus
 	bool found = false;
 };
 
-bool CheckPath(const std::string& selectedPath, FolderStatus& status);
-bool GetResFolderPath(FolderStatus& status);
-bool ReadEngineConfig(FolderStatus& status, const char* resFolder);
-bool ReadPreferences(FolderStatus& status, const std::string& basePath);
-void SetReplaysFolder(FolderStatus& status);
+bool CheckPath(const std::string& selectedPath, DirectoryStatus& status);
+bool GetResFolderPath(DirectoryStatus& status);
+bool ReadEngineConfig(DirectoryStatus& status, const char* resFolder);
+bool ReadPreferences(DirectoryStatus& status, const std::string& basePath);
+void SetReplaysFolder(DirectoryStatus& status);
 std::optional<fs::path> GetGamePath();
 
 }  // namespace PotatoAlert::Client::Game

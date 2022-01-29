@@ -14,7 +14,7 @@ class FolderStatus : public QWidget
 {
 public:
 	explicit FolderStatus(QWidget* parent = nullptr);
-	void Update(const Client::Game::FolderStatus& status) const;
+	void Update(const Client::Game::DirectoryStatus& status) const;
 private:
 	void Init();
 	void changeEvent(QEvent* event) override;

@@ -16,13 +16,13 @@
 #include <vector>
 
 
-using PotatoAlert::Client::Game::FolderStatus;
+using PotatoAlert::Client::Game::DirectoryStatus;
 namespace fs = std::filesystem;
 
 namespace PotatoAlert::Client::Game {
 
 // finds the res folder path in the currently selected directory
-bool GetResFolderPath(FolderStatus& status)
+bool GetResFolderPath(DirectoryStatus& status)
 {
 	// get newest folder version inside /bin folder
 
@@ -54,8 +54,8 @@ bool GetResFolderPath(FolderStatus& status)
 
 		if (version == status.gameVersion)
 		{
-			status.folderVersion = entry.path().filename().string();
-			status.resFolderPath = (fs::path(status.gamePath) / "bin" / status.folderVersion).string();
+			status.directoryVersion = entry.path().filename().string();
+			status.resFolderPath = (fs::path(status.gamePath) / "bin" / status.directoryVersion).string();
 			return fs::exists(status.resFolderPath);
 		}
 	}
@@ -76,8 +76,8 @@ bool GetResFolderPath(FolderStatus& status)
 
 	if (folderVersion != -1)
 	{
-		status.folderVersion = std::to_string(folderVersion);
-		status.resFolderPath = (fs::path(status.gamePath) / "bin" / status.folderVersion).string();
+		status.directoryVersion = std::to_string(folderVersion);
+		status.resFolderPath = (fs::path(status.gamePath) / "bin" / status.directoryVersion).string();
 		return fs::exists(status.resFolderPath);
 	}
 
@@ -86,7 +86,7 @@ bool GetResFolderPath(FolderStatus& status)
 }
 
 // reads the engine config and sets values
-bool ReadEngineConfig(FolderStatus& status, const char* resFolder)
+bool ReadEngineConfig(DirectoryStatus& status, const char* resFolder)
 {
 	fs::path engineConfig(status.resFolderPath / fs::path(resFolder) / "engine_config.xml");
 	if (!fs::exists(engineConfig))
@@ -157,7 +157,7 @@ bool ReadEngineConfig(FolderStatus& status, const char* resFolder)
 }
 
 // reads game version and region from preferences.xml
-bool ReadPreferences(FolderStatus& status, const std::string& basePath)
+bool ReadPreferences(DirectoryStatus& status, const std::string& basePath)
 {
 	// For some reason preferences.xml is not valid xml and so we have to parse it with regex instead of xml
 	std::string preferencesPath = (fs::path(basePath) / "preferences.xml").string();
@@ -215,7 +215,7 @@ bool ReadPreferences(FolderStatus& status, const std::string& basePath)
 }
 
 // sets the replays folder
-void SetReplaysFolder(FolderStatus& status)
+void SetReplaysFolder(DirectoryStatus& status)
 {
 	if (status.replaysPathBase == "cwd")
 	{
@@ -224,8 +224,8 @@ void SetReplaysFolder(FolderStatus& status)
 	else if (status.replaysPathBase == "exe_path")
 	{
 		status.replaysPath = {
-				(fs::path(status.gamePath) / "bin" / status.folderVersion / "bin32" / status.replaysDirPath).string(),
-				(fs::path(status.gamePath) / "bin" / status.folderVersion / "bin64" / status.replaysDirPath).string()
+				(fs::path(status.gamePath) / "bin" / status.directoryVersion / "bin32" / status.replaysDirPath).string(),
+				(fs::path(status.gamePath) / "bin" / status.directoryVersion / "bin64" / status.replaysDirPath).string()
 		};
 	}
 	if (status.versionedReplays)
@@ -239,7 +239,7 @@ void SetReplaysFolder(FolderStatus& status)
 	}
 }
 
-bool CheckPath(const std::string& selectedPath, FolderStatus& status)
+bool CheckPath(const std::string& selectedPath, DirectoryStatus& status)
 {
 	const fs::path gamePath = fs::path(selectedPath).make_preferred();
 	status.gamePath = gamePath.string();

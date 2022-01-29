@@ -16,7 +16,7 @@
 #include <variant>
 
 
-using PotatoAlert::Client::Game::FolderStatus;
+using PotatoAlert::Client::Game::DirectoryStatus;
 
 namespace PotatoAlert::Client {
 
@@ -30,6 +30,7 @@ enum class Status
 class PotatoClient : public QObject
 {
 	Q_OBJECT
+
 public:
 	~PotatoClient() override = default;
 
@@ -37,7 +38,8 @@ public:
 
 	void Init();
 	void TriggerRun();
-	FolderStatus CheckPath();
+	DirectoryStatus CheckPath();
+
 private:
 	PotatoClient() = default;
 	void OnResponse(const QString& message);
@@ -47,7 +49,8 @@ private:
 	QFileSystemWatcher m_watcher;
 
 	QString m_tempArenaInfo;
-	FolderStatus m_folderStatus;
+	DirectoryStatus m_dirStatus;
+
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
