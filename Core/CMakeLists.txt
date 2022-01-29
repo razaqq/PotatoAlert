@@ -40,6 +40,7 @@ endif(UNIX)
 
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/openssl ${CMAKE_BINARY_DIR}/ThirdParty/openssl)
 add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/tinyxml2 ${CMAKE_BINARY_DIR}/ThirdParty/tinyxml2)
 add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/sqlite3 ${CMAKE_BINARY_DIR}/ThirdParty/sqlite3)
 set(CMAKE_DISABLE_TESTING ON)
@@ -50,7 +51,7 @@ target_compile_options(zlibstatic PRIVATE -Wno-deprecated)
 
 add_library(core STATIC ${core_src})
 set_target_properties(core PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
-target_link_libraries(core PRIVATE sqlite3 tinyxml2 zip ZLIB::ZLIB)
+target_link_libraries(core PRIVATE sqlite3 tinyxml2 zip ZLIB::ZLIB OpenSSL)
 target_link_libraries(core PUBLIC Qt5::Core Qt5::Widgets)
 target_include_directories(
         core
