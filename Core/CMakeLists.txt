@@ -11,6 +11,7 @@ set(
         Log.cpp
         Screenshot.cpp
         Sha1.cpp
+        Sha256.cpp
         String.cpp
         StringTable.cpp
         Sqlite.cpp
