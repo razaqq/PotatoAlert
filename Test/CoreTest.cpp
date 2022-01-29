@@ -3,6 +3,7 @@
 #include "Core/Blowfish.hpp"
 #include "Core/Directory.hpp"
 #include "Core/Sha1.hpp"
+#include "Core/Sha256.hpp"
 #include "Core/String.hpp"
 #include "Core/Version.hpp"
 #include "Core/Zlib.hpp"
@@ -16,9 +17,7 @@
 
 using PotatoAlert::Version;
 using PotatoAlert::Blowfish;
-using PotatoAlert::Unpickler;
 using namespace PotatoAlert;
-namespace fs = std::filesystem;
 
 std::vector<std::byte> FromString(std::string_view s) noexcept
 {
@@ -67,6 +66,17 @@ TEST_CASE( "Sha1Test" )
 	Sha1 sha;
 	sha.ProcessBytes(test);
 	REQUIRE(sha.GetHash() == "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12");
+}
+
+TEST_CASE( "Sha256Test" )
+{
+	std::string hash1;
+	REQUIRE(Core::Sha256("The quick brown fox jumps over the lazy dog", hash1));
+	REQUIRE(hash1 == "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592");
+
+	std::string hash2;
+	REQUIRE(Core::Sha256(FromString("The quick brown fox jumps over the lazy dog"), hash2));
+	REQUIRE(hash2 == "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592");
 }
 
 TEST_CASE( "StringTest" )

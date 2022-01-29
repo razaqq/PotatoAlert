@@ -9,7 +9,7 @@ namespace PotatoAlert::Core {
 
 bool Sha256(const void* data, size_t size, std::string& hash);
 
-inline bool Sha256(const std::string& str, std::string& hash)
+inline bool Sha256(std::string_view str, std::string& hash)
 {
 	return Sha256(str.data(), str.size(), hash);
 }
