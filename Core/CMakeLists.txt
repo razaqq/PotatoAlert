@@ -71,5 +71,5 @@ target_include_directories(
 )
 
 if(WIN32)
-    target_link_libraries(core PRIVATE Version)
+    target_link_libraries(core PRIVATE Version Ws2_32)
 endif(WIN32)
