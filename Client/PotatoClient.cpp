@@ -4,13 +4,13 @@
 
 #include "Core/Config.hpp"
 #include "Core/Defer.hpp"
-#include "Core/Hash.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
 #include "Game.hpp"
 #include "ReplayAnalyzer.hpp"
 #include "MatchHistory.hpp"
 #include "StatsParser.hpp"
+#include "Core/Sha256.hpp"
 
 #include <QFileSystemWatcher>
 #include <QObject>
@@ -92,13 +92,13 @@ static TempArenaInfoResult ReadArenaInfo(std::string_view filePath)
 
 void PotatoClient::Init()
 {
-	emit this->StatusReady(Status::Ready, "Ready");
+	emit StatusReady(Status::Ready, "Ready");
 
 	// handle connection
 	connect(&m_socket, &QWebSocket::connected, [this]
 	{
 		LOG_TRACE("Websocket open, sending arena info...");
-		m_socket.sendTextMessage(this->m_tempArenaInfo);
+		m_socket.sendTextMessage(QString::fromStdString(m_tempArenaInfo));
 	});
 
 	// handle error
@@ -107,50 +107,50 @@ void PotatoClient::Init()
 		switch (error)
 		{
 			case QAbstractSocket::ConnectionRefusedError:
-				emit this->StatusReady(Status::Error, "Connection Refused");
+				emit StatusReady(Status::Error, "Connection Refused");
 				break;
 			case QAbstractSocket::SocketTimeoutError:
-				emit this->StatusReady(Status::Error, "Socket Timeout");
+				emit StatusReady(Status::Error, "Socket Timeout");
 				break;
 			case QAbstractSocket::HostNotFoundError:
-				emit this->StatusReady(Status::Error, "Host Not Found");
+				emit StatusReady(Status::Error, "Host Not Found");
 				break;
 			case QAbstractSocket::NetworkError:
 				// TODO: this is a shit way of doing this, maybe create a Qt bug report?
 				if (m_socket.errorString().contains("timed", Qt::CaseInsensitive))
-					emit this->StatusReady(Status::Error, "Connection Timeout");
+					emit StatusReady(Status::Error, "Connection Timeout");
 				else
-					emit this->StatusReady(Status::Error, "Network Error");
+					emit StatusReady(Status::Error, "Network Error");
 				break;
 			case QAbstractSocket::RemoteHostClosedError:
-				emit this->StatusReady(Status::Error, "Host Closed Conn.");
+				emit StatusReady(Status::Error, "Host Closed Conn.");
 				return;
 			default:
-				emit this->StatusReady(Status::Error, "Websocket Error");
+				emit StatusReady(Status::Error, "Websocket Error");
 				break;
 		}
 		LOG_ERROR(m_socket.errorString().toStdString());
 	});
 
 	connect(&m_socket, &QWebSocket::textMessageReceived, this, &PotatoClient::OnResponse);
-	connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &PotatoClient::OnDirectoryChanged);
 
-	this->TriggerRun();
+	connect(&m_watcher, &Core::DirectoryWatcher::DirectoryChanged, this, &PotatoClient::OnDirectoryChanged);
+
+	TriggerRun();
 }
 
 // triggers a run with the current replays folders
 void PotatoClient::TriggerRun()
 {
-	for (auto& path : m_watcher.directories())
-		this->OnDirectoryChanged(path);
+	m_watcher.ForceDirectoryChanged();
 }
 
 // triggered whenever a file gets modified in a replays path
-void PotatoClient::OnDirectoryChanged(const QString& path)
+void PotatoClient::OnDirectoryChanged(const std::string& path)
 {
 	LOG_TRACE("Directory changed.");
 
-	const std::string filePath = std::format("{}\\tempArenaInfo.json", path.toStdString());
+	const std::string filePath = std::format("{}\\tempArenaInfo.json", path);
 
 	if (!File::Exists(filePath))
 	{
@@ -162,7 +162,7 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 	if (arenaInfo.error)
 	{
 		LOG_ERROR("Failed to read arena info from file.");
-		emit this->StatusReady(Status::Error, "Reading ArenaInfo");
+		emit StatusReady(Status::Error, "Reading ArenaInfo");
 		return;
 	}
 
@@ -183,14 +183,21 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 	if (!json::sax_parse(arenaInfo.data, &sax))
 	{
 		LOG_ERROR("Failed to Parse arena info file as JSON.");
-		emit this->StatusReady(Status::Error, "JSON Parse Error");
+		emit StatusReady(Status::Error, "JSON Parse Error");
 		return;
 	}
 
-	LOG_TRACE("ArenaInfo read from file. Content: {}", j.dump());
+	LOG_TRACE("ArenaInfo read from file. Content: {}", arenaInfo.data);
+
+	// make sure we don't pull the same match twice
+	std::string hash;
+	Core::Sha256(arenaInfo.data, hash);
+	if (hash == m_lastArenaInfoHash)
+		return;
+	m_lastArenaInfoHash = hash;
 
 	// add region
-	j["region"] = this->m_dirStatus.region;
+	j["region"] = m_dirStatus.region;
 
 	// set stats mode from config
 	switch (PotatoConfig().Get<StatsMode>("stats_mode"))
@@ -212,18 +219,9 @@ void PotatoClient::OnDirectoryChanged(const QString& path)
 			break;
 	}
 
-	// make sure we don't pull the same match twice
-	if (std::string raw = j.dump(); Hash(raw) != Hash(this->m_tempArenaInfo.toStdString()))
-	{
-		const QString tempArenaInfo = QString::fromStdString(j.dump());
-		this->m_tempArenaInfo = tempArenaInfo;
-	}
-	else
-	{
-		return;
-	}
+	m_tempArenaInfo = j.dump();
 
-	emit this->StatusReady(Status::Loading, "Loading");
+	emit StatusReady(Status::Loading, "Loading");
 	LOG_TRACE("Opening websocket...");
 
 	m_socket.open(QUrl(QString(g_wsAddress)));  // starts the request cycle
@@ -239,31 +237,31 @@ void PotatoClient::OnResponse(const QString& message)
 
 	if (message.isNull() || message == "null")
 	{
-		emit this->StatusReady(Status::Error, "NULL Response");
+		emit StatusReady(Status::Error, "NULL Response");
 		return;
 	}
 
 	LOG_TRACE("Parsing match.");
 	const std::string raw = message.toUtf8().toStdString();
-	auto res = StatsParser::ParseMatch(raw, true);
+	const StatsParser::StatsParseResult res = StatsParser::ParseMatch(raw, true);
 
 	if (!res.success)
 	{
-		emit this->StatusReady(Status::Error, "JSON Parse Error");
+		emit StatusReady(Status::Error, "JSON Parse Error");
 	}
 
 	if (PotatoConfig().Get<bool>("match_history"))
 	{
-		if (MatchHistory::Instance().SaveMatch(res.match.info, this->m_tempArenaInfo.toStdString(), raw, res.csv.value()))
+		if (MatchHistory::Instance().SaveMatch(res.match.info, m_tempArenaInfo, m_lastArenaInfoHash, raw, res.csv.value()))
 		{
-			emit this->MatchHistoryChanged();
+			emit MatchHistoryChanged();
 		}
 	}
 
 	LOG_TRACE("Updating tables.");
-	emit this->MatchReady(res.match);
+	emit MatchReady(res.match);
 
-	emit this->StatusReady(Status::Ready, "Ready");
+	emit StatusReady(Status::Ready, "Ready");
 }
 
 // checks the game path for a valid replays folder and triggers a new match run
@@ -271,31 +269,36 @@ DirectoryStatus PotatoClient::CheckPath()
 {
 	DirectoryStatus dirStatus;
 
-	if (!m_watcher.directories().isEmpty())
-		m_watcher.removePaths(m_watcher.directories());
+	m_watcher.ClearDirectories();
+
+	const std::string gamePath = PotatoConfig().Get<std::string>("game_folder");
 
 	if (PotatoConfig().Get<bool>("override_replays_folder"))
 	{
 		const std::string replaysPath = PotatoConfig().Get<std::string>("replays_folder");
-		m_watcher.addPath(QString::fromStdString(replaysPath));
+		m_watcher.WatchDirectory(replaysPath);
 		dirStatus.statusText = "";
-		this->TriggerRun();
+
+		TriggerRun();
 
 		return dirStatus;
 	}
 
-	if (Game::CheckPath(PotatoConfig().Get<std::string>("game_folder"), dirStatus))
+	if (Game::CheckPath(gamePath, dirStatus))
 	{
-		this->m_dirStatus = dirStatus;
+		m_dirStatus = dirStatus;
+
+		// start watching all replays paths
 		for (auto& folder : dirStatus.replaysPath)
 		{
 			if (!folder.empty())
 			{
-				m_watcher.addPath(QString::fromStdString(folder));
+				m_watcher.WatchDirectory(folder);
 			}
 		}
 
-		this->TriggerRun();
+
+		TriggerRun();
 	}
 	return dirStatus;
 }

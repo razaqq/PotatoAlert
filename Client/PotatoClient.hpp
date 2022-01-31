@@ -1,19 +1,18 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Core/DirectoryWatcher.hpp"
 #include "Core/Singleton.hpp"
 #include "Game.hpp"
+#include "ReplayParser/ReplayParser.hpp"
 #include "StatsParser.hpp"
 
-#include <QFileSystemWatcher>
 #include <QObject>
 #include <QString>
 #include <QTableWidgetItem>
 #include <QtWebSockets/QWebSocket>
 
-#include <optional>
 #include <string>
-#include <variant>
 
 
 using PotatoAlert::Client::Game::DirectoryStatus;
@@ -43,12 +42,13 @@ public:
 private:
 	PotatoClient() = default;
 	void OnResponse(const QString& message);
-	void OnDirectoryChanged(const QString& path);
+	void OnDirectoryChanged(const std::string& path);
 
 	QWebSocket m_socket;
-	QFileSystemWatcher m_watcher;
+	Core::DirectoryWatcher m_watcher;
 
-	QString m_tempArenaInfo;
+	std::string m_tempArenaInfo;
+	std::string m_lastArenaInfoHash;
 	DirectoryStatus m_dirStatus;
 
 signals:

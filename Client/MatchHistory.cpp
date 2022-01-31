@@ -266,37 +266,47 @@ std::optional<MatchHistory::MatchHistoryEntry> MatchHistory::GetLatest() const
 	return {};
 }
 
-std::optional<sp::Match> MatchHistory::GetMatch(int id) const
+std::optional<Match> MatchHistory::GetMatchJson(std::string_view hash) const
 {
-	if (!this->m_db)
+	if (!m_db)
 		return {};
 
-	LOG_TRACE("Getting match from match history database with id {}.", id);
+	LOG_TRACE("Getting match from match history database with hash {}", hash);
 	
-	auto statement = SQLite::Statement(this->m_db, "SELECT json FROM matches WHERE id = ?1;");
-	if (!statement.Bind(1, id))
+	auto statement = SQLite::Statement(m_db, "SELECT json FROM matches WHERE hash = ?1;");
+
+	if (!statement)
 	{
-		LOG_ERROR("Failed to bind to sql statement for match history database: {}", this->m_db.GetLastError());
+		LOG_ERROR("Failed to prepare SQL statement: {}", m_db.GetLastError());
+		return {};
+	}
+
+	if (!statement.Bind(1, hash))
+	{
+		LOG_ERROR("Failed to bind to SQL statement: {}", m_db.GetLastError());
 		return {};
 	}
 
 	statement.ExecuteStep();
 	if (!statement.HasRow())
 	{
-		LOG_ERROR("There is no match in match history database with id: {}", id);
+		LOG_TRACE("There is no match in match history database with hash: {}", hash);
 		return {};
 	}
 
 	std::string raw;
 	if (statement.GetText(0, raw))
 	{
-		auto res = sp::ParseMatch(raw, false);
-		if (res.success)
-		{
+		if (StatsParseResult res = sp::ParseMatch(raw, false); res.success)
 			return res.match;
-		}
-		else
-		{
+		return {};
+	}
+	else
+	{
+		LOG_ERROR("Failed to get json for match in match history database with hash: {}", hash);
+		return {};
+	}
+}
 			return {};
 		}
 	}
@@ -325,15 +335,13 @@ bool MatchHistory::WriteCsv(std::string_view csv)
 	return false;
 }
 
-bool MatchHistory::SaveMatch(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view csv)
+bool MatchHistory::SaveMatch(const Match::Info& info, std::string_view arenaInfo, std::string_view hash, std::string_view json, std::string_view csv) const
 {
-	const std::string hash = HashString(arenaInfo);
-	if (m_hashes.contains(hash))
+	if (auto match = GetMatchJson(hash))
 	{
 		LOG_TRACE("Match with hash {} is already in database.", hash);
 		return false;
 	}
-	m_hashes.insert(hash);
 	
 	// save json to sqlite
 	WriteJson(info, arenaInfo, json, hash);

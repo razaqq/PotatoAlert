@@ -23,7 +23,8 @@ public:
 	
 	static QString GetDir();
 
-	bool SaveMatch(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view csv);
+	bool SaveMatch(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view hash, std::string_view json, std::string_view csv) const;
+	[[nodiscard]] std::optional<StatsParser::Match> GetMatchJson(std::string_view hash) const;
 
 	struct MatchHistoryEntry
 	{
