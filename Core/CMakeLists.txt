@@ -53,7 +53,7 @@ target_compile_options(zlib PRIVATE -Wno-deprecated)
 target_compile_options(zlibstatic PRIVATE -Wno-deprecated)
 
 add_library(core STATIC ${core_src})
-set_target_properties(core PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
+set_target_properties(core PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 target_link_libraries(core PRIVATE sqlite3 tinyxml2 zip ZLIB::ZLIB OpenSSL)
 target_link_libraries(core PUBLIC Qt5::Core Qt5::Widgets)
 target_include_directories(
