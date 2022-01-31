@@ -1,25 +1,25 @@
 // Copyright 2021 <github.com/razaqq>
 
-#include "Analyzer.hpp"
-
-#include "Instrumentor.hpp"
-#include "Version.hpp"
-
+#include "Core/Instrumentor.hpp"
+#include "Core/Sha256.hpp"
 #include "GameFiles.hpp"
+#include "ReplayParser.hpp"
 
 #include <any>
-#include <span>
 #include <unordered_map>
 #include <vector>
 
-MatchSummary AnalyzePackets(const std::vector<PacketType>& packets, const ReplayMeta& meta)
+
+using PotatoAlert::ReplayParser::Replay;
+using namespace PotatoAlert::ReplayParser;
+std::optional<ReplaySummary> Replay::Analyze() const
 {
 	PA_PROFILE_FUNCTION();
 
 	struct
 	{
-		int8_t winningTeam = -1;
-		int8_t playerTeam = -1;
+		std::optional<int8_t> winningTeam = std::nullopt;
+		std::optional<int8_t> playerTeam = std::nullopt;
 	} replayData;
 
 	for (const PacketType& packet : packets)
@@ -62,14 +62,32 @@ MatchSummary AnalyzePackets(const std::vector<PacketType>& packets, const Replay
 		}, packet);
 
 		if (!success)
-			return MatchSummary{ false, false };
+			return {};
 	}
 
-	if (replayData.playerTeam == -1 || replayData.winningTeam == -1)
+	MatchOutcome outcome;
+
+	if (!replayData.playerTeam || !replayData.winningTeam)
 	{
-		LOG_ERROR("Failed to determine match outcome: PT {} - WT {}", replayData.playerTeam, replayData.winningTeam);
-		return MatchSummary{ false, false };
+		LOG_TRACE("Failed to determine match outcome, pt {} WT {}", replayData.playerTeam.has_value(), replayData.winningTeam.has_value());
+		outcome = MatchOutcome::Unknown;
+	}
+	else if (replayData.playerTeam.value() == replayData.winningTeam.value())
+	{
+		outcome = MatchOutcome::Win;
+	}
+	else if (replayData.winningTeam.value() == -1)
+	{
+		outcome = MatchOutcome::Draw;
+	}
+	else
+	{
+		outcome = MatchOutcome::Loss;
 	}
 
-	return MatchSummary{ replayData.playerTeam == replayData.winningTeam, true };
+	std::string hash;
+	if (!Core::Sha256(metaString, hash))
+		return {};
+
+	return ReplaySummary{ hash, outcome };
 }

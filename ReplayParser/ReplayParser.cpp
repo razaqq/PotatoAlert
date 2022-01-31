@@ -11,7 +11,6 @@
 #include "GameFiles.hpp"
 #include "PacketParser.hpp"
 #include "Packets.hpp"
-#include "Zlib.hpp"
 
 #include <optional>
 #include <span>
@@ -20,6 +19,7 @@
 
 
 using namespace PotatoAlert::ReplayParser;
+namespace rp = PotatoAlert::ReplayParser;
 
 std::optional<Replay> Replay::FromFile(std::string_view fileName)
 {
@@ -28,14 +28,14 @@ std::optional<Replay> Replay::FromFile(std::string_view fileName)
 	File file = File::Open(fileName, File::Flags::Open | File::Flags::Read);
 	if (!file)
 	{
-		LOG_ERROR("Failed to open replay file.");
+		LOG_ERROR("Failed to open replay file: {}", file.LastError());
 		return {};
 	}
 
 	Replay replay;
 	if (!file.Read(replay.m_rawData))
 	{
-		LOG_ERROR("Failed to read replay file.");
+		LOG_ERROR("Failed to read replay file: {}", file.LastError());
 		return {};
 	}
 	file.Close();
@@ -57,18 +57,17 @@ std::optional<Replay> Replay::FromFile(std::string_view fileName)
 		return {};
 	}
 
-	std::string metaStr;
 	if (replay.m_data.size() < metaSize)
 	{
 		LOG_ERROR("Replay is missing meta info.");
 		return {};
 	}
-	metaStr.resize(metaSize);
-	std::memcpy(metaStr.data(), Take(replay.m_data, metaSize).data(), metaSize);
+	replay.metaString.resize(metaSize);
+	std::memcpy(replay.metaString.data(), Take(replay.m_data, metaSize).data(), metaSize);
 
 	json js;
 	sax_no_exception sax(js);
-	if (!json::sax_parse(metaStr, &sax))
+	if (!json::sax_parse(replay.metaString, &sax))
 	{
 		LOG_ERROR("Failed to parse replay meta as JSON.");
 		return {};
@@ -131,6 +130,11 @@ bool Replay::ReadPackets()
 		}
 	}
 
+	// free memory of raw data
+	m_rawData.clear();
+	m_rawData.shrink_to_fit();
+	m_data = {};
+
 	auto decompressed = Zlib::Inflate(decrypted);
 	if (decompressed.empty())
 	{
@@ -138,15 +142,40 @@ bool Replay::ReadPackets()
 		return false;
 	}
 
+	// free memory of decrypted data
+	decrypted.clear();
+	decrypted.shrink_to_fit();
+
 	specs = ParseScripts(meta.clientVersionFromExe);
+
+	if (specs.empty())
+	{
+		return false;
+	}
+
 	PacketParser parser{ specs, {} };
 
 	std::span out{ decompressed };
 	do {
 		packets.emplace_back(ParsePacket(out, parser));
 	} while (!out.empty());
-	
-	m_rawData.clear();
 
 	return true;
+}
+
+std::optional<ReplaySummary> rp::AnalyzeReplay(std::string_view file)
+{
+	if (std::optional<Replay> res = Replay::FromFile(file))
+	{
+		if (res.value().ReadPackets())
+		{
+			return res.value().Analyze();
+		}
+		LOG_ERROR("Failed to read packets for replay {}", file);
+	}
+	else
+	{
+		LOG_ERROR("Failed to read replay {}", file);
+	}
+	return {};
 }
