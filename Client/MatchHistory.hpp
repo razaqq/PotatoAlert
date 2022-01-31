@@ -72,7 +72,7 @@ private:
 
 	void ApplyDatabaseUpdates() const;
 
-	SQLite m_db;
+	Core::SQLite m_db;
 };
 
 }  // namespace PotatoAlert::Client::MatchHistory
