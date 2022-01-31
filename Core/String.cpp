@@ -120,9 +120,21 @@ std::string Join(const std::vector<std::string>& v, std::string_view del)
 	return out;
 }
 
-bool s::Contains(std::string_view str, std::string_view del)
+bool s::Contains(std::string_view str, std::string_view part)
 {
-	return str.find(del) != std::string_view::npos;
+	return str.find(part) != std::string_view::npos;
+}
+
+bool s::StartsWith(std::string_view str, std::string_view start)
+{
+	if (start.size() > str.size()) return false;
+	return str.substr(0, start.size()) == start;
+}
+
+bool s::EndsWith(std::string_view str, std::string_view end)
+{
+	if (end.size() > str.size()) return false;
+	return str.substr(str.size() - end.size(), end.size()) == end;
 }
 
 std::string s::ReplaceAll(std::string_view str, std::string_view before, std::string_view after)
