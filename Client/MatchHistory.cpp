@@ -4,7 +4,6 @@
 
 #include "Core/File.hpp"
 #include "Core/Log.hpp"
-#include "Core/Sha256.hpp"
 #include "Core/Sqlite.hpp"
 #include "Core/Time.hpp"
 #include "ReplayParser/ReplayParser.hpp"
@@ -22,7 +21,7 @@
 
 
 using namespace PotatoAlert;
-using PotatoAlert::File;
+using namespace PotatoAlert::Core;
 using ReplayParser::ReplaySummary;
 using Client::StatsParser::Match;
 using Client::StatsParser::StatsParseResult;

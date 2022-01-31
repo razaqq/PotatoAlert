@@ -14,6 +14,10 @@
 
 using namespace PotatoAlert::ReplayParser;
 namespace rp = PotatoAlert::ReplayParser;
+using PotatoAlert::Core::FormatBytes;
+using PotatoAlert::Core::Take;
+using PotatoAlert::Core::TakeInto;
+using PotatoAlert::Core::TakeString;
 
 template<typename R, typename T>
 static R VariantCast(T&& t)

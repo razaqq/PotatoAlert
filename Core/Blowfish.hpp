@@ -9,12 +9,12 @@
 // static constexpr int MAXKEYBYTES = 56;
 static constexpr int N = 16;
 
-namespace PotatoAlert {
+namespace PotatoAlert::Core {
 
 class Blowfish
 {
 public:
-	Blowfish() {}
+	Blowfish() : m_pArray({}), m_sBoxes({}) {}
 	Blowfish(std::span<const std::byte> key);
 	Blowfish(Blowfish const&) = delete;
 	Blowfish(Blowfish&&) = delete;
@@ -39,7 +39,7 @@ public:
 private:
 	std::array<uint32_t, N + 2> m_pArray;
 	std::array<std::array<uint32_t, 256>, 4> m_sBoxes;
-	uint32_t F(uint32_t x) const;
+	[[nodiscard]] uint32_t F(uint32_t x) const;
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Core

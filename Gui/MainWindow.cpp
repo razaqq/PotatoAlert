@@ -26,6 +26,7 @@
 #include <QWindow>
 
 
+using namespace PotatoAlert::Core;
 using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::MatchHistory;
@@ -50,12 +51,12 @@ void MainWindow::Init()
 	this->m_centralW->setLayout(m_centralLayout);
 
 	// menubar dock widget
-	const bool leftSide = PotatoConfig().Get<bool>("menubar_leftside");
+	const bool leftSide = Core::PotatoConfig().Get<bool>("menubar_leftside");
 	const auto side = leftSide ? Qt::DockWidgetArea::LeftDockWidgetArea : Qt::DockWidgetArea::RightDockWidgetArea;
 	this->addDockWidget(side, this->m_menuBar);
 	connect(this->m_menuBar, &VerticalMenuBar::dockLocationChanged, [](Qt::DockWidgetArea area)
 	{
-		PotatoConfig().Set<bool>("menubar_leftside",area == Qt::DockWidgetArea::LeftDockWidgetArea);
+		Core::PotatoConfig().Set<bool>("menubar_leftside",area == Qt::DockWidgetArea::LeftDockWidgetArea);
 	});
 
 	// set other tabs invisible
@@ -93,7 +94,7 @@ void MainWindow::SwitchTab(MenuEntry i)
 		QDesktopServices::openUrl(QUrl("https://discord.gg/Ut8t8PA"));
 		return;
 	case MenuEntry::Screenshot:
-		Screenshot::Capture(this->window());
+		CaptureScreenshot(this->window());
 		return;
 	case MenuEntry::CSV:
 		QDesktopServices::openUrl(QUrl(Client::MatchHistory::GetDir()));

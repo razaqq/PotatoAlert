@@ -9,7 +9,7 @@
 #include <vector>
 
 
-using PotatoAlert::File;
+using PotatoAlert::Core::File;
 
 template<typename T>
 static constexpr T CreateHandle(HANDLE handle)

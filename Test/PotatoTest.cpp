@@ -7,6 +7,6 @@ struct test_init
 {
 	test_init()
 	{
-		PotatoAlert::Log::Init();
+		PotatoAlert::Core::Log::Init();
 	}
 } test_init_instance;

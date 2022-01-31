@@ -14,6 +14,7 @@
 #include <vector>
 
 
+using namespace PotatoAlert::Core;
 using PotatoAlert::Gui::StatsTeamFooter;
 
 StatsTeamFooter::StatsTeamFooter(QWidget* parent) : QWidget(parent)

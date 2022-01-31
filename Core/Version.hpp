@@ -5,7 +5,7 @@
 #include <string>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Core {
 
 class Version
 {
@@ -29,4 +29,4 @@ private:
 	bool m_success = true;
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Core

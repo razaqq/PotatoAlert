@@ -18,6 +18,7 @@
 #include <vector>
 
 
+using namespace PotatoAlert::Core;
 using namespace PotatoAlert::ReplayParser;
 namespace rp = PotatoAlert::ReplayParser;
 

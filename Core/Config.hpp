@@ -14,7 +14,7 @@
 
 namespace fs = std::filesystem;
 
-namespace PotatoAlert {
+namespace PotatoAlert::Core {
 
 enum class StatsMode
 {
@@ -67,4 +67,4 @@ private:
 
 Config& PotatoConfig();
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Core

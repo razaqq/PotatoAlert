@@ -9,7 +9,7 @@
 #include <string>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Core {
 
 template<typename T>
 concept is_byte = sizeof(T) == 1;
@@ -84,4 +84,4 @@ static std::array<TOut, sizeof...(Ts)> MakeBytes(Ts&&... args) noexcept
 	return { TOut(std::forward<Ts>(args))... };
 }
 
-}  // namespace PotatoAlert::ReplayParser
+}  // namespace PotatoAlert::Core

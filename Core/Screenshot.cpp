@@ -15,10 +15,9 @@
 #include <string>
 
 
-namespace ss = PotatoAlert::Screenshot;
-
-
 static constexpr std::string_view timeFormat = "%Y-%m-%d_%H-%M-%S";
+
+namespace {
 
 QString GetDir()
 {
@@ -29,10 +28,14 @@ QString GetDir()
 
 static QString GetFilePath()
 {
-	return QDir(GetDir()).filePath(QString::fromStdString(std::format("capture_{}.png", PotatoAlert::Time::GetTimeStamp(timeFormat))));
+	return QDir(GetDir()).filePath(QString::fromStdString(std::format("capture_{}.png", PotatoAlert::Core::Time::GetTimeStamp(timeFormat))));
 }
 
-bool ss::Capture(QWidget* window)
+}
+
+
+
+bool PotatoAlert::Core::CaptureScreenshot(QWidget* window)
 {
 	if (!window)
 		return false;

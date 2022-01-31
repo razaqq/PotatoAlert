@@ -15,8 +15,7 @@
 #include <vector>
 
 
-using PotatoAlert::Version;
-using PotatoAlert::Blowfish;
+using namespace PotatoAlert::Core;
 using namespace PotatoAlert;
 
 std::vector<std::byte> FromString(std::string_view s) noexcept

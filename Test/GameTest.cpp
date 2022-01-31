@@ -10,7 +10,7 @@
 #include <filesystem>
 
 
-using PotatoAlert::Version;
+using PotatoAlert::Core::Version;
 using namespace PotatoAlert::Client::Game;
 namespace fs = std::filesystem;
 
@@ -24,7 +24,7 @@ enum class Test
 
 static fs::path GetGamePath(Test t)
 {
-	const auto rootPath = PotatoAlert::GetModuleRootPath();
+	const auto rootPath = PotatoAlert::Core::GetModuleRootPath();
 	if (!rootPath.has_value())
 	{
 		exit(1);

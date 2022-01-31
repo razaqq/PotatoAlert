@@ -18,7 +18,7 @@
 #include <vector>
 
 
-using PotatoAlert::Log;
+using PotatoAlert::Core::Log;
 
 std::shared_ptr<spdlog::logger> Log::s_logger;
 
@@ -64,7 +64,7 @@ public:
 			return;
 		}
 
-		std::string fileName = PotatoAlert::String::ReplaceAll(msg.source.filename, "..\\", "");
+		std::string fileName = PotatoAlert::Core::String::ReplaceAll(msg.source.filename, "..\\", "");
 
 		size_t text_size;
 		if (padinfo_.enabled())

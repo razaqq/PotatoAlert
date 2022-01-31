@@ -5,8 +5,8 @@
 #include <vector>
 
 
-namespace PotatoAlert::Zlib {
+namespace PotatoAlert::Core::Zlib {
 
 std::vector<std::byte> Inflate(std::span<const std::byte> in);
 
-}  // namespace PotatoAlert::Zlib
+}  // namespace PotatoAlert::Core::Zlib

@@ -1,3 +1,5 @@
+// Copyright 2021 <github.com/razaqq>
+
 #define ZLIB_CONST
 
 #include "Zlib.hpp"
@@ -11,7 +13,7 @@ extern "C"
 #include <vector>
 
 
-std::vector<std::byte> PotatoAlert::Zlib::Inflate(std::span<const std::byte> in)
+std::vector<std::byte> PotatoAlert::Core::Zlib::Inflate(std::span<const std::byte> in)
 {
 	std::vector<std::byte> out;
 	unsigned char chunk[2048];

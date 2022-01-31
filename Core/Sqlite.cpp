@@ -7,7 +7,7 @@
 #include <string>
 
 
-using PotatoAlert::SQLite;
+using PotatoAlert::Core::SQLite;
 
 static SQLite::Handle CreateHandle(sqlite3* handle)
 {

@@ -15,8 +15,8 @@
 #include <vector>
 
 
-using PotatoAlert::Vec2;
-using PotatoAlert::Vec3;
+using PotatoAlert::Core::Vec2;
+using PotatoAlert::Core::Vec3;
 
 namespace PotatoAlert::ReplayParser {
 

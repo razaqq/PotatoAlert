@@ -16,12 +16,11 @@
 #include <QFile>
 
 
+using PotatoAlert::Core::PotatoConfig;
 using PotatoAlert::Gui::DarkPalette;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::NativeWindow;
-using PotatoAlert::PotatoConfig;
 using PotatoUpdater::Updater;
-
 
 static int RunMain(int argc, char* argv[])
 {
@@ -33,7 +32,7 @@ static int RunMain(int argc, char* argv[])
 		qputenv("QT_FONT_DPI", "96");
 	}
 
-	PotatoAlert::Log::Init();
+	PotatoAlert::Core::Log::Init();
 	
 	QApplication app(argc, argv);
 	

@@ -4,7 +4,7 @@
 #include <string>
 
 
-namespace PotatoAlert::Time {
+namespace PotatoAlert::Core::Time {
 
 std::string GetTimeStamp(std::string_view fmt = "%F_%T");
 

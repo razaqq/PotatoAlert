@@ -6,7 +6,7 @@
 #include <vector>
 
 
-namespace PotatoAlert::String {
+namespace PotatoAlert::Core::String {
 
 std::string Trim(std::string_view str);
 std::string ToUpper(std::string_view str);
@@ -29,4 +29,4 @@ bool ParseNumber(std::string_view str, T& value) requires std::is_integral_v<T> 
 
 bool ParseBool(std::string_view str, bool& value);
 
-}  // namespace PotatoAlert::String
+}  // namespace PotatoAlert::Core::String

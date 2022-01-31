@@ -16,7 +16,7 @@ namespace PotatoAlert::Client::Game {
 struct DirectoryStatus
 {
 	std::string gamePath;
-	Version gameVersion;
+	Core::Version gameVersion;
 	std::string resFolderPath;
 	std::string preferencesPathBase;
 	std::string directoryVersion;

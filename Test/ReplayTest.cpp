@@ -13,14 +13,14 @@
 #include <string>
 
 
-using PotatoAlert::Version;
+using PotatoAlert::Core::Version;
 using namespace PotatoAlert::ReplayParser;
 namespace fs = std::filesystem;
 
 
 static std::string GetReplay(std::string_view name)
 {
-	const auto rootPath = PotatoAlert::GetModuleRootPath();
+	const auto rootPath = PotatoAlert::Core::GetModuleRootPath();
 	if (!rootPath.has_value())
 	{
 		exit(1);

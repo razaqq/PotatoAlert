@@ -7,7 +7,7 @@
 #include <utility>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Core {
 
 class SQLite
 {
@@ -35,7 +35,7 @@ public:
 
 	SQLite()
 	{
-		this->m_handle = Handle::Null;
+		m_handle = Handle::Null;
 	}
 
 	explicit SQLite(Handle handle) : m_handle(handle) {}
@@ -167,4 +167,4 @@ private:
 };
 DEFINE_FLAGS(SQLite::Flags);
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Core

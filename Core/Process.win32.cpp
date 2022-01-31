@@ -7,11 +7,10 @@
 #include "win32.h"
 
 #include <shellapi.h>
+#include <string>
 
 
-namespace pp = PotatoAlert::Process;
-
-bool pp::CreateNewProcess(std::string_view path, std::string_view args, bool elevated)
+bool PotatoAlert::Core::CreateNewProcess(std::string_view path, std::string_view args, bool elevated)
 {
 	const char* lpVerb = elevated ? "runas" : "open";
 	const std::string pathStr = std::string(path);

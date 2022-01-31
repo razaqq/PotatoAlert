@@ -1,7 +1,8 @@
+// Copyright 2021 <github.com/razaqq>
 #include "Json.hpp"
 
 
-using PotatoAlert::Json;
+using PotatoAlert::Core::Json;
 
 Json Json::Parse(const std::string& raw)
 {

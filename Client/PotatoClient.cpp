@@ -12,7 +12,6 @@
 #include "StatsParser.hpp"
 #include "Core/Sha256.hpp"
 
-#include <QFileSystemWatcher>
 #include <QObject>
 #include <QString>
 #include <QTableWidgetItem>
@@ -28,7 +27,7 @@
 
 
 using PotatoAlert::Client::PotatoClient;
-using PotatoAlert::File;
+using namespace PotatoAlert::Core;
 
 static const char* g_wsAddress = "ws://www.perry-swift.de:33333";
 // static const char* g_wsAddress = "ws://192.168.178.36:10000";

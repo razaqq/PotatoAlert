@@ -12,6 +12,7 @@
 #include <QWindow>
 
 
+using PotatoAlert::Core::PotatoConfig;
 using PotatoAlert::Gui::NativeWindow;
 
 NativeWindow::NativeWindow(QMainWindow* mainWindow) : QWidget(), m_mainWindow(mainWindow)

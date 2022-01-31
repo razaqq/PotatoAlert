@@ -11,7 +11,7 @@
 #include <unordered_map>
 
 
-using PotatoAlert::Version;
+using PotatoAlert::Core::Version;
 
 Version::Version(std::string_view versionString)
 {
@@ -61,7 +61,7 @@ void Version::Parse(std::string_view versionString)
 	}
 }
 
-bool PotatoAlert::operator==(const Version& v1, const Version& v2)
+bool PotatoAlert::Core::operator==(const Version& v1, const Version& v2)
 {
 	if (v1.m_success != v2.m_success)
 		return false;
@@ -69,12 +69,12 @@ bool PotatoAlert::operator==(const Version& v1, const Version& v2)
 	return v1.m_data == v2.m_data;
 }
 
-bool PotatoAlert::operator!=(const Version& v1, const Version& v2)
+bool PotatoAlert::Core::operator!=(const Version& v1, const Version& v2)
 {
 	return !(v1 == v2);
 }
 
-bool PotatoAlert::operator>(const Version& v1, const Version& v2)
+bool PotatoAlert::Core::operator>(const Version& v1, const Version& v2)
 {
 	if (!v1.m_success)
 		return false;
@@ -89,7 +89,7 @@ bool PotatoAlert::operator>(const Version& v1, const Version& v2)
 	return false;
 }
 
-bool PotatoAlert::operator<(const Version& v1, const Version& v2)
+bool PotatoAlert::Core::operator<(const Version& v1, const Version& v2)
 {
 	if (!v2.m_success)
 		return false;

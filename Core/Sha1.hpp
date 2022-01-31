@@ -11,7 +11,7 @@
 template<typename RangeType, typename RangeValue>
 concept range_of = std::ranges::range<RangeType> && std::is_same_v<std::ranges::range_value_t<RangeType>, RangeValue>;
 
-namespace PotatoAlert {
+namespace PotatoAlert::Core {
 
 class Sha1
 {
@@ -64,4 +64,4 @@ private:
 	size_t m_bitCountHigh;
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Core

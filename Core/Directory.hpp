@@ -4,8 +4,8 @@
 #include <optional>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Core {
 
 std::optional<std::filesystem::path> GetModuleRootPath();
 
-}  // namespace PotatoAlert::Dir
+}  // namespace PotatoAlert::Core

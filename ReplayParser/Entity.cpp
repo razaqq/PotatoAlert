@@ -30,7 +30,7 @@ static std::vector<Method> ParseMethodList(XMLElement* elem, const AliasType& al
 
 		for (XMLElement* argElem = methodElem->FirstChildElement(); argElem != nullptr; argElem = argElem->NextSiblingElement())
 		{
-			std::string name = String::Trim(argElem->Name());
+			std::string name = Core::String::Trim(argElem->Name());
 			if (name == "Arg")
 			{
 				args.push_back(ParseType(argElem, aliases));
@@ -79,7 +79,7 @@ static std::vector<std::string> ParseImplements(XMLElement* elem)
 
 	for (XMLElement* impElem = elem->FirstChildElement(); impElem != nullptr; impElem = impElem->NextSiblingElement())
 	{
-		implements.emplace_back(String::Trim(impElem->GetText()));
+		implements.emplace_back(Core::String::Trim(impElem->GetText()));
 	}
 
 	return implements;

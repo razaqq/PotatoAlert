@@ -31,7 +31,7 @@ public:
 	}
 };
 
-namespace PotatoAlert {
+namespace PotatoAlert::Core {
 
 class Json
 {
@@ -81,4 +81,4 @@ private:
 	bool m_hasError = false;
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Core

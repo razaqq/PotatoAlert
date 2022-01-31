@@ -20,6 +20,6 @@ struct EntitySpec
 	std::vector<Property> internalProperties;
 };
 
-std::vector<EntitySpec> ParseScripts(const Version& version);
+std::vector<EntitySpec> ParseScripts(const Core::Version& version);
 
 }  // namespace PotatoAlert::ReplayParser

@@ -4,8 +4,8 @@
 #include <string>
 
 
-namespace PotatoAlert::Process {
+namespace PotatoAlert::Core {
 
 bool CreateNewProcess(std::string_view path, std::string_view args, bool elevated);
 
-}  // namespace PotatoAlert::Process
+}  // namespace PotatoAlert::Core

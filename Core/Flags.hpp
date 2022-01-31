@@ -4,7 +4,7 @@
 #include <type_traits>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Core {
 
 template<typename T>
 constexpr bool HasFlag(T flags, T flag)
@@ -12,7 +12,7 @@ constexpr bool HasFlag(T flags, T flag)
 	return (flags & flag) != static_cast<T>(0);
 }
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Core
 
 
 #define DEFINE_FLAGS(flags) \

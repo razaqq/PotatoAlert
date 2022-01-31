@@ -10,11 +10,12 @@
 #include <vector>
 
 
+using namespace PotatoAlert::Core;
 using PotatoAlert::Client::ReplayAnalyzer;
 
 void ReplayAnalyzer::OnFileChanged(const std::string& file)
 {
-	if (String::EndsWith(file, ".wowsreplay") && File::Exists(file))
+	if (String::EndsWith(file, ".wowsreplay") && Core::File::Exists(file))
 	{
 		AnalyzeReplay(file);
 	}

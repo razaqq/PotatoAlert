@@ -46,8 +46,7 @@
 
 
 using PotatoUpdater::Updater;
-using PotatoAlert::Version;
-using PotatoAlert::Zip;
+using namespace PotatoAlert::Core;
 namespace fs = std::filesystem;
 
 // needs libssl-1_1-x64.dll and libcrypto-1_1-x64.dll from OpenSSL
@@ -421,11 +420,11 @@ void Updater::RemoveTrash()
 bool Updater::StartUpdater(std::string_view args)
 {
 	LOG_INFO("Restarting updater binary.");
-	return PotatoAlert::Process::CreateNewProcess(m_updaterBinary, args, true);
+	return CreateNewProcess(m_updaterBinary, args, true);
 }
 
 bool Updater::StartMain(std::string_view args)
 {
 	LOG_INFO("Restarting main binary.");
-	return PotatoAlert::Process::CreateNewProcess(m_mainBinary, args, false);
+	return CreateNewProcess(m_mainBinary, args, false);
 }

@@ -11,6 +11,7 @@
 #include <QVBoxLayout>
 
 
+using namespace PotatoAlert::Core;
 using PotatoAlert::Gui::FramelessDialog;
 using PotatoUpdater::UpdaterGui;
 
@@ -18,7 +19,7 @@ UpdaterGui::UpdaterGui() : FramelessDialog(nullptr)
 {
 	auto vLayout = new QVBoxLayout();
 
-	auto waitLabel = new QLabel(GetString(PotatoAlert::StringTable::Keys::UPDATE_DOWNLOADING));
+	auto waitLabel = new QLabel(GetString(StringTable::Keys::UPDATE_DOWNLOADING));
 
 	auto progressBar = new QProgressBar();
 	progressBar->setValue(0);

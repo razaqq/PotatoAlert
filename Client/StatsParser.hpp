@@ -12,8 +12,7 @@
 #include <vector>
 
 
-namespace PotatoAlert::Client::StatsParser
-{
+namespace PotatoAlert::Client::StatsParser {
 
 typedef std::variant<QLabel*, QTableWidgetItem*> FieldType;
 typedef std::vector<FieldType> PlayerType;

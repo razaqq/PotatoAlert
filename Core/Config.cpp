@@ -18,7 +18,7 @@
 
 namespace fs = std::filesystem;
 
-using PotatoAlert::Config;
+using PotatoAlert::Core::Config;
 
 
 static json g_defaultConfig;
@@ -93,7 +93,7 @@ void Config::Load()
 	sax_no_exception sax(this->j);
 	if (!json::sax_parse(str, &sax))
 	{
-		LOG_ERROR("Failed to Parse config as json.");
+		LOG_ERROR("Failed to Parse config as JSON.");
 
 		this->m_file.Close();
 		this->CreateBackup();
@@ -255,7 +255,7 @@ std::optional<fs::path> Config::GetPath(std::string_view fileName)
 	return (configPath / fileName);
 }
 
-Config& PotatoAlert::PotatoConfig()
+Config& PotatoAlert::Core::PotatoConfig()
 {
 	static Config p("config.json");
 	return p;

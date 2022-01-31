@@ -9,7 +9,7 @@
 #include <vector>
 
 
-using PotatoAlert::Zip;
+using PotatoAlert::Core::Zip;
 
 typedef struct zip_t* ZIP_HANDLE;
 

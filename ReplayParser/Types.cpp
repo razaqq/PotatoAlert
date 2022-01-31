@@ -16,6 +16,9 @@
 namespace rp = PotatoAlert::ReplayParser;
 using namespace PotatoAlert;
 using namespace ReplayParser;
+using Core::Take;
+using Core::TakeInto;
+using Core::TakeString;
 
 ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 {
@@ -42,7 +45,7 @@ ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 		{ "PYTHON", BasicType::Blob },  // TODO end
 	};
 
-	std::string typeName = String::ToUpper(String::Trim(elem->GetText()));
+	std::string typeName = Core::String::ToUpper(Core::String::Trim(elem->GetText()));
 	if (types.contains(typeName))
 	{
 		return PrimitiveType{ types.at(typeName) };
@@ -59,7 +62,7 @@ ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 		if (XMLElement* sizeElem = elem->FirstChildElement("size"))
 		{
 			size_t size;
-			if (String::ParseNumber<size_t>(sizeElem->GetText(), size))
+			if (Core::String::ParseNumber<size_t>(sizeElem->GetText(), size))
 			{
 				arr.size = size;
 			}
@@ -74,7 +77,7 @@ ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 
 		if (XMLElement* allowNoneElem = elem->FirstChildElement("AllowNone"))
 		{
-			if (!String::ParseBool(String::Trim(allowNoneElem->GetText()), dict.allowNone))
+			if (!Core::String::ParseBool(Core::String::Trim(allowNoneElem->GetText()), dict.allowNone))
 			{
 				LOG_ERROR("Failed to parse bool for FixtedDictType");
 			}
@@ -105,7 +108,7 @@ ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 		if (XMLElement* sizeElem = elem->FirstChildElement("size"))
 		{
 			size_t size;
-			if (String::ParseNumber<size_t>(sizeElem->GetText(), size))
+			if (Core::String::ParseNumber<size_t>(sizeElem->GetText(), size))
 			{
 				tuple.size = size;
 			}

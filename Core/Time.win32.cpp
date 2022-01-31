@@ -6,7 +6,7 @@
 #include <string>
 
 
-std::string PotatoAlert::Time::GetTimeStamp(std::string_view fmt)
+std::string PotatoAlert::Core::Time::GetTimeStamp(std::string_view fmt)
 {
 	std::tm bt {};
 	auto now = std::time(nullptr);

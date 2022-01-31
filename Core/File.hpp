@@ -11,7 +11,7 @@
 #include <utility>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Core {
 
 class File
 {
@@ -189,4 +189,4 @@ private:
 };
 DEFINE_FLAGS(File::Flags);
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Core

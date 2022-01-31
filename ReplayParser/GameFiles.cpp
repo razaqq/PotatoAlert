@@ -17,7 +17,7 @@
 
 
 namespace rp = PotatoAlert::ReplayParser;
-using PotatoAlert::File;
+using PotatoAlert::Core::File;
 using namespace PotatoAlert::ReplayParser;
 using namespace tinyxml2;
 
@@ -46,9 +46,9 @@ static std::optional<std::unordered_map<std::string, ArgType>> ParseAliases(cons
 	return aliases;
 }
 
-std::vector<EntitySpec> rp::ParseScripts(const Version& version)
+std::vector<EntitySpec> rp::ParseScripts(const Core::Version& version)
 {
-	const auto rootPath = GetModuleRootPath();
+	const auto rootPath = Core::GetModuleRootPath();
 	if (!rootPath.has_value())
 	{
 		LOG_ERROR("Failed to get module file name: {}", GetLastError());
@@ -90,7 +90,7 @@ std::vector<EntitySpec> rp::ParseScripts(const Version& version)
 	{
 		for (XMLElement* entityElem = clientServerEntries->FirstChildElement(); entityElem != nullptr; entityElem = entityElem->NextSiblingElement())
 		{
-			std::string entityName = String::Trim(entityElem->Name());
+			std::string entityName = Core::String::Trim(entityElem->Name());
 			DefFile defFile = ParseDef((versionDir / "entity_defs" / std::format("{}.def", entityName)).string(), aliases);
 			std::vector<DefFile> interfaces;
 

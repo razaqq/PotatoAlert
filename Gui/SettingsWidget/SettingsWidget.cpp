@@ -26,6 +26,7 @@
 static const int LABEL_WIDTH = 280;
 static const int ROW_HEIGHT = 20;
 
+using namespace PotatoAlert::Core;
 using PotatoAlert::Gui::SettingsWidget;
 using PotatoAlert::Gui::SettingsChoice;
 

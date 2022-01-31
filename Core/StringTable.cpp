@@ -7,7 +7,7 @@
 #include <QString>
 
 
-QString PotatoAlert::StringTable::GetString(Keys key)
+QString PotatoAlert::Core::StringTable::GetString(Keys key)
 {
 	auto lang = PotatoConfig().Get<int>("language");
 	// TODO: this is pretty terrible, make this std::unordered_map or smth

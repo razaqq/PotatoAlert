@@ -16,6 +16,7 @@
 #include <vector>
 
 
+using namespace PotatoAlert::Core;
 using PotatoAlert::Client::Game::DirectoryStatus;
 namespace fs = std::filesystem;
 

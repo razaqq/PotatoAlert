@@ -9,7 +9,7 @@
 #include <string>
 
 
-namespace s = PotatoAlert::String;
+namespace s = PotatoAlert::Core::String;
 
 static std::string_view g_whitespaces = " \n\r\t\f\v";
 

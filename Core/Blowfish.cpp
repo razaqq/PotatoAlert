@@ -10,7 +10,7 @@
 #include <string>
 
 
-using PotatoAlert::Blowfish;
+using PotatoAlert::Core::Blowfish;
 
 static const std::array<uint32_t, N + 2> P = {
 	0x243F6A88L, 0x85A308D3L, 0x13198A2EL, 0x03707344L, 0xA4093822L,
@@ -245,7 +245,7 @@ static const std::array<std::array<uint32_t, 256>, 4> S = {
 #define __LITTLE_ENDIAN__
 #endif
 
-Blowfish::Blowfish(std::span<const std::byte> key)
+Blowfish::Blowfish(std::span<const std::byte> key) : m_pArray({}), m_sBoxes({})
 {
 	std::memcpy(m_pArray.data(), P.data(), sizeof(P));
 	std::memcpy(m_sBoxes.data(), S.data(), sizeof(S));

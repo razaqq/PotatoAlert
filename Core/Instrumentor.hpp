@@ -12,6 +12,8 @@
 #include <thread>
 
 
+namespace core = PotatoAlert::Core;
+
 namespace PotatoAlert::Core {
 
 using Micros = std::chrono::duration<double, std::micro>;
@@ -127,7 +129,7 @@ private:
 #define PA_FUNC_SIG "PA_FUNC_SIG unknown!"
 #endif
 
-#define PA_PROFILE_SCOPE_LINE(name, line) ::PotatoAlert::Core::Timer timer##line(String::ReplaceAll(String::ReplaceAll(name, "__cdecl ", ""), "PotatoAlert::", ""))
+#define PA_PROFILE_SCOPE_LINE(name, line) ::core::Timer timer##line(::core::String::ReplaceAll(::core::String::ReplaceAll(name, "__cdecl ", ""), "PotatoAlert::", ""))
 #define PA_PROFILE_SCOPE(name) PA_PROFILE_SCOPE_LINE(name, __LINE__)
 #define PA_PROFILE_FUNCTION() PA_PROFILE_SCOPE(PA_FUNC_SIG)
 

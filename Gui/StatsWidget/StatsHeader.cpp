@@ -81,8 +81,8 @@ void StatsHeader::changeEvent(QEvent* event)
 {
 	if (event->type() == QEvent::LanguageChange)
 	{
-		this->m_team1Label->setText(GetString(PotatoAlert::StringTable::Keys::LABEL_MYTEAM));
-		this->m_team2Label->setText(GetString(PotatoAlert::StringTable::Keys::LABEL_ENEMYTEAM));
+		this->m_team1Label->setText(GetString(Core::StringTable::Keys::LABEL_MYTEAM));
+		this->m_team2Label->setText(GetString(Core::StringTable::Keys::LABEL_ENEMYTEAM));
 	}
 	else
 	{

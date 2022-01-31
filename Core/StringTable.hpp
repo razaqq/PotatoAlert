@@ -6,7 +6,7 @@
 #include <string_view>
 
 
-namespace PotatoAlert::StringTable {
+namespace PotatoAlert::Core::StringTable {
 
 enum class Keys
 {
@@ -25,4 +25,4 @@ static const std::string_view Strings[][200] =
 
 QString GetString(Keys key);
 
-}  // namespace PotatoAlert::StringTable
+}  // namespace PotatoAlert::Core::StringTable

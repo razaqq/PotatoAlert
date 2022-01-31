@@ -13,7 +13,7 @@
 #include <memory>
 
 
-namespace PotatoAlert {
+namespace PotatoAlert::Core {
 
 class Log
 {
@@ -26,9 +26,9 @@ private:
 	static std::shared_ptr<spdlog::logger> s_logger;
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Core
 
-#define LOG_TRACE(...) SPDLOG_LOGGER_TRACE(::PotatoAlert::Log::GetLogger(), __VA_ARGS__)
-#define LOG_INFO(...)  SPDLOG_LOGGER_INFO(::PotatoAlert::Log::GetLogger(), __VA_ARGS__)
-#define LOG_WARN(...)  SPDLOG_LOGGER_WARN(::PotatoAlert::Log::GetLogger(), __VA_ARGS__)
-#define LOG_ERROR(...) SPDLOG_LOGGER_ERROR(::PotatoAlert::Log::GetLogger(), __VA_ARGS__)
+#define LOG_TRACE(...) SPDLOG_LOGGER_TRACE(::PotatoAlert::Core::Log::GetLogger(), __VA_ARGS__)
+#define LOG_INFO(...)  SPDLOG_LOGGER_INFO(::PotatoAlert::Core::Log::GetLogger(), __VA_ARGS__)
+#define LOG_WARN(...)  SPDLOG_LOGGER_WARN(::PotatoAlert::Core::Log::GetLogger(), __VA_ARGS__)
+#define LOG_ERROR(...) SPDLOG_LOGGER_ERROR(::PotatoAlert::Core::Log::GetLogger(), __VA_ARGS__)

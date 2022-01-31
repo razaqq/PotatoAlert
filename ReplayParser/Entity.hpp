@@ -39,7 +39,7 @@ inline Flag ParseFlag(const std::string& str)
 		{ "CELL_PUBLIC", Flag::CellPublic }
 	};
 
-	if (const auto& lookup = flags.find(String::Trim(String::ToUpper(str))); lookup != flags.end())
+	if (const auto& lookup = flags.find(Core::String::Trim(Core::String::ToUpper(str))); lookup != flags.end())
 	{
 		return lookup->second;
 	}

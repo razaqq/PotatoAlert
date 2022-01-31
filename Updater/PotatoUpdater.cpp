@@ -17,7 +17,7 @@ static int RunMain(int argc, char* argv[])
 {
 	Q_INIT_RESOURCE(PotatoAlert);
 
-	PotatoAlert::Log::Init();
+	PotatoAlert::Core::Log::Init();
 	
 	QApplication app(argc, argv);
 

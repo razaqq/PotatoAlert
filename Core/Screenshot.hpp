@@ -4,9 +4,9 @@
 #include <QWidget>
 
 
-namespace PotatoAlert::Screenshot
+namespace PotatoAlert::Core
 {
 
-bool Capture(QWidget* window);
+bool CaptureScreenshot(QWidget* window);
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Core

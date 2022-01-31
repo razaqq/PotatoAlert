@@ -8,8 +8,7 @@
 #include <vector>
 
 
-namespace PotatoAlert
-{
+namespace PotatoAlert::Core {
 
 class Zip
 {
@@ -107,4 +106,4 @@ private:
 	Handle m_handle;
 };
 
-}
+}  // namespace PotatoAlert::Core

@@ -11,6 +11,8 @@
 #include <vector>
 
 
+namespace PotatoAlert::Core {
+
 enum class ColumnFormat
 {
 	Auto,
@@ -79,44 +81,44 @@ public:
 			stream << '|';
 			size_t i = 0;
 			TupleForEach(row, [&]<typename ValueType>(const ValueType& value)
-			{
-				if (m_hasPrecision)
-				{
-					stream << std::setprecision(m_precision[i]);
-				}
+						 {
+							 if (m_hasPrecision)
+							 {
+								 stream << std::setprecision(m_precision[i]);
+							 }
 
-				if (m_hasColumnFormat)
-				{
-					switch (m_columnFormat[i])
-					{
-						case ColumnFormat::Auto:
-							break;
-						case ColumnFormat::Scientific:
-							stream << std::scientific;
-							break;
-						case ColumnFormat::Fixed:
-							stream << std::fixed;
-							break;
-						case ColumnFormat::Percent:
-							stream << std::fixed << std::setprecision(2);
-							break;
-						default:
-							break;
-					}
-				}
+							 if (m_hasColumnFormat)
+							 {
+								 switch (m_columnFormat[i])
+								 {
+									 case ColumnFormat::Auto:
+										 break;
+									 case ColumnFormat::Scientific:
+										 stream << std::scientific;
+										 break;
+									 case ColumnFormat::Fixed:
+										 stream << std::fixed;
+										 break;
+									 case ColumnFormat::Percent:
+										 stream << std::fixed << std::setprecision(2);
+										 break;
+									 default:
+										 break;
+								 }
+							 }
 
-				constexpr decltype(&std::right) align = std::is_arithmetic_v<std::decay_t<ValueType>> ? std::right : std::left;
+							 constexpr decltype(&std::right) align = std::is_arithmetic_v<std::decay_t<ValueType>> ? std::right : std::left;
 
-				stream << std::string(m_cellPadding, ' ') << std::setw(columnWidths[i])
-					   << align << value << std::string(m_cellPadding, ' ') << '|';
+							 stream << std::string(m_cellPadding, ' ') << std::setw(columnWidths[i])
+									<< align << value << std::string(m_cellPadding, ' ') << '|';
 
-				if (m_hasColumnFormat)
-				{
-					stream << std::defaultfloat;
-				}
+							 if (m_hasColumnFormat)
+							 {
+								 stream << std::defaultfloat;
+							 }
 
-				i++;
-			});
+							 i++;
+						 });
 			stream << std::endl;
 		}
 
@@ -127,7 +129,8 @@ public:
 	void SortByColumn(SortOrder sort = SortOrder::Descending)
 	{
 		static_assert(Column < ColumnCount, "Column index out of range");
-		static_assert(requires(std::tuple_element_t<Column, Row> const& x) { x <=> x; }, "Value does not support sorting");
+		static_assert(
+				requires(std::tuple_element_t<Column, Row> const& x) { x <=> x; }, "Value does not support sorting");
 
 		if (sort == SortOrder::Ascending)
 		{
@@ -184,16 +187,15 @@ private:
 	static constexpr void TupleForEach(Tuple&& t, Func&& f)
 	{
 		std::apply([&f](auto&&... args)
-		{
-			(f(std::forward<decltype(args)>(args)), ...);
-		}, std::forward<decltype(t)>(t));
+				   { (f(std::forward<decltype(args)>(args)), ...); },
+				   std::forward<decltype(t)>(t));
 	}
 
 	template<typename T>
 	[[nodiscard]] constexpr size_t DataWidth(T&& value) const
 	{
-		constexpr bool hasSize = requires(T&& t) { t.size(); };
-		
+		constexpr bool hasSize = requires(T && t) { t.size(); };
+
 		if constexpr (std::is_integral_v<std::decay_t<decltype(value)>>)
 		{
 			return value == 0 ? 1 : std::log10(value) + 1;
@@ -210,17 +212,17 @@ private:
 		size_t i = 0;
 
 		TupleForEach(row, [&](const auto& value)
-		{
-			if (m_hasColumnFormat && m_columnFormat[i] == ColumnFormat::Percent)
-			{
-				sizes[i] = 6;
-			}
-			else
-			{
-				sizes[i] = DataWidth(value);
-			}
-			i++;
-		});
+					 {
+						 if (m_hasColumnFormat && m_columnFormat[i] == ColumnFormat::Percent)
+						 {
+							 sizes[i] = 6;
+						 }
+						 else
+						 {
+							 sizes[i] = DataWidth(value);
+						 }
+						 i++;
+					 });
 
 		return sizes;
 	}
@@ -234,3 +236,5 @@ private:
 	std::array<size_t, ColumnCount> m_precision;
 	bool m_hasPrecision = false;
 };
+
+}  // namespace PotatoAlert::Core
