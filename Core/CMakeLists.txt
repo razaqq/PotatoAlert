@@ -8,6 +8,7 @@ set(
 
         Blowfish.cpp
         Config.cpp
+        DirectoryWatcher.cpp
         Log.cpp
         Screenshot.cpp
         Sha1.cpp
