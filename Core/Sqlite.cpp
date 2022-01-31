@@ -43,9 +43,9 @@ std::string SQLite::GetLastError() const
 	return sqlite3_errmsg(UnwrapHandle(this->m_handle));
 }
 
-bool SQLite::RawExecute(Handle handle, std::string_view sql)
+bool SQLite::RawExecute(Handle handle, std::string_view sql, int (*callback)(void* ctx, int columns, char** columnText, char** columnNames), void* context)
 {
-	return sqlite3_exec(UnwrapHandle(handle), std::string(sql).c_str(), nullptr, nullptr, nullptr) == SQLITE_OK;
+	return sqlite3_exec(UnwrapHandle(handle), std::string(sql).c_str(), callback, context, nullptr) == SQLITE_OK;
 }
 
 // ----------------------------------------------
@@ -58,7 +58,18 @@ SQLite::Statement::Statement(const SQLite& db, std::string_view sql)
 	m_columnCount = sqlite3_column_count(stmt);
 }
 
+SQLite::Statement::~Statement()
+{
+	sqlite3_finalize(reinterpret_cast<sqlite3_stmt*>(m_stmt));
+}
+
+
 bool SQLite::Statement::Bind(int index, int value) const
+{
+	return sqlite3_bind_int(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value) == SQLITE_OK;
+}
+
+bool SQLite::Statement::Bind(int index, uint32_t value) const
 {
 	return sqlite3_bind_int(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value) == SQLITE_OK;
 }
@@ -113,6 +124,18 @@ bool SQLite::Statement::GetText(int index, std::string& outStr) const
 }
 
 bool SQLite::Statement::GetInt(int index, int& outInt) const
+{
+	if (!m_hasRow || index < 0 || index > m_columnCount)
+	{
+		return false;
+	}
+
+	auto stmt = reinterpret_cast<sqlite3_stmt*>(m_stmt);
+	outInt = sqlite3_column_int(stmt, index);
+	return true;
+}
+
+bool SQLite::Statement::GetUInt(int index, uint32_t& outInt) const
 {
 	if (!m_hasRow || index < 0 || index > m_columnCount)
 	{

@@ -87,14 +87,25 @@ public:
 
 	bool Execute(std::string_view sql) const
 	{
-		return RawExecute(m_handle, sql);
+		return RawExecute(m_handle, sql, nullptr, nullptr);
+	}
+
+	bool Execute(std::string_view sql, auto callback) const
+	{
+		return RawExecute(
+			m_handle, sql,
+			[](void* ctx, int columns, char** columnText, char** columnNames) -> int
+			{
+				return (*static_cast<decltype(callback)*>(ctx))(columns, columnText, columnNames);
+			},
+			&callback);
 	}
 
 	struct Statement
 	{
 	public:
 		Statement(const SQLite& db, std::string_view sql);
-		~Statement() = default;
+		~Statement();
 
 		Statement(Statement&&) = delete;
 		Statement(const Statement&) = delete;
@@ -102,12 +113,14 @@ public:
 		Statement&& operator=(Statement&&) = delete;
 		
 		[[nodiscard]] bool Bind(int index, int value) const;
+		[[nodiscard]] bool Bind(int index, uint32_t value) const;
 		[[nodiscard]] bool Bind(int index, double value) const;
 		[[nodiscard]] bool Bind(int index, const char* value) const;
 		[[nodiscard]] bool Bind(int index, std::string_view value) const;
 
 		bool GetText(int index, std::string& outStr) const;
 		bool GetInt(int index, int& outInt) const;
+		bool GetUInt(int index, uint32_t& outInt) const;
 		// TODO: maybe add a couple more getters?
 
 		void ExecuteStep();
@@ -115,7 +128,7 @@ public:
 		[[nodiscard]] bool HasRow() const { return m_hasRow; }
 		
 
-		bool operator()() const { return m_valid; }
+		operator bool() const { return m_valid; }
 
 	private:
 		uintptr_t m_stmt;
@@ -146,7 +159,11 @@ private:
 	static Handle RawOpen(std::string_view path, Flags flags);
 	static void RawClose(Handle handle);
 	static bool RawFlushBuffer(Handle handle);
-	static bool RawExecute(Handle handle, std::string_view sql);
+	static bool RawExecute(
+		Handle handle,
+		std::string_view sql,
+		int (*callback)(void* data, int columns, char** columnText, char** columnNames),
+		void* context);
 };
 DEFINE_FLAGS(SQLite::Flags);
 
