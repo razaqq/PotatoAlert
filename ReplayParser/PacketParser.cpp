@@ -44,24 +44,26 @@ PacketType rp::ParsePacket(std::span<std::byte>& data, PacketParser& parser)
 
 	switch (type)
 	{
-		case static_cast<uint32_t>(PacketBaseType::Version):
-			return VariantCast<PacketType>(ParseVersionPacket(raw, clock));
+		case static_cast<uint32_t>(PacketBaseType::EntityCreate):
+			return VariantCast<PacketType>(ParseEntityCreatePacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::BasePlayerCreate):
-			return VariantCast<PacketType>(ParseBasePlayerCreatePacket(raw, parser, clock));
+			return VariantCast<PacketType>(ParseBasePlayerCreatePacket(raw, parser, clock)); 
 		case static_cast<uint32_t>(PacketBaseType::CellPlayerCreate):
 			return VariantCast<PacketType>(ParseCellPlayerCreatePacket(raw, parser, clock));
+		case static_cast<uint32_t>(PacketBaseType::EntityMethod):
+			return VariantCast<PacketType>(ParseEntityMethodPacket(raw, parser, clock)); 
+
+#ifndef NDEBUG
+		case static_cast<uint32_t>(PacketBaseType::Version):
+			return VariantCast<PacketType>(ParseVersionPacket(raw, clock));
 		case static_cast<uint32_t>(PacketBaseType::EntityControl):
 			return VariantCast<PacketType>(ParseEntityControlPacket(raw, clock));
 		case static_cast<uint32_t>(PacketBaseType::EntityEnter):
 			return VariantCast<PacketType>(ParseEntityEnterPacket(raw, clock));
 		case static_cast<uint32_t>(PacketBaseType::EntityLeave):
 			return VariantCast<PacketType>(ParseEntityLeavePacket(raw, clock));
-		case static_cast<uint32_t>(PacketBaseType::EntityCreate):
-			return VariantCast<PacketType>(ParseEntityCreatePacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::EntityProperty):
-			return VariantCast<PacketType>(ParseEntityPropertyPacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::EntityMethod):
-			return VariantCast<PacketType>(ParseEntityMethodPacket(raw, parser, clock));
+			return VariantCast<PacketType>(ParseEntityPropertyPacket(raw, parser, clock)); 
 		case static_cast<uint32_t>(PacketBaseType::PlayerPosition):
 			return VariantCast<PacketType>(ParsePlayerPositionPacketPacket(raw, clock));
 		case static_cast<uint32_t>(PacketBaseType::PlayerEntity):
@@ -74,9 +76,9 @@ PacketType rp::ParsePacket(std::span<std::byte>& data, PacketParser& parser)
 			return VariantCast<PacketType>(ParseCameraPacket(raw, clock));
 		case static_cast<uint32_t>(PacketBaseType::Map):
 			return VariantCast<PacketType>(ParseMapPacket(raw, clock));
-		default:  // unknown
-			break;
-#ifndef NDEBUG
+#endif  // NDEBUG
+
+#if 0
 		case 0xE:
 		{
 			// some sort of unique id for who is recording the replay
@@ -163,7 +165,10 @@ PacketType rp::ParsePacket(std::span<std::byte>& data, PacketParser& parser)
 			LOG_TRACE("0xFFFFFFFF: {} bytes", rawSize);
 			break;
 		}
-#endif
+#endif  // 0
+
+		default:  // unknown
+			break;
 	}
 
 	return UnknownPacket{};
@@ -324,7 +329,7 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 	const std::vector<ArgValue> values{ packet.values.begin(), packet.values.end() };
 	parser.entities.emplace(packet.entityId, Entity{ packet.entityType, values });
 
-	LOG_TRACE("Creating Entity {} with {} properties", packet.entityId, packet.values.size());
+	// LOG_TRACE("Creating Entity {} with {} properties", packet.entityId, packet.values.size());
 	return packet;
 }
 
@@ -478,7 +483,6 @@ std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePac
 		if (std::optional<ArgValue> value = ParseValue(data, property.type))
 		{
 			packet.values[property.name] = value.value();
-			// packet.values.emplace_back(value.value());
 		}
 		else
 		{
@@ -486,6 +490,9 @@ std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePac
 			return InvalidPacket{};
 		}
 	}
+
+	bool unknown;
+	TakeInto(data, unknown);
 
 	if (!data.empty())
 	{
