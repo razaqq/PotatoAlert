@@ -16,6 +16,7 @@ set(
         String.cpp
         StringTable.cpp
         Sqlite.cpp
+        ThreadPool.cpp
         Version.cpp
         Zip.cpp
         Zlib.cpp
