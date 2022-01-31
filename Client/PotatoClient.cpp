@@ -59,7 +59,7 @@ static TempArenaInfoResult ReadArenaInfo(std::string_view filePath)
 		return { File::Exists(filePath), true, "" };
 
 	// close the file when the scope ends
-	auto defer = PotatoAlert::MakeDefer([&file]() { if (file) file.Close(); });
+	auto defer = PotatoAlert::Core::MakeDefer([&file]() { if (file) file.Close(); });
 
 	while (std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime) < 1000ms)
 	{
