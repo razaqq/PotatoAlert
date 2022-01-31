@@ -15,4 +15,3 @@ Json Json::Parse(const std::string& raw)
 
 	return Json(j);
 }
-

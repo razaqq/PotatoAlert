@@ -8,7 +8,7 @@
 // #include <QtNetwork>
 
 #include <filesystem>
-#include <string_view>
+#include <string>
 
 
 namespace fs = std::filesystem;
@@ -18,6 +18,7 @@ namespace PotatoUpdater {
 class Updater : public QWidget
 {
 	Q_OBJECT
+
 public:
 	PA_SINGLETON(Updater);
 
@@ -30,6 +31,7 @@ public:
 	static bool StartMain(std::string_view args = "");
 
 	static void RemoveTrash();
+
 private:
 	Updater() = default;
 	QNetworkReply* Download();
@@ -53,6 +55,7 @@ private:
 
 	constexpr static std::string_view m_updaterBinary = "PotatoUpdater.exe";
 	constexpr static std::string_view m_mainBinary = "PotatoAlert.exe";
+
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"

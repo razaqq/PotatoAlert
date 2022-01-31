@@ -9,7 +9,7 @@
 
 namespace PotatoAlert::Gui {
 
-using PotatoAlert::Client::StatsParser::Match;
+using Client::StatsParser::Match;
 
 class StatsTeamFooter : public QWidget
 {

@@ -8,11 +8,11 @@
 
 #define JSON_TRY_USER if (true)
 #define JSON_CATCH_USER(exception) if (false)
-#define JSON_THROW_USER(exception)           \
-	{                                        \
+#define JSON_THROW_USER(exception)                                                                       \
+	{                                                                                                    \
 		LOG_ERROR("Error in {}:{} (function {}) - {} (ID: {})", __FILE__, __LINE__, __PRETTY_FUNCTION__, \
-		(exception).what(), (exception).id); \
-		std::abort();                        \
+				  (exception).what(), (exception).id);                                                   \
+		std::abort();                                                                                    \
 	}
 #define JSON_DIAGNOSTICS 1
 #include <nlohmann/json.hpp>
