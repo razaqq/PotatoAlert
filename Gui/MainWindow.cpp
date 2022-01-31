@@ -120,6 +120,7 @@ void MainWindow::ConnectSignals()
 	connect(&PotatoClient::Instance(), &PotatoClient::MatchReady, this->m_statsWidget, &StatsWidget::Update);
 
 	connect(&PotatoClient::Instance(), &PotatoClient::MatchHistoryChanged, this->m_matchHistory, &MatchHistory::UpdateLatest);
+	connect(&PotatoClient::Instance(), &PotatoClient::MatchSummaryChanged, this->m_matchHistory, &MatchHistory::SetSummary);
 
 	connect(this->m_matchHistory, &MatchHistory::ReplaySelected, [this](const Match& match)
 	{

@@ -1,4 +1,4 @@
-// Copyright 2020 <github.com/razaqq>
+﻿// Copyright 2020 <github.com/razaqq>
 
 #include "PotatoClient.hpp"
 
@@ -135,6 +135,9 @@ void PotatoClient::Init()
 	connect(&m_socket, &QWebSocket::textMessageReceived, this, &PotatoClient::OnResponse);
 
 	connect(&m_watcher, &Core::DirectoryWatcher::DirectoryChanged, this, &PotatoClient::OnDirectoryChanged);
+	connect(&m_watcher, &Core::DirectoryWatcher::FileChanged, &m_replayAnalyzer, &ReplayAnalyzer::OnFileChanged);
+
+	connect(&m_replayAnalyzer, &ReplayAnalyzer::ReplaySummaryReady, this, &PotatoClient::MatchSummaryChanged);
 
 	TriggerRun();
 }
@@ -279,6 +282,7 @@ DirectoryStatus PotatoClient::CheckPath()
 		m_watcher.WatchDirectory(replaysPath);
 		dirStatus.statusText = "";
 
+		m_replayAnalyzer.AnalyzeDirectory(gamePath);  // TODO: make this game path
 		TriggerRun();
 
 		return dirStatus;
@@ -297,6 +301,8 @@ DirectoryStatus PotatoClient::CheckPath()
 			}
 		}
 
+		// lets check the entire game folder, replays might be hiding everywhere
+		m_replayAnalyzer.AnalyzeDirectory(gamePath);
 
 		TriggerRun();
 	}

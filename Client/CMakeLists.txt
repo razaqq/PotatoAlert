@@ -9,6 +9,7 @@ set(
         Game.cpp
         MatchHistory.cpp
         PotatoClient.cpp
+        ReplayAnalyzer.cpp
         StatsParser.cpp
         ../Updater/Updater.cpp
 )

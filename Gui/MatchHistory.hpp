@@ -3,10 +3,13 @@
 
 #include "Client/MatchHistory.hpp"
 #include "Client/StatsParser.hpp"
+#include "ReplayParser/ReplayParser.hpp"
 
 #include <QEvent>
 #include <QTableWidget>
 #include <QWidget>
+
+#include <map>
 
 
 namespace PotatoAlert::Gui {
@@ -18,6 +21,7 @@ public:
 	explicit MatchHistory(QWidget* parent = nullptr);
 	void UpdateAll();
 	void UpdateLatest();
+	void SetSummary(uint32_t id, const ReplaySummary& summary) const;
 
 private:
 	void Init();
@@ -25,8 +29,8 @@ private:
 	void changeEvent(QEvent* event) override;
 	void paintEvent(QPaintEvent* _) override;
 	QTableWidget* m_table = new QTableWidget();
-	void AddEntry(const Client::MatchHistory::MatchHistoryEntry& entry) const;
-	int m_latestId = 0;
+	void AddEntry(const Client::MatchHistory::Entry& entry);
+	std::map<uint32_t, std::array<QTableWidgetItem*, 7>> m_entries;
 
 signals:
 	void ReplaySelected(const Client::StatsParser::Match& match);

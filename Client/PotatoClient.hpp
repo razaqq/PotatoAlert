@@ -4,6 +4,7 @@
 #include "Core/DirectoryWatcher.hpp"
 #include "Core/Singleton.hpp"
 #include "Game.hpp"
+#include "ReplayAnalyzer.hpp"
 #include "ReplayParser/ReplayParser.hpp"
 #include "StatsParser.hpp"
 
@@ -50,12 +51,14 @@ private:
 	std::string m_tempArenaInfo;
 	std::string m_lastArenaInfoHash;
 	DirectoryStatus m_dirStatus;
+	ReplayAnalyzer m_replayAnalyzer;
 
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
 	void MatchReady(const StatsParser::Match& match);
 	void MatchHistoryChanged();
+	void MatchSummaryChanged(uint32_t id, const ReplaySummary& summary);
 	void StatusReady(Status status, const std::string& statusText);
 #pragma clang diagnostic pop
 };
