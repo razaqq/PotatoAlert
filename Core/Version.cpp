@@ -4,60 +4,56 @@
 
 #include "String.hpp"
 
-#include <algorithm>
 #include <format>
-#include <sstream>
-#include <string_view>
-#include <unordered_map>
+#include <regex>
+#include <string>
 
 
 using PotatoAlert::Core::Version;
 
-Version::Version(std::string_view versionString)
+Version::Version(std::string_view versionString) : m_success(false), m_version(0)
 {
 	Parse(versionString);
 }
 
-Version::Version(const char* versionString)
+void Version::Parse(std::string_view str)
 {
-	Parse(versionString);
-}
+	std::match_results<std::string_view::const_iterator> matches;
 
-void Version::Parse(std::string_view versionString)
-{
-	std::string_view del = "";
-	if (String::Contains(versionString, "."))
-	{
-		del = ".";
-	}
-	else if (String::Contains(versionString, ","))
-	{
-		del = ",";
-	}
-	else if (String::Contains(versionString, " "))
-	{
-		del = " ";
-	}
-	std::vector<std::string> split = String::Split(versionString, del);
+#define PARSE(matches)                                     \
+	for (size_t i = 1; i < (matches).size(); i++)          \
+	{                                                      \
+		uint8_t value;                                     \
+		if (!String::ParseNumber((matches).str(i), value)) \
+		{                                                  \
+			return;                                        \
+		}                                                  \
+		m_version |= value << (0x18 - (i - 1) * 0x08);     \
+	}                                                      \
+	m_success = true
 
-	if (split.size() > m_data.size())
+	const std::regex re4(R"regex((\d+)[., ]+(\d+)[., ]+(\d+)[., ]+(\d+))regex");
+	if (std::regex_search(str.begin(), str.end(), matches, re4) && matches.size() == 5)
 	{
-		m_success = false;
-		return;
+		PARSE(matches);
 	}
 
-	for (size_t i = 0; i < split.size(); i++)
+	const std::regex re3(R"regex((\d+)[., ]+(\d+)[., ]+(\d+))regex");
+	if (std::regex_search(str.begin(), str.end(), matches, re3) && matches.size() == 4)
 	{
-		uint32_t v;
-		if (String::ParseNumber<uint32_t>(String::Trim(split[i]), v))
-		{
-			m_data[i] = v;
-		}
-		else
-		{
-			m_success = false;
-			return;
-		}
+		PARSE(matches);
+	}
+
+	const std::regex re2(R"regex((\d+)[., ]+(\d+))regex");
+	if (std::regex_search(str.begin(), str.end(), matches, re2) && matches.size() == 3)
+	{
+		PARSE(matches);
+	}
+
+	const std::regex re1(R"regex((\d+))regex");
+	if (std::regex_search(str.begin(), str.end(), matches, re3) && matches.size() == 2)
+	{
+		PARSE(matches);
 	}
 }
 
@@ -66,7 +62,7 @@ bool PotatoAlert::Core::operator==(const Version& v1, const Version& v2)
 	if (v1.m_success != v2.m_success)
 		return false;
 
-	return v1.m_data == v2.m_data;
+	return v1.m_version == v2.m_version;
 }
 
 bool PotatoAlert::Core::operator!=(const Version& v1, const Version& v2)
@@ -81,12 +77,7 @@ bool PotatoAlert::Core::operator>(const Version& v1, const Version& v2)
 	if (!v2.m_success)
 		return true;
 
-	for (size_t i = 0; i < v1.m_data.size(); i++)
-	{
-		if (v1.m_data[i] != v2.m_data[i])
-			return v1.m_data[i] > v2.m_data[i];
-	}
-	return false;
+	return v1.m_version > v2.m_version;
 }
 
 bool PotatoAlert::Core::operator<(const Version& v1, const Version& v2)
@@ -96,19 +87,14 @@ bool PotatoAlert::Core::operator<(const Version& v1, const Version& v2)
 	if (!v1.m_success)
 		return true;
 
-	for (size_t i = 0; i < v1.m_data.size(); i++)
-	{
-		if (v1.m_data[i] != v2.m_data[i])
-			return v1.m_data[i] < v2.m_data[i];
-	}
-	return false;
+	return v1.m_version < v2.m_version;
 }
 
 std::string Version::ToString(std::string_view del, bool includeBuild) const
 {
 	if (includeBuild)
 	{
-		return std::format("{1}{0}{2}{0}{3}{0}{4}", del, m_data[0], m_data[1], m_data[2], m_data[3]);
+		return std::format("{1}{0}{2}{0}{3}{0}{4}", del, Major(), Minor(), Patch(), Build());
 	}
-	return std::format("{1}{0}{2}{0}{3}", del, m_data[0], m_data[1], m_data[2]);
+	return std::format("{1}{0}{2}{0}{3}", del, Major(), Minor(), Patch()); 
 }

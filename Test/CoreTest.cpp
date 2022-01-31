@@ -150,12 +150,12 @@ TEST_CASE("VersionTest")
 	REQUIRE(Version("2.16.0") != Version("3.0.0"));
 	REQUIRE_FALSE(Version("3.0.0") < Version("2.16.0"));
 	REQUIRE(Version(1, 2, 3, 4) == Version("1,2,3,4"));
-	REQUIRE_FALSE(Version("abc 3,7,8"));
+	REQUIRE(Version("abc 3,7,8") == Version(3, 7, 8));
 	REQUIRE(Version("3,7,8 abc") == Version(3, 7, 8));
 	REQUIRE(Version("3, 7, 8") == Version(3, 7, 8));
 	REQUIRE(Version(1, 2, 3, 4).ToString() == "1.2.3.4");
 	REQUIRE(Version(0, 9, 4, 0).ToString() == "0.9.4.0");
-	REQUIRE_FALSE(Version("0.9.4.0.1"));
+	REQUIRE(Version("0.9.4.0.1") == Version("0.9.4.0"));
 }
 
 
