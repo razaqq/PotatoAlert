@@ -128,6 +128,15 @@ TEST_CASE( "StringTest" )
 
 	std::string_view removeTest = "xyzabc";
 	REQUIRE(String::ReplaceAll(removeTest, "xyz", "") == "abc");
+
+	REQUIRE(String::StartsWith("some long text", "some"));
+	REQUIRE_FALSE(String::StartsWith("some long text", "awesome"));
+	REQUIRE(String::EndsWith("some long text", "text"));
+	REQUIRE_FALSE(String::EndsWith("some long text", "textt"));
+	REQUIRE_FALSE(String::EndsWith("", "textt"));
+	REQUIRE_FALSE(String::StartsWith("", "textt"));
+	REQUIRE(String::StartsWith("text", ""));
+	REQUIRE(String::EndsWith("text", ""));
 }
 
 TEST_CASE("VersionTest")
