@@ -32,6 +32,15 @@ generate_product_version(
         VERSION_REVISION ${BUILD_REVISION}
 )
 
+# generate stringtable headers
+find_package(PythonInterp REQUIRED)
+execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Resources/generate_translations.py"
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                RESULT_VARIABLE GENERATE_STRINGTABLE_RESULT)
+if(NOT GENERATE_STRINGTABLE_RESULT EQUAL "0")
+    message(FATAL_ERROR "Failed to generate stringtable")
+endif()
+
 add_subdirectory(${PROJECT_SOURCE_DIR}/Core)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Client)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Gui)

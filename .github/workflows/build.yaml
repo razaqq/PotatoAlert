@@ -37,9 +37,6 @@ jobs:
     - name: Clang Version
       run: clang-cl --version
 
-    - name: Generate Stringtable
-      run: python .\Resources\generate_translations.py
-
     - name: Run CMake
       env:
         CC: clang-cl
