@@ -28,6 +28,7 @@ if(WIN32)
             ${core_src}
             Directory.win32.cpp
             File.win32.cpp
+            Mutex.win32.cpp
             Process.win32.cpp
             Time.win32.cpp
     )
