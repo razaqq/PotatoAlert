@@ -104,7 +104,7 @@ bool ReadEngineConfig(DirectoryStatus& status, const char* resFolder)
 		return false;
 	}
 
-	tinyxml2::XMLNode* root = doc.FirstChild();
+	tinyxml2::XMLNode* root = doc.FirstChildElement("engine_config.xml");
 	if (root == nullptr)
 	{
 		LOG_TRACE("engine_config.xml seems to be empty.");
@@ -114,24 +114,36 @@ bool ReadEngineConfig(DirectoryStatus& status, const char* resFolder)
 	// get replays node
 	tinyxml2::XMLElement* replays = root->FirstChildElement("replays");
 	if (replays == nullptr)
+	{
+		LOG_ERROR("Key 'replays' is missing in engine_config.xml");
 		return false;
+	}
 
 	// get dir path
 	tinyxml2::XMLElement* replaysDirPath = replays->FirstChildElement("dirPath");
 	if (replaysDirPath == nullptr)
+	{
+		LOG_ERROR("Key 'dirPath' is missing in engine_config.xml");
 		return false;
+	}
 	status.replaysDirPath = String::ToLower(replaysDirPath->GetText());
 
 	// get base path
 	tinyxml2::XMLElement* replaysPathBase = replays->FirstChildElement("pathBase");
 	if (replaysPathBase == nullptr)
+	{
+		LOG_ERROR("Key 'pathBase' is missing in engine_config.xml");
 		return false;
+	}
 	status.replaysPathBase = String::ToLower(replaysPathBase->GetText());
 
 	// check for versioned replays
 	tinyxml2::XMLElement* versionedReplays = replays->FirstChildElement("versioned");
 	if (versionedReplays == nullptr)
+	{
+		LOG_ERROR("Key 'versioned' is missing in engine_config.xml");
 		return false;
+	}
 
 	bool versioned;
 	if (!String::ParseBool(versionedReplays->GetText(), versioned))
@@ -146,12 +158,18 @@ bool ReadEngineConfig(DirectoryStatus& status, const char* resFolder)
 	// get preferences node
 	tinyxml2::XMLElement* preferences = root->FirstChildElement("preferences");
 	if (preferences == nullptr)
+	{
+		LOG_ERROR("Key 'preferences' is missing in engine_config.xml");
 		return false;
+	}
 
 	// get preferences base path
 	tinyxml2::XMLElement* preferencesPathBase = replays->FirstChildElement("pathBase");
 	if (preferencesPathBase == nullptr)
+	{
+		LOG_ERROR("Key 'pathBase' is missing in engine_config.xml");
 		return false;
+	}
 	status.preferencesPathBase = String::ToLower(preferencesPathBase->GetText());
 
 	return true;
