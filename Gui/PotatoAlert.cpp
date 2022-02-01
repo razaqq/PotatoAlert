@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/Config.hpp"
+#include "Core/Mutex.hpp"
 #include "MainWindow.hpp"
 #include "NativeWindow.hpp"
 #include "Palette.hpp"
@@ -17,6 +18,7 @@
 
 
 using PotatoAlert::Core::PotatoConfig;
+using PotatoAlert::Core::Mutex;
 using PotatoAlert::Gui::DarkPalette;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::NativeWindow;
@@ -24,6 +26,14 @@ using PotatoUpdater::Updater;
 
 static int RunMain(int argc, char* argv[])
 {
+	const std::string mutexName = "PotatoAlert-0D54203D-6BF9-4E96-8CD7-2BE3E780E013";
+	if (Mutex::Open(mutexName))
+	{
+		NativeWindow::RequestFocus();
+		_exit(0);
+	}
+	Mutex::Create(mutexName, true);
+
 	Q_INIT_RESOURCE(PotatoAlert);
 
 	QApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
