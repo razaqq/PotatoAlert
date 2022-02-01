@@ -45,6 +45,8 @@ static int RunMain(int argc, char* argv[])
 	PotatoAlert::Core::Log::Init();
 	
 	QApplication app(argc, argv);
+
+	QApplication::setQuitOnLastWindowClosed(false);
 	
 	QApplication::setOrganizationName(PRODUCT_COMPANY_NAME);
 	QApplication::setApplicationVersion(PRODUCT_VERSION_FULL_STR);

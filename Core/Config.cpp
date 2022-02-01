@@ -28,6 +28,7 @@ Config::Config(std::string_view fileName)
 	g_defaultConfig = {
 		{ "stats_mode", StatsMode::Pvp },
 		{ "update_notifications", true },
+		{ "minimize_tray", true },
 		{ "api_key", "1234567890" },
 		{ "match_history", true },
 		{ "window_height", 450 },

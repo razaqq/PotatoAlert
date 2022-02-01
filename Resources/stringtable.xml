@@ -30,6 +30,10 @@
         <English>Update Notifications</English>
         <Deutsch>Update Benachrichtigungen</Deutsch>
     </Key>
+    <Key ID="SETTINGS_MINIMIZETRAY">
+        <English>Minimize To Tray On Close</English>
+        <Deutsch>In Tray Minimieren</Deutsch>
+    </Key>
     <Key ID="SETTINGS_SAVE_MATCHHISTORY">
         <English>Save Match History</English>
         <Deutsch>Gefechtsverlauf Speichern</Deutsch>

@@ -28,6 +28,7 @@ private:
 	void changeEvent(QEvent* event) override;
 
 	QLabel* m_updateLabel = new QLabel();
+	QLabel* m_minimizeTrayLabel = new QLabel();
 	QLabel* m_matchHistoryLabel = new QLabel();
 	QLabel* m_gamePathLabel = new QLabel();
 	QLabel* m_replaysFolderLabel = new QLabel();
@@ -37,6 +38,7 @@ private:
 	QLabel* m_languageLabel = new QLabel();
 
 	SettingsSwitch* m_updates = new SettingsSwitch();
+	SettingsSwitch* m_minimizeTray = new SettingsSwitch();
 	SettingsSwitch* m_matchHistory = new SettingsSwitch();
 	SettingsSwitch* m_overrideReplaysFolder = new SettingsSwitch();
 	

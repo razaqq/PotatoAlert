@@ -56,7 +56,7 @@ void MainWindow::Init()
 	this->addDockWidget(side, this->m_menuBar);
 	connect(this->m_menuBar, &VerticalMenuBar::dockLocationChanged, [](Qt::DockWidgetArea area)
 	{
-		PotatoConfig().Set<bool>("menubar_leftside",area == Qt::DockWidgetArea::LeftDockWidgetArea);
+		PotatoConfig().Set<bool>("menubar_leftside", area == Qt::DockWidgetArea::LeftDockWidgetArea);
 	});
 
 	// set other tabs invisible
@@ -68,11 +68,8 @@ void MainWindow::Init()
 	this->m_centralLayout->addWidget(this->m_settingsWidget);
 	this->m_centralLayout->addWidget(this->m_matchHistory);
 	this->m_centralLayout->addWidget(this->m_aboutWidget);
-}
 
-void MainWindow::showEvent([[maybe_unused]] QShowEvent* event)
-{
-	// we have to trigger the run here or else we would not get a loading animation on program start
+	// trigger run
 	this->m_settingsWidget->CheckPath();
 }
 
