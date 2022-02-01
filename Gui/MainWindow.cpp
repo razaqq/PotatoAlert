@@ -51,12 +51,12 @@ void MainWindow::Init()
 	this->m_centralW->setLayout(m_centralLayout);
 
 	// menubar dock widget
-	const bool leftSide = Core::PotatoConfig().Get<bool>("menubar_leftside");
+	const bool leftSide = PotatoConfig().Get<bool>("menubar_leftside");
 	const auto side = leftSide ? Qt::DockWidgetArea::LeftDockWidgetArea : Qt::DockWidgetArea::RightDockWidgetArea;
 	this->addDockWidget(side, this->m_menuBar);
 	connect(this->m_menuBar, &VerticalMenuBar::dockLocationChanged, [](Qt::DockWidgetArea area)
 	{
-		Core::PotatoConfig().Set<bool>("menubar_leftside",area == Qt::DockWidgetArea::LeftDockWidgetArea);
+		PotatoConfig().Set<bool>("menubar_leftside",area == Qt::DockWidgetArea::LeftDockWidgetArea);
 	});
 
 	// set other tabs invisible
