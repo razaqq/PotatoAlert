@@ -36,6 +36,7 @@ if(WIN32)
             gui_src
             ${gui_src}
             FramelessDialog.win32.cpp
+            NativeWindow.win32.cpp
     )
 endif(WIN32)
 
