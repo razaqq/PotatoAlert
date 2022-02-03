@@ -46,7 +46,7 @@ endif(UNIX)
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 
 add_library(core STATIC ${core_src})
-set_target_properties(core PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
+set_target_properties(core PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 target_link_libraries(core PRIVATE sqlite3 OpenSSL Win32 zip ZLIB::ZLIB)
 target_link_libraries(core PUBLIC nlohmann_json Qt5::Core Qt5::Widgets spdlog tinyxml2)
 target_include_directories(core PUBLIC ${PROJECT_SOURCE_DIR}/Resources)
