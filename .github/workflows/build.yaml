@@ -47,13 +47,11 @@ jobs:
       run: cmake --build build --config Release --target PotatoAlert PotatoUpdater PotatoTest
 
     - name: Run Tests
-      run: .\build\Test\PotatoTest.exe
+      run: .\build\bin-test\PotatoTest.exe
 
     - name: Create Release Archive
       run: |
-        cd .\build
-        mv Updater\PotatoUpdater.exe .
-        7z a -mx9 -r PotatoAlert.zip .\PotatoAlert.exe .\PotatoUpdater.exe .\package\* .\ReplayVersions
+        7z a -mx9 -r PotatoAlert.zip .\build\bin\*
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
