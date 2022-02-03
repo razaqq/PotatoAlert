@@ -41,7 +41,7 @@ endif()
 
 target_link_libraries(PotatoUpdater PRIVATE gui core Win32)
 target_link_libraries(PotatoUpdater PRIVATE Qt5::Network)
-set_target_properties(PotatoUpdater PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
+set_target_properties(PotatoUpdater PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 set_target_properties(PotatoUpdater
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
