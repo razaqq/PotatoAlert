@@ -2,9 +2,9 @@
 
 #include "Core/Config.hpp"
 #include "Core/Mutex.hpp"
-#include "MainWindow.hpp"
-#include "NativeWindow.hpp"
-#include "Palette.hpp"
+#include "Gui/MainWindow.hpp"
+#include "Gui/NativeWindow.hpp"
+#include "Gui/Palette.hpp"
 #include "Updater/Updater.hpp"
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreserved-id-macro"

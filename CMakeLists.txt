@@ -14,11 +14,6 @@ endif()
 add_definitions(-D_HAS_EXCEPTIONS=0)  # turn off exceptions
 add_definitions(-DQT_MESSAGELOGCONTEXT)  # qt log messages context
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
 include(generate_product_version)
 generate_product_version(
         VersionFilesOutputVariable
@@ -44,41 +39,11 @@ endif()
 add_subdirectory(${PROJECT_SOURCE_DIR}/Core)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Client)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Gui)
+add_subdirectory(${PROJECT_SOURCE_DIR}/PotatoAlert)
 add_subdirectory(${PROJECT_SOURCE_DIR}/ReplayParser)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Test)
+add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Updater)
 add_subdirectory(${PROJECT_SOURCE_DIR}/FramelessHelper)
 
-add_executable(PotatoAlert Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
-set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
-
-if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    set_property(TARGET PotatoAlert PROPERTY WIN32_EXECUTABLE true)
-endif()
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    if ("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")  # clang-cl
-        target_compile_options(PotatoAlert PRIVATE $<$<CONFIG:DEBUG>:/Wall -Wno-unknown-pragmas -Wno-error=unused-variable -Wno-c++98-compat -Wno-c++98-compat-pedantic /Ob0 /Od>)
-        target_compile_options(PotatoAlert PRIVATE $<$<CONFIG:RELEASE>:/O2 /Ob2>)
-    elseif("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU")  # clang
-        target_compile_options(PotatoAlert PRIVATE -fno-exceptions)
-        target_compile_options(PotatoAlert PRIVATE $<$<CONFIG:DEBUG>:-Wall -pedantic -fno-exceptions -Wno-unknown-pragmas -O0>)
-        target_compile_options(PotatoAlert PRIVATE $<$<CONFIG:RELEASE>:-O3>)
-    endif()
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    target_compile_options(PotatoAlert PRIVATE $<$<CONFIG:DEBUG>:/Wall /Od /Ob0>)  # TODO: completely untested
-    target_compile_options(PotatoAlert PRIVATE $<$<CONFIG:RELEASE>:/O2 /Ob2>)
-    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-else()
-    message(FATAL_ERROR "Unsupported compiler!")
-endif()
-
-target_link_libraries(PotatoAlert PRIVATE gui)
-
-include(packaging)
-windeployqt(PotatoAlert)
-
 file(COPY ${PROJECT_SOURCE_DIR}/Resources/ReplayVersions DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
-ssllibraries(PotatoAlert)
-# makeinstaller(PotatoAlert)

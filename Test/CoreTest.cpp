@@ -18,18 +18,24 @@
 using namespace PotatoAlert::Core;
 using namespace PotatoAlert;
 
-std::vector<std::byte> FromString(std::string_view s) noexcept
+namespace {
+
+static std::vector<std::byte> FromString(std::string_view s) noexcept
 {
 	std::vector<std::byte> arr(s.size());
-	std::ranges::transform(s, arr.begin(), [](char c) { return static_cast<std::byte>(c); });
+	std::ranges::transform(s, arr.begin(), [](char c)
+						   { return static_cast<std::byte>(c); });
 	return arr;
 }
 
 template<typename... Ts>
-std::array<std::byte, sizeof...(Ts)> FromHex(Ts&&... args) noexcept
+static std::array<std::byte, sizeof...(Ts)> FromHex(Ts&&... args) noexcept
 {
 	return { std::byte(std::forward<Ts>(args))... };
 }
+
+}
+
 
 TEST_CASE( "BlowFishEncryptTest" )
 {

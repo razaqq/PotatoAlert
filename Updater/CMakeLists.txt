@@ -39,14 +39,18 @@ else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
-target_link_libraries(PotatoUpdater PRIVATE gui core)
+target_link_libraries(PotatoUpdater PRIVATE gui core Win32)
 target_link_libraries(PotatoUpdater PRIVATE Qt5::Network)
 set_target_properties(PotatoUpdater PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
+set_target_properties(PotatoUpdater
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
 
 add_custom_command(
         TARGET PotatoUpdater
         POST_BUILD
-        COMMAND "mt.exe" -manifest \"${CMAKE_CURRENT_SOURCE_DIR}/PotatoUpdater.manifest\" -outputresource:"${CMAKE_CURRENT_BINARY_DIR}/PotatoUpdater.exe"\;\#1
+        COMMAND "mt.exe" -manifest \"${CMAKE_CURRENT_SOURCE_DIR}/PotatoUpdater.manifest\" -outputresource:$<TARGET_FILE_DIR:PotatoUpdater>/PotatoUpdater.exe\;\#1
         COMMENT "Adding manifest..."
 )
 

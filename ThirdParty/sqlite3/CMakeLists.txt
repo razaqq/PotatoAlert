@@ -8,3 +8,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 endif()
+
+target_include_directories(sqlite3
+	INTERFACE
+		include
+)

@@ -7,8 +7,6 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/catch2)
-
 # enable CTest testing
 enable_testing()
 
@@ -32,18 +30,31 @@ else()
 endif()
 
 set_target_properties(PotatoTest PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
-target_link_libraries(PotatoTest PRIVATE core client replayparser Catch2::Test)
+target_link_libraries(PotatoTest PRIVATE core client replayparser Catch2::Test Win32)
 target_include_directories(
         PotatoTest
         PRIVATE
         ${PROJECT_SOURCE_DIR}
 )
+set_target_properties(PotatoTest
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin-test"
+)
 
 add_test(test_all PotatoTest)
 
-file(COPY ${PROJECT_SOURCE_DIR}/Resources/ReplayVersions DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY gameDirectories DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY replays DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+add_custom_command(TARGET PotatoTest POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/gameDirectories
+        $<TARGET_FILE_DIR:PotatoTest>/gameDirectories
+        COMMENT "Copying Replay Version Files..."
+        )
+
+add_custom_command(TARGET PotatoTest POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/replays
+        $<TARGET_FILE_DIR:PotatoTest>/replays
+        COMMENT "Copying Replay Version Files..."
+        )
 
 include(packaging)
+replayversions(PotatoTest)
 windeployqt(PotatoTest)

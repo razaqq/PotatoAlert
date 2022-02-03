@@ -4,10 +4,11 @@
 #include "Gui/Palette.hpp"
 #include "Updater.hpp"
 #include "UpdaterGui.hpp"
-#include "win32.h"
 
 #include <QApplication>
 #include <QFile>
+
+#include "win32.h"
 
 
 using PotatoUpdater::Updater;
