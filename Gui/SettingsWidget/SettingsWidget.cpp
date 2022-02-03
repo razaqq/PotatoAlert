@@ -143,6 +143,7 @@ void SettingsWidget::Init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* MANUAL REPLAYS FOLDER */
+	/*
 	m_toggleReplaysFolderOverride = [this](bool override)
 	{
 		m_replaysFolderLabel->setEnabled(override);
@@ -155,6 +156,7 @@ void SettingsWidget::Init()
 		m_gamePathLabel->setDisabled(override);
 		m_folderStatusGui->setDisabled(override);
 	};
+	*/
 
 	auto replaysFolderVLayout = new QVBoxLayout();
 
@@ -225,7 +227,7 @@ void SettingsWidget::Load()
 			PotatoConfig().Get<std::string>("replays_folder")));
 	bool manualReplays = PotatoConfig().Get<bool>("override_replays_folder");
 	m_overrideReplaysFolder->setChecked(manualReplays);
-	m_toggleReplaysFolderOverride(manualReplays);
+	// m_toggleReplaysFolderOverride(manualReplays);
 }
 
 void SettingsWidget::ConnectSignals()
@@ -277,7 +279,6 @@ void SettingsWidget::ConnectSignals()
 	connect(m_overrideReplaysFolder, &SettingsSwitch::clicked, [this](bool checked)
 	{
 		PotatoConfig().Set<bool>("override_replays_folder", checked);
-		m_toggleReplaysFolderOverride(checked);
 	});
 }
 

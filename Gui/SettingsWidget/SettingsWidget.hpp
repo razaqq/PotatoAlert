@@ -56,7 +56,7 @@ private:
 	// manual replays folder
 	QLineEdit* m_replaysFolderEdit = new QLineEdit();
 	QToolButton* m_replaysFolderButton = new QToolButton();
-	std::function<void(bool)> m_toggleReplaysFolderOverride;
+	// std::function<void(bool)> m_toggleReplaysFolderOverride;
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
