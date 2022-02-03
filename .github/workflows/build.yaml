@@ -57,7 +57,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: PotatoAlert
-        path: build\PotatoAlert.zip
+        path: PotatoAlert.zip
 
     - name: Create Release
       uses: actions/create-release@v1
@@ -77,7 +77,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build\PotatoAlert.zip
+        asset_path: PotatoAlert.zip
         asset_name: PotatoAlert.zip
         asset_content_type: application/zip
       if: ${{ github.event_name == 'create' && github.event.ref_type == 'tag' }}
