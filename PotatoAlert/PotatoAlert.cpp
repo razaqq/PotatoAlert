@@ -22,7 +22,7 @@ using PotatoAlert::Core::Mutex;
 using PotatoAlert::Gui::DarkPalette;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::NativeWindow;
-using PotatoUpdater::Updater;
+using PotatoAlert::Updater::Updater;
 
 static int RunMain(int argc, char* argv[])
 {

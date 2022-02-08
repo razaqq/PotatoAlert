@@ -8,15 +8,14 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5 COMPONENTS Network REQUIRED)
+find_package(Qt5 COMPONENTS Core Network Widgets REQUIRED)
 
-add_executable(PotatoUpdater PotatoUpdater.cpp ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
+# have to add the header to sources for qt AUTOMOC
+add_library(updater src/Updater.cpp include/Updater/Updater.hpp)
+target_link_libraries(updater PRIVATE gui core Qt5::Network Qt5::Widgets Win32)
+target_include_directories(updater PUBLIC include)
 
-target_include_directories(
-        PotatoUpdater
-        PUBLIC
-        ${PROJECT_SOURCE_DIR}
-)
+add_executable(PotatoUpdater src/PotatoUpdater.cpp ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     set_property(TARGET PotatoUpdater PROPERTY WIN32_EXECUTABLE true)
@@ -39,8 +38,8 @@ else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
-target_link_libraries(PotatoUpdater PRIVATE gui core Win32)
-target_link_libraries(PotatoUpdater PRIVATE Qt5::Network)
+# target_link_libraries(PotatoUpdater PRIVATE gui core updater Win32)
+target_link_libraries(PotatoUpdater PRIVATE core gui updater Qt5::Core Qt5::Widgets Win32)
 set_target_properties(PotatoUpdater PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 set_target_properties(PotatoUpdater
     PROPERTIES

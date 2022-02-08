@@ -233,5 +233,5 @@ TEST_CASE( "ZlibTest" )
 	auto vec = Zlib::Inflate(binary);
 
 	REQUIRE(vec.size() == string.size());
-	CHECK(memcmp(vec.data(), string.data(), vec.size()) == 0);
+	CHECK(std::memcmp(vec.data(), string.data(), vec.size()) == 0);
 }

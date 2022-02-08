@@ -3,51 +3,63 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(
-        gui_src
+add_library(gui STATIC)
 
-        AboutWidget.cpp
-        MainWindow.cpp
-        MatchHistory.cpp
-        NativeWindow.cpp
-        Palette.cpp
-        TitleBar.cpp
-        
-        MenuBar/MenuEntryButton.cpp
-        MenuBar/VerticalMenuBar.cpp
+target_sources(
+        gui
+        PRIVATE
 
-        SettingsWidget/FolderStatus.cpp
-        SettingsWidget/HorizontalLine.cpp
-        SettingsWidget/SettingsChoice.cpp
-        SettingsWidget/SettingsSwitch.cpp
-        SettingsWidget/SettingsWidget.cpp
+        src/AboutWidget.cpp
+        src/MainWindow.cpp
+        src/MatchHistory.cpp
+        src/NativeWindow.cpp
+        src/Palette.cpp
+        src/TitleBar.cpp
+        src/Updater.cpp
 
-        StatsWidget/StatsHeader.cpp
-        StatsWidget/StatsTable.cpp
-        StatsWidget/StatsTeamFooter.cpp
-        StatsWidget/StatsWidget.cpp
+        src/MenuBar/MenuEntryButton.cpp
+        src/MenuBar/VerticalMenuBar.cpp
 
-        ../Updater/UpdaterGui.cpp
+        src/SettingsWidget/FolderStatus.cpp
+        src/SettingsWidget/HorizontalLine.cpp
+        src/SettingsWidget/SettingsChoice.cpp
+        src/SettingsWidget/SettingsSwitch.cpp
+        src/SettingsWidget/SettingsWidget.cpp
+
+        src/StatsWidget/StatsHeader.cpp
+        src/StatsWidget/StatsTable.cpp
+        src/StatsWidget/StatsTeamFooter.cpp
+        src/StatsWidget/StatsWidget.cpp
+)
+
+# have to add some headers to sources for qt AUTOMOC
+target_sources(
+        gui
+        PRIVATE
+
+        include/Gui/MatchHistory.hpp
+        include/Gui/NativeWindow.hpp
+        include/Gui/MenuBar/VerticalMenuBar.hpp
+        include/Gui/SettingsWidget/SettingsSwitch.hpp
+        include/Gui/SettingsWidget/SettingsWidget.hpp
+        include/Gui/StatsWidget/StatsHeader.hpp
+        include/Gui/TitleBar.hpp
 )
 
 if(WIN32)
-    set(
-            gui_src
-            ${gui_src}
-            FramelessDialog.win32.cpp
-            NativeWindow.win32.cpp
+    target_sources(
+            gui
+            PRIVATE
+
+            src/FramelessDialog.win32.cpp
+            src/NativeWindow.win32.cpp
     )
 endif(WIN32)
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-add_library(gui STATIC ${gui_src})
 
-set_target_properties(gui PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
-target_link_libraries(gui PRIVATE client core framelessHelper Qt5::Widgets Win32)
-target_include_directories(
-        gui
-        PUBLIC
-        ${PROJECT_SOURCE_DIR}
-        ${CMAKE_BINARY_DIR}
-)
+set_target_properties(gui PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
+target_link_libraries(gui PRIVATE framelessHelper Qt5::Widgets Win32)
+target_link_libraries(gui PUBLIC client core updater)
+target_include_directories(gui PUBLIC include ${CMAKE_BINARY_DIR})

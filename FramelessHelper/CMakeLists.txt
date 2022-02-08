@@ -1,24 +1,27 @@
-set(
-        frameless_src
+add_library(framelessHelper STATIC)
 
-        FramelessUtilities.cpp
-        FramelessWindowsManager.cpp
-        )
+target_sources(
+        framelessHelper
+        PRIVATE
+
+        src/FramelessUtilities.cpp
+        src/FramelessWindowsManager.cpp
+)
 
 if(WIN32)
-    set(
-        frameless_src
-        ${frameless_src}
+    target_sources(
+            framelessHelper
+            PRIVATE
 
-        FramelessHelper_win32.cpp
-        FramelessUtilities_win32.cpp
+            src/FramelessHelper_win32.cpp
+            src/FramelessUtilities_win32.cpp
     )
 endif(WIN32)
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-add_library(framelessHelper STATIC ${frameless_src})
 target_link_libraries(framelessHelper PRIVATE Qt5::GuiPrivate Qt5::Widgets)
+target_include_directories(framelessHelper PUBLIC include)
 
 if(WIN32)
     target_link_libraries(framelessHelper PRIVATE Dwmapi)

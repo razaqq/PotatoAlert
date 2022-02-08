@@ -3,43 +3,53 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(
-        client_src
+add_library(client STATIC)
 
-        Game.cpp
-        MatchHistory.cpp
-        PotatoClient.cpp
-        ReplayAnalyzer.cpp
-        StatsParser.cpp
-        ../Updater/Updater.cpp
+target_sources(
+        client
+        PRIVATE
+
+        src/Game.cpp
+        src/MatchHistory.cpp
+        src/PotatoClient.cpp
+        src/ReplayAnalyzer.cpp
+        src/StatsParser.cpp
 )
 
 if(WIN32)
-    set(
-            client_src
-            ${client_src}
-            Game.win32.cpp
+    target_sources(
+            client
+            PRIVATE
+
+            src/Game.win32.cpp
     )
 endif(WIN32)
 
 if(UNIX)
-    set(
-            client_src
-            ${client_src}
-            Game.linux.cpp
+    target_sources(
+            client
+            PRIVATE
+
+            src/Game.linux.cpp
     )
 endif(UNIX)
 
+# have to add some headers to sources for qt AUTOMOC
+target_sources(
+        client
+        PRIVATE
+
+        include/Client/PotatoClient.hpp
+        include/Client/ReplayAnalyzer.hpp
+)
+
 find_package(Qt5 COMPONENTS Core Widgets WebSockets REQUIRED)
 
-add_library(client STATIC ${client_src})
 set_target_properties(client PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
-target_link_libraries(client PRIVATE core tinyxml2 replayparser Win32)
-target_link_libraries(client PUBLIC Qt5::Core Qt5::WebSockets Qt5::Widgets)
-target_include_directories(client
-        PUBLIC
-        ${PROJECT_SOURCE_DIR}
-)
+target_link_libraries(client PRIVATE tinyxml2 Win32)
+target_link_libraries(client PUBLIC core Qt5::Core Qt5::WebSockets Qt5::Widgets replayparser)
+target_include_directories(client PUBLIC include)
+
 if(WIN32)
     target_link_libraries(client PRIVATE Version)
 endif(WIN32)
