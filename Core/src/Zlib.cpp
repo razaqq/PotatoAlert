@@ -4,10 +4,7 @@
 
 #include "Core/Zlib.hpp"
 
-extern "C"
-{
 #include "zlib.h"
-}
 
 #include <span>
 #include <vector>
