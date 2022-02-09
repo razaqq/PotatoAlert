@@ -1,12 +1,12 @@
 ﻿// Copyright 2020 <github.com/razaqq>
 
+#include "Client/Config.hpp"
 #include "Client/Game.hpp"
 #include "Client/ReplayAnalyzer.hpp"
 #include "Client/MatchHistory.hpp"
 #include "Client/PotatoClient.hpp"
 #include "Client/StatsParser.hpp"
 
-#include "Core/Config.hpp"
 #include "Core/Defer.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
@@ -202,7 +202,7 @@ void PotatoClient::OnDirectoryChanged(const std::string& path)
 	j["region"] = m_dirStatus.region;
 
 	// set stats mode from config
-	switch (PotatoConfig().Get<StatsMode>("stats_mode"))
+	switch (PotatoConfig().Get<ConfigKey::StatsMode>())
 	{
 		case StatsMode::Current:
 			if (j.contains("matchGroup"))
@@ -252,7 +252,7 @@ void PotatoClient::OnResponse(const QString& message)
 		emit StatusReady(Status::Error, "JSON Parse Error");
 	}
 
-	if (PotatoConfig().Get<bool>("match_history"))
+	if (PotatoConfig().Get<ConfigKey::MatchHistory>())
 	{
 		if (MatchHistory::Instance().SaveMatch(res.match.info, m_tempArenaInfo, m_lastArenaInfoHash, raw, res.csv.value()))
 		{
@@ -273,15 +273,15 @@ DirectoryStatus PotatoClient::CheckPath()
 
 	m_watcher.ClearDirectories();
 
-	const std::string gamePath = PotatoConfig().Get<std::string>("game_folder");
+	const std::string gamePath = PotatoConfig().Get<ConfigKey::GameDirectory>();
 
-	if (PotatoConfig().Get<bool>("override_replays_folder"))
+	if (PotatoConfig().Get<ConfigKey::OverrideReplaysDirectory>())
 	{
-		const std::string replaysPath = PotatoConfig().Get<std::string>("replays_folder");
+		const std::string replaysPath = PotatoConfig().Get<ConfigKey::ReplaysDirectory>();
 		m_watcher.WatchDirectory(replaysPath);
 		dirStatus.statusText = "";
 
-		m_replayAnalyzer.AnalyzeDirectory(gamePath);  // TODO: make this game path
+		m_replayAnalyzer.AnalyzeDirectory(gamePath);
 		TriggerRun();
 
 		return dirStatus;

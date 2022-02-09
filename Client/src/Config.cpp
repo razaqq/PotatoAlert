@@ -1,9 +1,12 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "Core/Config.hpp"
+#include "Client/Game.hpp"
+
 #include "Core/File.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
+
+#include "Client/Config.hpp"
 
 #include <QApplication>
 #include <QDir>
@@ -18,27 +21,43 @@
 namespace fs = std::filesystem;
 
 using PotatoAlert::Core::Config;
-
+using PotatoAlert::Core::ConfigKey;
+using PotatoAlert::Client::Game::GetGamePath;
 
 static json g_defaultConfig;
+static std::unordered_map<ConfigKey, std::string> g_keyNames =
+{
+	{ ConfigKey::StatsMode,                "stats_mode" },
+	{ ConfigKey::UpdateNotifications,      "update_notifications" },
+	{ ConfigKey::MinimizeTray,             "minimize_tray" },
+	{ ConfigKey::MatchHistory,             "match_history" },
+	{ ConfigKey::WindowHeight,             "window_height" },
+	{ ConfigKey::WindowWidth,              "window_width" },
+	{ ConfigKey::WindowX,                  "window_x" },
+	{ ConfigKey::WindowY,                  "window_y" },
+	{ ConfigKey::GameDirectory,            "game_directory" },
+	{ ConfigKey::OverrideReplaysDirectory, "override_replays_directory" },
+	{ ConfigKey::ReplaysDirectory,         "replays_directory" },
+	{ ConfigKey::Language,                 "language" },
+	{ ConfigKey::MenuBarLeft,              "menubar_left" }
+};
 
 Config::Config(std::string_view fileName)
 {
 	g_defaultConfig = {
-		{ "stats_mode", StatsMode::Pvp },
-		{ "update_notifications", true },
-		{ "minimize_tray", true },
-		{ "api_key", "1234567890" },
-		{ "match_history", true },
-		{ "window_height", 450 },
-		{ "window_width", 1500 },
-		{ "window_x", 0 },
-		{ "window_y", 0 },
-		{ "game_folder", "" },
-		{ "override_replays_folder", false },
-		{ "replays_folder", "" },
-		{ "language", 0 },
-		{ "menubar_leftside", true }
+		{ g_keyNames[ConfigKey::StatsMode],                StatsMode::Pvp },
+		{ g_keyNames[ConfigKey::UpdateNotifications],      true },
+		{ g_keyNames[ConfigKey::MinimizeTray],             true },
+		{ g_keyNames[ConfigKey::MatchHistory],             true },
+		{ g_keyNames[ConfigKey::WindowHeight],             450 },
+		{ g_keyNames[ConfigKey::WindowWidth],              1500 },
+		{ g_keyNames[ConfigKey::WindowX],                  0 },
+		{ g_keyNames[ConfigKey::WindowY],                  0 },
+		{ g_keyNames[ConfigKey::GameDirectory],            GetGamePath().value_or("") },
+		{ g_keyNames[ConfigKey::OverrideReplaysDirectory], false },
+		{ g_keyNames[ConfigKey::ReplaysDirectory],         "" },
+		{ g_keyNames[ConfigKey::Language],                 0 },
+		{ g_keyNames[ConfigKey::MenuBarLeft],              true }
 	};
 
 	auto path = GetPath(fileName);
@@ -58,6 +77,7 @@ Config::Config(std::string_view fileName)
 		}
 	}
 	Load();
+	ApplyUpdates();
 	AddMissingKeys();
 }
 
@@ -90,7 +110,7 @@ void Config::Load()
 		QApplication::exit(1);
 	}
 
-	sax_no_exception sax(j);
+	sax_no_exception sax(m_json);
 	if (!json::sax_parse(str, &sax))
 	{
 		LOG_ERROR("Failed to Parse config as JSON.");
@@ -116,7 +136,7 @@ bool Config::Save() const
 		return false;
 	}
 
-	if (!m_file.WriteString(j.dump(4)))
+	if (!m_file.WriteString(m_json.dump(4)))
 	{
 		LOG_ERROR("Failed to write config file: {}", File::LastError());
 		return false;
@@ -163,7 +183,7 @@ bool Config::CreateDefault()
 		LOG_ERROR("Failed to open config file: {}", File::LastError());
 		return false;
 	}
-	j = g_defaultConfig;
+	m_json = g_defaultConfig;
 
 	bool saved = Save();
 	m_file.Close();
@@ -220,10 +240,10 @@ void Config::AddMissingKeys()
 {
 	for (auto it = g_defaultConfig.begin(); it != g_defaultConfig.end(); ++it)
 	{
-		if (!j.contains(it.key()))
+		if (!m_json.contains(it.key()))
 		{
 			LOG_INFO("Adding missing key '{}' to config.", it.key());
-			j[it.key()] = it.value();
+			m_json[it.key()] = it.value();
 		}
 	}
 }
@@ -253,6 +273,36 @@ std::optional<fs::path> Config::GetPath(std::string_view fileName)
 	}
 
 	return (configPath / fileName);
+}
+
+void Config::ApplyUpdates()
+{
+	auto removeKey = [&](const std::string_view name)
+	{
+		if (auto it = m_json.find(name); it != m_json.end())
+			m_json.erase(it);
+	};
+	auto renameKey = [&](const std::string& from, const std::string& to)
+	{
+		json::iterator it = m_json.find(from);
+		if (it != m_json.end())
+		{
+			std::swap(m_json[to], it.value());
+			m_json.erase(it);
+		}
+	};
+	renameKey("replays_folder", g_keyNames[ConfigKey::ReplaysDirectory]);
+	renameKey("override_replays_folder", g_keyNames[ConfigKey::OverrideReplaysDirectory]);
+	renameKey("game_folder", g_keyNames[ConfigKey::GameDirectory]);
+	renameKey("menubar_leftside", g_keyNames[ConfigKey::MenuBarLeft]);
+	removeKey("api_key");
+	removeKey("use_ga");
+	removeKey("save_csv");
+}
+
+std::string& Config::GetKeyName(ConfigKey key)
+{
+	return g_keyNames[key];
 }
 
 Config& PotatoAlert::Core::PotatoConfig()

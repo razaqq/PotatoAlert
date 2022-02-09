@@ -1,8 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Client/MatchHistory.hpp"
-
-#include "Core/StringTable.hpp"
+#include "Client/StringTable.hpp"
 
 #include "Gui/MatchHistory.hpp"
 

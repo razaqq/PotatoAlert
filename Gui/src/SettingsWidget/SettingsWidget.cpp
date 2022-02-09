@@ -1,8 +1,9 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Client/Config.hpp"
 #include "Client/PotatoClient.hpp"
-#include "Core/Config.hpp"
-#include "Core/StringTable.hpp"
+#include "Client/StringTable.hpp"
+
 
 #include "Gui/SettingsWidget/FolderStatus.hpp"
 #include "Gui/SettingsWidget/HorizontalLine.hpp"
@@ -215,17 +216,17 @@ void SettingsWidget::Init()
 
 void SettingsWidget::Load()
 {
-	m_updates->setChecked(PotatoConfig().Get<bool>("update_notifications"));
-	m_minimizeTray->setChecked(PotatoConfig().Get<bool>("minimize_tray"));
+	m_updates->setChecked(PotatoConfig().Get<ConfigKey::UpdateNotifications>());
+	m_minimizeTray->setChecked(PotatoConfig().Get<ConfigKey::MinimizeTray>());
 	m_gamePathEdit->setText(QString::fromStdString(
-			PotatoConfig().Get<std::string>("game_folder")));
-	m_statsMode->m_btnGroup->button(PotatoConfig().Get<int>("stats_mode"))->setChecked(true);
-	m_language->m_btnGroup->button(PotatoConfig().Get<int>("language"))->setChecked(true);
-	m_matchHistory->setChecked(PotatoConfig().Get<bool>("match_history"));
+			PotatoConfig().Get<ConfigKey::GameDirectory>()));
+	m_statsMode->m_btnGroup->button(static_cast<int>(PotatoConfig().Get<ConfigKey::StatsMode>()))->setChecked(true);
+	m_language->m_btnGroup->button(PotatoConfig().Get<ConfigKey::Language>())->setChecked(true);
+	m_matchHistory->setChecked(PotatoConfig().Get<ConfigKey::MatchHistory>());
 
 	m_replaysFolderEdit->setText(QString::fromStdString(
-			PotatoConfig().Get<std::string>("replays_folder")));
-	bool manualReplays = PotatoConfig().Get<bool>("override_replays_folder");
+			PotatoConfig().Get<ConfigKey::ReplaysDirectory>()));
+	bool manualReplays = PotatoConfig().Get<ConfigKey::OverrideReplaysDirectory>();
 	m_overrideReplaysFolder->setChecked(manualReplays);
 	// m_toggleReplaysFolderOverride(manualReplays);
 }
@@ -247,13 +248,13 @@ void SettingsWidget::ConnectSignals()
 		QApplication::sendEvent(window(), &event);
 		emit Done();
 	});
-	connect(m_updates, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<bool>("update_notifications", checked); });
-	connect(m_minimizeTray, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<bool>("minimize_tray", checked); });
-	connect(m_statsMode->m_btnGroup, &QButtonGroup::idClicked, [](int id) { PotatoConfig().Set<int>("stats_mode", id); });
-	connect(m_matchHistory, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<bool>("match_history", checked); });
+	connect(m_updates, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<ConfigKey::UpdateNotifications>(checked); });
+	connect(m_minimizeTray, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<ConfigKey::MinimizeTray>(checked); });
+	connect(m_statsMode->m_btnGroup, &QButtonGroup::idClicked, [](int id) { PotatoConfig().Set<ConfigKey::StatsMode>(static_cast<StatsMode>(id)); });
+	connect(m_matchHistory, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<ConfigKey::MatchHistory>(checked); });
 	connect(m_language->m_btnGroup, &QButtonGroup::idClicked, [this](int id)
 	{
-		PotatoConfig().Set<int>("language", id);
+		PotatoConfig().Set<ConfigKey::Language>(id);
 		QEvent event(QEvent::LanguageChange);
 		QApplication::sendEvent(window(), &event);
 	});
@@ -263,7 +264,7 @@ void SettingsWidget::ConnectSignals()
 		if (dir != "")
 		{
 			m_gamePathEdit->setText(dir);
-			PotatoConfig().Set("game_folder", dir.toStdString());
+			PotatoConfig().Set<ConfigKey::GameDirectory>(dir.toStdString());
 			CheckPath();
 		}
 	});
@@ -273,12 +274,12 @@ void SettingsWidget::ConnectSignals()
 		if (dir != "")
 		{
 			m_replaysFolderEdit->setText(dir);
-			PotatoConfig().Set("replays_folder", dir.toStdString());
+			PotatoConfig().Set<ConfigKey::ReplaysDirectory>(dir.toStdString());
 		}
 	});
 	connect(m_overrideReplaysFolder, &SettingsSwitch::clicked, [this](bool checked)
 	{
-		PotatoConfig().Set<bool>("override_replays_folder", checked);
+		PotatoConfig().Set<ConfigKey::OverrideReplaysDirectory>(checked);
 	});
 }
 

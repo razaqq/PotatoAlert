@@ -1,7 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Client/Game.hpp"
-#include "Core/StringTable.hpp"
+#include "Client/StringTable.hpp"
 
 #include "Gui/SettingsWidget/FolderStatus.hpp"
 

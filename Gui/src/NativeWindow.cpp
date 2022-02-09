@@ -1,6 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "Core/Config.hpp"
+#include "Client/Config.hpp"
 
 #include "FramelessHelper/FramelessWindowsManager.hpp"
 
@@ -27,16 +27,16 @@ NativeWindow::NativeWindow(QMainWindow* mainWindow) : QWidget(), m_mainWindow(ma
 
 void NativeWindow::closeEvent(QCloseEvent* event)
 {
-	if (PotatoConfig().Get<bool>("minimize_tray"))
+	if (PotatoConfig().Get<Core::ConfigKey::MinimizeTray>())
 	{
 		hide();
 	}
 	else
 	{
-		PotatoConfig().Set<int>("window_height", this->height());
-		PotatoConfig().Set<int>("window_width", this->width());
-		PotatoConfig().Set<int>("window_x", this->windowHandle()->position().x());
-		PotatoConfig().Set<int>("window_y", this->windowHandle()->position().y());
+		PotatoConfig().Set<Core::ConfigKey::WindowHeight>(this->height());
+		PotatoConfig().Set<Core::ConfigKey::WindowWidth>(this->width());
+		PotatoConfig().Set<Core::ConfigKey::WindowX>(this->windowHandle()->position().x());
+		PotatoConfig().Set<Core::ConfigKey::WindowY>(this->windowHandle()->position().y());
 		QWidget::closeEvent(event);
 		QApplication::exit(0);
 	}
@@ -95,6 +95,6 @@ void NativeWindow::Init()
 
 	this->setLayout(layout);
 
-	this->resize(PotatoConfig().Get<int>("window_width"), PotatoConfig().Get<int>("window_height"));
-	this->windowHandle()->setPosition(PotatoConfig().Get<int>("window_x"), PotatoConfig().Get<int>("window_y"));
+	this->resize(PotatoConfig().Get<Core::ConfigKey::WindowWidth>(), PotatoConfig().Get<Core::ConfigKey::WindowHeight>());
+	this->windowHandle()->setPosition(PotatoConfig().Get<Core::ConfigKey::WindowX>(), PotatoConfig().Get<Core::ConfigKey::WindowY>());
 }

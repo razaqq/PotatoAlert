@@ -10,14 +10,12 @@ target_sources(
         PRIVATE
 
         src/Blowfish.cpp
-        src/Config.cpp
         src/DirectoryWatcher.cpp
         src/Log.cpp
         src/Screenshot.cpp
         src/Sha1.cpp
         src/Sha256.cpp
         src/String.cpp
-        src/StringTable.cpp
         src/Sqlite.cpp
         src/ThreadPool.cpp
         src/Version.cpp
@@ -30,7 +28,6 @@ target_sources(
         core
         PRIVATE
 
-        include/Core/Config.hpp
         include/Core/DirectoryWatcher.hpp
 )
 
@@ -62,7 +59,7 @@ find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 set_target_properties(core PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 target_link_libraries(core PRIVATE sqlite3 OpenSSL Win32 zip ZLIB::ZLIB)
 target_link_libraries(core PUBLIC nlohmann_json Qt5::Core Qt5::Widgets spdlog tinyxml2)
-target_include_directories(core PUBLIC ${PROJECT_SOURCE_DIR}/Resources include)
+target_include_directories(core PUBLIC include)
 
 if(WIN32)
     target_link_libraries(core PRIVATE Version Ws2_32)

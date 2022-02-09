@@ -1,12 +1,12 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Client/Config.hpp"
 #include "Client/MatchHistory.hpp"
 #include "Client/PotatoClient.hpp"
+#include "Client/StringTable.hpp"
 
-#include "Core/Config.hpp"
 #include "Core/Log.hpp"
 #include "Core/Screenshot.hpp"
-#include "Core/StringTable.hpp"
 
 #include "Gui/FramelessDialog.hpp"
 #include "Gui/MainWindow.hpp"
@@ -52,12 +52,12 @@ void MainWindow::Init()
 	this->m_centralW->setLayout(m_centralLayout);
 
 	// menubar dock widget
-	const bool leftSide = PotatoConfig().Get<bool>("menubar_leftside");
+	const bool leftSide = PotatoConfig().Get<ConfigKey::MenuBarLeft>();
 	const auto side = leftSide ? Qt::DockWidgetArea::LeftDockWidgetArea : Qt::DockWidgetArea::RightDockWidgetArea;
 	this->addDockWidget(side, this->m_menuBar);
 	connect(this->m_menuBar, &VerticalMenuBar::dockLocationChanged, [](Qt::DockWidgetArea area)
 	{
-		PotatoConfig().Set<bool>("menubar_leftside", area == Qt::DockWidgetArea::LeftDockWidgetArea);
+		PotatoConfig().Set<ConfigKey::MenuBarLeft>(area == Qt::DockWidgetArea::LeftDockWidgetArea);
 	});
 
 	// set other tabs invisible

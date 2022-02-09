@@ -1,11 +1,15 @@
 // Copyright 2021 <github.com/razaqq>
 
-#include "Core/Config.hpp"
 #include "Core/Mutex.hpp"
+
+#include "Client/Config.hpp"
+
 #include "Gui/MainWindow.hpp"
 #include "Gui/NativeWindow.hpp"
 #include "Gui/Palette.hpp"
+
 #include "Updater/Updater.hpp"
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreserved-id-macro"
 #include "VersionInfo.h"
@@ -92,7 +96,7 @@ static int RunMain(int argc, char* argv[])
 	QApplication::sendEvent(mainWindow, &event);
 
 	// check if there is a new version available
-	if (PotatoConfig().Get<bool>("update_notifications"))
+	if (PotatoConfig().Get<PotatoAlert::Core::ConfigKey::UpdateNotifications>())
 		if (Updater::UpdateAvailable())
 			if (mainWindow->ConfirmUpdate())
 				if (Updater::StartUpdater())

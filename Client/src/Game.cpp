@@ -1,8 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Client/Config.hpp"
 #include "Client/Game.hpp"
 
-#include "Core/Config.hpp"
 #include "Core/File.hpp"
 #include "Core/Log.hpp"
 #include "Core/String.hpp"

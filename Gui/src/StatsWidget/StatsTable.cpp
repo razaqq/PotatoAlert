@@ -1,6 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "Core/StringTable.hpp"
+#include "Client/StringTable.hpp"
 
 #include "Gui/StatsWidget/StatsTable.hpp"
 

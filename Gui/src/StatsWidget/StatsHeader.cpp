@@ -1,8 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Client/Config.hpp"
 #include "Client/PotatoClient.hpp"
-#include "Core/Config.hpp"
-#include "Core/StringTable.hpp"
+#include "Client/StringTable.hpp"
 
 #include "Gui/StatsWidget/StatsHeader.hpp"
 

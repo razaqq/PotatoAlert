@@ -1,6 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
-#include "Core/StringTable.hpp"
+#include "Client/StringTable.hpp"
 
 #include "Gui/FramelessDialog.hpp"
 #include "Gui/Updater.hpp"
