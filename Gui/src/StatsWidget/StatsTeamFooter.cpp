@@ -1,7 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Client/StatsParser.hpp"
-#include "Core/StringTable.hpp"
+#include "Client/StringTable.hpp"
 
 #include "Gui/StatsWidget/StatsTeamFooter.hpp"
 
