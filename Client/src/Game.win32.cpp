@@ -10,19 +10,20 @@
 
 namespace fs = std::filesystem;
 
-std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
+std::optional<std::string> PotatoAlert::Client::Game::GetGamePath()
 {
 	HKEY key;
-	if (RegOpenKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\WOWS.WW.PRODUCTION", 0, KEY_READ, &key) == ERROR_SUCCESS)
+	if (RegOpenKeyExA(HKEY_CURRENT_USER, R"(SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\WOWS.WW.PRODUCTION)", 0, KEY_READ, &key) == ERROR_SUCCESS)
 	{
 		unsigned char buffer[MAX_PATH];
 		DWORD bufferSize = sizeof(buffer);
-		if (RegQueryValueExA(key, "InstallLocation", NULL, NULL, buffer, &bufferSize) == ERROR_SUCCESS)
+		if (RegQueryValueExA(key, "InstallLocation", nullptr, nullptr, buffer, &bufferSize) == ERROR_SUCCESS)
 		{
-			fs::path gamePath(reinterpret_cast<char*>(buffer));
-			if (!gamePath.empty() && fs::exists(gamePath))
+			const char* gamePathStr = reinterpret_cast<char*>(buffer);
+			const fs::path gamePath(gamePathStr);
+			if (fs::exists(gamePath) && !gamePath.empty())
 			{
-				return gamePath;
+				return gamePathStr;
 			}
 		}
 	}

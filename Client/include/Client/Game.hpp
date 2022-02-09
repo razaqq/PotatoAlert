@@ -3,13 +3,10 @@
 
 #include "Core/Version.hpp"
 
-#include <filesystem>
 #include <string>
 #include <optional>
 #include <vector>
 
-
-namespace fs = std::filesystem;
 
 namespace PotatoAlert::Client::Game {
 
@@ -34,6 +31,6 @@ bool GetResFolderPath(DirectoryStatus& status);
 bool ReadEngineConfig(DirectoryStatus& status, const char* resFolder);
 bool ReadPreferences(DirectoryStatus& status, const std::string& basePath);
 void SetReplaysFolder(DirectoryStatus& status);
-std::optional<fs::path> GetGamePath();
+std::optional<std::string> GetGamePath();
 
 }  // namespace PotatoAlert::Client::Game
