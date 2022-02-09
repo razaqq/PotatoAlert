@@ -164,9 +164,18 @@ bool File::RawWrite(Handle handle, std::span<const std::byte> data, bool resetFi
 	DWORD dwBytesWritten = 0;
 	if (WriteFile(UnwrapHandle<HANDLE>(handle), data.data(), data.size(), &dwBytesWritten, nullptr))
 	{
-		return dwBytesWritten == data.size();
+		if (dwBytesWritten != data.size())
+		{
+			return false;
+		}
 	}
-	return false;
+
+	if (!SetEndOfFile(UnwrapHandle<HANDLE>(handle)))
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool File::RawWriteString(Handle handle, std::string_view data, bool resetFilePointer)
@@ -184,9 +193,18 @@ bool File::RawWriteString(Handle handle, std::string_view data, bool resetFilePo
 	DWORD dwBytesWritten = 0;
 	if (WriteFile(UnwrapHandle<HANDLE>(handle), data.data(), data.length(), &dwBytesWritten, nullptr))
 	{
-		return dwBytesWritten == data.length();
+		if (dwBytesWritten != data.length())
+		{
+			return false;
+		}
 	}
-	return false;
+
+	if (!SetEndOfFile(UnwrapHandle<HANDLE>(handle)))
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool File::RawFlushBuffer(Handle handle)
