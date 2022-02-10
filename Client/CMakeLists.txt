@@ -9,11 +9,13 @@ target_sources(
         client
         PRIVATE
 
+        src/Config.cpp
         src/Game.cpp
         src/MatchHistory.cpp
         src/PotatoClient.cpp
         src/ReplayAnalyzer.cpp
         src/StatsParser.cpp
+        src/StringTable.cpp
 )
 
 if(WIN32)
