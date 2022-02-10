@@ -1,5 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/Defer.hpp"
 #include "Core/ThreadPool.hpp"
 
 #include <cassert>
@@ -87,6 +88,15 @@ void ThreadPool::StartWorker(size_t id, const std::unique_lock<std::mutex>& lock
 					continue;
 				}
 			}
+
+			auto defer = MakeDefer([this]()
+			{
+				if (std::atomic_fetch_sub_explicit(&m_inFlight, 1, std::memory_order_acq_rel) == 1)
+				{
+					std::unique_lock<std::mutex> guard(m_inFlightMutex);
+					m_inFlightCondition.notify_all();
+				}
+			});
 
 			if (notify)
 			{
