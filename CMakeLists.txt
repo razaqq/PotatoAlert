@@ -44,6 +44,5 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/ReplayParser)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Test)
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Updater)
-add_subdirectory(${PROJECT_SOURCE_DIR}/FramelessHelper)
 
 file(COPY ${PROJECT_SOURCE_DIR}/Resources/ReplayVersions DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

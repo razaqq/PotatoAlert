@@ -2,7 +2,7 @@
 
 #include "Client/Config.hpp"
 
-#include "FramelessHelper/FramelessWindowsManager.hpp"
+#include "framelesswindowsmanager.h"
 
 #include "Gui/NativeWindow.hpp"
 #include "Gui/TitleBar.hpp"
@@ -15,6 +15,8 @@
 #include <QWidget>
 #include <QWindow>
 
+
+FRAMELESSHELPER_USE_NAMESPACE
 
 using PotatoAlert::Core::PotatoConfig;
 using PotatoAlert::Gui::NativeWindow;
@@ -78,12 +80,10 @@ void NativeWindow::Init()
 
 	this->m_titleBar->setFixedHeight(23);
 
-	for (auto& o : this->m_titleBar->GetIgnores())
-		FramelessWindowsManager::addIgnoreObject(w, o);
-
 	FramelessWindowsManager::addWindow(w);
-	FramelessWindowsManager::setBorderWidth(w, m_borderWidth);
-	FramelessWindowsManager::setBorderHeight(w, m_borderWidth);
+	FramelessWindowsManager::setResizeBorderThickness(w, 4);
+	for (auto& o : this->m_titleBar->GetIgnores())
+		FramelessWindowsManager::setHitTestVisible(w, o, true);
 	FramelessWindowsManager::setTitleBarHeight(w, this->m_titleBar->height());
 
 	auto layout = new QVBoxLayout();

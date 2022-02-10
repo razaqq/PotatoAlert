@@ -20,12 +20,10 @@ public:
 	static void RequestFocus();
 
 private:
-	void Init();
 	QMainWindow* m_mainWindow;
-
-	static constexpr int m_borderWidth = 4;
-
 	TitleBar* m_titleBar = new TitleBar(this);
+
+	void Init();
 
 	void closeEvent(QCloseEvent* event) override;
 	bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;

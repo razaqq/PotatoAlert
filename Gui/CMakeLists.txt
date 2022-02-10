@@ -59,7 +59,6 @@ endif(WIN32)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 
-set_target_properties(gui PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
-target_link_libraries(gui PRIVATE framelessHelper Qt5::Widgets Win32)
+target_link_libraries(gui PRIVATE Dwmapi FramelessHelper Qt5::Widgets Win32)
 target_link_libraries(gui PUBLIC client core updater)
 target_include_directories(gui PUBLIC include ${CMAKE_BINARY_DIR})
