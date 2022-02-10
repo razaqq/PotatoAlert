@@ -1,4 +1,5 @@
 add_subdirectory(catch2)
+add_subdirectory(FramelessHelper)
 add_subdirectory(nlohmann_json)
 add_subdirectory(openssl)
 add_subdirectory(spdlog)
