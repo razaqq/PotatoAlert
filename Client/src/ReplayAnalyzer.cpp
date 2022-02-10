@@ -15,7 +15,9 @@ using PotatoAlert::Client::ReplayAnalyzer;
 
 void ReplayAnalyzer::OnFileChanged(const std::string& file)
 {
-	if (String::EndsWith(file, ".wowsreplay") && Core::File::Exists(file))
+	if (String::EndsWith(file, ".wowsreplay") && 
+		File::Exists(file) &&
+		fs::path(file).filename().string() != "temp.wowsreplay")
 	{
 		AnalyzeReplay(file);
 	}
