@@ -14,6 +14,7 @@ find_package(Qt5 COMPONENTS Core Network Widgets REQUIRED)
 add_library(updater src/Updater.cpp include/Updater/Updater.hpp)
 target_link_libraries(updater PRIVATE gui core Qt5::Network Qt5::Widgets Win32)
 target_include_directories(updater PUBLIC include)
+set_target_properties(updater PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 
 add_executable(PotatoUpdater src/PotatoUpdater.cpp ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
 
