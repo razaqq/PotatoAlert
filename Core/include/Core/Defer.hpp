@@ -1,6 +1,10 @@
 // Copyright 2022 <github.com/razaqq>
 #pragma once
 
+#include <functional>
+#include <type_traits>
+#include <utility>
+
 
 namespace PotatoAlert::Core {
 
