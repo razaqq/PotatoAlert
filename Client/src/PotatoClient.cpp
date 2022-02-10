@@ -55,10 +55,13 @@ static TempArenaInfoResult ReadArenaInfo(std::string_view filePath)
 	File file = File::Open(filePath, File::Flags::Open | File::Flags::Read);
 
 	if (!file)
+	{
+		LOG_ERROR("Failed to open arena info file: {}", File::LastError());
 		return { File::Exists(filePath), true, "" };
+	}
 
 	// close the file when the scope ends
-	auto defer = PotatoAlert::Core::MakeDefer([&file]() { if (file) file.Close(); });
+	auto defer = MakeDefer([&file]() { if (file) file.Close(); });
 
 	while (std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime) < 1000ms)
 	{
@@ -77,7 +80,7 @@ static TempArenaInfoResult ReadArenaInfo(std::string_view filePath)
 			{
 				return { true, false, arenaInfo };
 			}
-			LOG_ERROR("Failed to read arena info: {}", File::LastError());
+			LOG_ERROR("Failed to read arena info file: {}", File::LastError());
 			return { true, true, "" };
 		}
 		std::this_thread::sleep_for(100ms);
@@ -133,7 +136,7 @@ void PotatoClient::Init()
 
 	connect(&m_socket, &QWebSocket::textMessageReceived, this, &PotatoClient::OnResponse);
 
-	connect(&m_watcher, &Core::DirectoryWatcher::DirectoryChanged, this, &PotatoClient::OnDirectoryChanged);
+	connect(&m_watcher, &Core::DirectoryWatcher::FileChanged, this, &PotatoClient::OnFileChanged);
 	connect(&m_watcher, &Core::DirectoryWatcher::FileChanged, &m_replayAnalyzer, &ReplayAnalyzer::OnFileChanged);
 
 	connect(&m_replayAnalyzer, &ReplayAnalyzer::ReplaySummaryReady, this, &PotatoClient::MatchSummaryChanged);
@@ -148,19 +151,17 @@ void PotatoClient::TriggerRun()
 }
 
 // triggered whenever a file gets modified in a replays path
-void PotatoClient::OnDirectoryChanged(const std::string& path)
+void PotatoClient::OnFileChanged(const std::string& file)
 {
 	LOG_TRACE("Directory changed.");
 
-	const std::string filePath = std::format("{}\\tempArenaInfo.json", path);
-
-	if (!File::Exists(filePath))
+	if (fs::path(file).filename() != "tempArenaInfo.json" || !File::Exists(file))
 	{
 		return;
 	}
 
 	// read arena info from file
-	TempArenaInfoResult arenaInfo = ReadArenaInfo(filePath);
+	TempArenaInfoResult arenaInfo = ReadArenaInfo(file);
 	if (arenaInfo.error)
 	{
 		LOG_ERROR("Failed to read arena info from file.");

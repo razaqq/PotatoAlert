@@ -45,7 +45,7 @@ public:
 private:
 	PotatoClient() = default;
 	void OnResponse(const QString& message);
-	void OnDirectoryChanged(const std::string& path);
+	void OnFileChanged(const std::string& file);
 
 	QWebSocket m_socket;
 	Core::DirectoryWatcher m_watcher;
