@@ -286,7 +286,7 @@ bool File::RawExists(std::string_view file)
 	return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-bool File::RawMoveFilePointer(Handle handle, long offset, FilePointerMoveMethod method)
+bool File::RawMoveFilePointer(Handle handle, int64_t offset, FilePointerMoveMethod method)
 {
 	if (handle == Handle::Null)
 	{
@@ -310,7 +310,7 @@ bool File::RawMoveFilePointer(Handle handle, long offset, FilePointerMoveMethod 
 	return SetFilePointer(UnwrapHandle<HANDLE>(handle), offset, nullptr, moveMethod) != INVALID_SET_FILE_POINTER;
 }
 
-unsigned long File::RawCurrentFilePointer(Handle handle)
+int64_t File::RawCurrentFilePointer(Handle handle)
 {
 	if (handle == Handle::Null)
 	{

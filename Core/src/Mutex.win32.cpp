@@ -64,6 +64,12 @@ Mutex::Handle Mutex::RawOpen(std::string_view name)
 	return CreateHandle<Handle>(hMutex);
 }
 
+bool Mutex::RawRemove(std::string_view name)
+{
+	// there is no way to do this in windows
+	return true;
+}
+
 bool Mutex::RawTryLock(Handle handle)
 {
 	return WaitForSingleObject(UnwrapHandle<HANDLE>(handle), 0) == WAIT_OBJECT_0;

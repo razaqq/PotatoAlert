@@ -6,16 +6,16 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_executable(PotatoAlert ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
+set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
 
 if(WIN32)
     target_sources(PotatoAlert PRIVATE PotatoAlert.win32.cpp)
+    target_link_libraries(PotatoAlert PRIVATE updater Win32)
 endif()
 
 if(UNIX)
     target_sources(PotatoAlert PRIVATE PotatoAlert.linux.cpp)
 endif()
-
-set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     set_property(TARGET PotatoAlert PROPERTY WIN32_EXECUTABLE true)
@@ -39,10 +39,6 @@ else()
 endif()
 
 target_link_libraries(PotatoAlert PRIVATE core gui Qt5::Widgets)
-
-if(WIN32)
-    target_link_libraries(PotatoAlert PRIVATE Win32)
-endif()
 
 set_target_properties(PotatoAlert
     PROPERTIES
