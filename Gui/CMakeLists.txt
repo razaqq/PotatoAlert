@@ -15,7 +15,6 @@ target_sources(
         src/NativeWindow.cpp
         src/Palette.cpp
         src/TitleBar.cpp
-        src/Updater.cpp
 
         src/MenuBar/MenuEntryButton.cpp
         src/MenuBar/VerticalMenuBar.cpp
@@ -53,12 +52,27 @@ if(WIN32)
 
             src/FramelessDialog.win32.cpp
             src/NativeWindow.win32.cpp
+            src/Updater.cpp
     )
 endif(WIN32)
 
+if(UNIX)
+    target_sources(
+            gui
+            PRIVATE
+
+            src/FramelessDialog.linux.cpp
+            src/NativeWindow.linux.cpp
+    )
+endif()
+
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
+target_link_libraries(gui PRIVATE FramelessHelper Qt5::Widgets)
 
-target_link_libraries(gui PRIVATE Dwmapi FramelessHelper Qt5::Widgets Win32)
-target_link_libraries(gui PUBLIC client core updater)
+if(WIN32)
+    target_link_libraries(gui PRIVATE Dwmapi Win32 updater)
+endif()
+
+target_link_libraries(gui PUBLIC client core)
 target_include_directories(gui PUBLIC include ${CMAKE_BINARY_DIR})

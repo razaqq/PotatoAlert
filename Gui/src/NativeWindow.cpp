@@ -16,6 +16,8 @@
 #include <QWindow>
 
 
+#include <QDebug>
+
 FRAMELESSHELPER_USE_NAMESPACE
 
 using PotatoAlert::Core::PotatoConfig;
@@ -23,8 +25,25 @@ using PotatoAlert::Gui::NativeWindow;
 
 NativeWindow::NativeWindow(QMainWindow* mainWindow) : QWidget(), m_mainWindow(mainWindow)
 {
+	createWinId();
 	this->m_mainWindow->setParent(this);
 	this->Init();
+}
+
+void NativeWindow::showEvent(QShowEvent* event)
+{
+	static bool initialized = false;
+	if (!initialized)
+	{
+		QWindow* w = windowHandle();
+		FramelessWindowsManager::addWindow(w);
+		FramelessWindowsManager::setResizeBorderThickness(w, 4);
+		for (auto& o : this->m_titleBar->GetIgnores())
+			FramelessWindowsManager::setHitTestVisible(w, o, true);
+		FramelessWindowsManager::setTitleBarHeight(w, this->m_titleBar->height());
+		initialized = true;
+	}
+	QWidget::showEvent(event);
 }
 
 void NativeWindow::closeEvent(QCloseEvent* event)
@@ -53,8 +72,10 @@ void NativeWindow::Init()
 
 		connect(trayIcon, &QSystemTrayIcon::activated, [this](QSystemTrayIcon::ActivationReason reason)
 		{
-			if (reason == QSystemTrayIcon::DoubleClick)
+			if (reason == QSystemTrayIcon::DoubleClick  || reason == QSystemTrayIcon::Trigger)
+			{
 				this->show();
+			}
 		});
 
 		auto trayMenu = new QMenu(this);
@@ -74,17 +95,7 @@ void NativeWindow::Init()
 		trayIcon->show();
 	}
 
-
-	this->createWinId();
-	QWindow* w = this->windowHandle();
-
 	this->m_titleBar->setFixedHeight(23);
-
-	FramelessWindowsManager::addWindow(w);
-	FramelessWindowsManager::setResizeBorderThickness(w, 4);
-	for (auto& o : this->m_titleBar->GetIgnores())
-		FramelessWindowsManager::setHitTestVisible(w, o, true);
-	FramelessWindowsManager::setTitleBarHeight(w, this->m_titleBar->height());
 
 	auto layout = new QVBoxLayout();
 	layout->setContentsMargins(0, 0, 0, 0);

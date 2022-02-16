@@ -8,7 +8,7 @@
 #include <spdlog/fmt/ostr.h>
 #pragma warning(pop)
 
-#include <QString>
+#include <QDir>
 
 #include <memory>
 
@@ -19,7 +19,7 @@ class Log
 {
 public:
 	static void Init();
-	static QString GetDir();
+	static QDir GetDir();
 	static std::shared_ptr<spdlog::logger>& GetLogger() { return s_logger; }
 
 private:

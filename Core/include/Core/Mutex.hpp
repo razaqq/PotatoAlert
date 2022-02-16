@@ -74,14 +74,24 @@ public:
 		return m_handle;
 	}
 
-	bool Wait(uint32_t timeout = 0xFFFFFFFF) const
+	bool Wait() const
 	{
-		return RawWait(m_handle, timeout);
+		return RawWait(m_handle);
 	}
 
-	bool Close() const
+	bool Wait(uint32_t timeout) const
 	{
-		return RawClose(m_handle);
+		return RawWaitTimed(m_handle, timeout);
+	}
+
+	bool Close()
+	{
+		return RawClose(std::exchange(m_handle, Handle::Null));
+	}
+
+	static bool Remove(std::string_view name)
+	{
+		return RawRemove(name);
 	}
 
 	bool TryLock() const
@@ -104,7 +114,9 @@ private:
 
 	static Handle RawCreate(std::string_view name, bool initiallyOwned);
 	static Handle RawOpen(std::string_view name);
-	static bool RawWait(Handle handle, uint32_t timeout);
+	static bool RawRemove(std::string_view name);
+	static bool RawWait(Handle handle);
+	static bool RawWaitTimed(Handle handle, uint32_t timeout);
 	static bool RawClose(Handle handle);
 	static bool RawTryLock(Handle handle);
 	static bool RawUnlock(Handle handle);

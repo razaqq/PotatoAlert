@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.17)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # enable CTest testing
@@ -24,18 +21,13 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     target_compile_options(PotatoTest PRIVATE $<$<CONFIG:DEBUG>:/Wall /Od /Ob0>)  # TODO: completely untested
     target_compile_options(PotatoTest PRIVATE $<$<CONFIG:RELEASE>:/O2 /Ob2>)
-    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
 set_target_properties(PotatoTest PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
-target_link_libraries(PotatoTest PRIVATE core client replayparser Catch2::Test Win32)
-target_include_directories(
-        PotatoTest
-        PRIVATE
-        ${PROJECT_SOURCE_DIR}
-)
+target_link_libraries(PotatoTest PRIVATE core client replayparser Catch2::Test)
 set_target_properties(PotatoTest
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin-test"
@@ -57,4 +49,6 @@ add_custom_command(TARGET PotatoTest POST_BUILD
 
 include(packaging)
 replayversions(PotatoTest)
-windeployqt(PotatoTest)
+if(WIN32)
+    windeployqt(PotatoTest)
+endif()

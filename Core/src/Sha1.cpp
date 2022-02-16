@@ -9,7 +9,7 @@
 using PotatoAlert::Core::Sha1;
 
 // value, steps
-constexpr unsigned int LeftRotate(unsigned int x, std::size_t n)
+constexpr unsigned int LeftRotate(unsigned int x, size_t n)
 {
 	return (x << n) ^ (x >> (32 - n));
 }

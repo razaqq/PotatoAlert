@@ -5,9 +5,9 @@
 #include "Core/File.hpp"
 #include "Core/String.hpp"
 
-#include <qthread.h>
+#include <algorithm>
+#include <optional>
 #include <string>
-#include <vector>
 
 
 using namespace PotatoAlert::Core;
@@ -44,7 +44,7 @@ void ReplayAnalyzer::AnalyzeReplay(std::string_view path)
 void ReplayAnalyzer::AnalyzeDirectory(std::string_view directory)
 {
 	auto entries = MatchHistory::Instance().GetNonAnalyzedMatches();
-	std::ranges::sort(entries,
+	std::sort(entries.begin(), entries.end(),
 		[](const MatchHistory::NonAnalyzedMatch& left, const MatchHistory::NonAnalyzedMatch& right)
 		{
 			return left.ReplayName < right.ReplayName;
@@ -55,7 +55,7 @@ void ReplayAnalyzer::AnalyzeDirectory(std::string_view directory)
 	{
 		if (entry.is_regular_file() && entry.path().extension() == ".wowsreplay")
 		{
-			auto found = std::ranges::find_if(entries,
+			auto found = std::find_if(entries.begin(), entries.end(),
 				[&](const MatchHistory::NonAnalyzedMatch& match)
 				{
 					std::string fileName = String::ToLower(entry.path().filename().string());

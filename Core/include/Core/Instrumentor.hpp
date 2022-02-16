@@ -6,8 +6,10 @@
 #include "Singleton.hpp"
 #include "String.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <numeric>
+#include <sstream>
 #include <string>
 #include <thread>
 
@@ -54,7 +56,7 @@ private:
 		{
 			MicrosRep total = std::accumulate(timings.begin(), timings.end(), MicrosRep{ 0 });
 			MicrosRep avg = total / static_cast<MicrosRep>(timings.size());
-			table.AddRow(name, avg, std::ranges::min(timings), std::ranges::max(timings), total, timings.size());
+			table.AddRow(name, avg, *std::min(timings.begin(), timings.end()), *std::max(timings.begin(), timings.end()), total, timings.size());
 		}
 
 		table.SortByColumn<1>(SortOrder::Descending);
@@ -77,7 +79,7 @@ public:
 	Timer& operator=(Timer&) = delete;
 	Timer& operator=(Timer&&) = delete;
 
-	MicrosRep Elapsed() const
+	[[nodiscard]] MicrosRep Elapsed() const
 	{
 		if (m_running)
 		{

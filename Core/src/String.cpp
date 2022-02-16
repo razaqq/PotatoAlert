@@ -66,7 +66,6 @@ std::string s::ToLower(std::string_view str)
 
 bool s::ParseBool(std::string_view str, bool& value)
 {
-	bool i;
 	const std::string in = ToLower(Trim(str));
 	if (in == "true" || in == "1")
 	{

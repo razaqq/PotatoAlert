@@ -6,7 +6,7 @@
 #include "ReplayParser/ReplayParser.hpp"
 #include "StatsParser.hpp"
 
-#include <QString>
+#include <QDir>
 
 #include <optional>
 #include <string>
@@ -40,7 +40,7 @@ public:
 		ReplaySummary ReplaySummary;
 	};
 
-	static QString GetDir();
+	static QDir GetDir();
 
 	bool SaveMatch(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view hash, std::string_view json, std::string_view csv) const;
 	[[nodiscard]] std::optional<StatsParser::Match> GetMatchJson(std::string_view hash) const;

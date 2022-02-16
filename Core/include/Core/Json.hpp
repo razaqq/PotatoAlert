@@ -10,8 +10,8 @@
 #define JSON_CATCH_USER(exception) if (false)
 #define JSON_THROW_USER(exception)                                                                       \
 	{                                                                                                    \
-		LOG_ERROR("Error in {}:{} (function {}) - {} (ID: {})", __FILE__, __LINE__, __PRETTY_FUNCTION__, \
-				  (exception).what(), (exception).id);                                                   \
+		LOG_ERROR("Error in {}:{} (function {}) - {}", __FILE__, __LINE__, __PRETTY_FUNCTION__,          \
+				  (exception).what());                                                                   \
 		std::abort();                                                                                    \
 	}
 #define JSON_DIAGNOSTICS 1
@@ -30,55 +30,3 @@ public:
 		return false;
 	}
 };
-
-namespace PotatoAlert::Core {
-
-class Json
-{
-public:
-	explicit Json(json j) : m_json(std::move(j)) {}
-	static Json Parse(const std::string& raw);
-
-	Json(Json&& src) noexcept
-	{
-		m_json = std::exchange(src.m_json, nullptr);
-	}
-
-	Json(const Json&) = delete;
-
-	Json& operator=(Json&& src) noexcept
-	{
-		m_json = std::exchange(src.m_json, nullptr);
-		return *this;
-	}
-
-	Json& operator=(const Json&) = delete;
-
-	~Json()
-	{
-		m_json = nullptr;
-	}
-
-	[[nodiscard]] bool HasError() const { return m_hasError; }
-
-	explicit operator bool() const
-	{
-		return m_json != nullptr;
-	}
-
-	bool operator==(decltype(nullptr)) const
-	{
-		return m_json == nullptr;
-	}
-
-	bool operator!=(decltype(nullptr)) const
-	{
-		return m_json != nullptr;
-	}
-
-private:
-	json m_json;
-	bool m_hasError = false;
-};
-
-}  // namespace PotatoAlert::Core

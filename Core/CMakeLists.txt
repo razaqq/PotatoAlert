@@ -49,6 +49,8 @@ if(UNIX)
             core
             PRIVATE
 
+            src/Directory.linux.cpp
+            src/File.linux.cpp
             src/Mutex.linux.cpp
             src/Time.linux.cpp
     )
@@ -57,10 +59,10 @@ endif(UNIX)
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 
 set_target_properties(core PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
-target_link_libraries(core PRIVATE sqlite3 OpenSSL Win32 zip ZLIB::ZLIB)
+target_link_libraries(core PRIVATE sqlite3 OpenSSL zip ZLIB::ZLIB)
 target_link_libraries(core PUBLIC nlohmann_json Qt5::Core Qt5::Widgets spdlog tinyxml2)
 target_include_directories(core PUBLIC include)
 
 if(WIN32)
-    target_link_libraries(core PRIVATE Version Ws2_32)
+    target_link_libraries(core PRIVATE Version Win32 Ws2_32)
 endif(WIN32)

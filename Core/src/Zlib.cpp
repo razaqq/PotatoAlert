@@ -6,6 +6,7 @@
 
 #include "zlib.h"
 
+#include <cstring>
 #include <span>
 #include <vector>
 
@@ -42,7 +43,7 @@ std::vector<std::byte> PotatoAlert::Core::Zlib::Inflate(std::span<const std::byt
 
 			size_t pos = out.size();
 			out.resize(out.size() + size);
-			memcpy(out.data() + pos, chunk, size);
+			std::memcpy(out.data() + pos, chunk, size);
 		} while (stream.avail_out == 0);
 	} while (ret != Z_STREAM_END);
 

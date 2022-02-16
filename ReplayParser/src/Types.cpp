@@ -6,6 +6,7 @@
 
 #include "ReplayParser/Types.hpp"
 
+#include <format>
 #include <optional>
 #include <string>
 #include <unordered_map>

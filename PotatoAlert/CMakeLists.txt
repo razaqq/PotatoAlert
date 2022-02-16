@@ -5,7 +5,16 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-add_executable(PotatoAlert PotatoAlert.cpp ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
+add_executable(PotatoAlert ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
+
+if(WIN32)
+    target_sources(PotatoAlert PRIVATE PotatoAlert.win32.cpp)
+endif()
+
+if(UNIX)
+    target_sources(PotatoAlert PRIVATE PotatoAlert.linux.cpp)
+endif()
+
 set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
@@ -18,7 +27,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         target_compile_options(PotatoAlert PRIVATE $<$<CONFIG:RELEASE>:/O2 /Ob2>)
     elseif("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU")  # clang
         target_compile_options(PotatoAlert PRIVATE -fno-exceptions)
-        target_compile_options(PotatoAlert PRIVATE $<$<CONFIG:DEBUG>:-Wall -pedantic -fno-exceptions -Wno-unknown-pragmas -O0>)
+        target_compile_options(PotatoAlert PRIVATE $<$<CONFIG:DEBUG>:-Wall -pedantic -Wno-unknown-pragmas -O0>)
         target_compile_options(PotatoAlert PRIVATE $<$<CONFIG:RELEASE>:-O3>)
     endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -29,7 +38,11 @@ else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
-target_link_libraries(PotatoAlert PRIVATE core gui Qt5::Widgets Win32)
+target_link_libraries(PotatoAlert PRIVATE core gui Qt5::Widgets)
+
+if(WIN32)
+    target_link_libraries(PotatoAlert PRIVATE Win32)
+endif()
 
 set_target_properties(PotatoAlert
     PROPERTIES
@@ -38,6 +51,8 @@ set_target_properties(PotatoAlert
 
 include(packaging)
 replayversions(PotatoAlert)
-windeployqt(PotatoAlert)
-ssllibraries(PotatoAlert)
+if(WIN32)
+    windeployqt(PotatoAlert)
+    ssllibraries(PotatoAlert)
+endif()
 # makeinstaller(PotatoAlert)

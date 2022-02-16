@@ -17,16 +17,12 @@
 #include <vector>
 
 
+using PotatoAlert::Core::String::Split;
 using PotatoAlert::Core::Log;
 
 std::shared_ptr<spdlog::logger> Log::s_logger;
 
-QString Log::GetDir()
-{
-	QString path = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert");
-	QDir(path).mkdir(".");
-	return path;
-}
+namespace {
 
 static void LogQtMessage(QtMsgType type, const QMessageLogContext& context, const QString& text)
 {
@@ -52,6 +48,23 @@ static void LogQtMessage(QtMsgType type, const QMessageLogContext& context, cons
 	Log::GetLogger()->log(spdlog::source_loc{ context.file, context.line, context.function }, level, text.toStdString());
 }
 
+}
+
+QDir Log::GetDir()
+{
+	QDir dir = QDir::cleanPath(
+			QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + QDir::separator() + "PotatoAlert");
+	if (!dir.exists())
+	{
+		LOG_TRACE("Creating config directory: {}", dir.absolutePath().toStdString());
+		if (!dir.mkpath("."))
+		{
+			LOG_ERROR("Failed to create config directory");
+		}
+	}
+	return dir;
+}
+
 template<typename ScopedPadder>
 class SourceLocationFlag : public spdlog::custom_flag_formatter
 {
@@ -63,21 +76,22 @@ public:
 			return;
 		}
 
-		std::string fileName = PotatoAlert::Core::String::ReplaceAll(msg.source.filename, "..\\", "");
+		const std::string baseName = spdlog::details::short_filename_formatter<
+				spdlog::details::null_scoped_padder>::basename(msg.source.filename);
 
-		size_t text_size;
+		size_t textSize;
 		if (padinfo_.enabled())
 		{
-			text_size = fileName.size() + ScopedPadder::count_digits(msg.source.line) + 1;
+			textSize = baseName.size() + ScopedPadder::count_digits(msg.source.line) + 1;
 		}
 		else
 		{
-			text_size = 0;
+			textSize = 0;
 		}
 
-		ScopedPadder p(text_size, padinfo_, dest);
-		
-		spdlog::details::fmt_helper::append_string_view(fileName, dest);
+		ScopedPadder p(textSize, padinfo_, dest);
+
+		spdlog::details::fmt_helper::append_string_view(baseName, dest);
 		dest.push_back(':');
 		spdlog::details::fmt_helper::append_int(msg.source.line, dest);
 	}
@@ -92,7 +106,7 @@ void Log::Init()
 {
 	qInstallMessageHandler(LogQtMessage);
 
-	const std::string filePath = QDir(GetDir()).filePath("PotatoAlert.log").toStdString();
+	const std::string filePath = GetDir().filePath("PotatoAlert.log").toStdString();
 	spdlog::set_error_handler([](const std::string& msg) { spdlog::get("console")->error("*** LOGGER ERROR ***: {}", msg); });
 
 	auto stdoutSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();

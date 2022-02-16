@@ -90,7 +90,13 @@ bool Mutex::RawIsLocked(Handle handle)
 	return false;
 }
 
-bool Mutex::RawWait(Handle handle, uint32_t timeout)
+bool Mutex::RawWait(Handle handle)
+{
+	return WaitForSingleObject(UnwrapHandle<HANDLE>(handle), INFINITE) == WAIT_OBJECT_0;
+}
+
+
+bool Mutex::RawWaitTimed(Handle handle, uint32_t timeout)
 {
 	return WaitForSingleObject(UnwrapHandle<HANDLE>(handle), timeout) == WAIT_OBJECT_0;
 }

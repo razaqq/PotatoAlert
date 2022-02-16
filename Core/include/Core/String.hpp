@@ -20,9 +20,10 @@ bool StartsWith(std::string_view str, std::string_view start);
 bool EndsWith(std::string_view str, std::string_view end);
 
 template<typename T>
-bool ParseNumber(std::string_view str, T& value) requires std::is_integral_v<T> || std::is_floating_point_v<T>
+// TODO: currently only microsoft stdlib implements from_chars for floats, enable this again later
+bool ParseNumber(std::string_view str, T& value) requires std::is_integral_v<T>//  || std::is_floating_point_v<T>
 {
-	// static_assert(std::is<T> && !std::is_same_v<T, bool>, "Type must be numeric");
+	// static_assert(std::is_integral_v<T> || std::is_floating_point_v<T>, "Type must be numeric");
 	auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), value);
 	return ec == std::errc();
 }
