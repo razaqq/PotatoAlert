@@ -6,44 +6,44 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_library(client STATIC)
 
 target_sources(
-        client
-        PRIVATE
+    client
+    PRIVATE
 
-        src/Config.cpp
-        src/Game.cpp
-        src/MatchHistory.cpp
-        src/PotatoClient.cpp
-        src/ReplayAnalyzer.cpp
-        src/StatsParser.cpp
-        src/StringTable.cpp
+    src/Config.cpp
+    src/Game.cpp
+    src/MatchHistory.cpp
+    src/PotatoClient.cpp
+    src/ReplayAnalyzer.cpp
+    src/StatsParser.cpp
+    src/StringTable.cpp
 )
 
 if(WIN32)
     target_sources(
-            client
-            PRIVATE
+        client
+        PRIVATE
 
-            src/Game.win32.cpp
+        src/Game.win32.cpp
     )
 endif(WIN32)
 
 if(UNIX)
     target_sources(
-            client
-            PRIVATE
+        client
+        PRIVATE
 
-            src/Game.linux.cpp
+        src/Game.linux.cpp
     )
 endif(UNIX)
 
 # have to add some headers to sources for qt AUTOMOC
 target_sources(
-        client
-        PRIVATE
+    client
+    PRIVATE
 
-        include/Client/Config.hpp
-        include/Client/PotatoClient.hpp
-        include/Client/ReplayAnalyzer.hpp
+    include/Client/Config.hpp
+    include/Client/PotatoClient.hpp
+    include/Client/ReplayAnalyzer.hpp
 )
 
 find_package(Qt5 COMPONENTS Core Widgets WebSockets REQUIRED)

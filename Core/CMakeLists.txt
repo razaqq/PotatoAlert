@@ -6,53 +6,53 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_library(core STATIC)
 
 target_sources(
-        core
-        PRIVATE
+    core
+    PRIVATE
 
-        src/Blowfish.cpp
-        src/DirectoryWatcher.cpp
-        src/Log.cpp
-        src/Screenshot.cpp
-        src/Sha1.cpp
-        src/Sha256.cpp
-        src/String.cpp
-        src/Sqlite.cpp
-        src/ThreadPool.cpp
-        src/Version.cpp
-        src/Zip.cpp
-        src/Zlib.cpp
+    src/Blowfish.cpp
+    src/DirectoryWatcher.cpp
+    src/Log.cpp
+    src/Screenshot.cpp
+    src/Sha1.cpp
+    src/Sha256.cpp
+    src/String.cpp
+    src/Sqlite.cpp
+    src/ThreadPool.cpp
+    src/Version.cpp
+    src/Zip.cpp
+    src/Zlib.cpp
 )
 
 # have to add some headers to sources for qt AUTOMOC
 target_sources(
-        core
-        PRIVATE
+    core
+    PRIVATE
 
-        include/Core/DirectoryWatcher.hpp
+    include/Core/DirectoryWatcher.hpp
 )
 
 if(WIN32)
     target_sources(
-            core
-            PRIVATE
+        core
+        PRIVATE
 
-            src/Directory.win32.cpp
-            src/File.win32.cpp
-            src/Process.win32.cpp
-            src/Semaphore.win32.cpp
-            src/Time.win32.cpp
+        src/Directory.win32.cpp
+        src/File.win32.cpp
+        src/Process.win32.cpp
+        src/Semaphore.win32.cpp
+        src/Time.win32.cpp
     )
 endif(WIN32)
 
 if(UNIX)
     target_sources(
-            core
-            PRIVATE
+        core
+        PRIVATE
 
-            src/Directory.linux.cpp
-            src/File.linux.cpp
-            src/Semaphore.linux.cpp
-            src/Time.linux.cpp
+        src/Directory.linux.cpp
+        src/File.linux.cpp
+        src/Semaphore.linux.cpp
+        src/Time.linux.cpp
     )
 endif(UNIX)
 
