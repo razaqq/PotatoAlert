@@ -3,7 +3,86 @@ name: Build
 on: push
 
 jobs:
-  build:
+  build-windows:
+    runs-on: windows-2019
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup Visual Studio Shell
+      uses: egor-tensin/vs-shell@v2
+      with:
+        arch: x64
+
+    - name: Setup Ninja
+      uses: ashutoshvarma/setup-ninja@master
+      with:
+        version: 1.10.2
+
+    - name: Cache Qt
+      id: cache-qt
+      uses: actions/cache@v1
+      with:
+        path: ../Qt
+        key: ${{ runner.os }}-QtCache
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: 5.15.2
+        cached: ${{ steps.cache-qt.outputs.cache-hit }}
+
+    - name: CMake Version
+      run: cmake --version
+
+    - name: Clang Version
+      run: clang-cl --version
+
+    - name: Run CMake
+      env:
+        CC: clang-cl
+        CXX: clang-cl
+      run: cmake -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release
+
+    - name: Run Build
+      run: cmake --build build --config Release --target PotatoAlert PotatoUpdater PotatoTest
+
+    - name: Run Tests
+      run: .\build\bin-test\PotatoTest.exe
+
+    - name: Create Release Archive
+      run: |
+        7z a -mx9 -r PotatoAlert.zip .\build\bin\*
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: PotatoAlert
+        path: PotatoAlert.zip
+
+    - name: Create Release
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: true
+        prerelease: false
+        release_name: ${{ steps.version.outputs.version }}
+        tag_name: ${{ github.ref }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      if: ${{ github.event_name == 'create' && github.event.ref_type == 'tag' }}
+
+    - name: Upload Artifact To Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: PotatoAlert.zip
+        asset_name: PotatoAlert.zip
+        asset_content_type: application/zip
+      if: ${{ github.event_name == 'create' && github.event.ref_type == 'tag' }}
+
+  build-linux:
     runs-on: ubuntu-latest
 
     steps:
@@ -39,7 +118,7 @@ jobs:
       run: cmake --version
 
     - name: Clang Version
-      run: clang-cl --version
+      run: clang --version
 
     - name: Run CMake
       env:
