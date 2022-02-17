@@ -118,12 +118,12 @@ jobs:
       run: cmake --version
 
     - name: Clang Version
-      run: clang --version
+      run: clang-14 --version
 
     - name: Run CMake
       env:
-        CC: clang
-        CXX: clang++
+        CC: clang-14
+        CXX: clang++-14
       run: cmake -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"  -DCMAKE_CXX_FLAGS="-stdlib=libc++ -lc++abi"
 
     - name: Run Build
