@@ -106,6 +106,9 @@ jobs:
         version: 5.15.2
         cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
+    - name: Remove other LLVM installs
+      run: sudo apt remove -y clang lld libc++-dev libc++abi-dev
+
     - name: Install LLVM
       uses: myci-actions/add-deb-repo@10
       with:
@@ -124,7 +127,7 @@ jobs:
       env:
         CC: clang-14
         CXX: clang++-14
-      run: cmake -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"  -DCMAKE_CXX_FLAGS="-stdlib=libc++ -lc++abi"
+      run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld-14"  -DCMAKE_CXX_FLAGS="-stdlib=libc++ -lc++abi"
 
     - name: Run Build
       run: cmake --build build --config Release --target PotatoAlert PotatoTest
