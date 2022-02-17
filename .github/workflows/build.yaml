@@ -41,7 +41,7 @@ jobs:
       env:
         CC: clang-cl
         CXX: clang-cl
-      run: cmake -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release
+      run: cmake -S . -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release
 
     - name: Run Build
       run: cmake --build build --config Release --target PotatoAlert PotatoUpdater PotatoTest
@@ -106,28 +106,42 @@ jobs:
         version: 5.15.2
         cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
-    - name: Remove other LLVM installs
-      run: sudo apt remove -y clang lld libc++-dev libc++abi-dev
-
-    - name: Install LLVM
-      uses: myci-actions/add-deb-repo@10
+    - name: Cache LLVM and Clang
+      id: cache-llvm
+      uses: actions/cache@v2
       with:
-        repo: deb http://apt.llvm.org/focal/ llvm-toolchain-focal-14 main
-        repo-name: llvm-toolchain-focal-14
-        keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
-        install: clang-14 lld-14 libc++-14-dev libc++abi-14-dev
+        path: |
+          ./llvm
+        key: llvm-14
+  
+    - name: Install LLVM and Clang
+      uses: KyleMayes/install-llvm-action@v1
+      with:
+        version: "14"
+        cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+
+    #- name: Remove other LLVM installs
+    #  run: sudo apt remove -y clang lld libc++-dev libc++abi-dev
+
+    #- name: Install LLVM
+    #  uses: myci-actions/add-deb-repo@10
+    #  with:
+    #    repo: deb http://apt.llvm.org/focal/ llvm-toolchain-focal-14 main
+    #    repo-name: llvm-toolchain-focal-14
+    #    keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+    #    install: clang-14 lld-14 libc++-14-dev libc++abi-14-dev
 
     - name: CMake Version
       run: cmake --version
 
     - name: Clang Version
-      run: clang-14 --version
+      run: clang --version
 
     - name: Run CMake
       env:
-        CC: clang-14
-        CXX: clang++-14
-      run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld-14"  -DCMAKE_CXX_FLAGS="-stdlib=libc++ -lc++abi"
+        CC: clang
+        CXX: clang++
+      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"  -DCMAKE_CXX_FLAGS="-stdlib=libc++ -lc++abi"
 
     - name: Run Build
       run: cmake --build build --config Release --target PotatoAlert PotatoTest
