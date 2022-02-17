@@ -38,11 +38,11 @@ public:
 	{
 		std::lock_guard lock(m_mutex);
 
-		LOG_INFO("Name: {}, TID: {}, Start: {}, Duration: {}", 
+		LOG_INFO("Name: {}, TID: {}, Start: {}, Duration: {}",
 			result.name, result.threadId, result.startTime.count(), result.elapsedTime.count());
 
 		if (m_timings.contains(result.name.data()))
-		 	m_timings[result.name.data()].push_back(result.elapsedTime.count());
+			m_timings[result.name.data()].push_back(result.elapsedTime.count());
 		m_timings.insert({result.name.data(), std::vector{ result.elapsedTime.count() }});
 	}
 
@@ -56,7 +56,9 @@ private:
 		{
 			MicrosRep total = std::accumulate(timings.begin(), timings.end(), MicrosRep{ 0 });
 			MicrosRep avg = total / static_cast<MicrosRep>(timings.size());
-			table.AddRow(name, avg, *std::min(timings.begin(), timings.end()), *std::max(timings.begin(), timings.end()), total, timings.size());
+			MicrosRep min = *std::min_element(timings.begin(), timings.end());
+			MicrosRep max = *std::max_element(timings.begin(), timings.end());
+			table.AddRow(name, avg, min, max, total, timings.size());
 		}
 
 		table.SortByColumn<1>(SortOrder::Descending);
