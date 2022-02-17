@@ -26,7 +26,7 @@ static constexpr T UnwrapHandle(Semaphore::Handle handle)
 
 }
 
-std::string Semaphore::RawLastError(Handle handle)
+std::string Semaphore::RawLastError()
 {
 	return "";
 }
