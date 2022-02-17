@@ -1,0 +1,87 @@
+name: Build
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Setup Ninja
+      uses: ashutoshvarma/setup-ninja@master
+      with:
+        version: 1.10.2
+
+    - name: Cache Qt
+      id: cache-qt
+      uses: actions/cache@v1
+      with:
+        path: ../Qt
+        key: ${{ runner.os }}-QtCache
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: 5.15.2
+        cached: ${{ steps.cache-qt.outputs.cache-hit }}
+
+    - name: Install LLVM
+      uses: myci-actions/add-deb-repo@10
+      with:
+        repo: deb http://apt.llvm.org/focal/ llvm-toolchain-focal-14 main
+        repo-name: llvm-toolchain-focal-14
+        keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+        install: clang-14 lld-14 libc++-14-dev libc++abi-14-dev
+
+    - name: CMake Version
+      run: cmake --version
+
+    - name: Clang Version
+      run: clang-cl --version
+
+    - name: Run CMake
+      env:
+        CC: clang
+        CXX: clang++
+      run: cmake -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"  -DCMAKE_CXX_FLAGS="-stdlib=libc++ -lc++abi"
+
+    - name: Run Build
+      run: cmake --build build --config Release --target PotatoAlert PotatoTest
+
+    - name: Run Tests
+      run: .\build\bin-test\PotatoTest.exe
+
+    - name: Create Release Archive
+      run: |
+        7z a -mx9 -r PotatoAlert.zip .\build\bin\*
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: PotatoAlert
+        path: PotatoAlert.zip
+
+    - name: Create Release
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: true
+        prerelease: false
+        release_name: ${{ steps.version.outputs.version }}
+        tag_name: ${{ github.ref }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      if: ${{ github.event_name == 'create' && github.event.ref_type == 'tag' }}
+
+    - name: Upload Artifact To Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: PotatoAlert.zip
+        asset_name: PotatoAlert.zip
+        asset_content_type: application/zip
+      if: ${{ github.event_name == 'create' && github.event.ref_type == 'tag' }}
