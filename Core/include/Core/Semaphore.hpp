@@ -7,7 +7,7 @@
 
 namespace PotatoAlert::Core {
 
-class Mutex
+class Semaphore
 {
 public:
 	enum class Handle : uintptr_t
@@ -15,16 +15,16 @@ public:
 		Null = 0
 	};
 
-	explicit Mutex(Handle handle) : m_handle(handle) {}
+	explicit Semaphore(Handle handle) : m_handle(handle) {}
 
-	Mutex(Mutex&& src) noexcept
+	Semaphore(Semaphore&& src) noexcept
 	{
 		m_handle = std::exchange(src.m_handle, Handle::Null);
 	}
 
-	Mutex(const Mutex&) = delete;
+	Semaphore(const Semaphore&) = delete;
 
-	Mutex& operator=(Mutex&& src) noexcept
+	Semaphore& operator=(Semaphore&& src) noexcept
 	{
 		if (m_handle != Handle::Null)
 			RawClose(m_handle);
@@ -32,21 +32,21 @@ public:
 		return *this;
 	}
 
-	Mutex& operator=(const Mutex&) = delete;
+	Semaphore& operator=(const Semaphore&) = delete;
 
-	static Mutex Create(std::string_view name, bool initiallyOwned = true)
+	static Semaphore Create(std::string_view name, int initialValue = 0)
 	{
-		return Mutex(RawCreate(name, initiallyOwned));
+		return Semaphore(RawCreate(name, initialValue));
 	}
 
-	static Mutex Open(std::string_view name)
+	static Semaphore Open(std::string_view name)
 	{
-		return Mutex(RawOpen(name));
+		return Semaphore(RawOpen(name));
 	}
 
-	std::string LastError()
+	[[nodiscard]] static std::string LastError()
 	{
-		return RawLastError(m_handle);
+		return RawLastError();
 	}
 
 	bool IsOpen() const
@@ -112,7 +112,7 @@ public:
 private:
 	Handle m_handle = Handle::Null;
 
-	static Handle RawCreate(std::string_view name, bool initiallyOwned);
+	static Handle RawCreate(std::string_view name, int initialValue);
 	static Handle RawOpen(std::string_view name);
 	static bool RawRemove(std::string_view name);
 	static bool RawWait(Handle handle);
@@ -121,7 +121,7 @@ private:
 	static bool RawTryLock(Handle handle);
 	static bool RawUnlock(Handle handle);
 	static bool RawIsLocked(Handle handle);
-	static std::string RawLastError(Handle handle);
+	static std::string RawLastError();
 };
 
-}
+}  // namespace PotatoAlert::Core

@@ -2,7 +2,7 @@
 
 #include "Core/Blowfish.hpp"
 #include "Core/Directory.hpp"
-#include "Core/Mutex.hpp"
+#include "Core/Semaphore.hpp"
 #include "Core/Sha1.hpp"
 #include "Core/Sha256.hpp"
 #include "Core/String.hpp"
@@ -68,34 +68,50 @@ TEST_CASE( "BlowFishDecryptTest" )
 
 TEST_CASE( "MutexTest" )
 {
+	const std::string SemName = "TEST_SEMAPHORE";
 	// delete mutex in case of a previous failed run
-	Mutex::Remove("TEST_MUTEX");
+	Semaphore::Remove(SemName);
 
-	REQUIRE_FALSE(Mutex::Open("TEST_MUTEX"));
-	Mutex mutex1 = Mutex::Create("TEST_MUTEX", true);
-	REQUIRE(Mutex::Open("TEST_MUTEX"));
-	REQUIRE(mutex1);
-	REQUIRE(mutex1.IsOpen());
-	REQUIRE(mutex1.IsLocked());
-	REQUIRE_FALSE(mutex1.TryLock());
-	REQUIRE(mutex1.Unlock());
-	REQUIRE_FALSE(mutex1.IsLocked());
-	REQUIRE(mutex1.TryLock());
-	REQUIRE(mutex1.IsLocked());
-	REQUIRE(mutex1.Close());
-	REQUIRE_FALSE(mutex1.IsOpen());
+	REQUIRE_FALSE(Semaphore::Open(SemName));
+	Semaphore sem1 = Semaphore::Create(SemName, 0);
+	REQUIRE(sem1);
+	REQUIRE(sem1.IsOpen());
+	REQUIRE(sem1.IsLocked());
 
-	REQUIRE_FALSE(Mutex::Create("TEST_MUTEX", true));
-	REQUIRE_FALSE(Mutex::Create("TEST_MUTEX", false));
+	Semaphore sem1_1 = Semaphore::Open(SemName);
+	REQUIRE(sem1_1);
+	REQUIRE(sem1_1.IsLocked());
+	REQUIRE(sem1_1.Close());
 
-	Mutex::Remove("TEST_MUTEX");
+	REQUIRE_FALSE(sem1.TryLock());
+	REQUIRE(sem1.Unlock());
+	REQUIRE_FALSE(sem1.IsLocked());
+	REQUIRE(sem1.TryLock());
+	REQUIRE(sem1.IsLocked());
+	REQUIRE(sem1.Close());
+	REQUIRE_FALSE(sem1.IsOpen());
 
-	Mutex mutex2 = Mutex::Create("TEST_MUTEX", false);
-	REQUIRE(mutex2);
-	REQUIRE(Mutex::Open("TEST_MUTEX"));
-	REQUIRE(mutex2.TryLock());
+	Semaphore sem2 = Semaphore::Create(SemName, 0);
+	REQUIRE(sem2);
+	REQUIRE(sem2.IsLocked());
+	REQUIRE_FALSE(Semaphore::Create(SemName, false));
+	REQUIRE(sem2.Unlock());
+	REQUIRE(sem2.Close());
+	REQUIRE_FALSE(sem2.IsOpen());
 
-	Mutex::Remove("TEST_MUTEX");
+	Semaphore::Remove(SemName);
+
+	Semaphore sem3 = Semaphore::Create(SemName, 1);
+	REQUIRE(sem3);
+	REQUIRE_FALSE(sem3.IsLocked());
+	REQUIRE(Semaphore::Open(SemName));
+	REQUIRE(sem3.TryLock());
+	REQUIRE(sem3.IsLocked());
+	REQUIRE(sem3.Unlock());
+	REQUIRE(sem3.Close());
+	REQUIRE_FALSE(sem3.IsOpen());
+
+	Semaphore::Remove(SemName);
 }
 
 TEST_CASE( "Sha1Test" )

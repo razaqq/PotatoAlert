@@ -1,12 +1,12 @@
 // Copyright 2022 <github.com/razaqq>
 
 #include "Core/Log.hpp"
-#include "Core/Mutex.hpp"
+#include "Core/Semaphore.hpp"
 
 #include "win32.h"
 
 
-using PotatoAlert::Core::Mutex;
+using PotatoAlert::Core::Semaphore;
 
 namespace {
 
@@ -17,14 +17,14 @@ static constexpr T CreateHandle(HANDLE handle)
 }
 
 template<typename T>
-static constexpr T UnwrapHandle(Mutex::Handle handle)
+static constexpr T UnwrapHandle(Semaphore::Handle handle)
 {
 	return reinterpret_cast<T>(static_cast<uintptr_t>(handle) - 1);
 }
 
 }
 
-std::string Mutex::RawLastError(Handle handle)
+std::string Semaphore::RawLastError()
 {
 	DWORD err = GetLastError();
 	LPSTR lpMsgBuf;
@@ -37,72 +37,81 @@ std::string Mutex::RawLastError(Handle handle)
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 			reinterpret_cast<LPTSTR>(&lpMsgBuf),
 			0, nullptr);
-	return std::string(lpMsgBuf);
+	return { lpMsgBuf };
 }
 
-Mutex::Handle Mutex::RawCreate(std::string_view name, bool initiallyOwned)
+Semaphore::Handle Semaphore::RawCreate(std::string_view name, int initialValue)
 {
-	HANDLE hMutex = CreateMutexA(nullptr, initiallyOwned, name.data());
-
-	if (hMutex == nullptr)
+	if (name.size() > MAX_PATH)
 	{
 		return Handle::Null;
 	}
 
-	return CreateHandle<Handle>(hMutex);
-}
+	const HANDLE hSem = CreateSemaphoreA(nullptr, initialValue, initialValue + 1, name.data());
 
-Mutex::Handle Mutex::RawOpen(std::string_view name)
-{
-	HANDLE hMutex = OpenMutexA(SYNCHRONIZE, false, name.data());
-
-	if (hMutex == nullptr)
+	if (hSem == nullptr)
 	{
 		return Handle::Null;
 	}
 
-	return CreateHandle<Handle>(hMutex);
+	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		CloseHandle(hSem);
+		return Handle::Null;
+	}
+
+	return CreateHandle<Handle>(hSem);
 }
 
-bool Mutex::RawRemove(std::string_view name)
+Semaphore::Handle Semaphore::RawOpen(std::string_view name)
+{
+	const HANDLE hSem = OpenSemaphoreA(SYNCHRONIZE, false, name.data());
+
+	if (hSem == nullptr)
+	{
+		return Handle::Null;
+	}
+
+	return CreateHandle<Handle>(hSem);
+}
+
+bool Semaphore::RawRemove(std::string_view name)
 {
 	// there is no way to do this in windows
 	return true;
 }
 
-bool Mutex::RawTryLock(Handle handle)
+bool Semaphore::RawTryLock(Handle handle)
 {
 	return WaitForSingleObject(UnwrapHandle<HANDLE>(handle), 0) == WAIT_OBJECT_0;
 }
 
-bool Mutex::RawUnlock(Handle handle)
+bool Semaphore::RawUnlock(Handle handle)
 {
-	return ReleaseMutex(UnwrapHandle<HANDLE>(handle));
+	return ReleaseSemaphore(UnwrapHandle<HANDLE>(handle), 1, nullptr);
 }
 
-bool Mutex::RawClose(Handle handle)
+bool Semaphore::RawClose(Handle handle)
 {
 	return CloseHandle(UnwrapHandle<HANDLE>(handle));
 }
 
-
-bool Mutex::RawIsLocked(Handle handle)
+bool Semaphore::RawIsLocked(Handle handle)
 {
 	if (WaitForSingleObject(UnwrapHandle<HANDLE>(handle), 0) == WAIT_OBJECT_0)
 	{
 		RawUnlock(handle);
-		return true;
+		return false;
 	}
-	return false;
+	return true;
 }
 
-bool Mutex::RawWait(Handle handle)
+bool Semaphore::RawWait(Handle handle)
 {
 	return WaitForSingleObject(UnwrapHandle<HANDLE>(handle), INFINITE) == WAIT_OBJECT_0;
 }
 
-
-bool Mutex::RawWaitTimed(Handle handle, uint32_t timeout)
+bool Semaphore::RawWaitTimed(Handle handle, uint32_t timeout)
 {
 	return WaitForSingleObject(UnwrapHandle<HANDLE>(handle), timeout) == WAIT_OBJECT_0;
 }

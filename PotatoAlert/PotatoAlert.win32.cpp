@@ -1,6 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
-#include "Core/Mutex.hpp"
+#include "Core/Semaphore.hpp"
 
 #include "Client/Config.hpp"
 
@@ -22,7 +22,7 @@
 
 
 using PotatoAlert::Core::PotatoConfig;
-using PotatoAlert::Core::Mutex;
+using PotatoAlert::Core::Semaphore;
 using PotatoAlert::Gui::DarkPalette;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::NativeWindow;
@@ -30,13 +30,13 @@ using PotatoAlert::Updater::Updater;
 
 static int RunMain(int argc, char* argv[])
 {
-	const std::string mutexName = "PotatoAlert-0D54203D-6BF9-4E96-8CD7-2BE3E780E013";
-	if (Mutex::Open(mutexName))
+	const std::string semName = "PotatoAlert-0D54203D-6BF9-4E96-8CD7-2BE3E780E013";
+	if (Semaphore::Open(semName))
 	{
 		NativeWindow::RequestFocus();
 		_exit(0);
 	}
-	Mutex::Create(mutexName, true);
+	Semaphore::Create(semName, 0);
 
 	Q_INIT_RESOURCE(PotatoAlert);
 

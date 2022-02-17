@@ -1,7 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/Defer.hpp"
-#include "Core/Mutex.hpp"
+#include "Core/Semaphore.hpp"
 
 #include "Client/Config.hpp"
 
@@ -27,17 +27,17 @@ using PotatoAlert::Gui::NativeWindow;
 
 int main(int argc, char* argv[])
 {
-	const std::string mutexName = "PotatoAlert-0D54203D-6BF9-4E96-8CD7-2BE3E780E013";
-	if (Mutex::Open(mutexName))
+	const std::string semName = "PotatoAlert-0D54203D-6BF9-4E96-8CD7-2BE3E780E013";
+	if (Semaphore::Open(semName))
 	{
 		NativeWindow::RequestFocus();
 		exit(0);
 	}
-	Mutex mutex = Mutex::Create(mutexName, true);
+	Semaphore sem = Semaphore::Create(semName, true);
 	auto defer = MakeDefer([&]()
 	{
-		mutex.Close();
-		Mutex::Remove(mutexName);
+		sem.Close();
+		Semaphore::Remove(semName);
 	});
 
 	Q_INIT_RESOURCE(PotatoAlert);
