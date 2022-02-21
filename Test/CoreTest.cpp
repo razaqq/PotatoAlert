@@ -2,6 +2,7 @@
 
 #include "Core/Blowfish.hpp"
 #include "Core/Directory.hpp"
+#include "Core/Semaphore.hpp"
 #include "Core/Sha1.hpp"
 #include "Core/Sha256.hpp"
 #include "Core/String.hpp"
@@ -10,7 +11,7 @@
 
 #include "catch.hpp"
 
-#include <ranges>
+#include <algorithm>
 #include <span>
 #include <vector>
 
@@ -23,8 +24,8 @@ namespace {
 static std::vector<std::byte> FromString(std::string_view s) noexcept
 {
 	std::vector<std::byte> arr(s.size());
-	std::ranges::transform(s, arr.begin(), [](char c)
-						   { return static_cast<std::byte>(c); });
+	std::transform(s.begin(), s.end(), arr.begin(), [](char c) -> std::byte
+				   { return static_cast<std::byte>(c); });
 	return arr;
 }
 
@@ -65,6 +66,54 @@ TEST_CASE( "BlowFishDecryptTest" )
 	REQUIRE(std::equal(out.begin(), out.end(), solution.begin(), solution.end()));
 }
 
+TEST_CASE( "MutexTest" )
+{
+	const std::string SemName = "TEST_SEMAPHORE";
+	// delete mutex in case of a previous failed run
+	Semaphore::Remove(SemName);
+
+	REQUIRE_FALSE(Semaphore::Open(SemName));
+	Semaphore sem1 = Semaphore::Create(SemName, 0);
+	REQUIRE(sem1);
+	REQUIRE(sem1.IsOpen());
+	REQUIRE(sem1.IsLocked());
+
+	Semaphore sem1_1 = Semaphore::Open(SemName);
+	REQUIRE(sem1_1);
+	REQUIRE(sem1_1.IsLocked());
+	REQUIRE(sem1_1.Close());
+
+	REQUIRE_FALSE(sem1.TryLock());
+	REQUIRE(sem1.Unlock());
+	REQUIRE_FALSE(sem1.IsLocked());
+	REQUIRE(sem1.TryLock());
+	REQUIRE(sem1.IsLocked());
+	REQUIRE(sem1.Close());
+	REQUIRE_FALSE(sem1.IsOpen());
+
+	Semaphore sem2 = Semaphore::Create(SemName, 0);
+	REQUIRE(sem2);
+	REQUIRE(sem2.IsLocked());
+	REQUIRE_FALSE(Semaphore::Create(SemName, false));
+	REQUIRE(sem2.Unlock());
+	REQUIRE(sem2.Close());
+	REQUIRE_FALSE(sem2.IsOpen());
+
+	Semaphore::Remove(SemName);
+
+	Semaphore sem3 = Semaphore::Create(SemName, 1);
+	REQUIRE(sem3);
+	REQUIRE_FALSE(sem3.IsLocked());
+	REQUIRE(Semaphore::Open(SemName));
+	REQUIRE(sem3.TryLock());
+	REQUIRE(sem3.IsLocked());
+	REQUIRE(sem3.Unlock());
+	REQUIRE(sem3.Close());
+	REQUIRE_FALSE(sem3.IsOpen());
+
+	Semaphore::Remove(SemName);
+}
+
 TEST_CASE( "Sha1Test" )
 {
 	auto test = FromString("The quick brown fox jumps over the lazy dog");
@@ -94,8 +143,11 @@ TEST_CASE( "StringTest" )
 
 	REQUIRE(String::ToLower("SOME LONGER TEST") == "some longer test");
 
+	//TODO: enable this again later when std::from_chars is implemented for floats
+#if 0
 	float pi;
 	REQUIRE((String::ParseNumber("3.14159265359", pi) && std::abs(pi - 3.14159265359f) <= std::numeric_limits<float>::epsilon()));
+#endif
 
 	long long i;
 	REQUIRE((String::ParseNumber("485745389475347534", i) && i == 485745389475347534));

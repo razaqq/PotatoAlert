@@ -9,6 +9,7 @@
 #include <tinyxml2.h>
 
 #include <filesystem>
+#include <format>
 #include <ranges>
 #include <string>
 #include <vector>
@@ -17,7 +18,6 @@
 namespace rp = PotatoAlert::ReplayParser;
 using namespace PotatoAlert::ReplayParser;
 using namespace PotatoAlert;
-
 
 static std::vector<Method> ParseMethodList(XMLElement* elem, const AliasType& aliases)
 {

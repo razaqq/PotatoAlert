@@ -9,6 +9,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 
 namespace PotatoAlert::Core {
@@ -30,6 +31,8 @@ public:
 		Create  = 0x08,
 
 		NoBuffer = 0x10,
+		Append   = 0x20,
+		Truncate = 0x40
 	};
 
 	File()
@@ -115,12 +118,12 @@ public:
 		End
 	};
 
-	bool MoveFilePointer(long offset, FilePointerMoveMethod method = FilePointerMoveMethod::Begin) const
+	bool MoveFilePointer(int64_t offset, FilePointerMoveMethod method = FilePointerMoveMethod::Begin) const
 	{
 		return RawMoveFilePointer(m_handle, offset, method);
 	}
 
-	unsigned long CurrentFilePointer() const
+	[[nodiscard]] int64_t CurrentFilePointer() const
 	{
 		return RawCurrentFilePointer(m_handle);
 	}
@@ -149,7 +152,7 @@ public:
 
 	static std::string LastError();
 
-	bool IsOpen() const
+	[[nodiscard]] bool IsOpen() const
 	{
 		return m_handle != Handle::Null;
 	}
@@ -184,9 +187,9 @@ private:
 	static bool RawMove(std::string_view src, std::string_view dst);
 	static bool RawDelete(std::string_view file);
 	static bool RawExists(std::string_view file);
-	static bool RawMoveFilePointer(Handle handle, long offset, FilePointerMoveMethod method);
-	static unsigned long RawCurrentFilePointer(Handle handle);
+	static bool RawMoveFilePointer(Handle handle, int64_t offset, FilePointerMoveMethod method);
+	static int64_t RawCurrentFilePointer(Handle handle);
 };
-DEFINE_FLAGS(File::Flags);
+DEFINE_FLAGS(File::Flags)
 
 }  // namespace PotatoAlert::Core

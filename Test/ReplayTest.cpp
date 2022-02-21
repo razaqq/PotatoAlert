@@ -6,11 +6,11 @@
 #include "ReplayParser/ReplayParser.hpp"
 
 #include "catch.hpp"
-#include "win32.h"
 
 #include <filesystem>
-#include <iostream>
+#include <optional>
 #include <string>
+#include <vector>
 
 
 using PotatoAlert::Core::Version;
@@ -20,13 +20,12 @@ namespace fs = std::filesystem;
 
 static std::string GetReplay(std::string_view name)
 {
-	const auto rootPath = PotatoAlert::Core::GetModuleRootPath();
-	if (!rootPath.has_value())
+	if (std::optional<fs::path> rootPath = PotatoAlert::Core::GetModuleRootPath())
 	{
-		exit(1);
+		return (fs::path(rootPath.value()).remove_filename() / "replays" / name).string();
 	}
 
-	return (fs::path(rootPath.value()).remove_filename() / "replays" / name).string();
+	exit(1);
 }
 
 static constexpr void ClearMem(Replay& replay)

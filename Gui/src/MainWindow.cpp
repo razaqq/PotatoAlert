@@ -20,7 +20,6 @@
 #include <QIcon>
 #include <QMainWindow>
 #include <QPushButton>
-#include <QSettings>
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -95,10 +94,10 @@ void MainWindow::SwitchTab(MenuEntry i)
 		CaptureScreenshot(this->window());
 		return;
 	case MenuEntry::CSV:
-		QDesktopServices::openUrl(QUrl(Client::MatchHistory::GetDir()));
+		QDesktopServices::openUrl(QUrl(Client::MatchHistory::GetDir().absolutePath()));
 		return;
 	case MenuEntry::Log:
-		QDesktopServices::openUrl(QUrl(Log::GetDir()));
+		QDesktopServices::openUrl(QUrl(Log::GetDir().absolutePath()));
 		return;
 	case MenuEntry::Github:
 		QDesktopServices::openUrl(QUrl("https://github.com/razaqq/PotatoAlert"));

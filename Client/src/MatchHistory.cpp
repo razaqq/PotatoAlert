@@ -35,7 +35,7 @@ namespace {
 
 static std::string GetFilePath()
 {
-	return QDir(MatchHistory::GetDir()).filePath(QString::fromStdString(std::format("match_{}.csv", Time::GetTimeStamp(timeFormat)))).toStdString();
+	return MatchHistory::GetDir().filePath(QString::fromStdString(std::format("match_{}.csv", Time::GetTimeStamp(timeFormat)))).toStdString();
 }
 
 static MatchHistory::Entry ReadEntry(const SQLite::Statement& statement)
@@ -72,7 +72,7 @@ static MatchHistory::Entry ReadEntry(const SQLite::Statement& statement)
 
 MatchHistory::MatchHistory()
 {
-	m_db = SQLite::Open(QDir(GetDir()).filePath("match_history.db").toStdString().c_str(), SQLite::Flags::ReadWrite | SQLite::Flags::Create);
+	m_db = SQLite::Open(GetDir().filePath("match_history.db").toStdString().c_str(), SQLite::Flags::ReadWrite | SQLite::Flags::Create);
 	if (m_db)
 	{
 		if (!m_db.Execute(R"(
@@ -114,11 +114,20 @@ MatchHistory::~MatchHistory()
 	}
 }
 
-QString MatchHistory::GetDir()
+QDir MatchHistory::GetDir()
 {
-	QString path = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert/Matches");
-	QDir(path).mkdir(".");
-	return path;
+	QDir dir = QDir::cleanPath(
+			QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) +
+			QDir::separator() + "PotatoAlert"+ QDir::separator() + "Matches");
+	if (!dir.exists())
+	{
+		LOG_TRACE("Creating match history directory: {}", dir.absolutePath().toStdString());
+		if (!dir.mkpath("."))
+		{
+			LOG_ERROR("Failed to create match history directory");
+		}
+	}
+	return dir;
 }
 
 MatchHistory::Entry MatchHistory::CreateEntry(const Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view hash)

@@ -6,8 +6,10 @@
 #include "Singleton.hpp"
 #include "String.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <numeric>
+#include <sstream>
 #include <string>
 #include <thread>
 
@@ -36,11 +38,11 @@ public:
 	{
 		std::lock_guard lock(m_mutex);
 
-		LOG_INFO("Name: {}, TID: {}, Start: {}, Duration: {}", 
+		LOG_INFO("Name: {}, TID: {}, Start: {}, Duration: {}",
 			result.name, result.threadId, result.startTime.count(), result.elapsedTime.count());
 
 		if (m_timings.contains(result.name.data()))
-		 	m_timings[result.name.data()].push_back(result.elapsedTime.count());
+			m_timings[result.name.data()].push_back(result.elapsedTime.count());
 		m_timings.insert({result.name.data(), std::vector{ result.elapsedTime.count() }});
 	}
 
@@ -54,7 +56,9 @@ private:
 		{
 			MicrosRep total = std::accumulate(timings.begin(), timings.end(), MicrosRep{ 0 });
 			MicrosRep avg = total / static_cast<MicrosRep>(timings.size());
-			table.AddRow(name, avg, std::ranges::min(timings), std::ranges::max(timings), total, timings.size());
+			MicrosRep min = *std::min_element(timings.begin(), timings.end());
+			MicrosRep max = *std::max_element(timings.begin(), timings.end());
+			table.AddRow(name, avg, min, max, total, timings.size());
 		}
 
 		table.SortByColumn<1>(SortOrder::Descending);
@@ -77,7 +81,7 @@ public:
 	Timer& operator=(Timer&) = delete;
 	Timer& operator=(Timer&&) = delete;
 
-	MicrosRep Elapsed() const
+	[[nodiscard]] MicrosRep Elapsed() const
 	{
 		if (m_running)
 		{

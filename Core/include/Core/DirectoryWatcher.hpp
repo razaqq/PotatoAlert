@@ -2,8 +2,10 @@
 #pragma once
 
 #include <QFileSystemWatcher>
+#include <QDateTime>
 #include <QString>
 
+#include <string>
 #include <unordered_map>
 
 

@@ -25,25 +25,46 @@ Please behave yourself in chat.
 If you think you cannot follow this simple rule, then you hereby don't have my permission to use this tool.
 
 ## Compiling
+
+### Windows
 #### Requirements
-- Qt >= 5.15.0 (Qt6 currently not supported)
-- clang >= 11.0.0
-- ninja >= 1.10.2
-- cmake >= 3.17
-- Visual Studio 2019
+- [Qt](https://www.qt.io/) >= 5.15.0 (Qt6 currently not supported)
+- [clang](https://clang.llvm.org/) >= 11.0.0
+- [ninja](https://ninja-build.org/) >= 1.10.2
+- [cmake](https://cmake.org/) >= 3.17
+- [Visual Studio 2019](https://visualstudio.microsoft.com)
 - Windows SDK >= 10
-- python >= 3.7
+- [python](https://www.python.org/) >= 3.7
 
 #### Steps
 - Get Paths
     - Qt5 `-DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64`
-    - add clang to PATH 
-      - `set CC=clang`
-      - `set CXX=clang++`
-    - Qt IFW `-DCPACK_IFW_ROOT=C:/Qt/Tools/QtInstallerFramework` (only for building the installer)
+- Add clang to PATH and set `CC` and `CXX` env vars to set clang as compiler
+  - `set CC=clang`
+  - `set CXX=clang++`
 - Call cmake
 ```console
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64 -DCMAKE_RC_COMPILER=RC
 cmake --build build --config Release --target PotatoAlert PotatoUpdater
 ```
 - You find the build output in `.\build\bin\`
+
+### Linux
+#### Requirements
+- [Qt](https://www.qt.io/) >= 5.15.0 (Qt6 currently not supported)
+- [clang](https://clang.llvm.org/) >= 14.0.0
+- [libc++](https://libcxx.llvm.org/) >= 14.0.0 (libstdc++ has no support for `std::format` yet)
+- [lld](https://lld.llvm.org/) >= 14.0.0 (maybe g++ linker works too, idk)
+- [ninja](https://ninja-build.org/) >= 1.10.2
+- [cmake](https://cmake.org/) >= 3.17
+- [python](https://www.python.org/) >= 3.7
+
+#### Steps
+- Add clang to PATH and set `CC` and `CXX` env vars to set clang as compiler
+    - `export CC=clang`
+    - `export CXX=clang++`
+- Call cmake
+```console
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"  -DCMAKE_CXX_FLAGS="-stdlib=libc++ -lc++abi"
+cmake --build build --config Release --target PotatoAlert
+```

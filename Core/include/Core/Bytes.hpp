@@ -2,6 +2,7 @@
 #pragma once
 
 #include <cassert>
+#include <cstring>
 #include <iomanip>
 #include <ios>
 #include <span>

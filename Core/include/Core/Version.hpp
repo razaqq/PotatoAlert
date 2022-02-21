@@ -9,8 +9,11 @@ namespace PotatoAlert::Core {
 class Version
 {
 public:
-	explicit Version(uint8_t major = 0, uint8_t minor = 0, uint8_t patch = 0, uint8_t build = 0)
-		: m_success(true), m_version(major << 0x18 | minor << 0x10 | patch << 0x08 | build) {}
+	explicit Version(uint8_t major = 0u, uint8_t minor = 0u, uint8_t patch = 0u, uint8_t build = 0u)
+		: m_success(true), m_version(
+			static_cast<uint32_t>(major << 0x18) | static_cast<uint32_t>(minor << 0x10) |
+			static_cast<uint32_t>(patch << 0x08) | static_cast<uint32_t>(build)
+		) {}
 	explicit Version(std::string_view versionString);
 
 	explicit operator bool() const { return this->m_success; }

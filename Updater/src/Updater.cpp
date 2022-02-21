@@ -57,42 +57,42 @@ struct DownloadProgress
 {
 	void Reset()
 	{
-		this->m_bytesSinceTick = Q_INT64_C(0);
-		this->timer.restart();
+		m_bytesSinceTick = Q_INT64_C(0);
+		timer.restart();
 	}
 
 	void Update(qint64 bytesReceived)
 	{
-		if (!this->m_started)
+		if (!m_started)
 		{
-			this->m_started = true;
-			this->timer.start();
+			m_started = true;
+			timer.start();
 		}
 
-		this->m_bytesSinceTick += bytesReceived;
+		m_bytesSinceTick += bytesReceived;
 
-		if (this->timer.hasExpired(1e3))
+		if (timer.hasExpired(1e3))
 		{
-			this->m_speed = this->m_bytesSinceTick / 1e5f / this->timer.elapsed();  // MB/s
+			m_speed = m_bytesSinceTick / 1e5f / timer.elapsed();  // MB/s
 
 			// convert to kilobyte in case we are slow
-			if (this->m_speed < 1.0f)
+			if (m_speed < 1.0f)
 			{
-				this->m_speed *= 1e3;
-				this->m_unit = "kB/s";
+				m_speed *= 1e3;
+				m_unit = "kB/s";
 			}
 			else
 			{
-				this->m_unit = "MB/s";
+				m_unit = "MB/s";
 			}
 
-			this->Reset();
+			Reset();
 		}
 	}
 
 	[[nodiscard]] std::string ToString() const
 	{
-		return std::format("{:.1f} {}", this->m_speed, this->m_unit);
+		return std::format("{:.1f} {}", m_speed, m_unit);
 	}
 
 private:
@@ -149,7 +149,7 @@ void Updater::Run()
 	}
 
 	LOG_INFO("Starting download...");
-	QNetworkReply* reply = this->Download();
+	QNetworkReply* reply = Download();
 	// TODO: get g_updateURL dynamically from repo
 	// TODO: maybe do some checksum check on the downloaded archive
 
@@ -195,7 +195,7 @@ void Updater::Run()
 
 		int totalEntries = Zip::Open(archive.c_str(), 0).EntryCount();
 		int i = 0;
-		auto onExtract = [dest, &i, totalEntries](const char* fileName)
+		auto onExtract = [dest, &i, totalEntries](const char* fileName) -> int
 		{
 			LOG_INFO("Extracted: {} ({}/{})", fs::relative(fileName, dest).string(), ++i, totalEntries);
 			return 0;
@@ -229,9 +229,9 @@ QNetworkReply* Updater::Download()
 
 		g_downloadProgress.Update(bytesReceived);
 
-		const QString progress = std::format("{:.1f}/{:.1f} MB", bytesReceived/1e6f, bytesTotal/1e6f).c_str();
+		const QString progress = std::format("{:.1f}/{:.1f} MB", bytesReceived / 1e6f, bytesTotal / 1e6f).c_str();
 		const QString speedStr = QString::fromStdString(g_downloadProgress.ToString());
-		emit this->DownloadProgress(static_cast<int>(bytesReceived * 100 / bytesTotal), progress, speedStr);
+		emit DownloadProgress(static_cast<int>(bytesReceived * 100 / bytesTotal), progress, speedStr);
 	});
 
 	connect(reply, &QNetworkReply::sslErrors, [reply](const QList<QSslError>&)
@@ -260,7 +260,7 @@ void Updater::End(bool success, bool revert)
 		StartUpdater("--clear");
 	else
 		StartMain();
-	ExitProcess(0); // exit this process
+	QApplication::exit(0); // exit this process
 }
 
 // gets info about the elevation state {bool isElevated, bool canElevate}

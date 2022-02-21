@@ -5,6 +5,7 @@
 
 #include "win32.h"
 
+#include <format>
 #include <string>
 #include <vector>
 
@@ -52,6 +53,16 @@ namespace {
 			params.share |= FILE_SHARE_READ;
 		}
 
+		if (HasFlag(flags, File::Flags::Append))
+		{
+			params.access |= FILE_APPEND_DATA;
+		}
+
+		if (HasFlag(flags, File::Flags::Truncate))
+		{
+			params.access |= TRUNCATE_EXISTING;
+		}
+
 		return params;
 	}
 
@@ -60,7 +71,7 @@ namespace {
 
 File::Handle File::RawOpen(std::string_view path, Flags flags)
 {
-	Flags f = flags & (Flags::Open | Flags::Create);
+	Flags f = flags & (Flags::Open | Flags::Create | Flags::Truncate);
 
 	DWORD mode;
 	if (f == Flags::Open)
@@ -69,6 +80,8 @@ File::Handle File::RawOpen(std::string_view path, Flags flags)
 		mode = CREATE_NEW;
 	else if (f == (Flags::Open | Flags::Create))
 		mode = OPEN_ALWAYS;
+	else if (f == (Flags::Open | Flags::Truncate))
+		mode = TRUNCATE_EXISTING;
 	else
 		return Handle::Null;
 
@@ -273,7 +286,7 @@ bool File::RawExists(std::string_view file)
 	return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-bool File::RawMoveFilePointer(Handle handle, long offset, FilePointerMoveMethod method)
+bool File::RawMoveFilePointer(Handle handle, int64_t offset, FilePointerMoveMethod method)
 {
 	if (handle == Handle::Null)
 	{
@@ -297,7 +310,7 @@ bool File::RawMoveFilePointer(Handle handle, long offset, FilePointerMoveMethod 
 	return SetFilePointer(UnwrapHandle<HANDLE>(handle), offset, nullptr, moveMethod) != INVALID_SET_FILE_POINTER;
 }
 
-unsigned long File::RawCurrentFilePointer(Handle handle)
+int64_t File::RawCurrentFilePointer(Handle handle)
 {
 	if (handle == Handle::Null)
 	{

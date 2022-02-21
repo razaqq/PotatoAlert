@@ -5,7 +5,6 @@
 #include "Core/Version.hpp"
 
 #include "catch.hpp"
-#include "win32.h"
 
 #include <filesystem>
 

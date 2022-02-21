@@ -18,21 +18,28 @@ static constexpr std::string_view timeFormat = "%Y-%m-%d_%H-%M-%S";
 
 namespace {
 
-QString GetDir()
+static QDir GetDir()
 {
-	auto path = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert/Screenshots");
-	QDir(path).mkdir(".");
-	return path;
+	QDir dir = QDir::cleanPath(
+			QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) +
+			QDir::separator() + "PotatoAlert"+ QDir::separator() + "Screenshots");
+	if (!dir.exists())
+	{
+		LOG_TRACE("Creating screenshot directory: {}", dir.absolutePath().toStdString());
+		if (!dir.mkpath("."))
+		{
+			LOG_ERROR("Failed to create screenshot directory");
+		}
+	}
+	return dir;
 }
 
 static QString GetFilePath()
 {
-	return QDir(GetDir()).filePath(QString::fromStdString(std::format("capture_{}.png", PotatoAlert::Core::Time::GetTimeStamp(timeFormat))));
+	return GetDir().filePath(QString::fromStdString(std::format("capture_{}.png", PotatoAlert::Core::Time::GetTimeStamp(timeFormat))));
 }
 
 }
-
-
 
 bool PotatoAlert::Core::CaptureScreenshot(QWidget* window)
 {
@@ -45,7 +52,7 @@ bool PotatoAlert::Core::CaptureScreenshot(QWidget* window)
 	if (pix.save(filePath, "PNG", 100))
 	{
 		LOG_TRACE("Saved screenshot {}", filePath.toStdString());
-		QDesktopServices::openUrl(QUrl(GetDir()));
+		QDesktopServices::openUrl(QUrl(GetDir().absolutePath()));
 		return true;
 	}
 	LOG_ERROR("Failed to save screenshot.");

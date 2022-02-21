@@ -51,7 +51,7 @@ std::vector<EntitySpec> rp::ParseScripts(const Core::Version& version)
 	const auto rootPath = Core::GetModuleRootPath();
 	if (!rootPath.has_value())
 	{
-		LOG_ERROR("Failed to get module file name: {}", GetLastError());
+		LOG_ERROR("Failed to get module root path");
 		return {};
 	}
 
@@ -114,8 +114,8 @@ std::vector<EntitySpec> rp::ParseScripts(const Core::Version& version)
 				}
 			}
 
-			std::ranges::stable_sort(properties, [](const Property& a, const Property& b) -> bool { return TypeSize(a.type) < TypeSize(b.type); });
-			std::ranges::stable_sort(merged.clientMethods, [](const Method& a, const Method& b) -> bool { return a.SortSize() < b.SortSize(); });
+			std::stable_sort(properties.begin(), properties.end(), [](const Property& a, const Property& b) -> bool { return TypeSize(a.type) < TypeSize(b.type); });
+			std::stable_sort(merged.clientMethods.begin(), merged.clientMethods.end(), [](const Method& a, const Method& b) -> bool { return a.SortSize() < b.SortSize(); });
 
 			specs.emplace_back(EntitySpec{ entityName, std::move(merged.baseMethods), std::move(merged.cellMethods), std::move(merged.clientMethods), properties, internalProperties });
 		}
