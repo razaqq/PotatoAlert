@@ -1,6 +1,6 @@
 name: Build
 
-on: push
+on: [push, pull_request]
 
 jobs:
   build-windows:
@@ -46,8 +46,11 @@ jobs:
     - name: Run Build
       run: cmake --build build --config Release --target PotatoAlert PotatoUpdater PotatoTest
 
-    - name: Run Tests
-      run: .\build\bin-test\PotatoTest.exe
+    - name: Run Native Tests
+      working-directory: ${{runner.workspace}}/build
+      env:
+        CTEST_OUTPUT_ON_FAILURE: 1
+      run: ctest
 
     - name: Create Release Archive
       run: |
@@ -146,8 +149,11 @@ jobs:
     - name: Run Build
       run: cmake --build build --config Release --target PotatoAlert PotatoTest
 
-    - name: Run Tests
-      run: .\build\bin-test\PotatoTest.exe
+    - name: Run Native Tests
+      working-directory: ${{runner.workspace}}/build
+      env:
+        CTEST_OUTPUT_ON_FAILURE: 1
+      run: ctest
 
     - name: Create Release Archive
       run: |
