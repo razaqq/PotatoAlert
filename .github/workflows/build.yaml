@@ -7,7 +7,9 @@ jobs:
     runs-on: windows-2019
 
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout
+      uses: actions/checkout@v2
+
     - name: Setup Visual Studio Shell
       uses: egor-tensin/vs-shell@v2
       with:
@@ -89,7 +91,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout
+      uses: actions/checkout@v2
 
     - name: Setup Ninja
       uses: ashutoshvarma/setup-ninja@master
