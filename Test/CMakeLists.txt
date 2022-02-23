@@ -4,9 +4,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-# enable CTest testing
-enable_testing()
-
 add_executable(PotatoTest PotatoTest.cpp CoreTest.cpp GameTest.cpp ReplayTest.cpp)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -33,7 +30,7 @@ set_target_properties(PotatoTest
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin-test"
 )
 
-add_test(test_all PotatoTest)
+add_test(NAME PotatoTest COMMAND PotatoTest WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/bin-test")
 
 add_custom_command(TARGET PotatoTest POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/gameDirectories

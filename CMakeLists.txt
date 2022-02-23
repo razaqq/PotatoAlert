@@ -6,12 +6,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
+enable_testing()
+
 option(PA_PROFILE "Enable Profiling Output" OFF)
 if(PA_PROFILE)
     add_definitions(-DPA_PROFILE=1)
 endif()
 
-add_definitions(-D_HAS_EXCEPTIONS=0)  # turn off exceptions
+if(WIN32)
+    add_definitions(-D_HAS_EXCEPTIONS=0)  # turn off exceptions for ms stl
+endif()
 add_definitions(-DQT_MESSAGELOGCONTEXT)  # qt log messages context
 
 include(generate_product_version)
