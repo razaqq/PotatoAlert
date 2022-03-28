@@ -11,13 +11,17 @@
 #include <vector>
 
 
-std::vector<std::byte> PotatoAlert::Core::Zlib::Inflate(std::span<const std::byte> in)
+std::vector<std::byte> PotatoAlert::Core::Zlib::Inflate(std::span<const std::byte> in, bool hasHeader)
 {
 	std::vector<std::byte> out;
 	unsigned char chunk[2048];
 
 	z_stream stream = {};
-	int ret = inflateInit(&stream);
+	int ret = 0;
+	if (hasHeader)
+		ret = inflateInit(&stream);
+	else
+		ret = inflateInit2(&stream, -15);
 
 	stream.next_in = reinterpret_cast<const Bytef*>(in.data());
 	stream.avail_in = static_cast<uInt>(in.size());
