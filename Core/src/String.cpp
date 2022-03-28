@@ -99,12 +99,12 @@ std::vector<std::string> s::Split(std::string_view str, std::string_view del)
 	return result;
 }
 
-std::string Join(const std::vector<std::string>& v, std::string_view del)
+std::string s::Join(std::span<std::string_view> v, std::string_view del)
 {
 	if (v.empty()) return "";
-	if (v.size() == 1) return v[1];
+	if (v.size() == 1) return std::string(v[0]);
 
-	const size_t size = std::accumulate(v.begin(), v.end(), 0, [](size_t current, const std::string& str) -> size_t { return current + str.size(); });
+	const size_t size = std::accumulate(v.begin(), v.end(), 0, [](size_t current, std::string_view str) -> size_t { return current + str.size(); });
 	std::string out;
 	out.reserve(size + ((v.size() - 1) * del.size()));
 
