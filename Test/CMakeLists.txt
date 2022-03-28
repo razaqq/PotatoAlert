@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_executable(PotatoTest PotatoTest.cpp CoreTest.cpp GameTest.cpp ReplayTest.cpp)
+add_executable(PotatoTest PotatoTest.cpp CoreTest.cpp GameFileUnpackTest.cpp GameTest.cpp ReplayTest.cpp)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     if ("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")  # clang-cl
@@ -23,8 +23,8 @@ else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
-set_target_properties(PotatoTest PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
-target_link_libraries(PotatoTest PRIVATE core client replayparser Catch2::Test)
+set_target_properties(PotatoTest PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
+target_link_libraries(PotatoTest PRIVATE core client GameFileUnpack replayparser Catch2::Test)
 set_target_properties(PotatoTest
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin-test"
@@ -35,13 +35,19 @@ add_test(NAME PotatoTest COMMAND PotatoTest WORKING_DIRECTORY "${CMAKE_BINARY_DI
 add_custom_command(TARGET PotatoTest POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/gameDirectories
         $<TARGET_FILE_DIR:PotatoTest>/gameDirectories
-        COMMENT "Copying Replay Version Files..."
+        COMMENT "Copying Game Directory Files..."
+        )
+
+add_custom_command(TARGET PotatoTest POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/gameFiles
+        $<TARGET_FILE_DIR:PotatoTest>/gameFiles
+        COMMENT "Copying Pkg Game Files..."
         )
 
 add_custom_command(TARGET PotatoTest POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/replays
         $<TARGET_FILE_DIR:PotatoTest>/replays
-        COMMENT "Copying Replay Version Files..."
+        COMMENT "Copying Replay Test Files..."
         )
 
 include(packaging)

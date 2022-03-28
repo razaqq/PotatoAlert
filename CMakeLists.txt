@@ -42,6 +42,7 @@ endif()
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/Core)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Client)
+add_subdirectory(${PROJECT_SOURCE_DIR}/GameFileUnpack)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Gui)
 add_subdirectory(${PROJECT_SOURCE_DIR}/PotatoAlert)
 add_subdirectory(${PROJECT_SOURCE_DIR}/ReplayParser)
