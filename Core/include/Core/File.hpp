@@ -35,10 +35,7 @@ public:
 		Truncate = 0x40
 	};
 
-	File()
-	{
-		m_handle = Handle::Null;
-	}
+	File() : m_handle(Handle::Null) {}
 
 	explicit File(Handle handle) : m_handle(handle) {}
 
@@ -150,7 +147,10 @@ public:
 
 	static bool GetVersion(std::string_view fileName, Version& outVersion);
 
-	static std::string LastError();
+	[[nodiscard]] static std::string LastError()
+	{
+		return RawLastError();
+	}
 
 	[[nodiscard]] bool IsOpen() const
 	{
@@ -171,6 +171,7 @@ public:
 	{
 		return m_handle != Handle::Null;
 	}
+
 private:
 	Handle m_handle;
 
@@ -189,6 +190,7 @@ private:
 	static bool RawExists(std::string_view file);
 	static bool RawMoveFilePointer(Handle handle, int64_t offset, FilePointerMoveMethod method);
 	static int64_t RawCurrentFilePointer(Handle handle);
+	static std::string RawLastError();
 };
 DEFINE_FLAGS(File::Flags)
 

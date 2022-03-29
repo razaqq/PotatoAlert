@@ -12,6 +12,8 @@
 
 using PotatoAlert::Core::File;
 
+namespace {
+
 template<typename T>
 static constexpr T CreateHandle(int handle)
 {
@@ -23,8 +25,6 @@ static constexpr T UnwrapHandle(File::Handle handle)
 {
 	return static_cast<T>(static_cast<uintptr_t>(handle));
 }
-
-namespace {
 
 int GetFileOpenFlags(File::Flags flags)
 {

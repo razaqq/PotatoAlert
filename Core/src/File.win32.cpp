@@ -12,6 +12,8 @@
 
 using PotatoAlert::Core::File;
 
+namespace {
+
 template<typename T>
 static constexpr T CreateHandle(HANDLE handle)
 {
@@ -22,6 +24,8 @@ template<typename T>
 static constexpr T UnwrapHandle(File::Handle handle)
 {
 	return reinterpret_cast<T>(static_cast<uintptr_t>(handle) - 1);
+}
+
 }
 
 namespace {
@@ -225,7 +229,7 @@ bool File::RawFlushBuffer(Handle handle)
 	return FlushFileBuffers(UnwrapHandle<HANDLE>(handle));
 }
 
-std::string File::LastError()
+std::string File::RawLastError()
 {
 	const DWORD err = GetLastError();
 	LPSTR lpMsgBuf;
