@@ -1,4 +1,4 @@
-﻿// Copyright 2020 <github.com/razaqq>
+// Copyright 2020 <github.com/razaqq>
 
 #include "Client/Config.hpp"
 #include "Client/Game.hpp"
@@ -156,6 +156,7 @@ void PotatoClient::Init()
 void PotatoClient::TriggerRun()
 {
 	m_watcher.ForceDirectoryChanged();
+	m_watcher.ForceFileChanged("tempArenaInfo.json");
 }
 
 // triggered whenever a file gets modified in a replays path

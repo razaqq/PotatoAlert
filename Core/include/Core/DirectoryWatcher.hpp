@@ -20,6 +20,7 @@ public:
 	void WatchDirectory(std::string_view dir);
 	void ClearDirectories();
 	void ForceDirectoryChanged();
+	void ForceFileChanged(std::string_view file);
 
 private:
 	void OnDirectoryChanged(const QString& path);

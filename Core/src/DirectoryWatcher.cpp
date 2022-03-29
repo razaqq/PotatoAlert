@@ -52,6 +52,13 @@ void DirectoryWatcher::ForceDirectoryChanged()
 	}
 }
 
+void DirectoryWatcher::ForceFileChanged(std::string_view file)
+{
+	for (const QString& dir : m_watcher.directories())
+	{
+		emit FileChanged((dir + QDir::separator() + file.data()).toStdString());
+	}
+}
 
 void DirectoryWatcher::OnDirectoryChanged(const QString& path)
 {
