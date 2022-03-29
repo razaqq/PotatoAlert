@@ -5,15 +5,23 @@
 #include <cstring>
 #include <iomanip>
 #include <ios>
+#include <ranges>
 #include <span>
 #include <sstream>
 #include <string>
+#include <type_traits>
 
 
 namespace PotatoAlert::Core {
 
 template<typename T>
-concept is_byte = sizeof(T) == 1;
+concept is_byte = sizeof(T) == 1 && (std::is_integral_v<T> || std::is_same_v<T, std::byte>) && !std::is_same_v<T, bool>;
+
+template<typename RangeType>
+concept is_byteRange = std::ranges::contiguous_range<RangeType> && is_byte<std::ranges::range_value_t<RangeType>>;
+
+template<typename RangeType, typename RangeValue>
+concept range_of = std::ranges::range<RangeType> && std::is_same_v<std::ranges::range_value_t<RangeType>, RangeValue>;
 
 template<is_byte T>
 constexpr std::span<T> Take(std::span<T>& data, size_t n)
@@ -47,8 +55,8 @@ static bool TakeInto(std::span<TIn>& data, TVal&& dst)  // requires std::is_fund
 	return false;
 }
 
-template<is_byte T>
-std::string FormatBytes(std::span<T> data)
+template<is_byteRange T>
+std::string FormatBytes(const T& data)
 {
 	std::ostringstream result;
 	for (auto begin = data.begin(); begin != data.end();)
