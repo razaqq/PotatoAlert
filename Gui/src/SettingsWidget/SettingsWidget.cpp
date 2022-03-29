@@ -52,6 +52,7 @@ void SettingsWidget::Init()
 	labelFont.setStyleStrategy(QFont::PreferAntialias);
 
 	auto layout = new QVBoxLayout();
+	layout->setContentsMargins(10, 10, 10, 10);
 	
 	/* UPDATE NOTIFICATIONS */
 	auto updateLayout = new QHBoxLayout();
@@ -216,7 +217,7 @@ void SettingsWidget::Init()
 	Load();
 }
 
-void SettingsWidget::Load()
+void SettingsWidget::Load() const
 {
 	m_updates->setChecked(PotatoConfig().Get<ConfigKey::UpdateNotifications>());
 	m_minimizeTray->setChecked(PotatoConfig().Get<ConfigKey::MinimizeTray>());

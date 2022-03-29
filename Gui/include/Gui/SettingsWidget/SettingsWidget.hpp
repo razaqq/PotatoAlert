@@ -21,9 +21,10 @@ class SettingsWidget : public QWidget
 public:
 	explicit SettingsWidget(QWidget* parent = nullptr);
 	void CheckPath() const;
+
 private:
 	void Init();
-	void Load();
+	void Load() const;
 	void ConnectSignals();
 	void changeEvent(QEvent* event) override;
 
@@ -57,6 +58,7 @@ private:
 	// QLineEdit* m_replaysFolderEdit = new QLineEdit();
 	// QToolButton* m_replaysFolderButton = new QToolButton();
 	// std::function<void(bool)> m_toggleReplaysFolderOverride;
+
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
