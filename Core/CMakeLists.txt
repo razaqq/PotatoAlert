@@ -38,6 +38,7 @@ if(WIN32)
 
         src/Directory.win32.cpp
         src/File.win32.cpp
+        src/FileMapping.win32.cpp
         src/Process.win32.cpp
         src/Semaphore.win32.cpp
         src/Time.win32.cpp
@@ -51,6 +52,7 @@ if(UNIX)
 
         src/Directory.linux.cpp
         src/File.linux.cpp
+        src/FileMapping.linux.cpp
         src/Semaphore.linux.cpp
         src/Time.linux.cpp
     )
