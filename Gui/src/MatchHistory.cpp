@@ -1,10 +1,14 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Client/MatchHistory.hpp"
+#include "Client/PotatoClient.hpp"
 #include "Client/StringTable.hpp"
 
 #include "Gui/MatchHistory.hpp"
 
+#include "Gui/QuestionDialog.hpp"
+
+#include <QApplication>
 #include <QDateTime>
 #include <QHeaderView>
 #include <QPainter>
@@ -12,7 +16,11 @@
 #include <QVBoxLayout>
 
 
+#include <QDebug>
+#include <QDialogButtonBox>
+
 using namespace PotatoAlert::Core;
+using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Gui::MatchHistory;
 
 void MatchHistory::paintEvent(QPaintEvent* _)
@@ -32,19 +40,41 @@ MatchHistory::MatchHistory(QWidget* parent) : QWidget(parent)
 
 void MatchHistory::Init()
 {
-	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	
-	m_table->setObjectName("matchHistoryWidget");
+	// setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-	auto centralLayout = new QHBoxLayout();
-	centralLayout->setContentsMargins(10, 10, 10, 10);
-	centralLayout->setSpacing(0);
+	QHBoxLayout* horLayout = new QHBoxLayout();
+	horLayout->setContentsMargins(10, 10, 10, 10);
+	horLayout->setSpacing(0);
+	QWidget* centralWidget = new QWidget(this);
+	centralWidget->setObjectName("matchHistoryWidget");
+	horLayout->addStretch();
+	horLayout->addWidget(centralWidget);
+	horLayout->addStretch();
+	auto layout = new QVBoxLayout();
+	layout->setContentsMargins(0, 0, 0, 10);
+	centralWidget->setLayout(layout);
 
-	centralLayout->addStretch();
-	centralLayout->addWidget(m_table);
-	centralLayout->addStretch();
+	/*
+	m_analyzeButton->setFixedWidth(100);
+	m_analyzeButton->setObjectName("settingsButton");
+	m_analyzeButton->setEnabled(false);
+	*/
+
+	m_deleteButton->setFixedWidth(100);
+	m_deleteButton->setObjectName("settingsButton");
+	m_deleteButton->setEnabled(false);
+
+	QHBoxLayout* buttonLayout = new QHBoxLayout();
+	buttonLayout->addStretch();
+	// buttonLayout->addWidget(m_analyzeButton);
+	buttonLayout->addWidget(m_deleteButton);
+	buttonLayout->addStretch();
+
+	layout->addWidget(m_table);
+	layout->addLayout(buttonLayout);
 
 	m_table->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	m_table->setObjectName("matchHistoryTable");
 	
 	m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	m_table->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -60,9 +90,10 @@ void MatchHistory::Init()
 
 	connect(m_table, &QTableWidget::cellDoubleClicked, [this](int row, int _)
 	{
-		if (const auto item = m_table->item(row, 7))
+		if (QTableWidgetItem* item = m_table->item(row, 7))
 		{
-			auto match = Client::MatchHistory::Instance().GetMatchJson(item->data(Qt::DisplayRole).toInt());
+			const int id = item->data(Qt::DisplayRole).toInt();
+			auto match = Client::MatchHistory::Instance().GetMatchJson(id);
 			if (match.has_value())
 			{
 				emit ReplaySelected(match.value());
@@ -70,7 +101,42 @@ void MatchHistory::Init()
 		}
 	});
 
-	setLayout(centralLayout);
+	/*
+	connect(m_analyzeButton, &QPushButton::clicked, [this](bool _)
+	{
+		const int row = m_table->currentRow();
+		if (QTableWidgetItem* item = m_table->item(row, 7))
+		{
+			const int id = item->data(Qt::DisplayRole).toInt();
+			Client::MatchHistory::Instance().SetNonAnalyzed(id);
+			// TODO: this is a bit hacky, find a way to trigger a run otherwise
+			PotatoClient::Instance().CheckPath();
+		}
+	});
+	*/
+
+	connect(m_deleteButton, &QPushButton::clicked, [this](bool _)
+	{
+		const int row = m_table->currentRow();
+		if (QTableWidgetItem* item = m_table->item(row, 7))
+		{
+			auto dialog = new QuestionDialog(this, GetString(StringTable::Keys::HISTORY_DELETE_QUESTION));
+			if (dialog->Run() == QuestionAnswer::Yes)
+			{
+				const int id = item->data(Qt::DisplayRole).toInt();
+				Client::MatchHistory::Instance().DeleteEntry(id);
+				m_table->removeRow(row);
+			}
+		}
+	});
+
+	connect(m_table, &QTableWidget::currentCellChanged, [this](int currentRow, int currentColumn, int previousRow, int previousColumn)
+	{
+		// m_analyzeButton->setEnabled(true);
+		m_deleteButton->setEnabled(true);
+	});
+
+	setLayout(horLayout);
 }
 
 void MatchHistory::InitHeaders() const
@@ -96,13 +162,16 @@ void MatchHistory::changeEvent(QEvent* event)
 {
 	if (event->type() == QEvent::LanguageChange)
 	{
-		m_table->horizontalHeaderItem(0)->setText(StringTable::GetString(StringTable::Keys::HISTORY_DATE));
-		m_table->horizontalHeaderItem(1)->setText(StringTable::GetString(StringTable::Keys::COLUMN_SHIP));
-		m_table->horizontalHeaderItem(2)->setText(StringTable::GetString(StringTable::Keys::HISTORY_MAP));
-		m_table->horizontalHeaderItem(3)->setText(StringTable::GetString(StringTable::Keys::HISTORY_MODE));
-		m_table->horizontalHeaderItem(4)->setText(StringTable::GetString(StringTable::Keys::SETTINGS_STATS_MODE));
-		m_table->horizontalHeaderItem(5)->setText(StringTable::GetString(StringTable::Keys::COLUMN_PLAYER));
-		m_table->horizontalHeaderItem(6)->setText(StringTable::GetString(StringTable::Keys::HISTORY_REGION));
+		m_table->horizontalHeaderItem(0)->setText(GetString(StringTable::Keys::HISTORY_DATE));
+		m_table->horizontalHeaderItem(1)->setText(GetString(StringTable::Keys::COLUMN_SHIP));
+		m_table->horizontalHeaderItem(2)->setText(GetString(StringTable::Keys::HISTORY_MAP));
+		m_table->horizontalHeaderItem(3)->setText(GetString(StringTable::Keys::HISTORY_MODE));
+		m_table->horizontalHeaderItem(4)->setText(GetString(StringTable::Keys::SETTINGS_STATS_MODE));
+		m_table->horizontalHeaderItem(5)->setText(GetString(StringTable::Keys::COLUMN_PLAYER));
+		m_table->horizontalHeaderItem(6)->setText(GetString(StringTable::Keys::HISTORY_REGION));
+
+		// m_analyzeButton->setText(GetString(StringTable::Keys::HISTORY_ANALYZE));
+		m_deleteButton->setText(GetString(StringTable::Keys::HISTORY_DELETE));
 	}
 	else
 	{
@@ -165,7 +234,7 @@ void MatchHistory::AddEntry(const Client::MatchHistory::Entry& entry)
 		m_table->setItem(row, i, fields[i]);
 	}
 
-	m_entries[entry.Id] = std::move(fields);
+	m_entries[entry.Id] = fields;
 
 	auto item = new QTableWidgetItem();
 	item->setData(Qt::DisplayRole, entry.Id);

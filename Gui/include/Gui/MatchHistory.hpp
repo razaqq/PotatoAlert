@@ -7,6 +7,7 @@
 #include "ReplayParser/ReplayParser.hpp"
 
 #include <QEvent>
+#include <QPushButton>
 #include <QTableWidget>
 #include <QWidget>
 
@@ -32,6 +33,8 @@ private:
 	QTableWidget* m_table = new QTableWidget();
 	void AddEntry(const Client::MatchHistory::Entry& entry);
 	std::map<uint32_t, std::array<QTableWidgetItem*, 7>> m_entries;
+	QPushButton* m_deleteButton = new QPushButton();
+	// QPushButton* m_analyzeButton = new QPushButton();
 
 signals:
 	void ReplaySelected(const Client::StatsParser::Match& match);
