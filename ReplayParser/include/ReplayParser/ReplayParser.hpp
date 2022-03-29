@@ -72,7 +72,7 @@ public:
 	std::vector<EntitySpec> specs;
 
 	static std::optional<Replay> FromFile(std::string_view fileName);
-	bool ReadPackets();
+	bool ReadPackets(const std::vector<fs::path>& scriptsSearchPaths);
 	[[nodiscard]] std::optional<ReplaySummary> Analyze() const;
 
 private:
@@ -80,6 +80,7 @@ private:
 	std::vector<std::byte> m_rawData;
 };
 
-std::optional<ReplaySummary> AnalyzeReplay(std::string_view file);
+std::optional<ReplaySummary> AnalyzeReplay(std::string_view file, const std::vector<fs::path>& scriptsSearchPaths);
+bool HasGameScripts(const Version& gameVersion, const std::vector<fs::path>& scriptsSearchPaths);
 
 }  // namespace PotatoAlert::ReplayParser

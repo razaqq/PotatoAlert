@@ -13,6 +13,7 @@
 #include <vector>
 
 
+using PotatoAlert::Core::GetModuleRootPath;
 using PotatoAlert::Core::Version;
 using namespace PotatoAlert::ReplayParser;
 namespace fs = std::filesystem;
@@ -20,7 +21,7 @@ namespace fs = std::filesystem;
 
 static std::string GetReplay(std::string_view name)
 {
-	if (std::optional<fs::path> rootPath = PotatoAlert::Core::GetModuleRootPath())
+	if (std::optional<fs::path> rootPath = GetModuleRootPath())
 	{
 		return (fs::path(rootPath.value()).remove_filename() / "replays" / name).string();
 	}
@@ -39,13 +40,15 @@ static constexpr void ClearMem(Replay& replay)
 
 TEST_CASE( "ReplayTest" )
 {
+	const fs::path root = GetModuleRootPath().value() / "ReplayVersions";
+
 	std::optional<Replay> res = Replay::FromFile(GetReplay("20201107_155356_PISC110-Venezia_19_OC_prey.wowsreplay"));
 	REQUIRE(res.has_value());
 	Replay replay = res.value();
 	REQUIRE(replay.meta.name == "12x12");
 	REQUIRE(replay.meta.dateTime == "07.11.2020 15:53:56");
 	REQUIRE(replay.packets.empty());
-	REQUIRE(replay.ReadPackets());
+	REQUIRE(replay.ReadPackets({ root }));
 	REQUIRE(replay.packets.size() == 153376);
 	std::optional<ReplaySummary> result = replay.Analyze();
 	REQUIRE(result);
@@ -55,7 +58,7 @@ TEST_CASE( "ReplayTest" )
 	res = Replay::FromFile(GetReplay("20210914_212320_PRSC610-Smolensk_25_sea_hope.wowsreplay"));  // WIN
 	REQUIRE(res.has_value());
 	Replay replay2 = res.value();
-	REQUIRE(replay2.ReadPackets());
+	REQUIRE(replay2.ReadPackets({ root }));
 	std::optional<ReplaySummary> result2 = replay2.Analyze();
 	REQUIRE(result2);
 	REQUIRE(result2.value().Outcome == MatchOutcome::Win);
@@ -64,7 +67,7 @@ TEST_CASE( "ReplayTest" )
 	res = Replay::FromFile(GetReplay("20210913_011502_PASD510-Somers_53_Shoreside.wowsreplay"));  // LOSS
 	REQUIRE(res.has_value());
 	Replay replay3 = res.value();
-	REQUIRE(replay3.ReadPackets());
+	REQUIRE(replay3.ReadPackets({ root }));
 	std::optional<ReplaySummary> result3 = replay3.Analyze();
 	REQUIRE(result3);
 	REQUIRE(result3.value().Outcome == MatchOutcome::Loss);
@@ -74,7 +77,7 @@ TEST_CASE( "ReplayTest" )
 	res = Replay::FromFile(GetReplay("20210912_002554_PRSB110-Sovetskaya-Rossiya_53_Shoreside.wowsreplay"));  // WIN
 	REQUIRE(res.has_value());
 	Replay replay4 = res.value();
-	REQUIRE(replay4.ReadPackets());
+	REQUIRE(replay4.ReadPackets({ root }));
 	std::optional<ReplaySummary> result4 = replay4.Analyze();
 	REQUIRE(result4);
 	REQUIRE(result4.value().Outcome == MatchOutcome::Win);
@@ -83,7 +86,7 @@ TEST_CASE( "ReplayTest" )
 	res = Replay::FromFile(GetReplay("20210915_180756_PRSC610-Smolensk_35_NE_north_winter.wowsreplay"));  // LOSS
 	REQUIRE(res.has_value());
 	Replay replay5 = res.value();
-	REQUIRE(replay5.ReadPackets());
+	REQUIRE(replay5.ReadPackets({ root }));
 	std::optional<ReplaySummary> result5 = replay5.Analyze();
 	REQUIRE(result5);
 	REQUIRE(result5.value().Outcome == MatchOutcome::Loss);
@@ -92,7 +95,7 @@ TEST_CASE( "ReplayTest" )
 	res = Replay::FromFile(GetReplay("20201117_104604_PWSD508-Orkan_50_Gold_harbor.wowsreplay"));  // DRAW
 	REQUIRE(res.has_value());
 	Replay replay6 = res.value();
-	REQUIRE(replay6.ReadPackets());
+	REQUIRE(replay6.ReadPackets({ root }));
 	std::optional<ReplaySummary> result6 = replay6.Analyze();
 	REQUIRE(result6);
 	REQUIRE(result6.value().Outcome == MatchOutcome::Draw);
@@ -100,7 +103,9 @@ TEST_CASE( "ReplayTest" )
 
 TEST_CASE( "ReplayGameFileTest" )
 {
-	const std::vector<EntitySpec> spec = ParseScripts(Version(0, 10, 8, 0));
+	const fs::path root = GetModuleRootPath().value() / "ReplayVersions";
+
+	const std::vector<EntitySpec> spec = ParseScripts(Version(0, 10, 8, 0), { root });
 	REQUIRE(spec.size() == 13);
 	REQUIRE(spec[0].properties.size() == 17);
 	REQUIRE(spec[0].baseMethods.size() == 33);

@@ -18,6 +18,7 @@
 
 namespace rp = PotatoAlert::ReplayParser;
 using PotatoAlert::Core::File;
+using PotatoAlert::Core::Version;
 using namespace PotatoAlert::ReplayParser;
 using namespace tinyxml2;
 
@@ -46,19 +47,26 @@ static std::optional<std::unordered_map<std::string, ArgType>> ParseAliases(cons
 	return aliases;
 }
 
-std::vector<EntitySpec> rp::ParseScripts(const Core::Version& version)
+std::vector<EntitySpec> rp::ParseScripts(const Version& version, const std::vector<fs::path>& searchPaths)
 {
-	const auto rootPath = Core::GetModuleRootPath();
-	if (!rootPath.has_value())
+	// this is a shit way of doing this, but thanks to wg its also the only way
+	bool includeBuild = version.Build() == 0 ? false : true;
+
+	fs::path versionDir;
+	bool found = false;
+	for (const fs::path& path : searchPaths)
 	{
-		LOG_ERROR("Failed to get module root path");
-		return {};
+		versionDir = path / version.ToString(".", includeBuild) / "scripts";
+		if (fs::exists(versionDir))
+		{
+			found = true;
+			break;
+		}
 	}
 
-	fs::path versionDir = fs::path(rootPath.value()).remove_filename() / "ReplayVersions" / version.ToString(".", false) / "scripts";
-	if (!fs::exists(versionDir))
+	if (!found)
 	{
-		LOG_ERROR("Game files for version {} not found in {}.", version.ToString(".", false), versionDir);
+		LOG_ERROR("Game files for version {} not found.", version.ToString(".", includeBuild));
 		return {};
 	}
 

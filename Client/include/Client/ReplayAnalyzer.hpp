@@ -30,7 +30,8 @@ class ReplayAnalyzer : public QObject
 	Q_OBJECT
 
 public:
-	ReplayAnalyzer()
+	ReplayAnalyzer(const std::vector<fs::path>& scriptsSearchPaths)
+		: m_scriptsSearchPaths(scriptsSearchPaths)
 	{
 		qRegisterMetaType<uint32_t>("uint32_t");
 		qRegisterMetaType<ReplaySummary>("ReplaySummary");
@@ -38,6 +39,8 @@ public:
 
 	void AnalyzeDirectory(std::string_view directory);
 	void OnFileChanged(const std::string& file);
+	bool HasGameScripts(const Version& gameVersion) const;
+	static bool UnpackGameScripts(std::string_view dst, std::string_view pkgPath, std::string_view idxPath);
 
 private:
 	void AnalyzeReplay(std::string_view path);
@@ -45,6 +48,7 @@ private:
 	std::unordered_set<std::string> m_analyzedReplays;
 	Core::ThreadPool m_threadPool;
 	std::vector<std::future<void>> m_futures;
+	std::vector<fs::path> m_scriptsSearchPaths;
 
 signals:
 	void ReplaySummaryReady(uint32_t id, const ReplaySummary& summary) const;

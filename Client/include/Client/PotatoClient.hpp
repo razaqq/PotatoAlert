@@ -43,7 +43,7 @@ public:
 	DirectoryStatus CheckPath();
 
 private:
-	PotatoClient() = default;
+	PotatoClient();
 	void OnResponse(const QString& message);
 	void OnFileChanged(const std::string& file);
 

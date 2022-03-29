@@ -127,7 +127,6 @@ private:
 	json m_json;
 	File m_file;
 	fs::path m_filePath;
-	static std::optional<fs::path> GetPath(std::string_view fileName);
 	void AddMissingKeys();
 	void ApplyUpdates();
 	bool CreateDefault();

@@ -8,6 +8,8 @@
 
 #include "Client/Config.hpp"
 
+#include "Client/StandardPaths.hpp"
+
 #include <QApplication>
 #include <QDir>
 #include <QStandardPaths>
@@ -60,13 +62,7 @@ Config::Config(std::string_view fileName)
 		{ g_keyNames[ConfigKey::MenuBarLeft],              true }
 	};
 
-	auto path = GetPath(fileName);
-	if (!path)
-	{
-		LOG_ERROR("Failed to get config path.");
-		QApplication::exit(1);
-	}
-	m_filePath = std::move(path.value());
+	m_filePath = Client::AppDataPath() / fileName;
 
 	if (!Exists())
 	{
@@ -246,33 +242,6 @@ void Config::AddMissingKeys()
 			m_json[it.key()] = it.value();
 		}
 	}
-}
-
-std::optional<fs::path> Config::GetPath(std::string_view fileName)
-{
-	const fs::path configPath = fs::path(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert").toStdString());
-
-	std::error_code ec;
-
-	// check if path exists
-	bool exists = fs::exists(configPath, ec);
-	if (ec)
-	{
-		LOG_ERROR("Failed to check for config path: {}", ec.message());
-		return {};
-	}
-
-	if (!exists)
-	{
-		fs::create_directories(configPath, ec);
-		if (ec)
-		{
-			LOG_ERROR("Failed to create dirs for config path: {}", ec.message());
-			return {};
-		}
-	}
-
-	return (configPath / fileName);
 }
 
 void Config::ApplyUpdates()

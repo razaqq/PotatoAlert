@@ -2,6 +2,7 @@
 
 #include "Client/MatchHistory.hpp"
 
+#include "Client/StandardPaths.hpp"
 #include "Core/File.hpp"
 #include "Core/Log.hpp"
 #include "Core/Sqlite.hpp"
@@ -116,18 +117,17 @@ MatchHistory::~MatchHistory()
 
 QDir MatchHistory::GetDir()
 {
-	QDir dir = QDir::cleanPath(
-			QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) +
-			QDir::separator() + "PotatoAlert"+ QDir::separator() + "Matches");
-	if (!dir.exists())
+	const fs::path matchesPath = AppDataPath() / "Matches";
+	if (!fs::exists(matchesPath))
 	{
-		LOG_TRACE("Creating match history directory: {}", dir.absolutePath().toStdString());
-		if (!dir.mkpath("."))
+		LOG_TRACE("Creating match history directory: {}", matchesPath.string());
+		std::error_code ec;
+		if (!fs::create_directories(matchesPath, ec))
 		{
-			LOG_ERROR("Failed to create match history directory");
+			LOG_ERROR("Failed to create match history directory: {}", ec.message());
 		}
 	}
-	return dir;
+	return QString::fromStdString(matchesPath.string());
 }
 
 MatchHistory::Entry MatchHistory::CreateEntry(const Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view hash)

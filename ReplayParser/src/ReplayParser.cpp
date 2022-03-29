@@ -78,7 +78,7 @@ std::optional<Replay> Replay::FromFile(std::string_view fileName)
 	return replay;
 }
 
-bool Replay::ReadPackets()
+bool Replay::ReadPackets(const std::vector<fs::path>& scriptsSearchPaths)
 {
 	PA_PROFILE_FUNCTION();
 
@@ -147,7 +147,7 @@ bool Replay::ReadPackets()
 	decrypted.clear();
 	decrypted.shrink_to_fit();
 
-	specs = ParseScripts(meta.clientVersionFromExe);
+	specs = ParseScripts(meta.clientVersionFromExe, scriptsSearchPaths);
 
 	if (specs.empty())
 	{
@@ -164,11 +164,11 @@ bool Replay::ReadPackets()
 	return true;
 }
 
-std::optional<ReplaySummary> rp::AnalyzeReplay(std::string_view file)
+std::optional<ReplaySummary> rp::AnalyzeReplay(std::string_view file, const std::vector<fs::path>& scriptsSearchPaths)
 {
 	if (std::optional<Replay> res = Replay::FromFile(file))
 	{
-		if (res.value().ReadPackets())
+		if (res.value().ReadPackets(scriptsSearchPaths))
 		{
 			return res.value().Analyze();
 		}
@@ -179,4 +179,9 @@ std::optional<ReplaySummary> rp::AnalyzeReplay(std::string_view file)
 		LOG_ERROR("Failed to read replay {}", file);
 	}
 	return {};
+}
+
+bool rp::HasGameScripts(const Version& gameVersion, const std::vector<fs::path>& scriptsSearchPaths)
+{
+	return !ParseScripts(gameVersion, scriptsSearchPaths).empty();
 }

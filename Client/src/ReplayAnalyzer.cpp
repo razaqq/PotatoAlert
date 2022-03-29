@@ -4,6 +4,7 @@
 
 #include "Core/File.hpp"
 #include "Core/String.hpp"
+#include "GameFileUnpack/GameFileUnpack.hpp"
 
 #include <algorithm>
 #include <optional>
@@ -11,7 +12,25 @@
 
 
 using namespace PotatoAlert::Core;
+using PotatoAlert::GameFileUnpack::Unpacker;
 using PotatoAlert::Client::ReplayAnalyzer;
+
+bool ReplayAnalyzer::HasGameScripts(const Version& gameVersion) const
+{
+	return ReplayParser::HasGameScripts(gameVersion, m_scriptsSearchPaths);
+}
+
+bool ReplayAnalyzer::UnpackGameScripts(std::string_view dst, std::string_view pkgPath, std::string_view idxPath)
+{
+	const Unpacker unpacker(pkgPath, idxPath);
+	if (!unpacker.Extract("scripts/", dst))
+	{
+		LOG_ERROR("Failed to unpack game files");
+		return false;
+	}
+	return true;
+}
+
 
 void ReplayAnalyzer::OnFileChanged(const std::string& file)
 {
@@ -27,7 +46,7 @@ void ReplayAnalyzer::AnalyzeReplay(std::string_view path)
 {
 	auto analyze = [this](std::string_view file) -> void
 	{
-		if (std::optional<ReplaySummary> res = ReplayParser::AnalyzeReplay(file))
+		if (std::optional<ReplaySummary> res = ReplayParser::AnalyzeReplay(file, m_scriptsSearchPaths))
 		{
 			const ReplaySummary summary = res.value();
 			if (std::optional<MatchHistory::Entry> entry = MatchHistory::Instance().GetEntry(summary.Hash))

@@ -1,13 +1,15 @@
-// Copyright 2020 <github.com/razaqq>
+﻿// Copyright 2020 <github.com/razaqq>
 
 #include "Client/Config.hpp"
 #include "Client/Game.hpp"
 #include "Client/ReplayAnalyzer.hpp"
 #include "Client/MatchHistory.hpp"
 #include "Client/PotatoClient.hpp"
+#include "Client/StandardPaths.hpp"
 #include "Client/StatsParser.hpp"
 
 #include "Core/Defer.hpp"
+#include "Core/Directory.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
 #include "Core/Sha256.hpp"
@@ -92,6 +94,12 @@ static TempArenaInfoResult ReadArenaInfo(std::string_view filePath)
 
 }
 
+PotatoClient::PotatoClient()
+	: m_replayAnalyzer(ReplayAnalyzer({ GetModuleRootPath().value() / "ReplayVersions", AppDataPath() / "ReplayVersions" }))
+{
+}
+
+
 void PotatoClient::Init()
 {
 	emit StatusReady(Status::Ready, "Ready");
@@ -136,8 +144,8 @@ void PotatoClient::Init()
 
 	connect(&m_socket, &QWebSocket::textMessageReceived, this, &PotatoClient::OnResponse);
 
-	connect(&m_watcher, &Core::DirectoryWatcher::FileChanged, this, &PotatoClient::OnFileChanged);
-	connect(&m_watcher, &Core::DirectoryWatcher::FileChanged, &m_replayAnalyzer, &ReplayAnalyzer::OnFileChanged);
+	connect(&m_watcher, &DirectoryWatcher::FileChanged, this, &PotatoClient::OnFileChanged);
+	connect(&m_watcher, &DirectoryWatcher::FileChanged, &m_replayAnalyzer, &ReplayAnalyzer::OnFileChanged);
 
 	connect(&m_replayAnalyzer, &ReplayAnalyzer::ReplaySummaryReady, this, &PotatoClient::MatchSummaryChanged);
 
@@ -295,13 +303,25 @@ DirectoryStatus PotatoClient::CheckPath()
 		m_dirStatus = dirStatus;
 
 		// start watching all replays paths
-		for (auto& folder : dirStatus.replaysPath)
+		for (const std::string& folder : dirStatus.replaysPath)
 		{
 			if (!folder.empty())
 			{
 				m_watcher.WatchDirectory(folder);
 			}
 		}
+
+		// make sure we have up-to-date game scripts
+		if (!m_replayAnalyzer.HasGameScripts(dirStatus.gameVersion))
+		{
+			LOG_INFO("Missing game scripts for version {} detected, trying to unpack...", dirStatus.gameVersion.ToString());
+			const std::string dst = (AppDataPath() / "ReplayVersions" / dirStatus.gameVersion.ToString()).string();
+			if (!ReplayAnalyzer::UnpackGameScripts(dst, dirStatus.pkgPath.string(), dirStatus.idxPath.string()))
+			{
+				LOG_ERROR("Failed to unpack game scripts for version: {}", dirStatus.gameVersion.ToString());
+			}
+		}
+		LOG_TRACE("Game scripts for version {} found", dirStatus.gameVersion.ToString());
 
 		// lets check the entire game folder, replays might be hiding everywhere
 		m_replayAnalyzer.AnalyzeDirectory(gamePath);
