@@ -1,4 +1,4 @@
-﻿// Copyright 2020 <github.com/razaqq>
+// Copyright 2020 <github.com/razaqq>
 
 #include "Client/Config.hpp"
 #include "Client/Game.hpp"
@@ -276,6 +276,7 @@ DirectoryStatus PotatoClient::CheckPath()
 
 	const std::string gamePath = PotatoConfig().Get<ConfigKey::GameDirectory>();
 
+	/*
 	if (PotatoConfig().Get<ConfigKey::OverrideReplaysDirectory>())
 	{
 		const std::string replaysPath = PotatoConfig().Get<ConfigKey::ReplaysDirectory>();
@@ -287,6 +288,7 @@ DirectoryStatus PotatoClient::CheckPath()
 
 		return dirStatus;
 	}
+	*/
 
 	if (Game::CheckPath(gamePath, dirStatus))
 	{

@@ -159,6 +159,7 @@ void SettingsWidget::Init()
 	};
 	*/
 
+	/*
 	auto replaysFolderVLayout = new QVBoxLayout();
 
 	auto replaysFolderFirstRowLayout = new QHBoxLayout();
@@ -189,6 +190,7 @@ void SettingsWidget::Init()
 	replaysFolderVLayout->addLayout(replaysFolderSecondRowLayout);
 
 	layout->addLayout(replaysFolderVLayout);
+	*/
 
 	layout->addStretch();
 
@@ -224,8 +226,8 @@ void SettingsWidget::Load()
 	m_language->m_btnGroup->button(PotatoConfig().Get<ConfigKey::Language>())->setChecked(true);
 	m_matchHistory->setChecked(PotatoConfig().Get<ConfigKey::MatchHistory>());
 
-	m_replaysFolderEdit->setText(QString::fromStdString(
-			PotatoConfig().Get<ConfigKey::ReplaysDirectory>()));
+	// m_replaysFolderEdit->setText(QString::fromStdString(
+	//		PotatoConfig().Get<ConfigKey::ReplaysDirectory>()));
 	bool manualReplays = PotatoConfig().Get<ConfigKey::OverrideReplaysDirectory>();
 	m_overrideReplaysFolder->setChecked(manualReplays);
 	// m_toggleReplaysFolderOverride(manualReplays);
@@ -268,6 +270,7 @@ void SettingsWidget::ConnectSignals()
 			CheckPath();
 		}
 	});
+	/*
 	connect(m_replaysFolderButton, &QToolButton::clicked, [this]()
 	{
 		QString dir = QFileDialog::getExistingDirectory(this, "Select Replays Folder", "", QFileDialog::ShowDirsOnly);
@@ -277,6 +280,7 @@ void SettingsWidget::ConnectSignals()
 			PotatoConfig().Set<ConfigKey::ReplaysDirectory>(dir.toStdString());
 		}
 	});
+	*/
 	connect(m_overrideReplaysFolder, &SettingsSwitch::clicked, [this](bool checked)
 	{
 		PotatoConfig().Set<ConfigKey::OverrideReplaysDirectory>(checked);

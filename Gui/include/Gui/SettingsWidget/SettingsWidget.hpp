@@ -54,8 +54,8 @@ private:
 	FolderStatus* m_folderStatusGui = new FolderStatus(this);
 
 	// manual replays folder
-	QLineEdit* m_replaysFolderEdit = new QLineEdit();
-	QToolButton* m_replaysFolderButton = new QToolButton();
+	// QLineEdit* m_replaysFolderEdit = new QLineEdit();
+	// QToolButton* m_replaysFolderButton = new QToolButton();
 	// std::function<void(bool)> m_toggleReplaysFolderOverride;
 signals:
 #pragma clang diagnostic push
