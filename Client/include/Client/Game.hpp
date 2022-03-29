@@ -3,10 +3,13 @@
 
 #include "Core/Version.hpp"
 
+#include <filesystem>
 #include <string>
 #include <optional>
 #include <vector>
 
+
+namespace fs = std::filesystem;
 
 namespace PotatoAlert::Client::Game {
 
@@ -14,7 +17,9 @@ struct DirectoryStatus
 {
 	std::string gamePath;
 	Core::Version gameVersion;
-	std::string resFolderPath;
+	fs::path binPath;
+	fs::path idxPath;
+	fs::path pkgPath;
 	std::string preferencesPathBase;
 	std::string directoryVersion;
 	std::string replaysPathBase;
@@ -27,7 +32,7 @@ struct DirectoryStatus
 };
 
 bool CheckPath(const std::string& selectedPath, DirectoryStatus& status);
-bool GetResFolderPath(DirectoryStatus& status);
+bool GetBinPath(DirectoryStatus& status);
 bool ReadEngineConfig(DirectoryStatus& status, const char* resFolder);
 bool ReadPreferences(DirectoryStatus& status, const std::string& basePath);
 void SetReplaysFolder(DirectoryStatus& status);

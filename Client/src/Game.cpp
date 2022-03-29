@@ -22,8 +22,7 @@ namespace fs = std::filesystem;
 
 namespace PotatoAlert::Client::Game {
 
-// finds the res folder path in the currently selected directory
-bool GetResFolderPath(DirectoryStatus& status)
+bool GetBinPath(DirectoryStatus& status)
 {
 	// get newest folder version inside /bin folder
 
@@ -56,8 +55,8 @@ bool GetResFolderPath(DirectoryStatus& status)
 		if (version == status.gameVersion)
 		{
 			status.directoryVersion = entry.path().filename().string();
-			status.resFolderPath = (fs::path(status.gamePath) / "bin" / status.directoryVersion).string();
-			return fs::exists(status.resFolderPath);
+			status.binPath = fs::path(status.gamePath) / "bin" / status.directoryVersion;
+			return fs::exists(status.binPath);
 		}
 	}
 
@@ -78,8 +77,8 @@ bool GetResFolderPath(DirectoryStatus& status)
 	if (folderVersion != -1)
 	{
 		status.directoryVersion = std::to_string(folderVersion);
-		status.resFolderPath = (fs::path(status.gamePath) / "bin" / status.directoryVersion).string();
-		return fs::exists(status.resFolderPath);
+		status.binPath = fs::path(status.gamePath) / "bin" / status.directoryVersion;
+		return fs::exists(status.binPath);
 	}
 
 	LOG_ERROR("Could not find a valid res folder!");
@@ -89,7 +88,7 @@ bool GetResFolderPath(DirectoryStatus& status)
 // reads the engine config and sets values
 bool ReadEngineConfig(DirectoryStatus& status, const char* resFolder)
 {
-	fs::path engineConfig(status.resFolderPath / fs::path(resFolder) / "engine_config.xml");
+	fs::path engineConfig(status.binPath / fs::path(resFolder) / "engine_config.xml");
 	if (!fs::exists(engineConfig))
 	{
 		LOG_TRACE("No engine_config.xml in path: {}", resFolder);
@@ -243,8 +242,8 @@ void SetReplaysFolder(DirectoryStatus& status)
 	else if (status.replaysPathBase == "exe_path")
 	{
 		status.replaysPath = {
-				(fs::path(status.gamePath) / "bin" / status.directoryVersion / "bin32" / status.replaysDirPath).string(),
-				(fs::path(status.gamePath) / "bin" / status.directoryVersion / "bin64" / status.replaysDirPath).string()
+				(status.binPath / "bin32" / status.replaysDirPath).string(),
+				(status.binPath / "bin64" / status.replaysDirPath).string()
 		};
 	}
 	if (status.versionedReplays)
@@ -275,11 +274,14 @@ bool CheckPath(const std::string& selectedPath, DirectoryStatus& status)
 		return false;
 
 	ReadPreferences(status, status.gamePath);
-	if (!GetResFolderPath(status))
+	if (!GetBinPath(status))
 	{
-		status.statusText = "Failed to get res folder path";
+		status.statusText = "Failed to get bin path";
 		return false;
 	}
+
+	status.idxPath = status.binPath / "idx";
+	status.pkgPath = gamePath / "res_packages";
 
 	if (!ReadEngineConfig(status, "res"))
 	{
@@ -287,7 +289,7 @@ bool CheckPath(const std::string& selectedPath, DirectoryStatus& status)
 		return false;
 	}
 
-	const std::string resModsFolder = fs::path(fs::path(status.resFolderPath) / "res_mods").string();
+	const std::string resModsFolder = fs::path(fs::path(status.binPath) / "res_mods").string();
 	ReadEngineConfig(status, resModsFolder.c_str());
 	SetReplaysFolder(status);
 
