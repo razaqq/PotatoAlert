@@ -1,6 +1,7 @@
 // Copyright 2022 <github.com/razaqq>
 #pragma once
 
+#include <ranges>
 #include <string>
 
 
