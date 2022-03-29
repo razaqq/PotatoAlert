@@ -308,3 +308,8 @@ QFrame#hLine
 {
   background-color: palette(midlight);
 }
+
+#matchHistoryTable
+{
+  background-color: transparent;
+}
