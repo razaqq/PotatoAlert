@@ -14,6 +14,7 @@ target_sources(
     src/MatchHistory.cpp
     src/NativeWindow.cpp
     src/Palette.cpp
+    src/QuestionDialog.cpp
     src/TitleBar.cpp
 
     src/MenuBar/MenuEntryButton.cpp
