@@ -51,6 +51,9 @@ public:
 	[[nodiscard]] std::optional<Entry> GetEntry(uint32_t id) const;
 	[[nodiscard]] std::optional<Entry> GetLatestEntry() const;
 
+	void DeleteEntry(std::string_view hash) const;
+	void DeleteEntry(uint32_t id) const;
+
 	struct NonAnalyzedMatch
 	{
 		std::string Hash;

@@ -304,6 +304,56 @@ std::optional<MatchHistory::Entry> MatchHistory::GetEntry(uint32_t id) const
 	return {};
 }
 
+void MatchHistory::DeleteEntry(std::string_view hash) const
+{
+	LOG_INFO("Deleting entry with hash '{}' from match history", hash);
+
+	auto statement = SQLite::Statement(m_db, "DELETE FROM matches WHERE Hash = ?1");
+
+	if (!statement)
+	{
+		LOG_ERROR("Failed to prepare SQL statement: {}", m_db.GetLastError());
+		return;
+	}
+
+	if (!statement.Bind(1, hash))
+	{
+		LOG_ERROR("Failed to bind to SQL statement: {}", m_db.GetLastError());
+		return;
+	}
+
+	statement.ExecuteStep();
+	if (!statement.IsDone())
+	{
+		LOG_ERROR("Failed to delete match with hash '{}' from match history: {}", hash, m_db.GetLastError());
+	}
+}
+
+void MatchHistory::DeleteEntry(uint32_t id) const
+{
+	LOG_INFO("Deleting entry with id '{}' from match history", id);
+
+	auto statement = SQLite::Statement(m_db, "DELETE FROM matches WHERE Id = ?1");
+
+	if (!statement)
+	{
+		LOG_ERROR("Failed to prepare SQL statement: {}", m_db.GetLastError());
+		return;
+	}
+
+	if (!statement.Bind(1, id))
+	{
+		LOG_ERROR("Failed to bind to SQL statement: {}", m_db.GetLastError());
+		return;
+	}
+
+	statement.ExecuteStep();
+	if (!statement.IsDone())
+	{
+		LOG_ERROR("Failed to delete match with id '{}' from match history: {}", id, m_db.GetLastError());
+	}
+}
+
 std::optional<MatchHistory::Entry> MatchHistory::GetLatestEntry() const
 {
 	if (!m_db)
