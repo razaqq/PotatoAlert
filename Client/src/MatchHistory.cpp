@@ -136,9 +136,7 @@ MatchHistory::Entry MatchHistory::CreateEntry(const Match::Info& info, std::stri
 	auto date = String::Split(dateSplit[0], ".");
 	auto time = String::Split(dateSplit[1], ":");
 
-	String::ReplaceAll(dateSplit[1], ":", "");
-
-	const std::string replayName = std::format("{}{}{}_{}_{}_{}.wowsreplay", date[2], date[1], date[0], dateSplit[1], info.shipIdent, info.map);
+	const std::string replayName = std::format("{}{}{}_{}{}{}_{}_{}.wowsreplay", date[2], date[1], date[0], time[0], time[1], time[2], info.shipIdent, info.map);
 
 	return Entry
 	{
