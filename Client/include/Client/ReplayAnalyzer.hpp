@@ -30,8 +30,8 @@ class ReplayAnalyzer : public QObject
 	Q_OBJECT
 
 public:
-	ReplayAnalyzer(const std::vector<fs::path>& scriptsSearchPaths)
-		: m_scriptsSearchPaths(scriptsSearchPaths)
+	ReplayAnalyzer(std::vector<fs::path> scriptsSearchPaths)
+		: m_scriptsSearchPaths(std::move(scriptsSearchPaths))
 	{
 		qRegisterMetaType<uint32_t>("uint32_t");
 		qRegisterMetaType<ReplaySummary>("ReplaySummary");
