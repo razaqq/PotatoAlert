@@ -1,4 +1,4 @@
-// Copyright 2020 <github.com/razaqq>
+﻿// Copyright 2020 <github.com/razaqq>
 
 #include "Client/Config.hpp"
 #include "Client/Game.hpp"
@@ -322,7 +322,7 @@ DirectoryStatus PotatoClient::CheckPath()
 				LOG_ERROR("Failed to unpack game scripts for version: {}", dirStatus.gameVersion.ToString());
 			}
 		}
-		LOG_TRACE("Game scripts for version {} found", dirStatus.gameVersion.ToString());
+		LOG_INFO("Game scripts for version {} found", dirStatus.gameVersion.ToString());
 
 		// lets check the entire game folder, replays might be hiding everywhere
 		m_replayAnalyzer.AnalyzeDirectory(gamePath);
