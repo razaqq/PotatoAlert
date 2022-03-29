@@ -171,4 +171,16 @@
 	    <English>Region</English>
 	    <Deutsch>Region</Deutsch>
     </Key>
+    <Key ID="HISTORY_ANALYZE">
+	    <English>Re-Analyze</English>
+	    <Deutsch>Reanalysieren</Deutsch>
+    </Key>
+    <Key ID="HISTORY_DELETE">
+	    <English>Delete</English>
+	    <Deutsch>Löschen</Deutsch>
+    </Key>
+    <Key ID="HISTORY_DELETE_QUESTION">
+	    <English>Do you really want to delete the selected match?</English>
+	    <Deutsch>Wirklich das markierte Gefecht löschen?</Deutsch>
+    </Key>
 </Package>
