@@ -54,6 +54,9 @@ public:
 	void DeleteEntry(std::string_view hash) const;
 	void DeleteEntry(uint32_t id) const;
 
+	void SetNonAnalyzed(std::string_view hash) const;
+	void SetNonAnalyzed(uint32_t id) const;
+
 	struct NonAnalyzedMatch
 	{
 		std::string Hash;

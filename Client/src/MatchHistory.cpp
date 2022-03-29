@@ -352,6 +352,57 @@ void MatchHistory::DeleteEntry(uint32_t id) const
 	}
 }
 
+void MatchHistory::SetNonAnalyzed(std::string_view hash) const
+{
+	LOG_INFO("Setting match with hash '{}' to non-analyzed", hash);
+
+	auto statement = SQLite::Statement(m_db, "UPDATE matches SET Analyzed = false WHERE Hash = ?1");
+
+	if (!statement)
+	{
+		LOG_ERROR("Failed to prepare SQL statement: {}", m_db.GetLastError());
+		return;
+	}
+
+	if (!statement.Bind(1, hash))
+	{
+		LOG_ERROR("Failed to bind to SQL statement: {}", m_db.GetLastError());
+		return;
+	}
+
+	statement.ExecuteStep();
+	if (!statement.IsDone())
+	{
+		LOG_ERROR("Failed set match with hash '{}' to non-analyzed: {}", hash, m_db.GetLastError());
+	}
+}
+
+void MatchHistory::SetNonAnalyzed(uint32_t id) const
+{
+	LOG_INFO("Setting match with id '{}' to non-analyzed", id);
+
+	auto statement = SQLite::Statement(m_db, "UPDATE matches SET Analyzed = false WHERE Id = ?1");
+
+	if (!statement)
+	{
+		LOG_ERROR("Failed to prepare SQL statement: {}", m_db.GetLastError());
+		return;
+	}
+
+	if (!statement.Bind(1, id))
+	{
+		LOG_ERROR("Failed to bind to SQL statement: {}", m_db.GetLastError());
+		return;
+	}
+
+	statement.ExecuteStep();
+	if (!statement.IsDone())
+	{
+		LOG_ERROR("Failed set match with id '{}' to non-analyzed: {}", id, m_db.GetLastError());
+	}
+}
+
+
 std::optional<MatchHistory::Entry> MatchHistory::GetLatestEntry() const
 {
 	if (!m_db)
