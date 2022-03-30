@@ -10,11 +10,13 @@
 #include <QFileSystemWatcher>
 #include <QString>
 
+#include <chrono>
 #include <filesystem>
 #include <unordered_set>
 #include <string>
 
 
+using namespace std::chrono_literals;
 namespace fs = std::filesystem;
 using PotatoAlert::ReplayParser::ReplaySummary;
 
@@ -43,7 +45,7 @@ public:
 	static bool UnpackGameScripts(std::string_view dst, std::string_view pkgPath, std::string_view idxPath);
 
 private:
-	void AnalyzeReplay(std::string_view path);
+	void AnalyzeReplay(std::string_view path, std::chrono::seconds readDelay = 0s);
 
 	std::unordered_set<std::string> m_analyzedReplays;
 	Core::ThreadPool m_threadPool;
