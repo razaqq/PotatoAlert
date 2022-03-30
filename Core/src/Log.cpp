@@ -9,10 +9,12 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #pragma warning(pop)
 
+#include <QApplication>
 #include <QDir>
 #include <QStandardPaths>
 #include <QString>
 
+#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -56,10 +58,11 @@ QDir Log::GetDir()
 			QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + QDir::separator() + "PotatoAlert");
 	if (!dir.exists())
 	{
-		LOG_TRACE("Creating config directory: {}", dir.absolutePath().toStdString());
+		std::cout << std::format("Creating log directory: {}", dir.absolutePath().toStdString()) << std::endl;
 		if (!dir.mkpath("."))
 		{
-			LOG_ERROR("Failed to create config directory");
+			std::cerr << "Failed to create log directory" << std::endl;
+			QApplication::exit(1);
 		}
 	}
 	return dir;
@@ -104,9 +107,8 @@ public:
 
 void Log::Init()
 {
-	qInstallMessageHandler(LogQtMessage);
-
 	const std::string filePath = GetDir().filePath("PotatoAlert.log").toStdString();
+
 	spdlog::set_error_handler([](const std::string& msg) { spdlog::get("console")->error("*** LOGGER ERROR ***: {}", msg); });
 
 	auto stdoutSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
@@ -132,5 +134,6 @@ void Log::Init()
 	spdlog::register_logger(s_logger);
 	s_logger->set_level(spdlog::level::trace);
 	s_logger->flush_on(spdlog::level::trace);
-}
 
+	qInstallMessageHandler(LogQtMessage);
+}

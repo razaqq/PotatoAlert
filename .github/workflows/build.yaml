@@ -48,23 +48,17 @@ jobs:
     - name: Run Build
       run: cmake --build build --config Release --target PotatoAlert PotatoUpdater PotatoTest
 
-    - name: List build dir
-      run: dir ${{env.GITHUB_WORKSPACE}}/build
-
-    - name: List test dir
-      run: dir ${{env.GITHUB_WORKSPACE}}/build/bin-test
-
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: PotatoTest
-        path: ${{env.GITHUB_WORKSPACE}}/build/bin-test/
+    #- name: Start SSH session
+    #  uses: luchihoratiu/debug-via-ssh@main
+    #  with:
+    #    NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+    #    SSH_PASS: ${{ secrets.SSH_PASS }}
 
     - name: Run CTest
       working-directory: ${{env.GITHUB_WORKSPACE}}/build
       env:
         CTEST_OUTPUT_ON_FAILURE: 1
-      run: ctest -VV
+      run: ctest
 
     - name: Create Release Archive
       run: |

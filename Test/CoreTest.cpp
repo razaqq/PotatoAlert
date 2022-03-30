@@ -37,7 +37,6 @@ static std::array<std::byte, sizeof...(Ts)> FromHex(Ts&&... args) noexcept
 
 }
 
-
 TEST_CASE( "BlowFishEncryptTest" )
 {
 	auto key = FromString("just some random key lol");
