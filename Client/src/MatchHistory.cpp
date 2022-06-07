@@ -460,7 +460,7 @@ std::optional<Match> MatchHistory::GetMatchJson(std::string_view hash) const
 	std::string raw;
 	if (statement.GetText(0, raw))
 	{
-		if (StatsParseResult res = sp::ParseMatch(raw, false); res.success)
+		if (StatsParseResult res = sp::ParseMatch(raw, StatsParser::MatchContext{}, false); res.success)
 			return res.match;
 		return {};
 	}
@@ -502,7 +502,7 @@ std::optional<Match> MatchHistory::GetMatchJson(uint32_t id) const
 	std::string raw;
 	if (statement.GetText(0, raw))
 	{
-		if (StatsParseResult res = sp::ParseMatch(raw, false); res.success)
+		if (StatsParseResult res = sp::ParseMatch(raw, StatsParser::MatchContext{}, false); res.success)
 			return res.match;
 		return {};
 	}
@@ -533,7 +533,7 @@ bool MatchHistory::WriteCsv(std::string_view csv)
 
 bool MatchHistory::SaveMatch(const Match::Info& info, std::string_view arenaInfo, std::string_view hash, std::string_view json, std::string_view csv) const
 {
-	if (auto match = GetMatchJson(hash))
+	if (std::optional<Match> match = GetMatchJson(hash))
 	{
 		LOG_TRACE("Match with hash {} is already in database.", hash);
 		return false;

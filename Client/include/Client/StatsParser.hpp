@@ -71,6 +71,14 @@ struct StatsParseResult
 	std::optional<std::string> csv;
 };
 
-StatsParseResult ParseMatch(const std::string& raw, bool parseCsv) noexcept;
+struct MatchContext
+{
+	std::string ArenaInfo;
+	std::string PlayerName;
+	std::string ShipIdent;
+};
+
+StatsParseResult ParseMatch(const json& j, const MatchContext& matchContext, bool parseCsv) noexcept;
+StatsParseResult ParseMatch(const std::string& raw, const MatchContext& matchContext, bool parseCsv) noexcept;
 
 }  // namespace PotatoAlert::Client::StatsParser

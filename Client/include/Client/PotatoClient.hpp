@@ -10,6 +10,7 @@
 
 #include "ReplayParser/ReplayParser.hpp"
 
+#include <QNetworkAccessManager>
 #include <QObject>
 #include <QString>
 #include <QTableWidgetItem>
@@ -19,6 +20,7 @@
 
 
 using PotatoAlert::Client::Game::DirectoryStatus;
+using PotatoAlert::Client::StatsParser::MatchContext;
 
 namespace PotatoAlert::Client {
 
@@ -44,16 +46,19 @@ public:
 
 private:
 	PotatoClient();
-	void OnResponse(const QString& message);
 	void OnFileChanged(const std::string& file);
 
-	QWebSocket m_socket;
+	void SendRequest(std::string_view request, MatchContext&& matchContext);
+	void HandleReply(QNetworkReply* reply, auto& successHandler);
+	void LookupResult(const std::string& url, const std::string& authToken, const MatchContext& matchContext);
+
 	Core::DirectoryWatcher m_watcher;
 
-	std::string m_tempArenaInfo;
+	// std::string m_tempArenaInfo;
 	std::string m_lastArenaInfoHash;
 	DirectoryStatus m_dirStatus;
 	ReplayAnalyzer m_replayAnalyzer;
+	QNetworkAccessManager* m_networkAccessManager = new QNetworkAccessManager(this);
 
 signals:
 #pragma clang diagnostic push

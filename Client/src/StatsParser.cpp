@@ -118,12 +118,12 @@ struct Clan
 struct Ship
 {
 	std::string name;
-	Color color;
+	// Color color;
 
 	[[nodiscard]] QTableWidgetItem* GetField(const QFont& font, const QColor& bg, const QFlags<Qt::AlignmentFlag>& align) const
 	{
 		auto item = new QTableWidgetItem(ToQString(this->name));
-		item->setForeground(this->color.QColor());
+		// item->setForeground(this->color.QColor());
 		item->setBackground(bg);
 		item->setFont(font);
 		item->setTextAlignment(align);
@@ -134,7 +134,7 @@ struct Ship
 [[maybe_unused]] static void from_json(const json& j, Ship& s)
 {
 	j.at("name").get_to(s.name);
-	s.color = Color(j.at("color").get<std::array<int, 3>>());
+	// s.color = Color(j.at("color").get<std::array<int, 3>>());
 }
 
 struct Player
@@ -222,24 +222,24 @@ struct Player
 {
 	if (!j.at("clan").is_null())
 		p.clan = j.at("clan").get<Clan>();
-	j.at("hiddenPro").get_to(p.hiddenPro);
+	j.at("hidden_profile").get_to(p.hiddenPro);
 	j.at("name").get_to(p.name);
-	p.nameColor = Color(j.at("nameColor").get<std::array<int, 3>>());
+	p.nameColor = Color(j.at("name_color").get<std::array<int, 3>>());
 	if (!j.at("ship").is_null())
 		p.ship = j.at("ship").get<Ship>();
 	j.at("battles").get_to(p.battles);
-	j.at("winrate").get_to(p.winrate);
-	j.at("avgDmg").get_to(p.avgDmg);
-	j.at("battlesShip").get_to(p.battlesShip);
-	j.at("winrateShip").get_to(p.winrateShip);
-	j.at("avgDmgShip").get_to(p.avgDmgShip);
-	p.prColor = Color(j.at("prColor").get<std::array<int, 4>>());
-	j.at("wowsNumbers").get_to(p.wowsNumbers);
+	j.at("win_rate").get_to(p.winrate);
+	j.at("avg_dmg").get_to(p.avgDmg);
+	j.at("battles_ship").get_to(p.battlesShip);
+	j.at("win_rate_ship").get_to(p.winrateShip);
+	j.at("avg_dmg_ship").get_to(p.avgDmgShip);
+	p.prColor = Color(j.at("pr_color").get<std::array<int, 4>>());
+	j.at("wows_numbers_link").get_to(p.wowsNumbers);
 }
 
 struct Team
 {
-	size_t id;
+	uint8_t id;
 	std::vector<Player> players;
 	Stat avgDmg;
 	Stat avgWr;
@@ -249,8 +249,8 @@ struct Team
 {
 	j.at("id").get_to(t.id);
 	j.at("players").get_to(t.players);
-	j.at("avgDmg").get_to(t.avgDmg);
-	j.at("avgWr").get_to(t.avgWr);
+	j.at("avg_dmg").get_to(t.avgDmg);
+	j.at("avg_win_rate").get_to(t.avgWr);
 }
 
 struct Match
@@ -260,25 +260,25 @@ struct Match
 	std::string matchGroup;
 	std::string statsMode;
 	std::string region;
-	std::string player;
-	std::string ship;
-	std::string shipIdent;
 	std::string map;
 	std::string dateTime;
+	// std::string player;
+	// std::string ship;
+	// std::string shipIdent;
 };
 
 [[maybe_unused]] static void from_json(const json& j, Match& m)
 {
 	j.at("team1").get_to(m.team1);
 	j.at("team2").get_to(m.team2);
-	j.at("matchGroup").get_to(m.matchGroup);
-	j.at("statsMode").get_to(m.statsMode);
+	j.at("match_group").get_to(m.matchGroup);
+	j.at("stats_mode").get_to(m.statsMode);
 	j.at("region").get_to(m.region);
-	j.at("player").get_to(m.player);
-	j.at("ship").get_to(m.ship);
-	j.at("shipIdent").get_to(m.shipIdent);
 	j.at("map").get_to(m.map);
-	j.at("dateTime").get_to(m.dateTime);
+	j.at("date_time").get_to(m.dateTime);
+	// j.at("player").get_to(m.player);
+	// j.at("ship").get_to(m.ship);
+	// j.at("ship_ident").get_to(m.shipIdent);
 }
 
 static std::string GetCSV(const Match& match)
@@ -329,29 +329,32 @@ void pn::Label::UpdateLabel(QLabel* label) const
 	}
 }
 
-StatsParseResult pn::ParseMatch(const std::string& raw, bool parseCsv) noexcept
+StatsParseResult pn::ParseMatch(const json& j, const MatchContext& matchContext, bool parseCsv) noexcept
 {
 	StatsParseResult result;
-	
-	json j;
-	sax_no_exception sax(j);
-	if (!json::sax_parse(raw, &sax))
-	{
-		LOG_ERROR("ParseError while parsing server response JSON.");
-		return result;
-	}
 
 	const auto match = j.get<_JSON::Match>();
 
 	if (parseCsv)
 		result.csv = _JSON::GetCSV(match);
 
+	std::string playerShip;
+
 	// parse match stats
-	auto getTeam = [](const _JSON::Team& inTeam, Team& outTeam)
+	auto getTeam = [&match, &matchContext, &playerShip](const _JSON::Team& inTeam, Team& outTeam)
 	{
+		// do not display bots in scenario or operation mode
+		if ((match.matchGroup == "pve" || match.matchGroup == "pve_premade") && inTeam.id == 2)
+		{
+			return;
+		}
+
 		TeamType teamTable;
 		for (auto& player : inTeam.players)
 		{
+			if (player.name == matchContext.PlayerName && player.ship.has_value())
+				playerShip = player.ship->name;
+
 			auto row = player.GetTableRow();
 			teamTable.push_back(row);
 			outTeam.wowsNumbers.push_back(ToQString(player.wowsNumbers));
@@ -383,15 +386,33 @@ StatsParseResult pn::ParseMatch(const std::string& raw, bool parseCsv) noexcept
 	}
 
 	// parse match info
-	result.match.info.matchGroup = match.matchGroup;
-	result.match.info.statsMode = match.statsMode;
-	result.match.info.map = match.map;
-	result.match.info.ship = match.ship;
-	result.match.info.shipIdent = match.shipIdent;
-	result.match.info.dateTime = match.dateTime;
-	result.match.info.region = match.region;
-	result.match.info.player = match.player;
+	Match::Info& info = result.match.info;
+	info.matchGroup = match.matchGroup;
+	info.statsMode = match.statsMode;
+	info.region = match.region;
+	info.map = match.map;
+	info.dateTime = match.dateTime;
+	info.player = matchContext.PlayerName;
+	info.shipIdent = matchContext.ShipIdent;
+	info.ship = playerShip;
+
+	// result.match.info.ship = match.ship;
+	// result.match.info.shipIdent = match.shipIdent;
+	// result.match.info.player = match.player;
 
 	result.success = true;
 	return result;
+}
+
+StatsParseResult pn::ParseMatch(const std::string& raw, const MatchContext& matchContext, bool parseCsv) noexcept
+{
+	json j;
+	sax_no_exception sax(j);
+	if (!json::sax_parse(raw, &sax))
+	{
+		LOG_ERROR("ParseError while parsing server response JSON.");
+		return StatsParseResult{};
+	}
+
+	return ParseMatch(j, matchContext, parseCsv);
 }
