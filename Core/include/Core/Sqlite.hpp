@@ -160,8 +160,7 @@ private:
 	static void RawClose(Handle handle);
 	static bool RawFlushBuffer(Handle handle);
 	static bool RawExecute(
-		Handle handle,
-		std::string_view sql,
+		Handle handle, std::string_view sql,
 		int (*callback)(void* data, int columns, char** columnText, char** columnNames),
 		void* context);
 };

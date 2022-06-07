@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <chrono>
 #include <optional>
+#include <ranges>
 #include <string>
 
 
@@ -67,7 +68,7 @@ void ReplayAnalyzer::AnalyzeReplay(std::string_view path, std::chrono::seconds r
 void ReplayAnalyzer::AnalyzeDirectory(std::string_view directory)
 {
 	auto entries = MatchHistory::Instance().GetNonAnalyzedMatches();
-	std::sort(entries.begin(), entries.end(),
+	std::ranges::sort(entries,
 	[](const MatchHistory::NonAnalyzedMatch& left, const MatchHistory::NonAnalyzedMatch& right)
 	{
 		return left.ReplayName < right.ReplayName;
@@ -77,13 +78,12 @@ void ReplayAnalyzer::AnalyzeDirectory(std::string_view directory)
 	{
 		if (entry.is_regular_file() && entry.path().extension() == ".wowsreplay")
 		{
-			auto found = std::find_if(entries.begin(), entries.end(),
-				[&](const MatchHistory::NonAnalyzedMatch& match)
-				{
-					std::string fileName = String::ToLower(entry.path().filename().string());
-					return String::ToLower(match.ReplayName) == fileName;
-				}
-			);
+			auto found = std::ranges::find_if(entries,
+			[&](const MatchHistory::NonAnalyzedMatch& match)
+			{
+				const std::string fileName = String::ToLower(entry.path().filename().string());
+				return String::ToLower(match.ReplayName) == fileName;
+			});
 
 			if (found != entries.end())
 			{
