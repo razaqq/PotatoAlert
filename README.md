@@ -42,7 +42,7 @@ If you think you cannot follow this simple rule, then you hereby don't have my p
 - Add clang to PATH and set `CC` and `CXX` env vars to set clang as compiler
   - `set CC=clang`
   - `set CXX=clang++`
-- Call cmake
+- Call cmake (from x64 Native Tools Command Prompt for VS2019)
 ```console
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64 -DCMAKE_RC_COMPILER=RC
 cmake --build build --config Release --target PotatoAlert PotatoUpdater
@@ -65,6 +65,6 @@ cmake --build build --config Release --target PotatoAlert PotatoUpdater
     - `export CXX=clang++`
 - Call cmake
 ```console
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"  -DCMAKE_CXX_FLAGS="-stdlib=libc++ -lc++abi"
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" -DCMAKE_CXX_FLAGS="-stdlib=libc++ -lc++abi"
 cmake --build build --config Release --target PotatoAlert
 ```
