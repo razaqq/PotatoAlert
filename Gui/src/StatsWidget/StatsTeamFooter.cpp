@@ -10,7 +10,6 @@
 #include <QLabel>
 #include <QWidget>
 
-#include <iostream>
 #include <vector>
 
 
