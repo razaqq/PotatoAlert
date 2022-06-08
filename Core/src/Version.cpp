@@ -95,5 +95,5 @@ std::string Version::ToString(std::string_view del, bool includeBuild) const
 	{
 		return std::format("{1}{0}{2}{0}{3}{0}{4}", del, Major(), Minor(), Patch(), Build());
 	}
-	return std::format("{1}{0}{2}{0}{3}", del, Major(), Minor(), Patch()); 
+	return std::format("{1}{0}{2}{0}{3}", del, Major(), Minor(), Patch());
 }

@@ -50,13 +50,13 @@ static std::optional<std::unordered_map<std::string, ArgType>> ParseAliases(cons
 std::vector<EntitySpec> rp::ParseScripts(const Version& version, const std::vector<fs::path>& searchPaths)
 {
 	// this is a shit way of doing this, but thanks to wg its also the only way
-	bool includeBuild = version.Build() == 0 ? false : true;
+	const std::string scriptVersion = version.ToString(".", true);
 
 	fs::path versionDir;
 	bool found = false;
 	for (const fs::path& path : searchPaths)
 	{
-		versionDir = path / version.ToString(".", includeBuild) / "scripts";
+		versionDir = path / scriptVersion / "scripts";
 		if (fs::exists(versionDir))
 		{
 			found = true;
@@ -66,7 +66,7 @@ std::vector<EntitySpec> rp::ParseScripts(const Version& version, const std::vect
 
 	if (!found)
 	{
-		LOG_ERROR("Game files for version {} not found.", version.ToString(".", includeBuild));
+		LOG_ERROR("Game scripts for version {} not found.", scriptVersion);
 		return {};
 	}
 
@@ -122,8 +122,8 @@ std::vector<EntitySpec> rp::ParseScripts(const Version& version, const std::vect
 				}
 			}
 
-			std::stable_sort(properties.begin(), properties.end(), [](const Property& a, const Property& b) -> bool { return TypeSize(a.type) < TypeSize(b.type); });
-			std::stable_sort(merged.clientMethods.begin(), merged.clientMethods.end(), [](const Method& a, const Method& b) -> bool { return a.SortSize() < b.SortSize(); });
+			std::ranges::stable_sort(properties, [](const Property& a, const Property& b) -> bool { return TypeSize(a.type) < TypeSize(b.type); });
+			std::ranges::stable_sort(merged.clientMethods, [](const Method& a, const Method& b) -> bool { return a.SortSize() < b.SortSize(); });
 
 			specs.emplace_back(EntitySpec{ entityName, std::move(merged.baseMethods), std::move(merged.cellMethods), std::move(merged.clientMethods), properties, internalProperties });
 		}

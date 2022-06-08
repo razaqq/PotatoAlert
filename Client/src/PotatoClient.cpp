@@ -171,7 +171,7 @@ void PotatoClient::Init()
 
 void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& matchContext)
 {
-	LOG_TRACE("Sending request...");
+	LOG_TRACE("Sending request with content: {}", requestString);
 
 	QNetworkRequest submitRequest;
 	submitRequest.setUrl(QUrl(g_submitUrl.data()));
@@ -447,16 +447,17 @@ DirectoryStatus PotatoClient::CheckPath()
 		}
 
 		// make sure we have up-to-date game scripts
+		const std::string scriptVersion = dirStatus.gameVersion.ToString(".", true);
 		if (!m_replayAnalyzer.HasGameScripts(dirStatus.gameVersion))
 		{
-			LOG_INFO("Missing game scripts for version {} detected, trying to unpack...", dirStatus.gameVersion.ToString());
-			const std::string dst = (AppDataPath() / "ReplayVersions" / dirStatus.gameVersion.ToString()).string();
+			LOG_INFO("Missing game scripts for version {} detected, trying to unpack...", scriptVersion);
+			const std::string dst = (AppDataPath() / "ReplayVersions" / scriptVersion).string();
 			if (!ReplayAnalyzer::UnpackGameScripts(dst, dirStatus.pkgPath.string(), dirStatus.idxPath.string()))
 			{
-				LOG_ERROR("Failed to unpack game scripts for version: {}", dirStatus.gameVersion.ToString());
+				LOG_ERROR("Failed to unpack game scripts for version: {}", scriptVersion);
 			}
 		}
-		LOG_INFO("Game scripts for version {} found", dirStatus.gameVersion.ToString());
+		LOG_INFO("Game scripts for version {} found", scriptVersion);
 
 		// lets check the entire game folder, replays might be hiding everywhere
 		m_replayAnalyzer.AnalyzeDirectory(gamePath);
