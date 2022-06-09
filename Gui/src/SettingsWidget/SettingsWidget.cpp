@@ -106,8 +106,7 @@ void SettingsWidget::Init()
 	m_statsModeLabel->setFixedWidth(LABEL_WIDTH);
 	statsModeLayout->addWidget(m_statsModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
-	m_statsMode = new SettingsChoice(this, std::vector<QString>{"current mode", "pvp", "ranked", "clan"});  // TODO: localize
-	m_statsMode->setEnabled(false);  // TODO: implement this on the backend
+	m_statsMode = new SettingsChoice(this, std::vector<QString>{ "current mode", "randoms", "ranked", "pve" });  // TODO: localize
 	statsModeLayout->addWidget(m_statsMode, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(statsModeLayout);
 	/* DISPLAYED STATS MODE */

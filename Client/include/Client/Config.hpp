@@ -54,7 +54,7 @@ enum class StatsMode
 	Current,
 	Pvp,
 	Ranked,
-	Clan
+	Pve,
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(StatsMode,
@@ -62,7 +62,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(StatsMode,
 	{ StatsMode::Current, "current" },
 	{ StatsMode::Pvp,     "pvp"     },
 	{ StatsMode::Ranked,  "ranked"  },
-	{ StatsMode::Clan,    "clan"    },
+	{ StatsMode::Pve,     "pve"     },
 })
 
 class Config final : public QObject
