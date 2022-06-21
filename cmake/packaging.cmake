@@ -16,7 +16,6 @@ function(windeployqt target)
     endif()
 
     add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/package/"
             COMMAND "${CMAKE_COMMAND}" -E
             env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
             ${WINDEPLOYQT_ARGS}
@@ -25,22 +24,7 @@ function(windeployqt target)
             --no-angle
             --no-opengl-sw
             --no-translations
-            --dir "${CMAKE_CURRENT_BINARY_DIR}/package/"
-            $<TARGET_FILE:${target}>
-            COMMENT "Deploying Qt to /package..."
-            )
-    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/package/" DESTINATION bin)
-
-    add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E
-            env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
-            ${WINDEPLOYQT_ARGS}
-            --verbose 0
-            --no-compiler-runtime
-            --no-angle
-            --no-opengl-sw
-            --no-translations
-            --dir "${CMAKE_CURRENT_BINARY_DIR}/"
+            --dir $<TARGET_FILE_DIR:${target}>
             $<TARGET_FILE:${target}>
             COMMENT "Deploying Qt..."
             )
@@ -66,14 +50,16 @@ function(ssllibraries target)
 
     add_custom_command(TARGET ${target} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${SSL_DLLS}
-            $<TARGET_FILE_DIR:${target}>/package
-            COMMENT "Copying OpenSSL dlls to /package..."
-            )
-
-    add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${SSL_DLLS}
             $<TARGET_FILE_DIR:${target}>
             COMMENT "Copying OpenSSL dlls..."
+            )
+endfunction()
+
+function(replayversions target)
+    add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/Resources/ReplayVersions
+            $<TARGET_FILE_DIR:${target}>/ReplayVersions
+            COMMENT "Copying Replay Version Files..."
             )
 endfunction()
 

@@ -19,7 +19,7 @@ if __name__ == '__main__':
         languages.append(lang.tag)
         translations[lang.tag] = []
     with open(os.path.join(cur_dir, 'StringTableLanguages.i'), 'w', encoding='utf-8') as f:
-        f.write(','.join([f'"{lang}"' for lang in languages]))
+        f.write(','.join([f'"{lang}"' for lang in languages]) + '\n')
 
     # generate strings
     for child in root:
@@ -30,8 +30,8 @@ if __name__ == '__main__':
     for lang in languages:
         strings.append('{' + ','.join([f'"{t}"' for t in translations[lang]]) + '}')
     with open(os.path.join(cur_dir, 'StringTableStrings.i'), 'w', encoding='utf-8') as f:
-        f.write(','.join(strings))
+        f.write(','.join(strings) + '\n')
 
     # generate keys
     with open(os.path.join(cur_dir, 'StringTableKeys.i'), 'w', encoding='utf-8') as f:
-        f.write(','.join(keys))
+        f.write(','.join(keys) + '\n')

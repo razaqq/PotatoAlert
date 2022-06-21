@@ -1,4 +1,4 @@
-<?xml version = "1.0" encoding = "UTF-8" standalone = "no" ?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <Package name="Translations">
     <!-- SETTINGS -->
     <Key ID="SETTINGS_REPLAYSFOLDER_STATUS">
@@ -6,7 +6,7 @@
         <Deutsch>Status:</Deutsch>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_FOLDERS">
-        <English>Replays Folders:</English>
+        <English>Replays Folder(s):</English>
         <Deutsch>Replays Ordner:</Deutsch>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_REGION">
@@ -30,9 +30,13 @@
         <English>Update Notifications</English>
         <Deutsch>Update Benachrichtigungen</Deutsch>
     </Key>
-    <Key ID="SETTINGS_SAVE_CSV">
-        <English>Save Match As CSV</English>
-        <Deutsch>Gefechte Als CSV Speichern</Deutsch>
+    <Key ID="SETTINGS_MINIMIZETRAY">
+        <English>Minimize To Tray On Close</English>
+        <Deutsch>In Tray Minimieren</Deutsch>
+    </Key>
+    <Key ID="SETTINGS_SAVE_MATCHHISTORY">
+        <English>Save Match History</English>
+        <Deutsch>Gefechtsverlauf Speichern</Deutsch>
     </Key>
     <Key ID="SETTINGS_GAME_DIRECTORY">
         <English>Game Directory</English>
@@ -148,5 +152,35 @@
     <Key ID="UPDATE_DOWNLOADING">
         <English>Downloading update, please wait...</English>
         <Deutsch>Update wird heruntergeladen, bitte warten...</Deutsch>
+    </Key>
+
+    <!-- MATCH HISTORY-->
+    <Key ID="HISTORY_DATE">
+	    <English>Date</English>
+	    <Deutsch>Datum</Deutsch>
+    </Key>
+    <Key ID="HISTORY_MODE">
+	    <English>Mode</English>
+	    <Deutsch>Modus</Deutsch>
+    </Key>
+    <Key ID="HISTORY_MAP">
+	    <English>Map</English>
+	    <Deutsch>Karte</Deutsch>
+    </Key>
+    <Key ID="HISTORY_REGION">
+	    <English>Region</English>
+	    <Deutsch>Region</Deutsch>
+    </Key>
+    <Key ID="HISTORY_ANALYZE">
+	    <English>Re-Analyze</English>
+	    <Deutsch>Reanalysieren</Deutsch>
+    </Key>
+    <Key ID="HISTORY_DELETE">
+	    <English>Delete</English>
+	    <Deutsch>Löschen</Deutsch>
+    </Key>
+    <Key ID="HISTORY_DELETE_QUESTION">
+	    <English>Do you really want to delete the selected match?</English>
+	    <Deutsch>Wirklich das markierte Gefecht löschen?</Deutsch>
     </Key>
 </Package>

@@ -1,19 +1,28 @@
 cmake_minimum_required(VERSION 3.17)
 project(PotatoAlert)
 
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)  # new option() policy
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+enable_testing()
+
+option(PA_PROFILE "Enable Profiling Output" OFF)
+if(PA_PROFILE)
+    add_definitions(-DPA_PROFILE=1)
+endif()
+
+if(WIN32)
+    add_definitions(-D_HAS_EXCEPTIONS=0)  # turn off exceptions for ms stl
+endif()
+add_definitions(-DQT_MESSAGELOGCONTEXT)  # qt log messages context
 
 include(generate_product_version)
 generate_product_version(
         VersionFilesOutputVariable
         NAME ${PROJECT_NAME}
-        FILE_DESCRIPTION "Stats tool for World of Warships"
+        FILE_DESCRIPTION "PotatoAlert"
         COMPANY_NAME github.com/razaqq
         ICON ${PROJECT_SOURCE_DIR}/Resources/potato.ico
         VERSION_MAJOR 3
@@ -22,43 +31,26 @@ generate_product_version(
         VERSION_REVISION ${BUILD_REVISION}
 )
 
-find_package(Qt5 COMPONENTS Widgets Core Gui WebSockets REQUIRED)
-
-include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2/include)
-include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/nlohmann_json/include)
-include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/fmt/include)
-include_directories(${PROJECT_SOURCE_DIR}/ThirdParty/zip/src)
-
-include_directories(${PROJECT_SOURCE_DIR}/util)
-include_directories(${PROJECT_SOURCE_DIR}/gui)
-include_directories(${PROJECT_SOURCE_DIR}/Resources)
-include_directories(${PROJECT_SOURCE_DIR}/framelessHelper)
-
-add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/tinyxml2)
-add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/fmt)
-add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty/zip)
-
-add_subdirectory(${PROJECT_SOURCE_DIR}/util)
-add_subdirectory(${PROJECT_SOURCE_DIR}/gui)
-add_subdirectory(${PROJECT_SOURCE_DIR}/test)
-add_subdirectory(${PROJECT_SOURCE_DIR}/updater)
-add_subdirectory(${PROJECT_SOURCE_DIR}/framelessHelper)
-
-add_executable(PotatoAlert main.cpp Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
-
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set_property(TARGET PotatoAlert PROPERTY WIN32_EXECUTABLE true)
+# generate stringtable headers
+find_package(PythonInterp REQUIRED)
+ message("Generating stringtable...")
+execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Resources/generate_translations.py"
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                RESULT_VARIABLE GENERATE_STRINGTABLE_RESULT)
+if(NOT GENERATE_STRINGTABLE_RESULT EQUAL "0")
+    message(FATAL_ERROR "Failed to generate stringtable")
 endif()
 
-target_link_libraries(PotatoAlert
-        Qt5::Widgets
-        Qt5::Core
-        Qt5::Gui
-        util
-        gui
-        )
+add_subdirectory(${PROJECT_SOURCE_DIR}/Core)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Client)
+add_subdirectory(${PROJECT_SOURCE_DIR}/GameFileUnpack)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Gui)
+add_subdirectory(${PROJECT_SOURCE_DIR}/PotatoAlert)
+add_subdirectory(${PROJECT_SOURCE_DIR}/ReplayParser)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Test)
+add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty)
+if(WIN32)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/Updater)
+endif()
 
-include(packaging)
-windeployqt(PotatoAlert)
-ssllibraries(PotatoAlert)
-# makeinstaller(PotatoAlert)
+file(COPY ${PROJECT_SOURCE_DIR}/Resources/ReplayVersions DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

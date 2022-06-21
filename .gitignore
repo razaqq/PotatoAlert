@@ -2,6 +2,12 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 build
+CMakeFiles
+cmake_install.cmake
+cmake_uninstall.cmake
+CMakeTestfile.cmake
+CTestTestfile.cmake
+generated
 
 # CLion
 .idea
@@ -14,6 +20,11 @@ cmake-build-*/
 
 # IntelliJ
 out/
+
+# VSCode & Visual Studio
+.vscode
+.vs
+CMakeSettings.json
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
