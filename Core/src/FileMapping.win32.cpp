@@ -44,15 +44,19 @@ FileMapping::Handle FileMapping::RawOpen(File::Handle file, Flags flags, uint64_
 	switch (flags & (Flags::Read | Flags::Write))
 	{
 		case Flags::Read:
+		{
 			protect = PAGE_READONLY;
 			break;
-
+		}
 		case Flags::Read | Flags::Write:
+		{
 			protect = PAGE_READWRITE;
 			break;
-
+		}
 		default:
+		{
 			return Handle::Null;
+		}
 	}
 
 	HANDLE hMapping = CreateFileMappingA(

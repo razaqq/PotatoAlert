@@ -24,8 +24,8 @@
 #include <QWidget>
 
 
-static const int LABEL_WIDTH = 280;
-static const int ROW_HEIGHT = 20;
+static constexpr int LABEL_WIDTH = 280;
+static constexpr int ROW_HEIGHT = 20;
 
 using namespace PotatoAlert::Core;
 using PotatoAlert::Gui::SettingsWidget;

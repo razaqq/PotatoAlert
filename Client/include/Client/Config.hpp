@@ -8,7 +8,6 @@
 #include <QString>
 
 #include <filesystem>
-#include <optional>
 #include <string>
 
 
