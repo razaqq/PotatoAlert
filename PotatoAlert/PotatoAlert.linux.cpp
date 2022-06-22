@@ -1,5 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/ApplicationGuard.hpp"
 #include "Core/Defer.hpp"
 #include "Core/Semaphore.hpp"
 
@@ -18,27 +19,20 @@
 #include <QFile>
 
 
-using PotatoAlert::Core::MakeDefer;
+using PotatoAlert::Core::ApplicationGuard;
 using PotatoAlert::Core::PotatoConfig;
-using PotatoAlert::Core::Mutex;
 using PotatoAlert::Gui::DarkPalette;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::NativeWindow;
 
 int main(int argc, char* argv[])
 {
-	const std::string semName = "PotatoAlert-0D54203D-6BF9-4E96-8CD7-2BE3E780E013";
-	if (Semaphore::Open(semName))
+	const ApplicationGuard guard("PotatoAlert");
+	if (guard.OtherInstance())
 	{
 		NativeWindow::RequestFocus();
 		exit(0);
 	}
-	Semaphore sem = Semaphore::Create(semName, true);
-	auto defer = MakeDefer([&]()
-	{
-		sem.Close();
-		Semaphore::Remove(semName);
-	});
 
 	Q_INIT_RESOURCE(PotatoAlert);
 

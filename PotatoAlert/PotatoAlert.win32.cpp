@@ -1,6 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
-#include "Core/Semaphore.hpp"
+#include "Core/ApplicationGuard.hpp"
 
 #include "Client/Config.hpp"
 
@@ -21,8 +21,8 @@
 #include <QFile>
 
 
+using PotatoAlert::Core::ApplicationGuard;
 using PotatoAlert::Core::PotatoConfig;
-using PotatoAlert::Core::Semaphore;
 using PotatoAlert::Gui::DarkPalette;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::NativeWindow;
@@ -30,13 +30,12 @@ using PotatoAlert::Updater::Updater;
 
 static int RunMain(int argc, char* argv[])
 {
-	const std::string semName = "PotatoAlert-0D54203D-6BF9-4E96-8CD7-2BE3E780E013";
-	if (Semaphore::Open(semName))
+	const ApplicationGuard guard("PotatoAlert");
+	if (guard.OtherInstance())
 	{
 		NativeWindow::RequestFocus();
 		_exit(0);
 	}
-	Semaphore::Create(semName, 0);
 
 	Q_INIT_RESOURCE(PotatoAlert);
 
