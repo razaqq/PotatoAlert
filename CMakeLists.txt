@@ -32,9 +32,9 @@ generate_product_version(
 )
 
 # generate stringtable headers
-find_package(PythonInterp REQUIRED)
- message("Generating stringtable...")
-execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Resources/generate_translations.py"
+find_package(Python3 3.7 COMPONENTS Interpreter REQUIRED)
+message("Generating stringtable...")
+execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Resources/generate_translations.py"
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 RESULT_VARIABLE GENERATE_STRINGTABLE_RESULT)
 if(NOT GENERATE_STRINGTABLE_RESULT EQUAL "0")
