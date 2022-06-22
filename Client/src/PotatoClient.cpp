@@ -1,4 +1,4 @@
-﻿// Copyright 2020 <github.com/razaqq>
+// Copyright 2020 <github.com/razaqq>
 
 #include "Client/Config.hpp"
 #include "Client/Game.hpp"
@@ -86,7 +86,7 @@ static TempArenaInfoResult ReadArenaInfo(std::string_view filePath)
 		// the game has written to the file
 		if (file.Size() > 0)
 		{
-			if (std::string arenaInfo; file.ReadString(arenaInfo))
+			if (std::string arenaInfo; file.ReadAllString(arenaInfo))
 			{
 				json j;
 				sax_no_exception sax(j);

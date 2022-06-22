@@ -147,7 +147,7 @@ Unpacker::Unpacker(std::string_view pkgPath, std::string_view idxPath) : m_pkgPa
 		{
 			if (File file = File::Open(entry.path().string(), File::Flags::Open | File::Flags::Read))
 			{
-				if (std::vector<std::byte> data; file.Read(data))
+				if (std::vector<std::byte> data; file.ReadAll(data))
 				{
 					if (std::optional<IdxFile> idxFileRes = IdxFile::Parse(std::span{ data }))
 					{

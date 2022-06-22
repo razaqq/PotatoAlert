@@ -82,15 +82,26 @@ public:
 		return RawGetSize(m_handle);
 	}
 
-	template<typename T> requires(sizeof(T) == 1)
-	bool Read(std::vector<T>& out, bool resetFilePointer = true) const
+	template<typename T>
+	requires(sizeof(T) == 1) bool Read(std::vector<T>& out, uint64_t size, bool resetFilePointer = true) const
 	{
-		return RawRead(m_handle, out, resetFilePointer);
+		return RawRead(m_handle, out, size, resetFilePointer);
 	}
 
-	bool ReadString(std::string& out, bool resetFilePointer = true) const
+	template<typename T> requires(sizeof(T) == 1)
+	bool ReadAll(std::vector<T>& out, bool resetFilePointer = true) const
 	{
-		return RawReadString(m_handle, out, resetFilePointer);
+		return RawReadAll(m_handle, out, resetFilePointer);
+	}
+
+	bool ReadAllString(std::string& out, uint64_t size, bool resetFilePointer = true) const
+	{
+		return RawReadString(m_handle, out, size, resetFilePointer);
+	}
+
+	bool ReadAllString(std::string& out, bool resetFilePointer = true) const
+	{
+		return RawReadAllString(m_handle, out, resetFilePointer);
 	}
 
 	bool Write(std::span<const std::byte> data, bool resetFilePointer = true) const
@@ -177,8 +188,11 @@ private:
 
 	// these have to be implemented for each os
 	template<typename T>
-	static bool RawRead(Handle handle, std::vector<T>& out, bool resetFilePointer);
-	static bool RawReadString(Handle handle, std::string& out, bool resetFilePointer);
+	static bool RawRead(Handle handle, std::vector<T>& out, uint64_t size, bool resetFilePointer);
+	template<typename T>
+	static bool RawReadAll(Handle handle, std::vector<T>& out, bool resetFilePointer);
+	static bool RawReadString(Handle handle, std::string& out, uint64_t size, bool resetFilePointer);
+	static bool RawReadAllString(Handle handle, std::string& out, bool resetFilePointer);
 	static bool RawWrite(Handle handle, std::span<const std::byte> data, bool resetFilePointer);
 	static bool RawWriteString(Handle handle, std::string_view data, bool resetFilePointer);
 	static bool RawFlushBuffer(Handle handle);

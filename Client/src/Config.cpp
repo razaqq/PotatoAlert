@@ -100,7 +100,7 @@ void Config::Load()
 	}
 
 	std::string str;
-	if (!m_file.ReadString(str))
+	if (!m_file.ReadAllString(str))
 	{
 		LOG_ERROR("Failed to read config file: {}", File::LastError());
 		QApplication::exit(1);
