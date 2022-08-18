@@ -36,6 +36,7 @@ if(WIN32)
         core
         PRIVATE
 
+        src/ApplicationGuard.win32.cpp
         src/Directory.win32.cpp
         src/File.win32.cpp
         src/FileMapping.win32.cpp
@@ -50,6 +51,7 @@ if(UNIX)
         core
         PRIVATE
 
+        src/ApplicationGuard.linux.cpp
         src/Directory.linux.cpp
         src/File.linux.cpp
         src/FileMapping.linux.cpp
