@@ -14,14 +14,14 @@ namespace PotatoAlert::ReplayParser {
 
 struct Entity
 {
-	uint16_t type;
-	std::vector<ArgValue> properties;
+	uint16_t Type;
+	std::vector<ArgValue> Properties;
 };
 
 struct PacketParser
 {
-	std::vector<EntitySpec> specs;
-	std::unordered_map<uint32_t, Entity> entities;
+	std::vector<EntitySpec> Specs;
+	std::unordered_map<uint32_t, Entity> Entities;
 };
 
 PacketType ParsePacket(std::span<Byte>& data, PacketParser& parser);
@@ -41,5 +41,8 @@ std::variant<CameraPacket, InvalidPacket> ParseCameraPacket(std::span<Byte>& dat
 std::variant<MapPacket, InvalidPacket> ParseMapPacket(std::span<Byte>& data, float clock);
 std::variant<VersionPacket, InvalidPacket> ParseVersionPacket(std::span<Byte>& data, float clock);
 std::variant<PlayerEntityPacket, InvalidPacket> ParsePlayerEntityPacket(std::span<Byte>& data, float clock);
+std::variant<CameraModePacket, InvalidPacket> ParseCameraModePacket(std::span<Byte>& data, float clock);
+std::variant<CruiseStatePacket, InvalidPacket> ParseCruiseStatePacket(std::span<Byte>& data, float clock);
+std::variant<CameraFreeLookPacket, InvalidPacket> ParseCameraFreeLookPacket(std::span<Byte>& data, float clock);
 
 }  // namespace PotatoAlert::ReplayParser

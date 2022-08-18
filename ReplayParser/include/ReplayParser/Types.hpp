@@ -78,31 +78,31 @@ typedef std::any ArgValue;
 
 struct PrimitiveType
 {
-	BasicType type;
+	BasicType Type;
 };
 
 struct ArrayType
 {
-	std::shared_ptr<ArgType> subType;
-	std::optional<size_t> size;
+	std::shared_ptr<ArgType> SubType;
+	std::optional<size_t> Size;
 };
 
 struct FixedDictProperty
 {
-	std::string name;
-	std::shared_ptr<ArgType> type;
+	std::string Name;
+	std::shared_ptr<ArgType> Type;
 };
 
 struct FixedDictType
 {
-	bool allowNone = false;
-	std::vector<FixedDictProperty> properties = {};
+	bool AllowNone = false;
+	std::vector<FixedDictProperty> Properties = {};
 };
 
 struct TupleType
 {
-	std::shared_ptr<ArgType> subType;
-	size_t size;
+	std::shared_ptr<ArgType> SubType;
+	size_t Size;
 };
 
 struct UnknownType {};
@@ -112,5 +112,9 @@ typedef std::unordered_map<std::string, ArgType> AliasType;
 ArgType ParseType(XMLElement* elem, const AliasType& aliases);
 size_t TypeSize(const ArgType& type);
 ArgValue ParseValue(std::span<Core::Byte>& data, const ArgType& type);
+
+#ifndef NDEBUG
+std::string PrintType(const ArgType& type);
+#endif
 
 }  // namespace PotatoAlert::ReplayParser

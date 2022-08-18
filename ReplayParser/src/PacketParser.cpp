@@ -80,6 +80,12 @@ PacketType rp::ParsePacket(std::span<Byte>& data, PacketParser& parser)
 			return VariantCast<PacketType>(ParseCameraPacket(raw, clock));
 		case static_cast<uint32_t>(PacketBaseType::Map):
 			return VariantCast<PacketType>(ParseMapPacket(raw, clock));
+		case static_cast<uint32_t>(PacketBaseType::CameraFreeLook):
+			return VariantCast<PacketType>(ParseCameraFreeLookPacket(raw, clock));
+		case static_cast<uint32_t>(PacketBaseType::CameraMode):
+			return VariantCast<PacketType>(ParseCameraModePacket(raw, clock));
+		case static_cast<uint32_t>(PacketBaseType::CruiseState):
+			return VariantCast<PacketType>(ParseCruiseStatePacket(raw, clock));
 #endif  // NDEBUG
 
 #if 0
@@ -181,8 +187,8 @@ PacketType rp::ParsePacket(std::span<Byte>& data, PacketParser& parser)
 std::variant<EntityMethodPacket, InvalidPacket> rp::ParseEntityMethodPacket(std::span<Byte>& data, PacketParser& parser, float clock)
 {
 	EntityMethodPacket packet;
-	packet.type = PacketBaseType::EntityMethod;
-	packet.clock = clock;
+	packet.Type = PacketBaseType::EntityMethod;
+	packet.Clock = clock;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -190,9 +196,9 @@ std::variant<EntityMethodPacket, InvalidPacket> rp::ParseEntityMethodPacket(std:
 		return InvalidPacket{};
 	};
 
-	if (!TakeInto(data, packet.entityId))
+	if (!TakeInto(data, packet.EntityId))
 		return err();
-	if (!TakeInto(data, packet.methodId))
+	if (!TakeInto(data, packet.MethodId))
 		return err();
 
 	uint32_t size;
@@ -205,35 +211,35 @@ std::variant<EntityMethodPacket, InvalidPacket> rp::ParseEntityMethodPacket(std:
 		return InvalidPacket{};
 	}
 
-	if (!parser.entities.contains(packet.entityId))
+	if (!parser.Entities.contains(packet.EntityId))
 	{
-		LOG_ERROR("Entity {} does not exist for EntityMethodPacket", packet.entityId);
+		LOG_ERROR("Entity {} does not exist for EntityMethodPacket", packet.EntityId);
 		return InvalidPacket{};
 	}
-	const uint16_t entityType = parser.entities.at(packet.entityId).type;
+	const uint16_t entityType = parser.Entities.at(packet.EntityId).Type;
 
 	const int specId = entityType - 1;
-	if (specId < 0 || specId >= parser.specs.size())
+	if (specId < 0 || specId >= parser.Specs.size())
 	{
 		LOG_ERROR("Missing EntitySpec {} for EntityMethodPacket", specId);
 		return InvalidPacket{};
 	}
-	const EntitySpec& spec = parser.specs[specId];
+	const EntitySpec& spec = parser.Specs[specId];
 
-	if (packet.methodId >= spec.clientMethods.size())
+	if (packet.MethodId >= spec.clientMethods.size())
 	{
-		LOG_ERROR("Invalid methodId {} for EntityMethodPacket", packet.methodId);
+		LOG_ERROR("Invalid methodId {} for EntityMethodPacket", packet.MethodId);
 		return InvalidPacket{};
 	}
-	const Method& method = spec.clientMethods[packet.methodId];
-	packet.methodName = method.name;
+	const Method& method = spec.clientMethods[packet.MethodId];
+	packet.MethodName = method.name;
 
-	packet.values.reserve(method.args.size());
-	for (const ArgType& type : method.args)
+	packet.Values.reserve(method.args.size());
+	for (const ArgType& argType : method.args)
 	{
-		if (std::optional<ArgValue> value = ParseValue(data, type))
+		if (std::optional<ArgValue> value = ParseValue(data, argType))
 		{
-			packet.values.emplace_back(value.value());
+			packet.Values.emplace_back(value.value());
 		}
 		else
 		{
@@ -248,8 +254,8 @@ std::variant<EntityMethodPacket, InvalidPacket> rp::ParseEntityMethodPacket(std:
 std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std::span<Byte>& data, PacketParser& parser, float clock)
 {
 	EntityCreatePacket packet;
-	packet.type = PacketBaseType::EntityCreate;
-	packet.clock = clock;
+	packet.Type = PacketBaseType::EntityCreate;
+	packet.Clock = clock;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -257,20 +263,20 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 		return InvalidPacket{};
 	};
 
-	if (!TakeInto(data, packet.entityId))
+	if (!TakeInto(data, packet.EntityId))
 		return err();
-	if (!TakeInto(data, packet.entityType))
+	if (!TakeInto(data, packet.EntityType))
 		return err();
-	if (!TakeInto(data, packet.vehicleId))
+	if (!TakeInto(data, packet.SpaceId))
 		return err();
-	if (!TakeInto(data, packet.spaceId))
+	if (!TakeInto(data, packet.VehicleId))
 		return err();
-	if (!TakeInto(data, packet.position))
+	if (!TakeInto(data, packet.Position))
 		return err();
-	if (!TakeInto(data, packet.rotation))
+	if (!TakeInto(data, packet.Rotation))
 		return err();
 
-	if (parser.entities.contains(packet.entityId))
+	if (parser.Entities.contains(packet.EntityId))
 	{
 		// LOG_ERROR("Entity {} already exists for EntityCreatePacket", packet.entityId);
 		// return InvalidPacket{};
@@ -293,15 +299,15 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 		return InvalidPacket{};
 	}
 
-	const int specId = packet.entityType - 1;
-	if (specId < 0 || specId >= parser.specs.size())
+	const int specId = packet.EntityType - 1;
+	if (specId < 0 || specId >= parser.Specs.size())
 	{
 		LOG_ERROR("Missing EntitySpec {} for EntityCreatePacket", specId);
 		return InvalidPacket{};
 	}
-	const EntitySpec& spec = parser.specs[specId];
+	const EntitySpec& spec = parser.Specs[specId];
 
-	packet.values.reserve(propertyCount);
+	packet.Values.reserve(propertyCount);
 	for (uint8_t i = 0; i < propertyCount; i++)
 	{
 		uint8_t propertyId;
@@ -315,7 +321,7 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 
 			if (std::optional<ArgValue> value = ParseValue(data, type))
 			{
-				packet.values[name] = value.value();
+				packet.Values[name] = value.value();
 			}
 			else
 			{
@@ -330,8 +336,8 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 		}
 	}
 
-	const std::vector<ArgValue> values{ packet.values.begin(), packet.values.end() };
-	parser.entities.emplace(packet.entityId, Entity{ packet.entityType, values });
+	const std::vector<ArgValue> values{ packet.Values.begin(), packet.Values.end() };
+	parser.Entities.emplace(packet.EntityId, Entity{ packet.EntityType, values });
 
 	// LOG_TRACE("Creating Entity {} with {} properties", packet.entityId, packet.values.size());
 	return packet;
@@ -340,8 +346,8 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(std::span<Byte>& data, const PacketParser& parser, float clock)
 {
 	EntityPropertyPacket packet;
-	packet.clock = clock;
-	packet.type = PacketBaseType::EntityProperty;
+	packet.Clock = clock;
+	packet.Type = PacketBaseType::EntityProperty;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -349,9 +355,9 @@ std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(
 		return InvalidPacket{};
 	};
 
-	if (!TakeInto(data, packet.entityId))
+	if (!TakeInto(data, packet.EntityId))
 		return err();
-	if (!TakeInto(data, packet.methodId))
+	if (!TakeInto(data, packet.MethodId))
 		return err();
 
 	uint32_t size;
@@ -364,31 +370,31 @@ std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(
 		return InvalidPacket{};
 	}
 
-	if (!parser.entities.contains(packet.entityId))
+	if (!parser.Entities.contains(packet.EntityId))
 	{
-		LOG_ERROR("Entity {} does not exist for EntityPropertyPacket", packet.entityId);
+		LOG_ERROR("Entity {} does not exist for EntityPropertyPacket", packet.EntityId);
 		return InvalidPacket{};
 	}
-	const uint16_t entityType = parser.entities.at(packet.entityId).type;
+	const uint16_t entityType = parser.Entities.at(packet.EntityId).Type;
 
 	const int specId = entityType - 1;
-	if (specId < 0 || specId >= parser.specs.size())
+	if (specId < 0 || specId >= parser.Specs.size())
 	{
 		LOG_ERROR("Missing EntitySpec {} for EntityPropertyPacket", specId);
 		return InvalidPacket{};
 	}
-	const EntitySpec& spec = parser.specs[specId];
+	const EntitySpec& spec = parser.Specs[specId];
 
-	if (packet.methodId >= spec.properties.size())
+	if (packet.MethodId >= spec.properties.size())
 	{
-		LOG_ERROR("Invalid methodId {} for EntityPropertyPacket", packet.methodId);
+		LOG_ERROR("Invalid methodId {} for EntityPropertyPacket", packet.MethodId);
 		return InvalidPacket{};
 	}
-	const Property& property = spec.properties[packet.methodId];
+	const Property& property = spec.properties[packet.MethodId];
 
 	if (std::optional<ArgValue> value = ParseValue(data, property.type))
 	{
-		packet.value = value;
+		packet.Value = value;
 	}
 	else
 	{
@@ -399,11 +405,11 @@ std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(
 	return packet;
 }
 
-std::variant<BasePlayerCreatePacket, InvalidPacket> rp::ParseBasePlayerCreatePacket(std::span<std::byte>& data, PacketParser& parser, float clock)
+std::variant<BasePlayerCreatePacket, InvalidPacket> rp::ParseBasePlayerCreatePacket(std::span<Byte>& data, PacketParser& parser, float clock)
 {
 	BasePlayerCreatePacket packet;
-	packet.clock = clock;
-	packet.type = PacketBaseType::BasePlayerCreate;
+	packet.Clock = clock;
+	packet.Type = PacketBaseType::BasePlayerCreate;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -411,23 +417,23 @@ std::variant<BasePlayerCreatePacket, InvalidPacket> rp::ParseBasePlayerCreatePac
 		return InvalidPacket{};
 	};
 
-	if (!TakeInto(data, packet.entityId))
+	if (!TakeInto(data, packet.EntityId))
 		return err();
-	if (!TakeInto(data, packet.entityType))
+	if (!TakeInto(data, packet.EntityType))
 		return err();
 
-	const int specId = packet.entityType - 1;
-	if (specId < 0 || specId >= parser.specs.size())
+	const int specId = packet.EntityType - 1;
+	if (specId < 0 || specId >= parser.Specs.size())
 	{
 		LOG_ERROR("Missing EntitySpec {} for BasePlayerCreatePacket", specId);
 		return InvalidPacket{};
 	}
-	EntitySpec& spec = parser.specs[specId];
+	EntitySpec& spec = parser.Specs[specId];
 
-	parser.entities.emplace(packet.entityId, Entity{ packet.entityType, {} });  // TODO: parse the state
+	parser.Entities.emplace(packet.EntityId, Entity{ packet.EntityType, {} });  // TODO: parse the state
 
-	std::span<std::byte> state = Take(data, data.size());
-	packet.data = { state.begin(), state.end() };
+	std::span<Byte> state = Take(data, data.size());
+	packet.Data = { state.begin(), state.end() };
 
 	return packet;
 }
@@ -435,8 +441,8 @@ std::variant<BasePlayerCreatePacket, InvalidPacket> rp::ParseBasePlayerCreatePac
 std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePacket(std::span<Byte>& data, const PacketParser& parser, float clock)
 {
 	CellPlayerCreatePacket packet;
-	packet.type = PacketBaseType::CellPlayerCreate;
-	packet.clock = clock;
+	packet.Type = PacketBaseType::CellPlayerCreate;
+	packet.Clock = clock;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -444,15 +450,15 @@ std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePac
 		return InvalidPacket{};
 	};
 
-	if (!TakeInto(data, packet.entityId))
+	if (!TakeInto(data, packet.EntityId))
 		return err();
-	if (!TakeInto(data, packet.spaceId))
+	if (!TakeInto(data, packet.SpaceId))
 		return err();
-	if (!TakeInto(data, packet.vehicleId))
+	if (!TakeInto(data, packet.VehicleId))
 		return err();
-	if (!TakeInto(data, packet.position))
+	if (!TakeInto(data, packet.Position))
 		return err();
-	if (!TakeInto(data, packet.rotation))
+	if (!TakeInto(data, packet.Rotation))
 		return err();
 
 	uint32_t size;
@@ -465,28 +471,28 @@ std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePac
 		return InvalidPacket{};
 	}
 
-	if (!parser.entities.contains(packet.entityId))
+	if (!parser.Entities.contains(packet.EntityId))
 	{
-		LOG_ERROR("Entity {} does not exist for CellPlayerCreatePacket", packet.entityId);
+		LOG_ERROR("Entity {} does not exist for CellPlayerCreatePacket", packet.EntityId);
 		return InvalidPacket{};
 	}
 
-	const uint16_t entityType = parser.entities.at(packet.entityId).type;
+	const uint16_t entityType = parser.Entities.at(packet.EntityId).Type;
 
 	const int specId = entityType - 1;
-	if (specId < 0 || specId >= parser.specs.size())
+	if (specId < 0 || specId >= parser.Specs.size())
 	{
 		LOG_ERROR("Missing EntitySpec {} for CellPlayerCreatePacket", specId);
 		return InvalidPacket{};
 	}
-	const EntitySpec& spec = parser.specs[specId];
+	const EntitySpec& spec = parser.Specs[specId];
 
-	packet.values.reserve(spec.internalProperties.size());
+	packet.Values.reserve(spec.internalProperties.size());
 	for (const Property& property : spec.internalProperties)
 	{
 		if (std::optional<ArgValue> value = ParseValue(data, property.type))
 		{
-			packet.values[property.name] = value.value();
+			packet.Values[property.name] = value.value();
 		}
 		else
 		{
@@ -509,8 +515,8 @@ std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePac
 std::variant<EntityControlPacket, InvalidPacket> rp::ParseEntityControlPacket(std::span<Byte>& data, float clock)
 {
 	EntityControlPacket packet;
-	packet.type = PacketBaseType::EntityControl;
-	packet.clock = clock;
+	packet.Type = PacketBaseType::EntityControl;
+	packet.Clock = clock;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -518,9 +524,9 @@ std::variant<EntityControlPacket, InvalidPacket> rp::ParseEntityControlPacket(st
 		return InvalidPacket{};
 	};
 
-	if (!TakeInto(data, packet.entityId))
+	if (!TakeInto(data, packet.EntityId))
 		return err();
-	if (!TakeInto(data, packet.isControlled))
+	if (!TakeInto(data, packet.IsControlled))
 		return err();
 
 	if (!data.empty())
@@ -531,11 +537,11 @@ std::variant<EntityControlPacket, InvalidPacket> rp::ParseEntityControlPacket(st
 	return packet;
 }
 
-std::variant<EntityEnterPacket, InvalidPacket> rp::ParseEntityEnterPacket(std::span<std::byte>& data, float clock)
+std::variant<EntityEnterPacket, InvalidPacket> rp::ParseEntityEnterPacket(std::span<Byte>& data, float clock)
 {
 	EntityEnterPacket packet;
-	packet.type = PacketBaseType::EntityEnter;
-	packet.clock = clock;
+	packet.Type = PacketBaseType::EntityEnter;
+	packet.Clock = clock;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -543,11 +549,11 @@ std::variant<EntityEnterPacket, InvalidPacket> rp::ParseEntityEnterPacket(std::s
 		return InvalidPacket{};
 	};
 
-	if (!TakeInto(data, packet.entityId))
+	if (!TakeInto(data, packet.EntityId))
 		return err();
-	if (!TakeInto(data, packet.spaceId))
+	if (!TakeInto(data, packet.SpaceId))
 		return err();
-	if (!TakeInto(data, packet.vehicleId))
+	if (!TakeInto(data, packet.VehicleId))
 		return err();
 
 	if (!data.empty())
@@ -561,10 +567,10 @@ std::variant<EntityEnterPacket, InvalidPacket> rp::ParseEntityEnterPacket(std::s
 std::variant<EntityLeavePacket, InvalidPacket> rp::ParseEntityLeavePacket(std::span<Byte>& data, float clock)
 {
 	EntityLeavePacket packet;
-	packet.type = PacketBaseType::EntityLeave;
-	packet.clock = clock;
+	packet.Type = PacketBaseType::EntityLeave;
+	packet.Clock = clock;
 
-	if (!TakeInto(data, packet.entityId))
+	if (!TakeInto(data, packet.EntityId))
 	{
 		LOG_ERROR("Failed to parse EntityLeavePacket: {}", FormatBytes(data));
 		return InvalidPacket{};
@@ -581,8 +587,8 @@ std::variant<EntityLeavePacket, InvalidPacket> rp::ParseEntityLeavePacket(std::s
 std::variant<NestedPropertyUpdatePacket, InvalidPacket> rp::ParseNestedPropertyUpdatePacket(std::span<Byte>& data, PacketParser& parser, float clock)
 {
 	NestedPropertyUpdatePacket packet;
-	packet.type = PacketBaseType::NestedPropertyUpdate;
-	packet.clock = clock;
+	packet.Type = PacketBaseType::NestedPropertyUpdate;
+	packet.Clock = clock;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -590,7 +596,7 @@ std::variant<NestedPropertyUpdatePacket, InvalidPacket> rp::ParseNestedPropertyU
 		return InvalidPacket{};
 	};
 
-	if (!TakeInto(data, packet.entityId))
+	if (!TakeInto(data, packet.EntityId))
 		return err();
 	bool isSlice;
 	if (!TakeInto(data, isSlice))
@@ -621,8 +627,8 @@ std::variant<NestedPropertyUpdatePacket, InvalidPacket> rp::ParseNestedPropertyU
 std::variant<PlayerOrientationPacket, InvalidPacket> rp::ParsePlayerOrientationPacket(std::span<Byte>& data, float clock)
 {
 	PlayerOrientationPacket packet;
-	packet.type = PacketBaseType::PlayerOrientation;
-	packet.clock = clock;
+	packet.Type = PacketBaseType::PlayerOrientation;
+	packet.Clock = clock;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -630,13 +636,13 @@ std::variant<PlayerOrientationPacket, InvalidPacket> rp::ParsePlayerOrientationP
 		return InvalidPacket{};
 	};
 
-	if (!TakeInto(data, packet.pid))
+	if (!TakeInto(data, packet.Pid))
 		return err();
-	if (!TakeInto(data, packet.parentId))
+	if (!TakeInto(data, packet.ParentId))
 		return err();
-	if (!TakeInto(data, packet.position))
+	if (!TakeInto(data, packet.Position))
 		return err();
-	if (!TakeInto(data, packet.rotation))
+	if (!TakeInto(data, packet.Rotation))
 		return err();
 
 	if (!data.empty())
@@ -650,8 +656,8 @@ std::variant<PlayerOrientationPacket, InvalidPacket> rp::ParsePlayerOrientationP
 std::variant<PlayerPositionPacket, InvalidPacket> rp::ParsePlayerPositionPacketPacket(std::span<Byte>& data, float clock)
 {
 	PlayerPositionPacket packet;
-	packet.type = PacketBaseType::PlayerOrientation;
-	packet.clock = clock;
+	packet.Type = PacketBaseType::PlayerOrientation;
+	packet.Clock = clock;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -659,17 +665,17 @@ std::variant<PlayerPositionPacket, InvalidPacket> rp::ParsePlayerPositionPacketP
 		return InvalidPacket{};
 	};
 
-	if (!TakeInto(data, packet.entityId))
+	if (!TakeInto(data, packet.EntityId))
 		return err();
-	if (!TakeInto(data, packet.vehicleId))
+	if (!TakeInto(data, packet.VehicleId))
 		return err();
-	if (!TakeInto(data, packet.position))
+	if (!TakeInto(data, packet.Position))
 		return err();
-	if (!TakeInto(data, packet.positionError))
+	if (!TakeInto(data, packet.PositionError))
 		return err();
-	if (!TakeInto(data, packet.rotation))
+	if (!TakeInto(data, packet.Rotation))
 		return err();
-	if (!TakeInto(data, packet.isError))
+	if (!TakeInto(data, packet.IsError))
 		return err();
 
 	if (!data.empty())
@@ -683,8 +689,8 @@ std::variant<PlayerPositionPacket, InvalidPacket> rp::ParsePlayerPositionPacketP
 std::variant<CameraPacket, InvalidPacket> rp::ParseCameraPacket(std::span<Byte>& data, float clock)
 {
 	CameraPacket packet;
-	packet.type = PacketBaseType::Camera;
-	packet.clock = clock;
+	packet.Type = PacketBaseType::Camera;
+	packet.Clock = clock;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -692,18 +698,25 @@ std::variant<CameraPacket, InvalidPacket> rp::ParseCameraPacket(std::span<Byte>&
 		return InvalidPacket{};
 	};
 
-	if (!TakeInto(data, packet.unknown))
+	if (!TakeInto(data, packet.Unknown))
 		return err();
-	if (!TakeInto(data, packet.unknown2))
+	if (!TakeInto(data, packet.Unknown2))
 		return err();
-	if (!TakeInto(data, packet.absolutePosition))
+	if (!TakeInto(data, packet.AbsolutePosition))
 		return err();
-	if (!TakeInto(data, packet.fov))
+	if (!TakeInto(data, packet.Fov))
 		return err();
-	if (!TakeInto(data, packet.position))
+	if (!TakeInto(data, packet.Position))
 		return err();
-	if (!TakeInto(data, packet.rotation))
+	if (!TakeInto(data, packet.Rotation))
 		return err();
+
+	// newer versions seem to have an additional 4 bytes, float
+	if (data.size() >= sizeof(packet.Unknown3))
+	{
+		if (!TakeInto(data, packet.Unknown3))
+			return err();
+	}
 
 	if (!data.empty())
 	{
@@ -716,8 +729,8 @@ std::variant<CameraPacket, InvalidPacket> rp::ParseCameraPacket(std::span<Byte>&
 std::variant<MapPacket, InvalidPacket> rp::ParseMapPacket(std::span<Byte>& data, float clock)
 {
 	MapPacket packet;
-	packet.type = PacketBaseType::Map;
-	packet.clock = clock;
+	packet.Type = PacketBaseType::Map;
+	packet.Clock = clock;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -725,13 +738,13 @@ std::variant<MapPacket, InvalidPacket> rp::ParseMapPacket(std::span<Byte>& data,
 		return InvalidPacket{};
 	};
 
-	if (!TakeInto(data, packet.spaceId))
+	if (!TakeInto(data, packet.SpaceId))
 		return err();
-	if (!TakeInto(data, packet.arenaId))
+	if (!TakeInto(data, packet.ArenaId))
 		return err();
-	if (!TakeInto(data, packet.unknown1))
+	if (!TakeInto(data, packet.Unknown1))
 		return err();
-	if (!TakeInto(data, packet.unknown2))
+	if (!TakeInto(data, packet.Unknown2))
 		return err();
 
 	Take(data, 128);
@@ -739,11 +752,11 @@ std::variant<MapPacket, InvalidPacket> rp::ParseMapPacket(std::span<Byte>& data,
 	uint32_t stringSize;
 	if (!TakeInto(data, stringSize))
 		return err();
-	if (!TakeString(data, packet.name, stringSize))
+	if (!TakeString(data, packet.Name, stringSize))
 		return err();
-	if (!TakeInto(data, packet.matrix))
+	if (!TakeInto(data, packet.Matrix))
 		return err();
-	if (!TakeInto(data, packet.unknown3))
+	if (!TakeInto(data, packet.Unknown3))
 		return err();
 
 	if (!data.empty())
@@ -757,8 +770,8 @@ std::variant<MapPacket, InvalidPacket> rp::ParseMapPacket(std::span<Byte>& data,
 std::variant<VersionPacket, InvalidPacket> rp::ParseVersionPacket(std::span<Byte>& data, float clock)
 {
 	VersionPacket packet;
-	packet.type = PacketBaseType::Version;
-	packet.clock = clock;
+	packet.Type = PacketBaseType::Version;
+	packet.Clock = clock;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -770,7 +783,7 @@ std::variant<VersionPacket, InvalidPacket> rp::ParseVersionPacket(std::span<Byte
 	if (!TakeInto(data, stringSize))
 		return err();
 
-	if (!TakeString(data, packet.version, stringSize))
+	if (!TakeString(data, packet.Version, stringSize))
 		return err();
 
 	if (!data.empty())
@@ -784,8 +797,8 @@ std::variant<VersionPacket, InvalidPacket> rp::ParseVersionPacket(std::span<Byte
 std::variant<PlayerEntityPacket, InvalidPacket> rp::ParsePlayerEntityPacket(std::span<Byte>& data, float clock)
 {
 	PlayerEntityPacket packet;
-	packet.type = PacketBaseType::PlayerEntity;
-	packet.clock = clock;
+	packet.Type = PacketBaseType::PlayerEntity;
+	packet.Clock = clock;
 
 	auto err = [data]() -> InvalidPacket
 	{
@@ -793,12 +806,84 @@ std::variant<PlayerEntityPacket, InvalidPacket> rp::ParsePlayerEntityPacket(std:
 		return InvalidPacket{};
 	};
 
-	if (!TakeInto(data, packet.entityId))
+	if (!TakeInto(data, packet.EntityId))
 		return err();
 
 	if (!data.empty())
 	{
 		LOG_WARN("PlayerEntityPacket had {} bytes remaining after parsing", data.size());
+	}
+
+	return packet;
+}
+
+std::variant<CameraModePacket, InvalidPacket> rp::ParseCameraModePacket(std::span<Byte>& data, float clock)
+{
+	CameraModePacket packet;
+	packet.Type = PacketBaseType::CameraMode;
+	packet.Clock = clock;
+
+	auto err = [data]() -> InvalidPacket
+	{
+		LOG_ERROR("Failed to parse CameraModePacket: {}", FormatBytes(data));
+		return InvalidPacket{};
+	};
+
+	if (!TakeInto(data, packet.Mode))
+		return err();
+
+	if (!data.empty())
+	{
+		LOG_WARN("CameraModePacket had {} bytes remaining after parsing", data.size());
+	}
+
+	return packet;
+}
+
+std::variant<CruiseStatePacket, InvalidPacket> rp::ParseCruiseStatePacket(std::span<Byte>& data, float clock)
+{
+	CruiseStatePacket packet;
+	packet.Type = PacketBaseType::CruiseState;
+	packet.Clock = clock;
+
+	auto err = [data]() -> InvalidPacket
+	{
+		LOG_ERROR("Failed to parse CruiseStatePacket: {}", FormatBytes(data));
+		return InvalidPacket{};
+	};
+	
+	if (!TakeInto(data, packet.Key))
+		return err();
+
+	if (!TakeInto(data, packet.Value))
+		return err();
+
+	if (!data.empty())
+	{
+		LOG_WARN("CruiseStatePacket had {} bytes remaining after parsing", data.size());
+	}
+
+	return packet;
+}
+
+std::variant<CameraFreeLookPacket, InvalidPacket> rp::ParseCameraFreeLookPacket(std::span<Byte>& data, float clock)
+{
+	CameraFreeLookPacket packet;
+	packet.Type = PacketBaseType::CameraFreeLook;
+	packet.Clock = clock;
+
+	auto err = [data]() -> InvalidPacket
+	{
+		LOG_ERROR("Failed to parse CameraFreeLookPacket: {}", FormatBytes(data));
+		return InvalidPacket{};
+	};
+	
+	if (!TakeInto(data, packet.Locked))
+		return err();
+
+	if (!data.empty())
+	{
+		LOG_WARN("CameraFreeLookPacket had {} bytes remaining after parsing", data.size());
 	}
 
 	return packet;
