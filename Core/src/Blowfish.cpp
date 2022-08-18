@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/Blowfish.hpp"
+#include "Core/Bytes.hpp"
 
 #include <algorithm>
 #include <array>
@@ -246,7 +247,7 @@ static const std::array<std::array<uint32_t, 256>, 4> S = {
 #define __LITTLE_ENDIAN__
 #endif
 
-Blowfish::Blowfish(std::span<const std::byte> key) : m_pArray({}), m_sBoxes({})
+Blowfish::Blowfish(std::span<const Byte> key) : m_pArray({}), m_sBoxes({})
 {
 	std::memcpy(m_pArray.data(), P.data(), sizeof(P));
 	std::memcpy(m_sBoxes.data(), S.data(), sizeof(S));
@@ -263,7 +264,7 @@ void Blowfish::ReverseByteOrder(uint32_t& x)
 	x |= (r & 0x000000FF) << 24;
 }
 
-void Blowfish::InitKey(std::span<const std::byte> key)
+void Blowfish::InitKey(std::span<const Byte> key)
 {
 	for (size_t i = 0, j = 0; i < N + 2; ++i)
 	{
@@ -320,7 +321,7 @@ uint32_t Blowfish::F(uint32_t x) const
 	return ((m_sBoxes[0][a] + m_sBoxes[1][b]) ^ m_sBoxes[2][c]) + m_sBoxes[3][d];
 }
 
-bool Blowfish::Encrypt(std::span<const std::byte> src, std::span<std::byte> dst) const
+bool Blowfish::Encrypt(std::span<const Byte> src, std::span<Byte> dst) const
 {
 	if (src.size() != dst.size() && dst.size() < src.size())
 	{
@@ -350,7 +351,7 @@ bool Blowfish::Encrypt(std::span<const std::byte> src, std::span<std::byte> dst)
 	return true;
 }
 
-bool Blowfish::Decrypt(std::span<const std::byte> src, std::span<std::byte> dst) const
+bool Blowfish::Decrypt(std::span<const Byte> src, std::span<Byte> dst) const
 {
 	if (src.size() != dst.size() && dst.size() < src.size())
 	{

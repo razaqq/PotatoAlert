@@ -76,8 +76,8 @@ public:
 	[[nodiscard]] std::optional<ReplaySummary> Analyze() const;
 
 private:
-	std::span<std::byte> m_data;
-	std::vector<std::byte> m_rawData;
+	std::span<Byte> m_data;
+	std::vector<Byte> m_rawData;
 };
 
 std::optional<ReplaySummary> AnalyzeReplay(std::string_view file, const std::vector<fs::path>& scriptsSearchPaths);

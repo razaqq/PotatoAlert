@@ -1,6 +1,8 @@
 // Copyright 2022 <github.com/razaqq>
 #pragma once
 
+#include "Core/Bytes.hpp"
+
 #include <ranges>
 #include <string>
 
@@ -14,16 +16,12 @@ inline bool Sha256(std::string_view str, std::string& hash)
 	return Sha256(str.data(), str.size(), hash);
 }
 
-template<typename RangeType, typename RangeValue>
-concept range_of = std::ranges::range<RangeType> && std::is_same_v<std::ranges::range_value_t<RangeType>, RangeValue>;
-
-template<range_of<unsigned char> R>
-bool Sha256(const R& data, std::string& hash)
+inline bool Sha256(const char* str, std::string& hash)
 {
-	return Sha256(data.data(), data.size(), hash);
+	return Sha256(str, strlen(str), hash);
 }
 
-template<range_of<std::byte> R>
+template<is_byteRange R>
 bool Sha256(const R& data, std::string& hash)
 {
 	return Sha256(data.data(), data.size(), hash);

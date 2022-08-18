@@ -1,5 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/Bytes.hpp"
 #include "Core/File.hpp"
 #include "Core/Flags.hpp"
 
@@ -10,7 +11,7 @@
 #include <vector>
 
 
-using PotatoAlert::Core::File;
+using namespace PotatoAlert::Core;
 
 namespace {
 
@@ -117,6 +118,7 @@ bool File::RawRead(Handle handle, std::vector<T>& out, uint64_t size, bool reset
 	}
 	return true;
 }
+template bool File::RawRead(Handle, std::vector<uint8_t>&, uint64_t, bool);
 template bool File::RawRead(Handle, std::vector<int8_t>&, uint64_t, bool);
 template bool File::RawRead(Handle, std::vector<std::byte>&, uint64_t, bool);
 template bool File::RawRead(Handle, std::vector<unsigned char>&, uint64_t, bool);
@@ -145,6 +147,7 @@ bool File::RawReadAll(Handle handle, std::vector<T>& out, bool resetFilePointer)
 	}
 	return true;
 }
+template bool File::RawReadAll(Handle, std::vector<uint8_t>&, bool);
 template bool File::RawReadAll(Handle, std::vector<int8_t>&, bool);
 template bool File::RawReadAll(Handle, std::vector<std::byte>&, bool);
 template bool File::RawReadAll(Handle, std::vector<unsigned char>&, bool);
@@ -197,7 +200,8 @@ bool File::RawReadAllString(Handle handle, std::string& out, bool resetFilePoint
 	return true;
 }
 
-bool File::RawWrite(Handle handle, std::span<const std::byte> data, bool resetFilePointer)
+template<is_byte T>
+bool File::RawWrite(Handle handle, std::span<const T> data, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
 	{
@@ -230,6 +234,11 @@ bool File::RawWrite(Handle handle, std::span<const std::byte> data, bool resetFi
 
 	return true;
 }
+template bool File::RawWrite(Handle, std::span<const uint8_t>, bool);
+template bool File::RawWrite(Handle, std::span<const int8_t>, bool);
+template bool File::RawWrite(Handle, std::span<const std::byte>, bool);
+template bool File::RawWrite(Handle, std::span<const unsigned char>, bool);
+template bool File::RawWrite(Handle, std::span<const char>, bool);
 
 bool File::RawWriteString(Handle handle, std::string_view data, bool resetFilePointer)
 {

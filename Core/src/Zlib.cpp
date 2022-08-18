@@ -2,6 +2,7 @@
 
 #define ZLIB_CONST
 
+#include "Core/Bytes.hpp"
 #include "Core/Zlib.hpp"
 
 #include "zlib.h"
@@ -11,9 +12,9 @@
 #include <vector>
 
 
-std::vector<std::byte> PotatoAlert::Core::Zlib::Inflate(std::span<const std::byte> in, bool hasHeader)
+std::vector<Byte> PotatoAlert::Core::Zlib::Inflate(std::span<const Byte> in, bool hasHeader)
 {
-	std::vector<std::byte> out;
+	std::vector<Byte> out;
 	unsigned char chunk[2048];
 
 	z_stream stream = {};

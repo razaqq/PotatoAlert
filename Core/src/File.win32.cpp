@@ -1,5 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/Bytes.hpp"
 #include "Core/File.hpp"
 #include "Core/Flags.hpp"
 
@@ -9,8 +10,7 @@
 #include <string>
 #include <vector>
 
-
-using PotatoAlert::Core::File;
+using namespace PotatoAlert::Core;
 
 namespace {
 
@@ -118,7 +118,7 @@ uint64_t File::RawGetSize(Handle handle)
 	return largeInteger.QuadPart;
 }
 
-template<typename T>
+template<is_byte T>
 bool File::RawRead(Handle handle, std::vector<T>& out, uint64_t size, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
@@ -144,7 +144,7 @@ template bool File::RawRead(Handle, std::vector<std::byte>&, uint64_t, bool);
 template bool File::RawRead(Handle, std::vector<unsigned char>&, uint64_t, bool);
 template bool File::RawRead(Handle, std::vector<char>&, uint64_t, bool);
 
-template<typename T>
+template<is_byte T>
 bool File::RawReadAll(Handle handle, std::vector<T>& out, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
@@ -212,7 +212,8 @@ bool File::RawReadAllString(Handle handle, std::string& out, bool resetFilePoint
 	return ReadFile(UnwrapHandle<HANDLE>(handle), buff, static_cast<DWORD>(size), &dwBytesRead, nullptr);
 }
 
-bool File::RawWrite(Handle handle, std::span<const std::byte> data, bool resetFilePointer)
+template<is_byte T>
+bool File::RawWrite(Handle handle, std::span<const T> data, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
 	{
@@ -240,6 +241,11 @@ bool File::RawWrite(Handle handle, std::span<const std::byte> data, bool resetFi
 
 	return true;
 }
+template bool File::RawWrite(Handle, std::span<const uint8_t>, bool);
+template bool File::RawWrite(Handle, std::span<const int8_t>, bool);
+template bool File::RawWrite(Handle, std::span<const std::byte>, bool);
+template bool File::RawWrite(Handle, std::span<const unsigned char>, bool);
+template bool File::RawWrite(Handle, std::span<const char>, bool);
 
 bool File::RawWriteString(Handle handle, std::string_view data, bool resetFilePointer)
 {
@@ -298,7 +304,7 @@ bool File::GetVersion(std::string_view fileName, Version& outVersion)
 	if (size == 0)
 		return {};
 
-	std::unique_ptr<char[]> versionInfo(new char[size]);
+	const std::unique_ptr<char[]> versionInfo(new char[size]);
 	if (!GetFileVersionInfoA(fileName.data(), 0, 255, versionInfo.get()))
 	{
 		return false;

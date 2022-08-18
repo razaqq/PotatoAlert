@@ -17,13 +17,15 @@
 namespace rp = PotatoAlert::ReplayParser;
 using namespace PotatoAlert;
 using namespace ReplayParser;
+using Core::Byte;
 using Core::Take;
 using Core::TakeInto;
 using Core::TakeString;
 
 ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 {
-	static const std::unordered_map<std::string, BasicType> types{
+	static const std::unordered_map<std::string, BasicType> types
+	{
 		{ "UINT8", BasicType::Uint8 },
 		{ "UINT16", BasicType::Uint16 },
 		{ "UINT32", BasicType::Uint32 },
@@ -169,7 +171,7 @@ size_t rp::TypeSize(const ArgType& type)
 	type);
 }
 
-static ArgValue ParsePrimitive(PrimitiveType type, std::span<std::byte>& data)
+static ArgValue ParsePrimitive(PrimitiveType type, std::span<Byte>& data)
 {
 	switch (type.type)
 	{
@@ -342,7 +344,7 @@ static ArgValue ParsePrimitive(PrimitiveType type, std::span<std::byte>& data)
 				if (data.size() >= blobSize)
 				{
 					auto s = Take(data, blobSize);
-					return std::vector<std::byte>{ s.begin(), s.end() };
+					return std::vector<Byte>{ s.begin(), s.end() };
 				}
 			}
 			else
@@ -350,7 +352,7 @@ static ArgValue ParsePrimitive(PrimitiveType type, std::span<std::byte>& data)
 				if (data.size() >= size)
 				{
 					auto s = Take(data, size);
-					return std::vector<std::byte>{ s.begin(), s.end() };
+					return std::vector<Byte>{ s.begin(), s.end() };
 				}
 			}
 			break;
@@ -414,7 +416,7 @@ static std::string PrintType(const ArgType& type)
 }
 #endif
 
-ArgValue rp::ParseValue(std::span<std::byte>& data, const ArgType& type)
+ArgValue rp::ParseValue(std::span<Byte>& data, const ArgType& type)
 {
 	if (data.empty()) return {};
 

@@ -1,5 +1,6 @@
 // Copyright 2022 <github.com/razaqq>
 
+#include "Core/Bytes.hpp"
 #include "Core/Directory.hpp"
 #include "Core/File.hpp"
 
@@ -14,6 +15,7 @@
 
 
 namespace fs = std::filesystem;
+using PotatoAlert::Core::Byte;
 using PotatoAlert::Core::File;
 using namespace PotatoAlert::GameFileUnpack;
 typedef DirectoryTree::TreeNode TreeNode;
@@ -81,8 +83,8 @@ TEST_CASE("GameFileUnpackTest_IdxFileTest")
 
 	File file = File::Open(idxFilePath.string(), File::Flags::Open | File::Flags::Read);
 	REQUIRE(file);
-	std::vector<std::byte> data;
-	REQUIRE(file.Read(data));
+	std::vector<Byte> data;
+	REQUIRE(file.ReadAll(data));
 	IdxFile idxFile = IdxFile::Parse(data).value();
 	REQUIRE(idxFile.Files.size() == 39);
 	REQUIRE(idxFile.Nodes.size() == 54);

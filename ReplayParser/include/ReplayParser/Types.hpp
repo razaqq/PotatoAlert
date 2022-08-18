@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Core/Bytes.hpp"
 #include "Core/Math.hpp"
 
 #include <memory>
@@ -110,6 +111,6 @@ typedef std::unordered_map<std::string, ArgType> AliasType;
 
 ArgType ParseType(XMLElement* elem, const AliasType& aliases);
 size_t TypeSize(const ArgType& type);
-ArgValue ParseValue(std::span<std::byte>& data, const ArgType& type);
+ArgValue ParseValue(std::span<Core::Byte>& data, const ArgType& type);
 
 }  // namespace PotatoAlert::ReplayParser

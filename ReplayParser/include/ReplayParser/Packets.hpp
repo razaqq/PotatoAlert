@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Core/Bytes.hpp"
 #include "Core/Math.hpp"
 #include "GameFiles.hpp"
 #include "Types.hpp"
@@ -11,6 +12,7 @@
 #include <vector>
 
 
+using PotatoAlert::Core::Byte;
 using PotatoAlert::Core::Mat4;
 using PotatoAlert::Core::Rot3;
 using PotatoAlert::Core::Vec3;
@@ -60,7 +62,7 @@ struct UnknownPacket : Packet
 struct InvalidPacket : Packet
 {
 	std::string message;
-	std::vector<std::byte> raw;
+	std::vector<Byte> raw;
 };
 
 /**
@@ -75,7 +77,7 @@ struct BasePlayerCreatePacket : Packet
 {
 	uint32_t entityId;
 	uint16_t entityType;
-	std::vector<std::byte> data;
+	std::vector<Byte> data;
 };
 
 /**

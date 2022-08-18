@@ -28,7 +28,7 @@ static R VariantCast(T&& t)
 	}, std::forward<T>(t));
 }
 
-PacketType rp::ParsePacket(std::span<std::byte>& data, PacketParser& parser)
+PacketType rp::ParsePacket(std::span<Byte>& data, PacketParser& parser)
 {
 	uint32_t size;
 	if (!TakeInto(data, size))
@@ -178,7 +178,7 @@ PacketType rp::ParsePacket(std::span<std::byte>& data, PacketParser& parser)
 	return UnknownPacket{};
 }
 
-std::variant<EntityMethodPacket, InvalidPacket> rp::ParseEntityMethodPacket(std::span<std::byte>& data, PacketParser& parser, float clock)
+std::variant<EntityMethodPacket, InvalidPacket> rp::ParseEntityMethodPacket(std::span<Byte>& data, PacketParser& parser, float clock)
 {
 	EntityMethodPacket packet;
 	packet.type = PacketBaseType::EntityMethod;
@@ -245,7 +245,7 @@ std::variant<EntityMethodPacket, InvalidPacket> rp::ParseEntityMethodPacket(std:
 	return packet;
 }
 
-std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std::span<std::byte>& data, PacketParser& parser, float clock)
+std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std::span<Byte>& data, PacketParser& parser, float clock)
 {
 	EntityCreatePacket packet;
 	packet.type = PacketBaseType::EntityCreate;
@@ -337,7 +337,7 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 	return packet;
 }
 
-std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(std::span<std::byte>& data, const PacketParser& parser, float clock)
+std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(std::span<Byte>& data, const PacketParser& parser, float clock)
 {
 	EntityPropertyPacket packet;
 	packet.clock = clock;
@@ -432,7 +432,7 @@ std::variant<BasePlayerCreatePacket, InvalidPacket> rp::ParseBasePlayerCreatePac
 	return packet;
 }
 
-std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePacket(std::span<std::byte>& data, const PacketParser& parser, float clock)
+std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePacket(std::span<Byte>& data, const PacketParser& parser, float clock)
 {
 	CellPlayerCreatePacket packet;
 	packet.type = PacketBaseType::CellPlayerCreate;
@@ -506,7 +506,7 @@ std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePac
 	return packet;
 }
 
-std::variant<EntityControlPacket, InvalidPacket> rp::ParseEntityControlPacket(std::span<std::byte>& data, float clock)
+std::variant<EntityControlPacket, InvalidPacket> rp::ParseEntityControlPacket(std::span<Byte>& data, float clock)
 {
 	EntityControlPacket packet;
 	packet.type = PacketBaseType::EntityControl;
@@ -558,7 +558,7 @@ std::variant<EntityEnterPacket, InvalidPacket> rp::ParseEntityEnterPacket(std::s
 	return packet;
 }
 
-std::variant<EntityLeavePacket, InvalidPacket> rp::ParseEntityLeavePacket(std::span<std::byte>& data, float clock)
+std::variant<EntityLeavePacket, InvalidPacket> rp::ParseEntityLeavePacket(std::span<Byte>& data, float clock)
 {
 	EntityLeavePacket packet;
 	packet.type = PacketBaseType::EntityLeave;
@@ -578,7 +578,7 @@ std::variant<EntityLeavePacket, InvalidPacket> rp::ParseEntityLeavePacket(std::s
 	return packet;
 }
 
-std::variant<NestedPropertyUpdatePacket, InvalidPacket> rp::ParseNestedPropertyUpdatePacket(std::span<std::byte>& data, PacketParser& parser, float clock)
+std::variant<NestedPropertyUpdatePacket, InvalidPacket> rp::ParseNestedPropertyUpdatePacket(std::span<Byte>& data, PacketParser& parser, float clock)
 {
 	NestedPropertyUpdatePacket packet;
 	packet.type = PacketBaseType::NestedPropertyUpdate;
@@ -618,7 +618,7 @@ std::variant<NestedPropertyUpdatePacket, InvalidPacket> rp::ParseNestedPropertyU
 	return packet;
 }
 
-std::variant<PlayerOrientationPacket, InvalidPacket> rp::ParsePlayerOrientationPacket(std::span<std::byte>& data, float clock)
+std::variant<PlayerOrientationPacket, InvalidPacket> rp::ParsePlayerOrientationPacket(std::span<Byte>& data, float clock)
 {
 	PlayerOrientationPacket packet;
 	packet.type = PacketBaseType::PlayerOrientation;
@@ -647,7 +647,7 @@ std::variant<PlayerOrientationPacket, InvalidPacket> rp::ParsePlayerOrientationP
 	return packet;
 }
 
-std::variant<PlayerPositionPacket, InvalidPacket> rp::ParsePlayerPositionPacketPacket(std::span<std::byte>& data, float clock)
+std::variant<PlayerPositionPacket, InvalidPacket> rp::ParsePlayerPositionPacketPacket(std::span<Byte>& data, float clock)
 {
 	PlayerPositionPacket packet;
 	packet.type = PacketBaseType::PlayerOrientation;
@@ -680,7 +680,7 @@ std::variant<PlayerPositionPacket, InvalidPacket> rp::ParsePlayerPositionPacketP
 	return packet;
 }
 
-std::variant<CameraPacket, InvalidPacket> rp::ParseCameraPacket(std::span<std::byte>& data, float clock)
+std::variant<CameraPacket, InvalidPacket> rp::ParseCameraPacket(std::span<Byte>& data, float clock)
 {
 	CameraPacket packet;
 	packet.type = PacketBaseType::Camera;
@@ -713,7 +713,7 @@ std::variant<CameraPacket, InvalidPacket> rp::ParseCameraPacket(std::span<std::b
 	return packet;
 }
 
-std::variant<MapPacket, InvalidPacket> rp::ParseMapPacket(std::span<std::byte>& data, float clock)
+std::variant<MapPacket, InvalidPacket> rp::ParseMapPacket(std::span<Byte>& data, float clock)
 {
 	MapPacket packet;
 	packet.type = PacketBaseType::Map;
@@ -754,7 +754,7 @@ std::variant<MapPacket, InvalidPacket> rp::ParseMapPacket(std::span<std::byte>& 
 	return packet;
 }
 
-std::variant<VersionPacket, InvalidPacket> rp::ParseVersionPacket(std::span<std::byte>& data, float clock)
+std::variant<VersionPacket, InvalidPacket> rp::ParseVersionPacket(std::span<Byte>& data, float clock)
 {
 	VersionPacket packet;
 	packet.type = PacketBaseType::Version;
@@ -781,7 +781,7 @@ std::variant<VersionPacket, InvalidPacket> rp::ParseVersionPacket(std::span<std:
 	return packet;
 }
 
-std::variant<PlayerEntityPacket, InvalidPacket> rp::ParsePlayerEntityPacket(std::span<std::byte>& data, float clock)
+std::variant<PlayerEntityPacket, InvalidPacket> rp::ParsePlayerEntityPacket(std::span<Byte>& data, float clock)
 {
 	PlayerEntityPacket packet;
 	packet.type = PacketBaseType::PlayerEntity;

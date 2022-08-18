@@ -34,7 +34,7 @@ std::optional<Replay> Replay::FromFile(std::string_view fileName)
 	}
 
 	Replay replay;
-	if (!file.Read(replay.m_rawData))
+	if (!file.ReadAll(replay.m_rawData))
 	{
 		LOG_ERROR("Failed to read replay file: {}", file.LastError());
 		return {};
@@ -96,8 +96,8 @@ bool Replay::ReadPackets(const std::vector<fs::path>& scriptsSearchPaths)
 		return false;
 	}
 
-	std::vector<std::byte> decrypted{};
-	decrypted.resize(m_data.size(), std::byte{ 0 });
+	std::vector<Byte> decrypted{};
+	decrypted.resize(m_data.size(), Byte{ 0 });
 
 	if (m_data.size() % Blowfish::BlockSize() != 0)
 	{
@@ -105,10 +105,10 @@ bool Replay::ReadPackets(const std::vector<fs::path>& scriptsSearchPaths)
 		return false;
 	}
 
-	std::array<std::byte, 16> key = MakeBytes<std::byte>(0x29, 0xB7, 0xC9, 0x09, 0x38, 0x3F, 0x84, 0x88, 0xFA, 0x98, 0xEC, 0x4E, 0x13, 0x19, 0x79, 0xFB);
-	const Blowfish blowfish(std::span<std::byte>{ key });
+	std::array<Byte, 16> key = { 0x29, 0xB7, 0xC9, 0x09, 0x38, 0x3F, 0x84, 0x88, 0xFA, 0x98, 0xEC, 0x4E, 0x13, 0x19, 0x79, 0xFB };
+	const Blowfish blowfish(key);
 
-	std::byte prev[8] = { std::byte{ 0 } };
+	Byte prev[8] = { Byte{ 0 } };
 	for (size_t i = 0; i < m_data.size() / Blowfish::BlockSize(); i++)
 	{
 		const size_t offset = i * Blowfish::BlockSize();

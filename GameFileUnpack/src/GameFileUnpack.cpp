@@ -15,6 +15,7 @@
 #include <vector>
 
 
+using PotatoAlert::Core::Byte;
 using PotatoAlert::Core::File;
 using PotatoAlert::Core::FileMapping;
 using PotatoAlert::Core::Take;
@@ -33,12 +34,12 @@ namespace {
 
 static constexpr char g_sep = static_cast<char>(fs::path::preferred_separator);
 
-static bool ReadNullTerminatedString(std::span<std::byte> data, int64_t offset, std::string& out)
+static bool ReadNullTerminatedString(std::span<Byte> data, int64_t offset, std::string& out)
 {
 	size_t length = 0;
 	for (int64_t i = offset; i < data.size(); i++)
 	{
-		if (data[i] == std::byte{ '\0' })
+		if (data[i] == Byte{ '\0' })
 		{
 			length = i - offset;
 			break;
@@ -60,7 +61,7 @@ static bool ReadNullTerminatedString(std::span<std::byte> data, int64_t offset, 
 	return true;
 }
 
-static bool WriteFileData(std::string_view file, std::span<const std::byte> data)
+static bool WriteFileData(std::string_view file, std::span<const Byte> data)
 {
 	// write the data
 	if (File outFile = File::Open(file, File::Flags::Open | File::Flags::Write | File::Flags::Create))
@@ -147,7 +148,7 @@ Unpacker::Unpacker(std::string_view pkgPath, std::string_view idxPath) : m_pkgPa
 		{
 			if (File file = File::Open(entry.path().string(), File::Flags::Open | File::Flags::Read))
 			{
-				if (std::vector<std::byte> data; file.ReadAll(data))
+				if (std::vector<Byte> data; file.ReadAll(data))
 				{
 					if (std::optional<IdxFile> idxFileRes = IdxFile::Parse(std::span{ data }))
 					{
@@ -243,10 +244,10 @@ bool Unpacker::ExtractFile(const FileRecord& fileRecord, std::string_view dst) c
 				const std::string filePath = (fs::path(dst) / fileRecord.Path).string();
 
 				// check if data is compressed and inflate
-				std::span data{ static_cast<std::byte*>(dataPtr), fileSize };
+				std::span data{ static_cast<Byte*>(dataPtr), fileSize };
 				if (fileRecord.Size != fileRecord.UncompressedSize)
 				{
-					std::vector<std::byte> inflated = Core::Zlib::Inflate(
+					std::vector<Byte> inflated = Core::Zlib::Inflate(
 						data.subspan(fileRecord.Offset, fileRecord.Size), false
 					);
 					return WriteFileData(filePath, std::span{ inflated });
@@ -273,7 +274,7 @@ bool Unpacker::ExtractFile(const FileRecord& fileRecord, std::string_view dst) c
 	}
 }
 
-std::optional<IdxHeader> IdxHeader::Parse(std::span<std::byte> data)
+std::optional<IdxHeader> IdxHeader::Parse(std::span<Byte> data)
 {
 	if (data.size() != HeaderSize)
 	{
@@ -283,7 +284,7 @@ std::optional<IdxHeader> IdxHeader::Parse(std::span<std::byte> data)
 
 	IdxHeader header;
 
-	std::byte signature[4];
+	Byte signature[4];
 	if (!TakeInto(data, signature) || std::memcmp(signature, g_IdxSignature.data(), 4) != 0)
 	{
 		LOG_ERROR("Invalid Idx Header");
@@ -314,7 +315,7 @@ std::optional<IdxHeader> IdxHeader::Parse(std::span<std::byte> data)
 	return header;
 }
 
-std::optional<Node> Node::Parse(std::span<std::byte> data, std::span<std::byte> fullData)
+std::optional<Node> Node::Parse(std::span<Byte> data, std::span<Byte> fullData)
 {
 	if (data.size() != NodeSize)
 	{
@@ -352,7 +353,7 @@ std::optional<Node> Node::Parse(std::span<std::byte> data, std::span<std::byte> 
 	return node;
 }
 
-std::optional<FileRecord> FileRecord::Parse(std::span<std::byte> data, const std::unordered_map<uint64_t, Node>& nodes)
+std::optional<FileRecord> FileRecord::Parse(std::span<Byte> data, const std::unordered_map<uint64_t, Node>& nodes)
 {
 	if (data.size() != FileRecordSize)
 	{
@@ -396,7 +397,7 @@ std::optional<FileRecord> FileRecord::Parse(std::span<std::byte> data, const std
 	return fileRecord;
 }
 
-std::optional<IdxFile> IdxFile::Parse(std::span<std::byte> data)
+std::optional<IdxFile> IdxFile::Parse(std::span<Byte> data)
 {
 	const std::span originalData = data;
 
