@@ -34,7 +34,7 @@ static int RunMain(int argc, char* argv[])
 	if (guard.OtherInstance())
 	{
 		NativeWindow::RequestFocus();
-		_exit(0);
+		std::exit(0);
 	}
 
 	Q_INIT_RESOURCE(PotatoAlert);

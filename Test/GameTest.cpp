@@ -26,7 +26,7 @@ static fs::path GetGamePath(Test t)
 	const auto rootPath = PotatoAlert::Core::GetModuleRootPath();
 	if (!rootPath.has_value())
 	{
-		exit(1);
+		std::exit(1);
 	}
 
 	switch (t)

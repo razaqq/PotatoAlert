@@ -26,7 +26,7 @@ static std::string GetReplay(std::string_view name)
 		return (fs::path(rootPath.value()).remove_filename() / "replays" / name).string();
 	}
 
-	exit(1);
+	std::exit(1);
 }
 
 static constexpr void ClearMem(Replay& replay)

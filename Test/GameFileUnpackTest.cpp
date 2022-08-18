@@ -28,7 +28,7 @@ static fs::path GetGameFileRootPath()
 	const auto rootPath = PotatoAlert::Core::GetModuleRootPath();
 	if (!rootPath.has_value())
 	{
-		exit(1);
+		std::exit(1);
 	}
 	return fs::path(rootPath.value()).remove_filename() / "gameFiles";
 }
