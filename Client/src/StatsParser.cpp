@@ -9,6 +9,7 @@
 #include <array>
 #include <format>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <vector>
 
@@ -371,14 +372,39 @@ StatsParseResult pn::ParseMatch(const json& j, const MatchContext& matchContext,
 	{
 		auto findClan = [](const _JSON::Team& inTeam, Team& outTeam)
 		{
-			for (auto& player : inTeam.players)
+			struct Clan
+			{
+				size_t count;
+				const _JSON::Clan& clan;
+			};
+			std::map<std::string, Clan> clans;
+			for (const _JSON::Player& player : inTeam.players)
 			{
 				if (!player.clan)
 					continue;
+
+				const _JSON::Clan& clan = player.clan.value();
+				if (clans.contains(clan.tag))
+				{
+					clans.at(clan.tag).count++;
+				}
+				else
+				{
+					clans.emplace(clan.tag, Clan{ 1, clan });
+				}
+			}
+
+			if (!clans.empty())
+			{
 				outTeam.clan.show = true;
-				outTeam.clan.tag = player.clan->GetTagLabel();
-				outTeam.clan.name = player.clan->GetNameLabel();
-				outTeam.clan.region = player.clan->GetRegionLabel();
+				const auto max_elem = std::ranges::max_element(clans, [](const auto& a, const auto& b)
+				{
+					return a.second.count < b.second.count;
+				});
+
+				outTeam.clan.tag = max_elem->second.clan.GetTagLabel();
+				outTeam.clan.name = max_elem->second.clan.GetNameLabel();
+				outTeam.clan.region = max_elem->second.clan.GetRegionLabel();
 			}
 		};
 		findClan(match.team1, result.match.team1);
