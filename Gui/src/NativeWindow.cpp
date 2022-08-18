@@ -10,6 +10,7 @@
 #include <QApplication>
 #include <QMainWindow>
 #include <QMenu>
+#include <QScreen>
 #include <QSystemTrayIcon>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -108,4 +109,21 @@ void NativeWindow::Init()
 
 	this->resize(PotatoConfig().Get<Core::ConfigKey::WindowWidth>(), PotatoConfig().Get<Core::ConfigKey::WindowHeight>());
 	this->windowHandle()->setPosition(PotatoConfig().Get<Core::ConfigKey::WindowX>(), PotatoConfig().Get<Core::ConfigKey::WindowY>());
+
+	bool reachable = false;
+	const QRect windowGeo = windowHandle()->frameGeometry();
+
+	for (const QScreen* screen : QApplication::screens())
+	{
+		if (windowGeo.intersects(screen->availableGeometry()))
+		{
+			reachable = true;
+			break;
+		}
+	}
+
+	if (!reachable)
+	{
+		windowHandle()->setPosition(100, 100);
+	}
 }
