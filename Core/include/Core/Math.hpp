@@ -6,12 +6,12 @@ namespace PotatoAlert::Core {
 
 struct Vec2
 {
-	float x, y;
+	float X, Y;
 };
 
 struct Vec3
 {
-	float x, y, z;
+	float X, Y, Z;
 };
 
 struct Vec4
@@ -21,7 +21,7 @@ struct Vec4
 
 struct Rot3
 {
-	float roll, pitch, yaw;
+	float Yaw, Pitch, Roll;
 };
 
 struct Mat3
