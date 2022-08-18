@@ -5,7 +5,6 @@
 #include "Client/ReplayAnalyzer.hpp"
 #include "Client/MatchHistory.hpp"
 #include "Client/PotatoClient.hpp"
-#include "Client/StandardPaths.hpp"
 #include "Client/StatsParser.hpp"
 
 #include "Core/Defer.hpp"
@@ -13,6 +12,7 @@
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
 #include "Core/Sha256.hpp"
+#include "Core/StandardPaths.hpp"
 
 #include <QObject>
 #include <QString>
@@ -153,7 +153,7 @@ struct ServerResponse
 }
 
 PotatoClient::PotatoClient()
-	: m_replayAnalyzer(ReplayAnalyzer({ GetModuleRootPath().value() / "ReplayVersions", AppDataPath() / "ReplayVersions" }))
+	: m_replayAnalyzer(ReplayAnalyzer({ GetModuleRootPath().value() / "ReplayVersions", AppDataPath("PotatoAlert") / "ReplayVersions" }))
 {
 }
 
@@ -451,7 +451,7 @@ DirectoryStatus PotatoClient::CheckPath()
 		if (!m_replayAnalyzer.HasGameScripts(dirStatus.gameVersion))
 		{
 			LOG_INFO("Missing game scripts for version {} detected, trying to unpack...", scriptVersion);
-			const std::string dst = (AppDataPath() / "ReplayVersions" / scriptVersion).string();
+			const std::string dst = (AppDataPath("PotatoAlert") / "ReplayVersions" / scriptVersion).string();
 			if (!ReplayAnalyzer::UnpackGameScripts(dst, dirStatus.pkgPath.string(), dirStatus.idxPath.string()))
 			{
 				LOG_ERROR("Failed to unpack game scripts for version: {}", scriptVersion);

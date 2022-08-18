@@ -8,7 +8,7 @@
 
 #include "Client/Config.hpp"
 
-#include "Client/StandardPaths.hpp"
+#include "Core/StandardPaths.hpp"
 
 #include <QApplication>
 #include <QDir>
@@ -62,7 +62,7 @@ Config::Config(std::string_view fileName)
 		{ g_keyNames[ConfigKey::MenuBarLeft],              true }
 	};
 
-	m_filePath = Client::AppDataPath() / fileName;
+	m_filePath = AppDataPath("PotatoAlert") / fileName;
 
 	if (!Exists())
 	{

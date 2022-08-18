@@ -2,7 +2,7 @@
 
 #include "Client/MatchHistory.hpp"
 
-#include "Client/StandardPaths.hpp"
+#include "Core/StandardPaths.hpp"
 #include "Core/File.hpp"
 #include "Core/Log.hpp"
 #include "Core/Sqlite.hpp"
@@ -117,7 +117,7 @@ MatchHistory::~MatchHistory()
 
 QDir MatchHistory::GetDir()
 {
-	const fs::path matchesPath = AppDataPath() / "Matches";
+	const fs::path matchesPath = AppDataPath("PotatoAlert") / "Matches";
 	if (!fs::exists(matchesPath))
 	{
 		LOG_TRACE("Creating match history directory: {}", matchesPath.string());

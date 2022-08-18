@@ -2,6 +2,7 @@
 #pragma once
 
 #include <QApplication>
+#include <QDir>
 #include <QStandardPaths>
 
 #include <filesystem>
@@ -9,13 +10,15 @@
 
 namespace fs = std::filesystem;
 
-namespace PotatoAlert::Client {
+namespace PotatoAlert::Core {
 
-inline fs::path AppDataPath()
+inline fs::path AppDataPath(std::string_view appName)
 {
-	const fs::path appData = fs::path(
-		QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation).append("/PotatoAlert").toStdString()
-	);
+	fs::path appData = fs::path(
+			QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
+					.append(QDir::separator())
+					.append(appName.data())
+					.toStdString());
 
 	std::error_code ec;
 	bool exists = fs::exists(appData, ec);
@@ -37,4 +40,4 @@ inline fs::path AppDataPath()
 	return appData;
 }
 
-}  // namespace PotatoAlert::Client
+}  // namespace PotatoAlert::Core
