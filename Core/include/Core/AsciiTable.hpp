@@ -6,6 +6,7 @@
 #include <cmath>
 #include <iomanip>
 #include <ostream>
+#include <ranges>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -69,7 +70,7 @@ public:
 			half -= m_headers[i].size() / 2;
 
 			stream << std::string(m_cellPadding, ' ') << std::setw(columnWidths[i]) << std::left
-				   << std::string(half, ' ') + m_headers[i] << std::string(m_cellPadding, ' ') << '|';
+			       << std::string(half, ' ') + m_headers[i] << std::string(m_cellPadding, ' ') << '|';
 		}
 		stream << std::endl;
 
@@ -81,44 +82,44 @@ public:
 			stream << '|';
 			size_t i = 0;
 			TupleForEach(row, [&]<typename ValueType>(const ValueType& value)
-						 {
-							 if (m_hasPrecision)
-							 {
-								 stream << std::setprecision(m_precision[i]);
-							 }
+			{
+				if (m_hasPrecision)
+				{
+					stream << std::setprecision(m_precision[i]);
+				}
 
-							 if (m_hasColumnFormat)
-							 {
-								 switch (m_columnFormat[i])
-								 {
-									 case ColumnFormat::Auto:
-										 break;
-									 case ColumnFormat::Scientific:
-										 stream << std::scientific;
-										 break;
-									 case ColumnFormat::Fixed:
-										 stream << std::fixed;
-										 break;
-									 case ColumnFormat::Percent:
-										 stream << std::fixed << std::setprecision(2);
-										 break;
-									 default:
-										 break;
-								 }
-							 }
+				if (m_hasColumnFormat)
+				{
+					switch (m_columnFormat[i])
+					{
+					 case ColumnFormat::Auto:
+						break;
+					 case ColumnFormat::Scientific:
+						stream << std::scientific;
+						break;
+					 case ColumnFormat::Fixed:
+						stream << std::fixed;
+						break;
+					 case ColumnFormat::Percent:
+						stream << std::fixed << std::setprecision(2);
+						break;
+					 default:
+						break;
+					}
+				}
 
-							 constexpr decltype(&std::right) align = std::is_arithmetic_v<std::decay_t<ValueType>> ? std::right : std::left;
+				constexpr decltype(&std::right) align = std::is_arithmetic_v<std::decay_t<ValueType>> ? std::right : std::left;
 
-							 stream << std::string(m_cellPadding, ' ') << std::setw(columnWidths[i])
-									<< align << value << std::string(m_cellPadding, ' ') << '|';
+				stream << std::string(m_cellPadding, ' ') << std::setw(columnWidths[i])
+				       << align << value << std::string(m_cellPadding, ' ') << '|';
 
-							 if (m_hasColumnFormat)
-							 {
-								 stream << std::defaultfloat;
-							 }
+				if (m_hasColumnFormat)
+				{
+					stream << std::defaultfloat;
+				}
 
-							 i++;
-						 });
+				i++;
+			});
 			stream << std::endl;
 		}
 
@@ -134,13 +135,17 @@ public:
 
 		if (sort == SortOrder::Ascending)
 		{
-			std::sort(m_rows.begin(), m_rows.end(), [&](const Row& a, const Row& b)
-					  { return std::get<Column>(a) < std::get<Column>(b); });
+			std::ranges::sort(m_rows, [&](const Row& a, const Row& b)
+			{
+				return std::get<Column>(a) < std::get<Column>(b);
+			});
 		}
 		else
 		{
-			std::sort(m_rows.begin(), m_rows.end(), [&](const Row& a, const Row& b)
-					  { return std::get<Column>(a) > std::get<Column>(b); });
+			std::ranges::sort(m_rows, [&](const Row& a, const Row& b)
+			{
+				return std::get<Column>(a) > std::get<Column>(b);
+			});
 		}
 	}
 
@@ -169,7 +174,7 @@ private:
 			widths[i] = m_headers[i].size();
 		}
 
-		for (const auto& row : m_rows)
+		for (const Row& row : m_rows)
 		{
 			auto columnWidths = ColumnWidthsRow(row);
 			for (size_t i = 0; i < ColumnCount; i++)
@@ -187,8 +192,9 @@ private:
 	static constexpr void TupleForEach(Tuple&& t, Func&& f)
 	{
 		std::apply([&f](auto&&... args)
-				   { (f(std::forward<decltype(args)>(args)), ...); },
-				   std::forward<decltype(t)>(t));
+		{
+			(f(std::forward<decltype(args)>(args)), ...);
+		}, std::forward<decltype(t)>(t));
 	}
 
 	template<typename T>
@@ -212,17 +218,17 @@ private:
 		size_t i = 0;
 
 		TupleForEach(row, [&](const auto& value)
-					 {
-						 if (m_hasColumnFormat && m_columnFormat[i] == ColumnFormat::Percent)
-						 {
-							 sizes[i] = 6;
-						 }
-						 else
-						 {
-							 sizes[i] = DataWidth(value);
-						 }
-						 i++;
-					 });
+		{
+			if (m_hasColumnFormat && m_columnFormat[i] == ColumnFormat::Percent)
+			{
+				sizes[i] = 6;
+			}
+			else
+			{
+				sizes[i] = DataWidth(value);
+			}
+			i++;
+		});
 
 		return sizes;
 	}
