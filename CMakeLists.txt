@@ -21,9 +21,9 @@ add_definitions(-DQT_MESSAGELOGCONTEXT)  # qt log messages context
 include(generate_product_version)
 generate_product_version(
         VersionFilesOutputVariable
-        NAME ${PROJECT_NAME}
+        NAME "${PROJECT_NAME}"
         FILE_DESCRIPTION "PotatoAlert"
-        COMPANY_NAME github.com/razaqq
+        COMPANY_NAME "github.com/razaqq"
         ICON ${PROJECT_SOURCE_DIR}/Resources/potato.ico
         VERSION_MAJOR 3
         VERSION_MINOR 0
@@ -39,6 +39,14 @@ execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Res
                 RESULT_VARIABLE GENERATE_STRINGTABLE_RESULT)
 if(NOT GENERATE_STRINGTABLE_RESULT EQUAL "0")
     message(FATAL_ERROR "Failed to generate stringtable")
+endif()
+message("Generating resource qrc...")
+message("${CMAKE_CURRENT_SOURCE_DIR}/Resources")
+execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Resources/generate_qrc.py"
+                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Resources"
+                RESULT_VARIABLE GENERATE_QRC_RESULT)
+if(NOT GENERATE_QRC_RESULT EQUAL "0")
+    message(FATAL_ERROR "Failed to generate resource qrc")
 endif()
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/Core)
