@@ -123,19 +123,62 @@ bool SQLite::Statement::GetText(int index, std::string& outStr) const
 	return true;
 }
 
-bool SQLite::Statement::GetInt(int index, int& outInt) const
+template<typename T>
+bool SQLite::Statement::GetInt(int index, T& outInt) const
 {
+	static_assert(std::is_integral_v<T>);
 	if (!m_hasRow || index < 0 || index > m_columnCount)
 	{
 		return false;
 	}
 
 	auto stmt = reinterpret_cast<sqlite3_stmt*>(m_stmt);
-	outInt = sqlite3_column_int(stmt, index);
-	return true;
+	int out = sqlite3_column_int(stmt, index);
+
+	if (out >= std::numeric_limits<T>::min() && out <= std::numeric_limits<T>::max())
+	{
+		outInt = static_cast<T>(out);
+		return true;
+	}
+
+	return false;
 }
+template bool SQLite::Statement::GetInt(int, uint8_t&) const;
+template bool SQLite::Statement::GetInt(int, int8_t&) const;
+template bool SQLite::Statement::GetInt(int, uint16_t&) const;
+template bool SQLite::Statement::GetInt(int, uint32_t&) const;
+template bool SQLite::Statement::GetInt(int, int32_t&) const;
+template bool SQLite::Statement::GetInt(int, int&) const;
 
-bool SQLite::Statement::GetUInt(int index, uint32_t& outInt) const
+template<typename T>
+bool SQLite::Statement::GetInt64(int index, T& outInt) const
+{
+	static_assert(std::is_integral_v<T>);
+	if (!m_hasRow || index < 0 || index > m_columnCount)
+	{
+		return false;
+	}
+
+	auto stmt = reinterpret_cast<sqlite3_stmt*>(m_stmt);
+	sqlite3_int64 out = sqlite3_column_int64(stmt, index);
+
+	if (out >= std::numeric_limits<uint8_t>::min() && out <= std::numeric_limits<uint8_t>::max())
+	{
+		outInt = static_cast<T>(out);
+		return true;
+	}
+
+	return false;
+}
+template bool SQLite::Statement::GetInt64(int, uint8_t&) const;
+template bool SQLite::Statement::GetInt64(int, int8_t&) const;
+template bool SQLite::Statement::GetInt64(int, uint16_t&) const;
+template bool SQLite::Statement::GetInt64(int, uint32_t&) const;
+template bool SQLite::Statement::GetInt64(int, int32_t&) const;
+template bool SQLite::Statement::GetInt64(int, uint64_t&) const;
+template bool SQLite::Statement::GetInt64(int, int64_t&) const;
+
+bool SQLite::Statement::GetBool(int index, bool& outBool) const
 {
 	if (!m_hasRow || index < 0 || index > m_columnCount)
 	{
@@ -143,6 +186,16 @@ bool SQLite::Statement::GetUInt(int index, uint32_t& outInt) const
 	}
 
 	auto stmt = reinterpret_cast<sqlite3_stmt*>(m_stmt);
-	outInt = sqlite3_column_int(stmt, index);
-	return true;
+	int v = sqlite3_column_int(stmt, index);
+	if (v == 0)
+	{
+		outBool = false;
+		return true;
+	}
+	if (v == 1)
+	{
+		outBool = true;
+		return true;
+	}
+	return false;
 }
