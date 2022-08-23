@@ -24,7 +24,7 @@
 using namespace PotatoAlert;
 using namespace PotatoAlert::Core;
 using ReplayParser::ReplaySummary;
-using Client::StatsParser::Match;
+using Client::StatsParser::MatchType;
 using Client::StatsParser::StatsParseResult;
 using Client::MatchHistory;
 namespace sp = Client::StatsParser;
@@ -42,7 +42,7 @@ static std::string GetFilePath()
 static MatchHistory::Entry ReadEntry(const SQLite::Statement& statement)
 {
 	MatchHistory::Entry entry;
-	if (!statement.GetUInt(0, entry.Id))
+	if (!statement.GetInt(0, entry.Id))
 		LOG_ERROR("Failed to get entry.Id");
 	if (!statement.GetText(1, entry.Hash))
 		LOG_ERROR("Failed to get entry.Hash");
@@ -52,18 +52,26 @@ static MatchHistory::Entry ReadEntry(const SQLite::Statement& statement)
 		LOG_ERROR("Failed to get entry.Date");
 	if (!statement.GetText(4, entry.Ship))
 		LOG_ERROR("Failed to get entry.Ship");
-	if (!statement.GetText(5, entry.Map))
+	if (!statement.GetText(5, entry.ShipNation))
+		LOG_ERROR("Failed to get entry.ShipNation");
+	if (!statement.GetText(6, entry.ShipClass))
+		LOG_ERROR("Failed to get entry.ShipClass");
+	if (!statement.GetInt(7, entry.ShipTier))
+		LOG_ERROR("Failed to get entry.ShipTier");
+	if (!statement.GetText(8, entry.Map))
 		LOG_ERROR("Failed to get entry.Map");
-	if (!statement.GetText(6, entry.MatchGroup))
+	if (!statement.GetText(9, entry.MatchGroup))
 		LOG_ERROR("Failed to get entry.MatchGroup");
-	if (!statement.GetText(7, entry.StatsMode))
+	if (!statement.GetText(10, entry.StatsMode))
 		LOG_ERROR("Failed to get entry.StatsMode");
-	if (!statement.GetText(8, entry.Player))
+	if (!statement.GetText(11, entry.Player))
 		LOG_ERROR("Failed to get entry.Player");
-	if (!statement.GetText(9, entry.Region))
+	if (!statement.GetText(12, entry.Region))
+		LOG_ERROR("Failed to get entry.Region");
+	if (!statement.GetBool(13, entry.Analyzed))
 		LOG_ERROR("Failed to get entry.Region");
 	std::string summary;
-	if (!statement.GetText(10, summary))
+	if (!statement.GetText(14, summary))
 		LOG_ERROR("Failed to get entry.ReplaySummary");
 	entry.ReplaySummary = ReplaySummary::FromJson(summary);
 	return entry;
@@ -84,6 +92,9 @@ MatchHistory::MatchHistory()
 				ReplayName TEXT,
 				Date TEXT,
 				Ship TEXT,
+				ShipNation TEXT,
+				ShipClass TEXT,
+				ShipTier INTEGER,
 				Map TEXT,
 				MatchGroup TEXT,
 				StatsMode TEXT,
@@ -130,25 +141,28 @@ QDir MatchHistory::GetDir()
 	return QString::fromStdString(matchesPath.string());
 }
 
-MatchHistory::Entry MatchHistory::CreateEntry(const Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view hash)
+MatchHistory::Entry MatchHistory::CreateEntry(const MatchType::InfoType& info, std::string_view arenaInfo, std::string_view json, std::string_view hash)
 {
-	auto dateSplit = String::Split(info.dateTime, " ");
+	auto dateSplit = String::Split(info.DateTime, " ");
 	auto date = String::Split(dateSplit[0], ".");
 	auto time = String::Split(dateSplit[1], ":");
 
-	const std::string replayName = std::format("{}{}{}_{}{}{}_{}_{}.wowsreplay", date[2], date[1], date[0], time[0], time[1], time[2], info.shipIdent, info.map);
+	const std::string replayName = std::format("{}{}{}_{}{}{}_{}_{}.wowsreplay", date[2], date[1], date[0], time[0], time[1], time[2], info.ShipIdent, info.Map);
 
 	return Entry
 	{
 		.Hash = std::string(hash),
 		.ReplayName = replayName,
-		.Date = info.dateTime,
-		.Ship = info.ship,
-		.Map = info.map,
-		.MatchGroup = info.matchGroup,
-		.StatsMode = info.statsMode,
-		.Player = info.player,
-		.Region = info.region,
+		.Date = info.DateTime,
+		.Ship = info.ShipName,
+		.ShipNation = info.ShipNation,
+		.ShipClass = info.ShipClass,
+		.ShipTier = info.ShipTier,
+		.Map = info.Map,
+		.MatchGroup = info.MatchGroup,
+		.StatsMode = info.StatsMode,
+		.Player = info.Player,
+		.Region = info.Region,
 		.Json = std::string(json),
 		.ArenaInfo = std::string(arenaInfo),
 		.Analyzed = false,
@@ -158,8 +172,8 @@ MatchHistory::Entry MatchHistory::CreateEntry(const Match::Info& info, std::stri
 
 bool MatchHistory::WriteEntry(const Entry& entry) const
 {
-	auto statement = SQLite::Statement(m_db, 
-		R"(INSERT INTO matches (Hash, ReplayName, Date, Ship, Map, MatchGroup, StatsMode, Player, Region, Json, ArenaInfo, Analyzed, ReplaySummary) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13);)");
+	auto statement = SQLite::Statement(m_db,
+		R"(INSERT INTO matches (Hash, ReplayName, Date, Ship, ShipNation, ShipClass, ShipTier, Map, MatchGroup, StatsMode, Player, Region, Json, ArenaInfo, Analyzed, ReplaySummary) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16);)");
 
 #define BIND(index, value)                                                                                \
 	if (!statement.Bind((index), (value)))                                                                \
@@ -172,16 +186,19 @@ bool MatchHistory::WriteEntry(const Entry& entry) const
 	BIND(2, entry.ReplayName)
 	BIND(3, entry.Date)
 	BIND(4, entry.Ship)
-	BIND(5, entry.Map)
-	BIND(6, entry.MatchGroup)
-	BIND(7, entry.StatsMode)
-	BIND(8, entry.Player)
-	BIND(9, entry.Region)
-	BIND(10, entry.Json)
-	BIND(11, entry.ArenaInfo)
-	BIND(12, entry.Analyzed)
+	BIND(5, entry.ShipNation)
+	BIND(6, entry.ShipClass)
+	BIND(7, entry.ShipTier)
+	BIND(8, entry.Map)
+	BIND(9, entry.MatchGroup)
+	BIND(10, entry.StatsMode)
+	BIND(11, entry.Player)
+	BIND(12, entry.Region)
+	BIND(13, entry.Json)
+	BIND(14, entry.ArenaInfo)
+	BIND(15, entry.Analyzed)
 	const std::string summary = entry.ReplaySummary.ToJson();
-	BIND(13, summary)
+	BIND(16, summary)
 
 	statement.ExecuteStep();
 	if (!statement.IsDone())
@@ -194,7 +211,7 @@ bool MatchHistory::WriteEntry(const Entry& entry) const
 	return true;
 }
 
-bool MatchHistory::WriteJson(const Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view hash) const
+bool MatchHistory::WriteJson(const MatchType::InfoType& info, std::string_view arenaInfo, std::string_view json, std::string_view hash) const
 {
 	if (!m_db)
 		return false;
@@ -212,7 +229,7 @@ std::vector<MatchHistory::Entry> MatchHistory::GetEntries() const
 	LOG_TRACE("Getting entries from match history database.");
 	std::vector<Entry> matches;
 
-	auto statement = SQLite::Statement(m_db, "SELECT Id, Hash, ReplayName, Date, Ship, Map, MatchGroup, StatsMode, Player, Region, ReplaySummary FROM matches;");
+	auto statement = SQLite::Statement(m_db, "SELECT Id, Hash, ReplayName, Date, Ship, ShipNation, ShipClass, ShipTier, Map, MatchGroup, StatsMode, Player, Region, Analyzed, ReplaySummary FROM matches;");
 
 	if (!statement)
 	{
@@ -237,7 +254,8 @@ std::optional<MatchHistory::Entry> MatchHistory::GetEntry(std::string_view hash)
 	if (!m_db)
 		return {};
 
-	auto statement = SQLite::Statement(m_db, "SELECT Id, Hash, ReplayName, Date, Ship, Map, MatchGroup, StatsMode, Player, Region, ReplaySummary FROM matches WHERE Hash = ?1;");
+	auto statement = SQLite::Statement(m_db,
+		"SELECT Id, Hash, ReplayName, Date, Ship, ShipNation, ShipClass, ShipTier, Map, MatchGroup, StatsMode, Player, Region, Analyzed, ReplaySummary FROM matches WHERE Hash = ?1;");
 
 	if (!statement)
 	{
@@ -265,7 +283,8 @@ std::optional<MatchHistory::Entry> MatchHistory::GetEntry(uint32_t id) const
 	if (!m_db)
 		return {};
 
-	auto statement = SQLite::Statement(m_db, "SELECT Id, Hash, ReplayName, Date, Ship, Map, MatchGroup, StatsMode, Player, Region, ReplaySummary FROM matches WHERE Id = ?1;");
+	auto statement = SQLite::Statement(m_db,
+		"SELECT Id, Hash, ReplayName, Date, Ship, ShipNation, ShipClass, ShipTier, Map, MatchGroup, StatsMode, Player, Region, Analyzed, ReplaySummary FROM matches WHERE Id = ?1;");
 
 	if (!statement)
 	{
@@ -283,18 +302,22 @@ std::optional<MatchHistory::Entry> MatchHistory::GetEntry(uint32_t id) const
 	if (statement.HasRow())
 	{
 		Entry entry;
-		statement.GetUInt(0, entry.Id);
+		statement.GetInt(0, entry.Id);
 		statement.GetText(1, entry.Hash);
 		statement.GetText(2, entry.ReplayName);
 		statement.GetText(3, entry.Date);
 		statement.GetText(4, entry.Ship);
-		statement.GetText(5, entry.Map);
-		statement.GetText(6, entry.MatchGroup);
-		statement.GetText(7, entry.StatsMode);
-		statement.GetText(8, entry.Player);
-		statement.GetText(9, entry.Region);
+		statement.GetText(5, entry.ShipNation);
+		statement.GetText(6, entry.ShipClass);
+		statement.GetInt(7, entry.ShipTier);
+		statement.GetText(8, entry.Map);
+		statement.GetText(9, entry.MatchGroup);
+		statement.GetText(10, entry.StatsMode);
+		statement.GetText(11, entry.Player);
+		statement.GetText(12, entry.Region);
+		statement.GetBool(13, entry.Analyzed);
 		std::string summary;
-		statement.GetText(10, summary);
+		statement.GetText(14, summary);
 		entry.ReplaySummary = ReplaySummary::FromJson(summary);
 		return entry;
 	}
@@ -402,14 +425,14 @@ void MatchHistory::SetNonAnalyzed(uint32_t id) const
 	}
 }
 
-
 std::optional<MatchHistory::Entry> MatchHistory::GetLatestEntry() const
 {
 	if (!m_db)
 		return {};
 
 	LOG_TRACE("Getting latest entry from match history database.");
-	auto statement = SQLite::Statement(m_db, "SELECT Id, Hash, ReplayName, Date, Ship, Map, MatchGroup, StatsMode, Player, Region, ReplaySummary FROM matches ORDER BY id DESC LIMIT 1;");
+	auto statement = SQLite::Statement(m_db,
+		"SELECT Id, Hash, ReplayName, Date, Ship, ShipNation, ShipClass, ShipTier, Map, MatchGroup, StatsMode, Player, Region, Analyzed, ReplaySummary FROM matches ORDER BY id DESC LIMIT 1;");
 
 	if (!statement)
 	{
@@ -429,14 +452,14 @@ std::optional<MatchHistory::Entry> MatchHistory::GetLatestEntry() const
 	return {};
 }
 
-std::optional<Match> MatchHistory::GetMatchJson(std::string_view hash) const
+std::optional<MatchType> MatchHistory::GetMatchJson(std::string_view hash) const
 {
 	if (!m_db)
 		return {};
 
 	LOG_TRACE("Getting match from match history database with hash {}", hash);
 	
-	auto statement = SQLite::Statement(m_db, "SELECT json FROM matches WHERE hash = ?1;");
+	auto statement = SQLite::Statement(m_db, "SELECT Json FROM Matches WHERE Hash = ?1;");
 
 	if (!statement)
 	{
@@ -460,8 +483,8 @@ std::optional<Match> MatchHistory::GetMatchJson(std::string_view hash) const
 	std::string raw;
 	if (statement.GetText(0, raw))
 	{
-		if (StatsParseResult res = sp::ParseMatch(raw, StatsParser::MatchContext{}, false); res.success)
-			return res.match;
+		if (StatsParseResult res = sp::ParseMatch(raw, StatsParser::MatchContext{}, false); res.Success)
+			return res.Match;
 		return {};
 	}
 	else
@@ -471,14 +494,14 @@ std::optional<Match> MatchHistory::GetMatchJson(std::string_view hash) const
 	}
 }
 
-std::optional<Match> MatchHistory::GetMatchJson(uint32_t id) const
+std::optional<MatchType> MatchHistory::GetMatchJson(uint32_t id) const
 {
 	if (!m_db)
 		return {};
 
 	LOG_TRACE("Getting match from match history database with id {}", id);
 
-	auto statement = SQLite::Statement(m_db, "SELECT json FROM matches WHERE id = ?1;");
+	auto statement = SQLite::Statement(m_db, "SELECT Json FROM matches WHERE Id = ?1;");
 
 	if (!statement)
 	{
@@ -502,8 +525,8 @@ std::optional<Match> MatchHistory::GetMatchJson(uint32_t id) const
 	std::string raw;
 	if (statement.GetText(0, raw))
 	{
-		if (StatsParseResult res = sp::ParseMatch(raw, StatsParser::MatchContext{}, false); res.success)
-			return res.match;
+		if (StatsParseResult res = sp::ParseMatch(raw, StatsParser::MatchContext{}, false); res.Success)
+			return res.Match;
 		return {};
 	}
 	else
@@ -531,9 +554,9 @@ bool MatchHistory::WriteCsv(std::string_view csv)
 	return false;
 }
 
-bool MatchHistory::SaveMatch(const Match::Info& info, std::string_view arenaInfo, std::string_view hash, std::string_view json, std::string_view csv) const
+bool MatchHistory::SaveMatch(const MatchType::InfoType& info, std::string_view arenaInfo, std::string_view hash, std::string_view json, std::string_view csv) const
 {
-	if (std::optional<Match> match = GetMatchJson(hash))
+	if (std::optional<MatchType> match = GetMatchJson(hash))
 	{
 		LOG_TRACE("Match with hash {} is already in database.", hash);
 		return false;
@@ -584,6 +607,9 @@ void MatchHistory::ApplyDatabaseUpdates() const
 	ADD_COLUMN("ReplayName", "TEXT");
 	ADD_COLUMN("Date", "TEXT");
 	ADD_COLUMN("Ship", "TEXT");
+	ADD_COLUMN("ShipNation", "TEXT");
+	ADD_COLUMN("ShipClass", "TEXT");
+	ADD_COLUMN("ShipTier", "INTEGER");
 	ADD_COLUMN("Map", "TEXT");
 	ADD_COLUMN("MatchGroup", "TEXT");
 	ADD_COLUMN("StatsMode", "TEXT");
@@ -604,7 +630,7 @@ std::vector<MatchHistory::NonAnalyzedMatch> MatchHistory::GetNonAnalyzedMatches(
 {
 	std::vector<NonAnalyzedMatch> entries;
 
-	auto statement = SQLite::Statement(m_db, "SELECT Hash, ReplayName FROM matches WHERE analyzed = FALSE;");
+	auto statement = SQLite::Statement(m_db, "SELECT Hash, ReplayName FROM matches WHERE Analyzed = FALSE;");
 
 	if (!statement)
 	{
@@ -627,9 +653,9 @@ std::vector<MatchHistory::NonAnalyzedMatch> MatchHistory::GetNonAnalyzedMatches(
 	return entries;
 }
 
-void MatchHistory::SetAnalyzeResult(std::string_view hash, ReplaySummary summary) const
+void MatchHistory::SetAnalyzeResult(std::string_view hash, const ReplaySummary& summary) const
 {
-	auto statement = SQLite::Statement(m_db, "UPDATE matches SET analyzed = TRUE, replaySummary = ?1 WHERE hash = ?2;");
+	auto statement = SQLite::Statement(m_db, "UPDATE matches SET Analyzed = TRUE, ReplaySummary = ?1 WHERE Hash = ?2;");
 
 	if (!statement)
 	{
@@ -637,7 +663,7 @@ void MatchHistory::SetAnalyzeResult(std::string_view hash, ReplaySummary summary
 		return;
 	}
 
-	std::string j = summary.ToJson();
+	const std::string j = summary.ToJson();
 	if (!statement.Bind(1, j))
 	{
 		LOG_ERROR("Failed to bind to SQL statement: {}", m_db.GetLastError());

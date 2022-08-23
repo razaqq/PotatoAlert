@@ -17,7 +17,7 @@ class StatsWidget : public QWidget
 public:
 	explicit StatsWidget(QWidget* parent = nullptr);
 
-	void Update(const Match& match);
+	void Update(const MatchType& match);
 	void SetStatus(Client::Status status, const std::string& statusText) const;
 private:
 	void Init();
@@ -26,7 +26,7 @@ private:
 	StatsTeamFooter* m_footer = new StatsTeamFooter(this);
 	StatsHeader* m_header = new StatsHeader(this);
 
-	Match m_lastMatch;
+	MatchType m_lastMatch;
 };
 
 }  // namespace PotatoAlert::Gui

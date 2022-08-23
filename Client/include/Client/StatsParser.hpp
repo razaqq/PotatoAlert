@@ -21,54 +21,57 @@ typedef std::vector<QString> WowsNumbersType;
 
 struct Label
 {
-	QString text;
-	std::optional<QColor> color;
+	QString Text;
+	std::optional<QColor> Color;
 
 	void UpdateLabel(QLabel* label) const;
 };
 
 struct Team
 {
-	TeamType table;
-	WowsNumbersType wowsNumbers;
+	TeamType Table;
+	WowsNumbersType WowsNumbers;
 
 	// averages
-	Label avgDmg;
-	Label winrate;
+	Label AvgDmg;
+	Label Winrate;
 
 	// clan wars
 	struct
 	{
-		bool show = false;
-		Label tag;
-		Label name;
-		Label region;
-	} clan;
+		bool Show = false;
+		Label Tag;
+		Label Name;
+		Label Region;
+	} Clan;
 };
 
-struct Match
+struct MatchType
 {
-	Team team1;
-	Team team2;
+	Team Team1;
+	Team Team2;
 
-	struct Info
+	struct InfoType
 	{
-		std::string map;
-		std::string ship;
-		std::string shipIdent;
-		std::string dateTime;
-		std::string matchGroup;
-		std::string statsMode;
-		std::string region;
-		std::string player;
-	} info;
+		std::string Map;
+		std::string ShipIdent;
+		std::string ShipName;
+		std::string ShipClass;
+		std::string ShipNation;
+		uint8_t ShipTier;
+		std::string DateTime;
+		std::string MatchGroup;
+		std::string StatsMode;
+		std::string Region;
+		std::string Player;
+	} Info;
 };
 
 struct StatsParseResult
 {
-	bool success = false;
-	Match match;
-	std::optional<std::string> csv;
+	bool Success = false;
+	MatchType Match;
+	std::optional<std::string> Csv;
 };
 
 struct MatchContext

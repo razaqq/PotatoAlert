@@ -62,7 +62,7 @@ private:
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
-	void MatchReady(const StatsParser::Match& match);
+	void MatchReady(const StatsParser::MatchType& match);
 	void MatchHistoryChanged();
 	void MatchSummaryChanged(uint32_t id, const ReplaySummary& summary);
 	void StatusReady(Status status, const std::string& statusText);

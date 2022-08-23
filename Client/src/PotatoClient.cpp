@@ -285,7 +285,7 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 						}
 						LOG_TRACE("Parsing match.");
 						const StatsParser::StatsParseResult res = StatsParser::ParseMatch(serverResponse.Result.value(), matchContext, true);
-						if (!res.success)
+						if (!res.Success)
 						{
 							emit StatusReady(Status::Error, "JSON Parse Error");
 							return;
@@ -295,14 +295,14 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 						if (PotatoConfig().Get<ConfigKey::MatchHistory>())
 						{
 							if (MatchHistory::Instance().SaveMatch(
-								res.match.info, matchContext.ArenaInfo, m_lastArenaInfoHash, serverResponse.Result.value().dump(), res.csv.value()))
+								res.Match.Info, matchContext.ArenaInfo, m_lastArenaInfoHash, serverResponse.Result.value().dump(), res.Csv.value()))
 							{
 								emit MatchHistoryChanged();
 							}
 						}
 
 						LOG_TRACE("Updating tables.");
-						emit MatchReady(res.match);
+						emit MatchReady(res.Match);
 
 						emit StatusReady(Status::Ready, "Ready");
 						break;

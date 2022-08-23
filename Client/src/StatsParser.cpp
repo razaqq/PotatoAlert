@@ -118,12 +118,15 @@ struct Clan
 
 struct Ship
 {
-	std::string name;
+	std::string Name;
+	std::string Class;
+	std::string Nation;
+	uint8_t Tier;
 	// Color color;
 
 	[[nodiscard]] QTableWidgetItem* GetField(const QFont& font, const QColor& bg, const QFlags<Qt::AlignmentFlag>& align) const
 	{
-		auto item = new QTableWidgetItem(ToQString(this->name));
+		auto item = new QTableWidgetItem(ToQString(Name));
 		// item->setForeground(this->color.QColor());
 		item->setBackground(bg);
 		item->setFont(font);
@@ -134,7 +137,10 @@ struct Ship
 
 [[maybe_unused]] static void from_json(const json& j, Ship& s)
 {
-	j.at("name").get_to(s.name);
+	j.at("name").get_to(s.Name);
+	j.at("class").get_to(s.Class);
+	j.at("nation").get_to(s.Nation);
+	j.at("tier").get_to(s.Tier);
 	// s.color = Color(j.at("color").get<std::array<int, 3>>());
 }
 
@@ -297,7 +303,7 @@ static std::string GetCSV(const Match& match)
 
 			std::string shipName;
 			if (player.ship)
-				shipName = player.ship->name;
+				shipName = player.ship->Name;
 
 			out += std::format("{};{};{};{};{};{};{};{};{};{};{}\n",
 					teamID, player.name, clanName, shipName,
@@ -320,12 +326,12 @@ namespace pn = PotatoAlert::Client::StatsParser;
 
 void pn::Label::UpdateLabel(QLabel* label) const
 {
-	label->setText(this->text);
+	label->setText(this->Text);
 
-	if (this->color)
+	if (this->Color)
 	{
 		auto palette = label->palette();
-		palette.setColor(QPalette::WindowText, this->color.value());
+		palette.setColor(QPalette::WindowText, this->Color.value());
 		label->setPalette(palette);
 	}
 }
@@ -337,9 +343,10 @@ StatsParseResult pn::ParseMatch(const json& j, const MatchContext& matchContext,
 	const auto match = j.get<_JSON::Match>();
 
 	if (parseCsv)
-		result.csv = _JSON::GetCSV(match);
+		result.Csv = _JSON::GetCSV(match);
 
-	std::string playerShip;
+	_JSON::Ship playerShip;
+
 
 	// parse match stats
 	auto getTeam = [&match, &matchContext, &playerShip](const _JSON::Team& inTeam, Team& outTeam)
@@ -354,18 +361,20 @@ StatsParseResult pn::ParseMatch(const json& j, const MatchContext& matchContext,
 		for (auto& player : inTeam.players)
 		{
 			if (player.name == matchContext.PlayerName && player.ship.has_value())
-				playerShip = player.ship->name;
+			{
+				playerShip = player.ship.value();
+			}
 
 			auto row = player.GetTableRow();
 			teamTable.push_back(row);
-			outTeam.wowsNumbers.push_back(ToQString(player.wowsNumbers));
+			outTeam.WowsNumbers.push_back(ToQString(player.wowsNumbers));
 		}
-		outTeam.avgDmg = inTeam.avgDmg.GetLabel();
-		outTeam.winrate = inTeam.avgWr.GetLabel("%");
-		outTeam.table = teamTable;
+		outTeam.AvgDmg = inTeam.avgDmg.GetLabel();
+		outTeam.Winrate = inTeam.avgWr.GetLabel("%");
+		outTeam.Table = teamTable;
 	};
-	getTeam(match.team1, result.match.team1);
-	getTeam(match.team2, result.match.team2);
+	getTeam(match.team1, result.Match.Team1);
+	getTeam(match.team2, result.Match.Team2);
 
 	// parse clan tag+name
 	if (match.matchGroup == "clan")
@@ -396,37 +405,36 @@ StatsParseResult pn::ParseMatch(const json& j, const MatchContext& matchContext,
 
 			if (!clans.empty())
 			{
-				outTeam.clan.show = true;
+				outTeam.Clan.Show = true;
 				const auto max_elem = std::ranges::max_element(clans, [](const auto& a, const auto& b)
 				{
 					return a.second.count < b.second.count;
 				});
 
-				outTeam.clan.tag = max_elem->second.clan.GetTagLabel();
-				outTeam.clan.name = max_elem->second.clan.GetNameLabel();
-				outTeam.clan.region = max_elem->second.clan.GetRegionLabel();
+				outTeam.Clan.Tag = max_elem->second.clan.GetTagLabel();
+				outTeam.Clan.Name = max_elem->second.clan.GetNameLabel();
+				outTeam.Clan.Region = max_elem->second.clan.GetRegionLabel();
 			}
 		};
-		findClan(match.team1, result.match.team1);
-		findClan(match.team2, result.match.team2);
+		findClan(match.team1, result.Match.Team1);
+		findClan(match.team2, result.Match.Team2);
 	}
 
 	// parse match info
-	Match::Info& info = result.match.info;
-	info.matchGroup = match.matchGroup;
-	info.statsMode = match.statsMode;
-	info.region = match.region;
-	info.map = match.map;
-	info.dateTime = match.dateTime;
-	info.player = matchContext.PlayerName;
-	info.shipIdent = matchContext.ShipIdent;
-	info.ship = playerShip;
+	MatchType::InfoType& info = result.Match.Info;
+	info.MatchGroup = std::move(match.matchGroup);
+	info.StatsMode = std::move(match.statsMode);
+	info.Region = std::move(match.region);
+	info.Map = std::move(match.map);
+	info.DateTime = std::move(match.dateTime);
+	info.Player = std::move(matchContext.PlayerName);
+	info.ShipIdent = std::move(matchContext.ShipIdent);
+	info.ShipName = std::move(playerShip.Name);
+	info.ShipClass = std::move(playerShip.Class);
+	info.ShipNation = std::move(playerShip.Nation);
+	info.ShipTier = playerShip.Tier;
 
-	// result.match.info.ship = match.ship;
-	// result.match.info.shipIdent = match.shipIdent;
-	// result.match.info.player = match.player;
-
-	result.success = true;
+	result.Success = true;
 	return result;
 }
 

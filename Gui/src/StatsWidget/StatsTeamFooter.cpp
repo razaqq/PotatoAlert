@@ -90,33 +90,33 @@ void StatsTeamFooter::Init()
 	this->setLayout(layout);
 }
 
-void StatsTeamFooter::Update(const Match& match) const
+void StatsTeamFooter::Update(const MatchType& match) const
 {
 	// set average stats per team
-	match.team1.winrate.UpdateLabel(this->m_team1Wr);
-	match.team1.avgDmg.UpdateLabel(this->m_team1Dmg);
-	match.team2.winrate.UpdateLabel(this->m_team2Wr);
-	match.team2.avgDmg.UpdateLabel(this->m_team2Dmg);
+	match.Team1.Winrate.UpdateLabel(this->m_team1Wr);
+	match.Team1.AvgDmg.UpdateLabel(this->m_team1Dmg);
+	match.Team2.Winrate.UpdateLabel(this->m_team2Wr);
+	match.Team2.AvgDmg.UpdateLabel(this->m_team2Dmg);
 
 	// set clan battle stuff
-	bool show1 = match.team1.clan.show;
+	bool show1 = match.Team1.Clan.Show;
 	if (show1)
 	{
-		match.team1.clan.tag.UpdateLabel(this->m_team1Tag);
-		match.team1.clan.name.UpdateLabel(this->m_team1Name);
-		match.team1.clan.region.UpdateLabel(this->m_team1Region);
+		match.Team1.Clan.Tag.UpdateLabel(this->m_team1Tag);
+		match.Team1.Clan.Name.UpdateLabel(this->m_team1Name);
+		match.Team1.Clan.Region.UpdateLabel(this->m_team1Region);
 	}
 	this->m_team1Tag->setVisible(show1);
 	this->m_team1Name->setVisible(show1);
 	this->m_team1Region->setVisible(show1);
 	this->m_team1RegionLabel->setVisible(show1);
 
-	bool show2 = match.team1.clan.show;
+	bool show2 = match.Team1.Clan.Show;
 	if (show2)
 	{
-		match.team2.clan.tag.UpdateLabel(this->m_team2Tag);
-		match.team2.clan.name.UpdateLabel(this->m_team2Name);
-		match.team2.clan.region.UpdateLabel(this->m_team2Region);
+		match.Team2.Clan.Tag.UpdateLabel(this->m_team2Tag);
+		match.Team2.Clan.Name.UpdateLabel(this->m_team2Name);
+		match.Team2.Clan.Region.UpdateLabel(this->m_team2Region);
 	}
 	this->m_team2Tag->setVisible(show2);
 	this->m_team2Name->setVisible(show2);
