@@ -8,11 +8,11 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5 COMPONENTS Core Network Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Core Network Widgets REQUIRED)
 
 # have to add the header to sources for qt AUTOMOC
 add_library(updater src/Updater.cpp include/Updater/Updater.hpp)
-target_link_libraries(updater PRIVATE gui core Qt5::Network Qt5::Widgets Win32)
+target_link_libraries(updater PRIVATE gui core Qt6::Network Qt6::Widgets Win32)
 target_include_directories(updater PUBLIC include)
 set_target_properties(updater PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 
@@ -40,7 +40,7 @@ else()
 endif()
 
 # target_link_libraries(PotatoUpdater PRIVATE gui core updater Win32)
-target_link_libraries(PotatoUpdater PRIVATE core gui updater Qt5::Core Qt5::Widgets Win32)
+target_link_libraries(PotatoUpdater PRIVATE core gui updater Qt6::Core Qt6::Widgets Win32)
 set_target_properties(PotatoUpdater PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 set_target_properties(PotatoUpdater
     PROPERTIES

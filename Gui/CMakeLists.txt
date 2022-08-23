@@ -67,9 +67,9 @@ if(UNIX)
     )
 endif()
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
-target_link_libraries(gui PRIVATE FramelessHelper Qt5::Widgets)
+target_link_libraries(gui PRIVATE FramelessHelperWidgets Qt6::Widgets)
 
 if(WIN32)
     target_link_libraries(gui PRIVATE Dwmapi Win32 updater)

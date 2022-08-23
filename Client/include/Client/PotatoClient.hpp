@@ -13,8 +13,7 @@
 #include <QNetworkAccessManager>
 #include <QObject>
 #include <QString>
-#include <QTableWidgetItem>
-#include <QtWebSockets/QWebSocket>
+#include <QNetworkReply>
 
 #include <string>
 

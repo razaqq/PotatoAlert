@@ -14,7 +14,7 @@ public:
 	explicit FramelessDialog(QWidget* parent = nullptr);
 private:
 	void showEvent(QShowEvent* event) override;
-	bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
+	bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
 };
 
 }  // namespace PotatoAlert::Gui

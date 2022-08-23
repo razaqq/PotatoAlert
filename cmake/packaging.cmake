@@ -1,5 +1,5 @@
-find_package(Qt5Core REQUIRED)
-get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
+find_package(Qt6Core REQUIRED)
+get_target_property(_qmake_executable Qt6::qmake IMPORTED_LOCATION)
 get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
 find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
 # find_package(Python)
@@ -21,7 +21,6 @@ function(windeployqt target)
             ${WINDEPLOYQT_ARGS}
             --verbose 0
             --no-compiler-runtime
-            --no-angle
             --no-opengl-sw
             --no-translations
             --dir $<TARGET_FILE_DIR:${target}>

@@ -3,7 +3,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_executable(PotatoAlert ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
 set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
@@ -38,7 +38,7 @@ else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
-target_link_libraries(PotatoAlert PRIVATE core gui Qt5::Widgets)
+target_link_libraries(PotatoAlert PRIVATE core gui Qt6::Widgets FramelessHelper::Widgets)
 
 set_target_properties(PotatoAlert
     PROPERTIES

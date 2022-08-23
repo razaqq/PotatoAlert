@@ -34,9 +34,10 @@ int main(int argc, char* argv[])
 		std::exit(0);
 	}
 
+	wangwenx190::FramelessHelper::FramelessHelper::Core::initialize();
+
 	Q_INIT_RESOURCE(PotatoAlert);
 
-	QApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
 	if (qEnvironmentVariableIsEmpty("QT_FONT_DPI"))
 	{
 		qputenv("QT_FONT_DPI", "96");
@@ -57,30 +58,6 @@ int main(int argc, char* argv[])
 	QApplication::setStyle("fusion");
 	QApplication::setPalette(DarkPalette());
 	app.setStyleSheet(style);
-
-	/*
-	QFont font;
-	// qt5: family, pointSizeF, pixelSize, styleHint, weight, style, underline, strikeOut, fixedPitch, (int)false, styleName
-	// qt6: family, pointSizeF, pixelSize, styleHint, weight, style, underline, strikeOut, fixedPitch, (int)false, capitalization, letterSpacingType, letterSpacing, wordSpacing, stretch, styleStrategy, styleName
-	// qt5: "MS Shell Dlg 2, 8.25, -1, 5, 50, 0, 0, 0, 0, 0, 0, 0, 0"
-	font.setFamily("MS Shell Dlg 2");
-	font.setPointSizeF(8.25);
-	font.setPixelSize(-1);
-	font.setStyleHint(QFont::AnyStyle);
-	font.setWeight(QFont::Weight::Normal);  // qt6=QFont::Weight::Normal, qt5=50
-	font.setStyle(QFont::StyleNormal);
-	font.setUnderline(false);
-	font.setStrikeOut(false);
-	font.setFixedPitch(false);
-	font.setCapitalization(QFont::MixedCase);
-	font.setLetterSpacing(QFont::PercentageSpacing, 0);
-	font.setWordSpacing(0);
-	font.setStretch(0);
-	// font.setStyleStrategy(QFont::PreferAntialias);
-	font.setKerning(true);
-	app.setFont(font);
-	// qDebug() << qApp->font();
-	*/
 
 	auto mainWindow = new MainWindow();
 	auto nativeWindow = new NativeWindow(mainWindow);

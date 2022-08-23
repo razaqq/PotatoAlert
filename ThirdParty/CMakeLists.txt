@@ -1,4 +1,5 @@
 add_subdirectory(catch2)
+set(FRAMELESSHELPER_BUILD_STATIC ON)
 add_subdirectory(FramelessHelper)
 add_subdirectory(nlohmann_json)
 add_subdirectory(openssl)

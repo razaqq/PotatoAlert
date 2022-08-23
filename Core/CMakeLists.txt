@@ -60,11 +60,11 @@ if(UNIX)
     )
 endif(UNIX)
 
-find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Core Widgets REQUIRED)
 
 set_target_properties(core PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 target_link_libraries(core PRIVATE sqlite3 OpenSSL zip ZLIB::ZLIB)
-target_link_libraries(core PUBLIC nlohmann_json Qt5::Core Qt5::Widgets spdlog tinyxml2)
+target_link_libraries(core PUBLIC nlohmann_json Qt6::Core Qt6::Widgets spdlog tinyxml2)
 target_include_directories(core PUBLIC include)
 
 if(WIN32)

@@ -20,7 +20,7 @@ void NativeWindow::RequestFocus()
 	socket.connectToServer(QString(g_sockPath.data()), QLocalSocket::WriteOnly);
 }
 
-bool NativeWindow::nativeEvent(const QByteArray& eventType, void* message, long* result)
+bool NativeWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr* result)
 {
 	if (!g_server.isListening())
 	{
