@@ -57,7 +57,7 @@ private:
 	std::string m_lastArenaInfoHash;
 	DirectoryStatus m_dirStatus;
 	ReplayAnalyzer m_replayAnalyzer;
-	QNetworkAccessManager* m_networkAccessManager = new QNetworkAccessManager(this);
+	QNetworkAccessManager* m_networkAccessManager = new QNetworkAccessManager();
 
 signals:
 #pragma clang diagnostic push
