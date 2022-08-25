@@ -1,11 +1,11 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "AboutWidget.hpp"
-#include "MatchHistory.hpp"
-#include "MenuBar/VerticalMenuBar.hpp"
-#include "SettingsWidget/SettingsWidget.hpp"
-#include "StatsWidget/StatsWidget.hpp"
+#include "Gui/AboutWidget.hpp"
+#include "Gui/MatchHistory.hpp"
+#include "Gui/MenuBar/VerticalMenuBar.hpp"
+#include "Gui/SettingsWidget/SettingsWidget.hpp"
+#include "Gui/StatsWidget/StatsWidget.hpp"
 
 #include <QMainWindow>
 #include <QVBoxLayout>
