@@ -17,7 +17,7 @@ using PotatoAlert::Updater::Updater;
 
 static int RunMain(int argc, char* argv[])
 {
-	Q_INIT_RESOURCE(PotatoAlert);
+	Q_INIT_RESOURCE(PotatoUpdater);
 
 	PotatoAlert::Core::Log::Init();
 	

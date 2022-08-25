@@ -16,7 +16,7 @@ target_link_libraries(Updater PRIVATE Gui Core Qt6::Network Qt6::Widgets Win32)
 target_include_directories(Updater PUBLIC include)
 set_target_properties(Updater PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 
-add_executable(PotatoUpdater src/PotatoUpdater.cpp ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
+add_executable(PotatoUpdater src/PotatoUpdater.cpp ${PROJECT_SOURCE_DIR}/Resources/PotatoUpdater.qrc ${VersionFilesOutputVariable})
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     set_property(TARGET PotatoUpdater PROPERTY WIN32_EXECUTABLE true)
