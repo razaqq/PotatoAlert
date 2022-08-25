@@ -213,6 +213,13 @@ TEST_CASE("VersionTest")
 	REQUIRE(Version(1, 2, 3, 4).ToString() == "1.2.3.4");
 	REQUIRE(Version(0, 9, 4, 0).ToString() == "0.9.4.0");
 	REQUIRE(Version("0.9.4.0.1") == Version("0.9.4.0"));
+	REQUIRE(Version(1, 2, 3, 4) >= Version("1,2,3,4"));
+	REQUIRE(Version(1, 2, 3, 5) >= Version(1, 2, 3, 4));
+	REQUIRE(Version(1, 2, 4) <= Version(1, 2, 5));
+	REQUIRE(Version(1, 2, 4, 5) <= Version(1, 2, 5));
+	REQUIRE(Version("0.11.7.0") >= Version("0.10.9.0"));
+	REQUIRE_FALSE(Version("0.11.7.0") < Version("0.10.9.0"));
+	REQUIRE_FALSE(Version("0.11.7.0") == Version("0.10.9.0"));
 }
 
 
