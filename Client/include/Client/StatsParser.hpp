@@ -14,7 +14,7 @@
 
 namespace PotatoAlert::Client::StatsParser {
 
-typedef std::variant<QLabel*, QTableWidgetItem*> FieldType;
+typedef std::variant<QLabel*, QTableWidgetItem*, QWidget*> FieldType;
 typedef std::vector<FieldType> PlayerType;
 typedef std::vector<PlayerType> TeamType;
 typedef std::vector<QString> WowsNumbersType;

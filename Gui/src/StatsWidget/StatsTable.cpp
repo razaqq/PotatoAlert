@@ -14,60 +14,59 @@ using PotatoAlert::Gui::StatsTable;
 
 StatsTable::StatsTable(QWidget* parent) : QTableWidget(parent)
 {
-	this->Init();
-	this->InitHeaders();
+	Init();
+	InitHeaders();
 }
 
 void StatsTable::Init()
 {
-	this->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	this->setSelectionMode(QAbstractItemView::NoSelection);
-	this->setFocusPolicy(Qt::NoFocus);
-	this->setAlternatingRowColors(false);
+	setEditTriggers(QAbstractItemView::NoEditTriggers);
+	setSelectionMode(QAbstractItemView::NoSelection);
+	setFocusPolicy(Qt::NoFocus);
+	setAlternatingRowColors(false);
 
-	// this->setMouseTracking(true);
+	// setMouseTracking(true);
 
-	this->setRowCount(12);
-	this->setColumnCount(8);
-	this->setSortingEnabled(false);
-	this->setContentsMargins(0, 0, 0, 0);
-	this->setCursor(Qt::PointingHandCursor);
+	setRowCount(12);
+	setColumnCount(8);
+	setSortingEnabled(false);
+	setContentsMargins(0, 0, 0, 0);
+	setCursor(Qt::PointingHandCursor);
 }
 
 void StatsTable::InitHeaders()
 {
-	for (int i = 0; i < this->columnCount(); i++)
+	for (int i = 0; i < columnCount(); i++)
 	{
 		auto item = new QTableWidgetItem();
 		item->setFont(QFont("Segoe UI", 11));
-		this->setHorizontalHeaderItem(i, item);
+		setHorizontalHeaderItem(i, item);
 	}
+	
+	QHeaderView* hHeaders = horizontalHeader();
+	hHeaders->setSectionResizeMode(QHeaderView::Stretch);
+	hHeaders->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+	hHeaders->setSectionResizeMode(1, QHeaderView::ResizeToContents);
 
-	auto headers = new QHeaderView(Qt::Horizontal, this);
-	this->setHorizontalHeader(headers);
-	headers->setSectionResizeMode(QHeaderView::Stretch);
-	headers->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-	headers->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-
-	this->horizontalHeader()->setVisible(true);
-	this->verticalHeader()->setVisible(false);
-	this->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-	this->resizeColumnsToContents();
-	this->setCursor(Qt::PointingHandCursor);
+	horizontalHeader()->setVisible(true);
+	verticalHeader()->setVisible(false);
+	verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	resizeColumnsToContents();
+	setCursor(Qt::PointingHandCursor);
 }
 
 void StatsTable::changeEvent(QEvent* event)
 {
 	if (event->type() == QEvent::LanguageChange)
 	{
-		this->horizontalHeaderItem(0)->setText(GetString(StringTable::Keys::COLUMN_PLAYER));
-		this->horizontalHeaderItem(1)->setText(GetString(StringTable::Keys::COLUMN_SHIP));
-		this->horizontalHeaderItem(2)->setText(GetString(StringTable::Keys::COLUMN_MATCHES));
-		this->horizontalHeaderItem(3)->setText(GetString(StringTable::Keys::COLUMN_WINRATE));
-		this->horizontalHeaderItem(4)->setText(GetString(StringTable::Keys::COLUMN_AVERAGE_DAMAGE));
-		this->horizontalHeaderItem(5)->setText(GetString(StringTable::Keys::COLUMN_MATCHES_SHIP));
-		this->horizontalHeaderItem(6)->setText(GetString(StringTable::Keys::COLUMN_WINRATE_SHIP));
-		this->horizontalHeaderItem(7)->setText(GetString(StringTable::Keys::COLUMN_AVERAGE_DAMAGE_SHIP));
+		horizontalHeaderItem(0)->setText(GetString(StringTable::Keys::COLUMN_PLAYER));
+		horizontalHeaderItem(1)->setText(GetString(StringTable::Keys::COLUMN_SHIP));
+		horizontalHeaderItem(2)->setText(GetString(StringTable::Keys::COLUMN_MATCHES));
+		horizontalHeaderItem(3)->setText(GetString(StringTable::Keys::COLUMN_WINRATE));
+		horizontalHeaderItem(4)->setText(GetString(StringTable::Keys::COLUMN_AVERAGE_DAMAGE));
+		horizontalHeaderItem(5)->setText(GetString(StringTable::Keys::COLUMN_MATCHES_SHIP));
+		horizontalHeaderItem(6)->setText(GetString(StringTable::Keys::COLUMN_WINRATE_SHIP));
+		horizontalHeaderItem(7)->setText(GetString(StringTable::Keys::COLUMN_AVERAGE_DAMAGE_SHIP));
 	}
 	else
 	{

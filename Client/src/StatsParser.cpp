@@ -4,6 +4,7 @@
 
 #include "Core/Json.hpp"
 
+#include <QHBoxLayout>
 #include <QLabel>
 
 #include <array>
@@ -16,10 +17,33 @@
 
 using namespace PotatoAlert::Client::StatsParser;
 
+namespace {
+
 static QString ToQString(const std::string_view& str)
 {
 	return QString::fromUtf8(str.data(), static_cast<int>(str.size()));
 }
+
+static constexpr std::string_view TierToString(uint8_t tier)
+{
+	switch (tier)
+	{
+		case 1: return "I";
+		case 2: return "II";
+		case 3: return "III";
+		case 4: return "IV";
+		case 5: return "V";
+		case 6: return "VI";
+		case 7: return "VII";
+		case 8: return "VIII";
+		case 9: return "IX";
+		case 10: return "X";
+		default: return "E";
+	}
+}
+
+}
+
 
 namespace _JSON {
 
@@ -124,14 +148,30 @@ struct Ship
 	uint8_t Tier;
 	// Color color;
 
-	[[nodiscard]] QTableWidgetItem* GetField(const QFont& font, const QColor& bg, const QFlags<Qt::AlignmentFlag>& align) const
+	[[nodiscard]] QWidget* GetField(const QFont& font, const Color& bg, const QFlags<Qt::AlignmentFlag>& align) const
 	{
-		auto item = new QTableWidgetItem(ToQString(Name));
-		// item->setForeground(this->color.QColor());
-		item->setBackground(bg);
-		item->setFont(font);
-		item->setTextAlignment(align);
-		return item;
+		QWidget* ship = new QWidget();
+		QHBoxLayout* layout = new QHBoxLayout();
+		layout->setContentsMargins(3, 0, 3, 0);
+		layout->setSpacing(0);
+		QLabel* shipIcon = new QLabel();
+		shipIcon->setPixmap(QPixmap(std::format(":/{}.png", Class).c_str()).scaledToHeight(8, Qt::SmoothTransformation));
+		shipIcon->setStyleSheet("background-color: transparent;");
+		shipIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+
+		QLabel* shipName = new QLabel(std::format("{} {}", TierToString(Tier), Name).c_str());
+		shipName->setFont(font);
+		shipName->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+		shipName->setStyleSheet("background-color: transparent;");
+
+		layout->addWidget(shipIcon, 0, align);
+		layout->addWidget(shipName, 0, align);
+		layout->addStretch();
+
+		ship->setLayout(layout);
+		ship->setStyleSheet(std::format("background-color: {};", bg.ToString()).c_str());
+
+		return ship;
 	}
 };
 
@@ -168,7 +208,7 @@ struct Player
 		font16.setPixelSize(16);
 
 		QColor bg = this->prColor.QColor();
-		auto shipItem = this->ship ? this->ship->GetField(font13, bg, Qt::AlignVCenter | Qt::AlignLeft)  : new QTableWidgetItem();
+		QWidget* shipItem = this->ship ? this->ship->GetField(font13, prColor, Qt::AlignVCenter | Qt::AlignLeft)  : new QWidget();
 		
 		return {
 				this->GetNameField(),
