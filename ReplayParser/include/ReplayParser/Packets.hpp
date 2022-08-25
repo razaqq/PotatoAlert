@@ -24,7 +24,6 @@ typedef int32_t TypeSpaceId;
 typedef int32_t TypeVehicleId;
 typedef int32_t TypeMethodId;
 typedef uint16_t TypeEntityType;
-#endif
 
 enum class PacketBaseType : uint32_t
 {

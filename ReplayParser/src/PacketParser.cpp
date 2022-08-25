@@ -336,7 +336,8 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 		}
 	}
 
-	const std::vector<ArgValue> values{ packet.Values.begin(), packet.Values.end() };
+	auto v = packet.Values | std::views::values;
+	const std::vector<ArgValue> values{ v.begin(), v.end() };
 	parser.Entities.emplace(packet.EntityId, Entity{ packet.EntityType, values });
 
 	// LOG_TRACE("Creating Entity {} with {} properties", packet.entityId, packet.values.size());
@@ -394,7 +395,7 @@ std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(
 
 	if (std::optional<ArgValue> value = ParseValue(data, property.type))
 	{
-		packet.Value = value;
+		packet.Value = value.value();
 	}
 	else
 	{

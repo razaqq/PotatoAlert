@@ -16,6 +16,7 @@
 #include <vector>
 
 
+using PotatoAlert::Core::Byte;
 using PotatoAlert::Core::Vec2;
 using PotatoAlert::Core::Vec3;
 
@@ -45,7 +46,7 @@ enum class BasicType
 	Blob,
 };
 
-inline size_t PrimitiveSize(BasicType type)
+constexpr size_t PrimitiveSize(BasicType type)
 {
 	switch (type)
 	{
@@ -74,7 +75,16 @@ struct FixedDictType;
 struct TupleType;
 struct UnknownType;
 typedef std::variant<PrimitiveType, ArrayType, FixedDictType, TupleType, UnknownType> ArgType;
-typedef std::any ArgValue;
+
+struct ArgValue;
+using ValueVariant = std::variant<
+		uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t,
+		float, double, Vec2, Vec3, std::string, std::unordered_map<std::string, ArgValue>,
+		std::vector<ArgValue>, std::vector<Byte>>;
+struct ArgValue : ValueVariant
+{
+	using ValueVariant::ValueVariant;
+};
 
 struct PrimitiveType
 {
