@@ -147,7 +147,7 @@ bool Replay::ReadPackets(const std::vector<fs::path>& scriptsSearchPaths)
 	decrypted.clear();
 	decrypted.shrink_to_fit();
 
-	specs = ParseScripts(meta.clientVersionFromExe, scriptsSearchPaths);
+	specs = ParseScripts(meta.ClientVersionFromExe, scriptsSearchPaths);
 
 	if (specs.empty())
 	{

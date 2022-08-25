@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Core/Json.hpp"
+#include "Core/String.hpp"
 #include "Core/Version.hpp"
 
 #include <string>
@@ -9,79 +10,87 @@
 #include <vector>
 
 
+using PotatoAlert::Core::String::Join;
+using PotatoAlert::Core::String::Split;
 using PotatoAlert::Core::Version;
 
 namespace PotatoAlert::ReplayParser {
 
 struct VehicleInfoMeta
 {
-	uint64_t shipId;
-	uint32_t relation;
-	uint32_t id;
-	std::string name;
+	uint64_t ShipId;
+	uint32_t Relation;
+	uint32_t Id;
+	std::string Name;
 };
 
 [[maybe_unused]] static void from_json(const json& j, VehicleInfoMeta& m)
 {
-	j.at("shipId").get_to(m.shipId);
-	j.at("relation").get_to(m.relation);
-	j.at("id").get_to(m.id);
-	j.at("name").get_to(m.name);
+	j.at("shipId").get_to(m.ShipId);
+	j.at("relation").get_to(m.Relation);
+	j.at("id").get_to(m.Id);
+	j.at("name").get_to(m.Name);
 }
 
 struct ReplayMeta
 {
-	std::string matchGroup;
-	uint32_t gameMode;
-	Version clientVersionFromExe;
-	uint32_t scenarioUiCategoryId;
-	std::string mapDisplayName;
-	uint32_t mapId;
-	Version clientVersionFromXml;
-	std::unordered_map<std::string, std::vector<std::string>> weatherParams;
+	std::string MatchGroup;
+	uint32_t GameMode;
+	Version ClientVersionFromExe;
+	uint32_t ScenarioUiCategoryId;
+	std::string MapDisplayName;
+	uint32_t MapId;
+	Version ClientVersionFromXml;
+	std::unordered_map<std::string, std::vector<std::string>> WeatherParams;
 	//mapBorder null;
-	uint32_t duration;
-	std::string gameLogic;
-	std::string name;
-	std::string scenario;
-	uint32_t playerID;
-	std::vector<VehicleInfoMeta> vehicles;
-	uint32_t playersPerTeam;
-	std::string dateTime;
-	std::string mapName;
-	std::string playerName;
-	uint32_t scenarioConfigId;
-	uint32_t teamsCount;
-	std::string logic;
-	std::string playerVehicle;
-	uint32_t battleDuration;
+	uint32_t Duration;
+	std::string GameLogic;
+	std::string Name;
+	std::string Scenario;
+	uint32_t PlayerId;
+	std::vector<VehicleInfoMeta> Vehicles;
+	uint32_t PlayersPerTeam;
+	std::string DateTime;
+	std::string MapName;
+	std::string PlayerName;
+	uint32_t ScenarioConfigId;
+	uint32_t TeamsCount;
+	std::string Logic;
+	std::string PlayerVehicle;
+	uint32_t BattleDuration;
 };
+
+static Version ParseClientVersion(std::string_view str)
+{
+	const std::vector v = Split(str, ",");
+	return Version(Join(std::span{ v }.subspan(0, 3), "."));
+}
 
 [[maybe_unused]] static void from_json(const json& j, ReplayMeta& m)
 {
-	j.at("matchGroup").get_to(m.matchGroup);
-	j.at("gameMode").get_to(m.gameMode);
-	m.clientVersionFromExe = Version(j.at("clientVersionFromExe").get<std::string>());
-	j.at("scenarioUiCategoryId").get_to(m.scenarioUiCategoryId);
-	j.at("mapDisplayName").get_to(m.mapDisplayName);
-	j.at("mapId").get_to(m.mapId);
-	m.clientVersionFromXml = Version(j.at("clientVersionFromXml").get<std::string>());
-	j.at("weatherParams").get_to(m.weatherParams);
-	j.at("duration").get_to(m.duration);
-	j.at("gameLogic").get_to(m.gameLogic);
-	j.at("name").get_to(m.name);
-	j.at("scenario").get_to(m.scenario);
-	j.at("playerID").get_to(m.playerID);
-	j.at("vehicles").get_to(m.vehicles);
-	j.at("playersPerTeam").get_to(m.playersPerTeam);
-	j.at("dateTime").get_to(m.dateTime);
-	j.at("mapName").get_to(m.mapName);
-	j.at("playerName").get_to(m.playerName);
-	j.at("scenarioConfigId").get_to(m.scenarioConfigId);
-	j.at("teamsCount").get_to(m.teamsCount);
-	j.at("logic").get_to(m.logic);
-	j.at("playerVehicle").get_to(m.playerVehicle);
-	j.at("battleDuration").get_to(m.battleDuration);
+	j.at("matchGroup").get_to(m.MatchGroup);
+	j.at("gameMode").get_to(m.GameMode);
+	m.ClientVersionFromExe = ParseClientVersion(j.at("clientVersionFromExe").get<std::string>());
+	j.at("scenarioUiCategoryId").get_to(m.ScenarioUiCategoryId);
+	j.at("mapDisplayName").get_to(m.MapDisplayName);
+	j.at("mapId").get_to(m.MapId);
+	m.ClientVersionFromXml = ParseClientVersion(j.at("clientVersionFromXml").get<std::string>());
+	j.at("weatherParams").get_to(m.WeatherParams);
+	j.at("duration").get_to(m.Duration);
+	j.at("gameLogic").get_to(m.GameLogic);
+	j.at("name").get_to(m.Name);
+	j.at("scenario").get_to(m.Scenario);
+	j.at("playerID").get_to(m.PlayerId);
+	j.at("vehicles").get_to(m.Vehicles);
+	j.at("playersPerTeam").get_to(m.PlayersPerTeam);
+	j.at("dateTime").get_to(m.DateTime);
+	j.at("mapName").get_to(m.MapName);
+	j.at("playerName").get_to(m.PlayerName);
+	j.at("scenarioConfigId").get_to(m.ScenarioConfigId);
+	j.at("teamsCount").get_to(m.TeamsCount);
+	j.at("logic").get_to(m.Logic);
+	j.at("playerVehicle").get_to(m.PlayerVehicle);
+	j.at("battleDuration").get_to(m.BattleDuration);
 }
 
 }  // namespace PotatoAlert::ReplayParser
