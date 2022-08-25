@@ -46,7 +46,6 @@ set_target_properties(PotatoAlert
 )
 
 include(packaging)
-replayversions(PotatoAlert)
 if(WIN32)
     windeployqt(PotatoAlert)
     ssllibraries(PotatoAlert)

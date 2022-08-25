@@ -60,5 +60,3 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty)
 if(WIN32)
     add_subdirectory(${PROJECT_SOURCE_DIR}/Updater)
 endif()
-
-file(COPY ${PROJECT_SOURCE_DIR}/Resources/ReplayVersions DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
