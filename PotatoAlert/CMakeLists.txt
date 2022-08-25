@@ -10,7 +10,7 @@ set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIR
 
 if(WIN32)
     target_sources(PotatoAlert PRIVATE PotatoAlert.win32.cpp)
-    target_link_libraries(PotatoAlert PRIVATE updater Win32)
+    target_link_libraries(PotatoAlert PRIVATE Updater Win32)
 endif()
 
 if(UNIX)
@@ -38,7 +38,7 @@ else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
-target_link_libraries(PotatoAlert PRIVATE core gui Qt6::Widgets FramelessHelper::Widgets)
+target_link_libraries(PotatoAlert PRIVATE Core Gui Qt6::Widgets FramelessHelper::Widgets)
 
 set_target_properties(PotatoAlert
     PROPERTIES

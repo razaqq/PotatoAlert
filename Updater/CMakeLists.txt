@@ -11,10 +11,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt6 COMPONENTS Core Network Widgets REQUIRED)
 
 # have to add the header to sources for qt AUTOMOC
-add_library(updater src/Updater.cpp include/Updater/Updater.hpp)
-target_link_libraries(updater PRIVATE gui core Qt6::Network Qt6::Widgets Win32)
-target_include_directories(updater PUBLIC include)
-set_target_properties(updater PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
+add_library(Updater src/Updater.cpp include/Updater/Updater.hpp)
+target_link_libraries(Updater PRIVATE Gui Core Qt6::Network Qt6::Widgets Win32)
+target_include_directories(Updater PUBLIC include)
+set_target_properties(Updater PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 
 add_executable(PotatoUpdater src/PotatoUpdater.cpp ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
 
@@ -39,8 +39,7 @@ else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
-# target_link_libraries(PotatoUpdater PRIVATE gui core updater Win32)
-target_link_libraries(PotatoUpdater PRIVATE core gui updater Qt6::Core Qt6::Widgets Win32)
+target_link_libraries(PotatoUpdater PRIVATE Core Gui Updater Qt6::Core Qt6::Widgets Win32)
 set_target_properties(PotatoUpdater PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 set_target_properties(PotatoUpdater
     PROPERTIES

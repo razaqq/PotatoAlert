@@ -3,10 +3,10 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_library(core STATIC)
+add_library(Core STATIC)
 
 target_sources(
-    core
+    Core
     PRIVATE
 
     src/Blowfish.cpp
@@ -25,7 +25,7 @@ target_sources(
 
 # have to add some headers to sources for qt AUTOMOC
 target_sources(
-    core
+    Core
     PRIVATE
 
     include/Core/DirectoryWatcher.hpp
@@ -33,7 +33,7 @@ target_sources(
 
 if(WIN32)
     target_sources(
-        core
+        Core
         PRIVATE
 
         src/ApplicationGuard.win32.cpp
@@ -48,7 +48,7 @@ endif(WIN32)
 
 if(UNIX)
     target_sources(
-        core
+        Core
         PRIVATE
 
         src/ApplicationGuard.linux.cpp
@@ -62,11 +62,11 @@ endif(UNIX)
 
 find_package(Qt6 COMPONENTS Core Widgets REQUIRED)
 
-set_target_properties(core PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
-target_link_libraries(core PRIVATE sqlite3 OpenSSL zip ZLIB::ZLIB)
-target_link_libraries(core PUBLIC nlohmann_json Qt6::Core Qt6::Widgets spdlog tinyxml2)
-target_include_directories(core PUBLIC include)
+set_target_properties(Core PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
+target_link_libraries(Core PRIVATE sqlite3 OpenSSL zip ZLIB::ZLIB)
+target_link_libraries(Core PUBLIC nlohmann_json Qt6::Core Qt6::Widgets spdlog tinyxml2)
+target_include_directories(Core PUBLIC include)
 
 if(WIN32)
-    target_link_libraries(core PRIVATE Version Win32 Ws2_32)
+    target_link_libraries(Core PRIVATE Version Win32 Ws2_32)
 endif(WIN32)

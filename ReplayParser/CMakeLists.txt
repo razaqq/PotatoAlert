@@ -1,8 +1,8 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_library(replayparser STATIC)
+add_library(ReplayParser STATIC)
 target_sources(
-    replayparser
+    ReplayParser
     PRIVATE
 
     src/Analyzer.cpp
@@ -12,7 +12,5 @@ target_sources(
     src/ReplayParser.cpp
     src/Types.cpp
 )
-set_target_properties(replayparser PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
-target_include_directories(replayparser PUBLIC include)
-target_link_libraries(replayparser PUBLIC tinyxml2)
-target_link_libraries(replayparser PRIVATE core)
+set_target_properties(ReplayParser PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
+target_include_directories(ReplayParser PUBLIC include)

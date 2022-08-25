@@ -24,7 +24,7 @@ else()
 endif()
 
 set_target_properties(PotatoTest PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
-target_link_libraries(PotatoTest PRIVATE core client GameFileUnpack replayparser Catch2::Test)
+target_link_libraries(PotatoTest PRIVATE Core Client GameFileUnpack ReplayParser Catch2::Test)
 set_target_properties(PotatoTest
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin-test"
