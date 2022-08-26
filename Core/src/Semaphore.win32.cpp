@@ -26,18 +26,27 @@ static constexpr T UnwrapHandle(Semaphore::Handle handle)
 
 std::string Semaphore::RawLastError()
 {
-	DWORD err = GetLastError();
+	DWORD err = ::GetLastError();
+	if (err == 0)
+	{
+		return "";
+	}
+
 	LPSTR lpMsgBuf;
-	FormatMessage(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER |
-					FORMAT_MESSAGE_FROM_SYSTEM |
-					FORMAT_MESSAGE_IGNORE_INSERTS,
-			nullptr,
-			err,
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			reinterpret_cast<LPTSTR>(&lpMsgBuf),
-			0, nullptr);
-	return { lpMsgBuf };
+	DWORD size = FormatMessageA(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER |
+		FORMAT_MESSAGE_FROM_SYSTEM |
+		FORMAT_MESSAGE_IGNORE_INSERTS,
+		nullptr,
+		err,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		reinterpret_cast<LPSTR>(&lpMsgBuf),
+		0, nullptr);
+	
+	std::string msg(lpMsgBuf, size);
+	LocalFree(lpMsgBuf);
+
+	return msg;
 }
 
 Semaphore::Handle Semaphore::RawCreate(std::string_view name, int initialValue)

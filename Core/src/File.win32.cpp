@@ -283,19 +283,27 @@ bool File::RawFlushBuffer(Handle handle)
 
 std::string File::RawLastError()
 {
-	const DWORD err = GetLastError();
+	DWORD err = ::GetLastError();
+	if (err == 0)
+	{
+		return "";
+	}
+
 	LPSTR lpMsgBuf;
-	FormatMessage(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER |
-			FORMAT_MESSAGE_FROM_SYSTEM |
-			FORMAT_MESSAGE_IGNORE_INSERTS,
-			nullptr,
-			err,
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			reinterpret_cast<LPTSTR>(&lpMsgBuf),
-			0, nullptr
-	);
-	return std::string(lpMsgBuf);
+	DWORD size = FormatMessageA(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER |
+		FORMAT_MESSAGE_FROM_SYSTEM |
+		FORMAT_MESSAGE_IGNORE_INSERTS,
+		nullptr,
+		err,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		reinterpret_cast<LPSTR>(&lpMsgBuf),
+		0, nullptr);
+	
+	std::string msg(lpMsgBuf, size);
+	LocalFree(lpMsgBuf);
+
+	return msg;
 }
 
 bool File::GetVersion(std::string_view fileName, Version& outVersion)
