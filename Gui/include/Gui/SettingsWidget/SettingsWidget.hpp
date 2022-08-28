@@ -54,6 +54,8 @@ private:
 	QToolButton* m_gamePathButton = new QToolButton();
 	FolderStatus* m_folderStatusGui = new FolderStatus(this);
 
+	bool m_forceRun = false;
+
 	// manual replays folder
 	// QLineEdit* m_replaysFolderEdit = new QLineEdit();
 	// QToolButton* m_replaysFolderButton = new QToolButton();

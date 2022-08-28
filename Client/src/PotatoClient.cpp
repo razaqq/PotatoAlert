@@ -378,6 +378,12 @@ void PotatoClient::TriggerRun()
 	m_watcher.ForceFileChanged("tempArenaInfo.json");
 }
 
+void PotatoClient::ForceRun()
+{
+	m_lastArenaInfoHash = "";
+	TriggerRun();
+}
+
 // triggered whenever a file gets modified in a replays path
 void PotatoClient::OnFileChanged(const std::string& file)
 {

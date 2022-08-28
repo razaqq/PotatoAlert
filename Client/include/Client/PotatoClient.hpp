@@ -41,6 +41,7 @@ public:
 
 	void Init();
 	void TriggerRun();
+	void ForceRun();
 	DirectoryStatus CheckPath();
 
 private:
