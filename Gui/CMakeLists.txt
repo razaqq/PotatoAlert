@@ -16,9 +16,7 @@ target_sources(
     src/Palette.cpp
     src/QuestionDialog.cpp
     src/TitleBar.cpp
-
-    src/MenuBar/MenuEntryButton.cpp
-    src/MenuBar/VerticalMenuBar.cpp
+    src/VerticalMenuBar.cpp
 
     src/SettingsWidget/FolderStatus.cpp
     src/SettingsWidget/HorizontalLine.cpp
@@ -44,6 +42,7 @@ target_sources(
     include/Gui/SettingsWidget/SettingsWidget.hpp
     include/Gui/StatsWidget/StatsHeader.hpp
     include/Gui/TitleBar.hpp
+    include/Gui/VerticalMenuBar.hpp
 )
 
 if(WIN32)

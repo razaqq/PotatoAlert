@@ -41,10 +41,10 @@ void TitleBar::Init()
 	m_btnRestore->setSizePolicy(buttonPolicy);
 	m_btnClose->setSizePolicy(buttonPolicy);
 
-	m_btnMinimize->setIcon(QIcon(QPixmap(":/minimize.svg").scaledToHeight(20, Qt::SmoothTransformation)));
-	m_btnMaximize->setIcon(QIcon(QPixmap(":/maximize.svg").scaledToHeight(20, Qt::SmoothTransformation)));
-	m_btnRestore->setIcon(QIcon(QPixmap(":/restore.svg").scaledToHeight(20, Qt::SmoothTransformation)));
-	m_btnClose->setIcon(QIcon(QPixmap(":/close.svg").scaledToHeight(20, Qt::SmoothTransformation)));
+	m_btnMinimize->setIcon(QIcon(QPixmap(":/Minimize.svg").scaledToHeight(20, Qt::SmoothTransformation)));
+	m_btnMaximize->setIcon(QIcon(QPixmap(":/Maximize.svg").scaledToHeight(20, Qt::SmoothTransformation)));
+	m_btnRestore->setIcon(QIcon(QPixmap(":/Restore.svg").scaledToHeight(20, Qt::SmoothTransformation)));
+	m_btnClose->setIcon(QIcon(QPixmap(":/Close.svg").scaledToHeight(20, Qt::SmoothTransformation)));
 
 	m_appName->setText("PotatoAlert");
 	m_appName->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);

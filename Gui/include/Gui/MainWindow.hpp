@@ -3,9 +3,9 @@
 
 #include "Gui/AboutWidget.hpp"
 #include "Gui/MatchHistory.hpp"
-#include "Gui/MenuBar/VerticalMenuBar.hpp"
 #include "Gui/SettingsWidget/SettingsWidget.hpp"
 #include "Gui/StatsWidget/StatsWidget.hpp"
+#include "Gui/VerticalMenuBar.hpp"
 
 #include <QMainWindow>
 #include <QVBoxLayout>

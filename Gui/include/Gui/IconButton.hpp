@@ -14,7 +14,7 @@ namespace PotatoAlert::Gui {
 class IconButton : public QToolButton
 {
 public:
-	explicit IconButton(std::string_view iconPath, std::string_view hoverIconPath, const QSize& size, QWidget* parent = nullptr)
+	explicit IconButton(std::string_view iconPath, std::string_view hoverIconPath, const QSize& size, bool checkable = false, QWidget* parent = nullptr)
 		: QToolButton(parent), m_iconSize(size)
 	{
 		m_icon.addFile(iconPath.data(), m_iconSize);
@@ -23,6 +23,8 @@ public:
 		setIcon(m_icon);
 		setIconSize(m_iconSize);
 		setObjectName("IconButton");
+		setCursor(Qt::PointingHandCursor);
+		setCheckable(checkable);
 	}
 
 	[[nodiscard]] bool IsIconShown() const { return m_showIcons; }

@@ -88,7 +88,7 @@ void SettingsWidget::Init()
 	m_gamePathEdit->setFocusPolicy(Qt::NoFocus);
 	gamePathLayout->addWidget(m_gamePathEdit, 0, Qt::AlignVCenter | Qt::AlignRight);
 
-	m_gamePathButton->setIcon(QIcon(QPixmap(":/folder.svg")));
+	m_gamePathButton->setIcon(QIcon(QPixmap(":/Folder.svg")));
 	m_gamePathButton->setIconSize(QSize(ROW_HEIGHT, ROW_HEIGHT));
 	m_gamePathButton->setCursor(Qt::PointingHandCursor);
 	gamePathLayout->addWidget(m_gamePathButton, 0, Qt::AlignVCenter | Qt::AlignRight);

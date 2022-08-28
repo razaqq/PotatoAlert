@@ -1,8 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "MenuEntryButton.hpp"
-
 #include <QButtonGroup>
 #include <QDockWidget>
 #include <QWidget>
@@ -31,16 +29,13 @@ class VerticalMenuBar : public QDockWidget
 	Q_OBJECT
 public:
 	explicit VerticalMenuBar(QWidget* parent = nullptr);
-	void SetChecked(MenuEntry entry);
+	void SetChecked(MenuEntry entry) const;
 private:
-	std::array<MenuEntryButton*, 9> m_menuEntries;
+	std::array<IconButton*, 9> m_menuEntries;
 	QButtonGroup* m_btnGroup = new QButtonGroup();
 	void Init();
 signals:
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "NotImplementedFunctions"
 	void EntryClicked(MenuEntry entry);
-#pragma clang diagnostic pop
 };
 
 }  // namespace PotatoAlert::Gui

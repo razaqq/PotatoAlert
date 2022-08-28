@@ -10,9 +10,9 @@
 
 #include "Gui/MainWindow.hpp"
 #include "Gui/MatchHistory.hpp"
-#include "Gui/MenuBar/VerticalMenuBar.hpp"
 #include "Gui/QuestionDialog.hpp"
 #include "Gui/StatsWidget/StatsWidget.hpp"
+#include "Gui/VerticalMenuBar.hpp"
 
 #include <QDesktopServices>
 #include <QMainWindow>
