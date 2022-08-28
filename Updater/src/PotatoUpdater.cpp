@@ -10,8 +10,6 @@
 #include <QApplication>
 #include <QFile>
 
-#include "win32.h"
-
 
 using PotatoAlert::Updater::Updater;
 

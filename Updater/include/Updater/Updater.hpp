@@ -51,16 +51,20 @@ private:
 	static fs::path BackupDest() { return fs::path(fs::temp_directory_path() / "PotatoAlertBackup"); }
 	static fs::path UpdateArchive() { return fs::path(fs::temp_directory_path() / "PotatoAlert.zip"); }
 
-	static std::pair<bool, bool> ElevationInfo();
+	struct ElevationInfo
+	{
+		bool IsElevated;
+		bool CanElevate;
+	};
+	static ElevationInfo GetElevationInfo();
+
+	static void WaitForOtherProcessExit();
 
 	constexpr static std::string_view m_updaterBinary = "PotatoUpdater.exe";
 	constexpr static std::string_view m_mainBinary = "PotatoAlert.exe";
 
 signals:
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "NotImplementedFunctions"
 	void DownloadProgress(int percent, const QString& progress, const QString& speed);
-#pragma clang diagnostic pop
 };
 
 }  // namespace PotatoAlert::Updater
