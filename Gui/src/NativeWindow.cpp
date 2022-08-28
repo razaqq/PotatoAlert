@@ -55,8 +55,9 @@ void NativeWindow::closeEvent(QCloseEvent* event)
 	{
 		PotatoConfig().Set<Core::ConfigKey::WindowHeight>(height());
 		PotatoConfig().Set<Core::ConfigKey::WindowWidth>(width());
-		PotatoConfig().Set<Core::ConfigKey::WindowX>(windowHandle()->position().x());
-		PotatoConfig().Set<Core::ConfigKey::WindowY>(windowHandle()->position().y());
+		PotatoConfig().Set<Core::ConfigKey::WindowX>(windowHandle()->framePosition().x());
+		PotatoConfig().Set<Core::ConfigKey::WindowY>(windowHandle()->framePosition().y());
+
 		QWidget::closeEvent(event);
 		QApplication::exit(0);
 	}
@@ -104,9 +105,9 @@ void NativeWindow::Init()
 	layout->addWidget(m_mainWindow);
 
 	setLayout(layout);
-
+	
 	resize(PotatoConfig().Get<Core::ConfigKey::WindowWidth>(), PotatoConfig().Get<Core::ConfigKey::WindowHeight>());
-	windowHandle()->setPosition(PotatoConfig().Get<Core::ConfigKey::WindowX>(), PotatoConfig().Get<Core::ConfigKey::WindowY>());
+	windowHandle()->setFramePosition(QPoint(PotatoConfig().Get<Core::ConfigKey::WindowX>(), PotatoConfig().Get<Core::ConfigKey::WindowY>()));
 
 	bool reachable = false;
 	const QRect windowGeo = windowHandle()->frameGeometry();

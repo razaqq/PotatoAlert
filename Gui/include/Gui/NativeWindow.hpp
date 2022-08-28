@@ -3,8 +3,6 @@
 
 #include "Client/Config.hpp"
 
-#include "FramelessWidget"
-
 #include "TitleBar.hpp"
 
 #include <QMainWindow>
