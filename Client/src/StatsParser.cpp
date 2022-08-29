@@ -4,6 +4,7 @@
 
 #include "Core/Json.hpp"
 
+#include <QGraphicsEffect>
 #include <QHBoxLayout>
 #include <QLabel>
 
@@ -38,7 +39,7 @@ static constexpr std::string_view TierToString(uint8_t tier)
 		case 8: return "VIII";
 		case 9: return "IX";
 		case 10: return "X";
-		default: return "E";
+		default: return "Err";
 	}
 }
 
@@ -153,18 +154,38 @@ struct Ship
 		QWidget* ship = new QWidget();
 		QHBoxLayout* layout = new QHBoxLayout();
 		layout->setContentsMargins(3, 0, 3, 0);
-		layout->setSpacing(0);
+		layout->setSpacing(3);
+
 		QLabel* shipIcon = new QLabel();
-		shipIcon->setPixmap(QPixmap(std::format(":/{}.png", Class).c_str()).scaledToHeight(8, Qt::SmoothTransformation));
+		shipIcon->setPixmap(QPixmap(std::format(":/{}.svg", Class).c_str()).scaledToHeight(9, Qt::SmoothTransformation));
 		shipIcon->setStyleSheet("background-color: transparent;");
 		shipIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+		shipIcon->setAlignment(Qt::AlignLeft);
+		// shipIcon->setFixedWidth(21);
+		auto effect = new QGraphicsOpacityEffect();
+		effect->setOpacity(0.85);
+		shipIcon->setGraphicsEffect(effect);
 
-		QLabel* shipName = new QLabel(std::format("{} {}", TierToString(Tier), Name).c_str());
+		QLabel* shipTier = new QLabel();
+		shipTier->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+		shipTier->setStyleSheet("background-color: transparent;");
+		if (Tier == 11)
+		{
+			shipTier->setPixmap(QPixmap(":/Star.svg").scaledToHeight(13, Qt::SmoothTransformation));
+		}
+		else
+		{
+			shipTier->setText(TierToString(Tier).data());
+			shipTier->setFont(font);
+		}
+
+		QLabel* shipName = new QLabel(Name.c_str());
 		shipName->setFont(font);
 		shipName->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 		shipName->setStyleSheet("background-color: transparent;");
 
 		layout->addWidget(shipIcon, 0, align);
+		layout->addWidget(shipTier, 0, align);
 		layout->addWidget(shipName, 0, align);
 		layout->addStretch();
 
