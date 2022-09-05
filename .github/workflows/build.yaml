@@ -27,10 +27,10 @@ jobs:
         path: ../Qt
         key: ${{ runner.os }}-QtCache
 
-    - name: Install Qt
+    - name: Install Qt6
       uses: jurplel/install-qt-action@v2
       with:
-        version: 5.15.2
+        version: 6.3.1
         cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
     - name: CMake Version
