@@ -115,11 +115,12 @@ void NativeWindow::Init()
 	setWindowState(static_cast<decltype(windowState())>(PotatoConfig().Get<Core::ConfigKey::WindowState>()));
 
 	bool reachable = false;
-	const QRect windowGeo = windowHandle()->frameGeometry();
+	QRect titleBarGeo = windowHandle()->frameGeometry();
+	titleBarGeo.setBottom(titleBarGeo.top() + m_titleBar->height());
 
 	for (const QScreen* screen : QApplication::screens())
 	{
-		if (windowGeo.intersects(screen->availableGeometry()))
+		if (titleBarGeo.intersects(screen->availableGeometry()))
 		{
 			reachable = true;
 			break;
