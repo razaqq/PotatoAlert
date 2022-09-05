@@ -1,10 +1,34 @@
 cmake_minimum_required(VERSION 3.17)
 project(PotatoAlert)
 
-set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)  # new option() policy
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+
+cmake_policy(SET CMP0069 NEW)  # needed for CMAKE_INTERPROCEDURAL_OPTIMIZATION
+set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
+
+option(PA_ENABLE_LTO "Enable cross language linking time optimization" OFF)
+set(LTO_ENABLED false)
+if(PA_ENABLE_LTO)
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT LTO_SUPPORTED OUTPUT LTO_ERROR)
+
+    if(LTO_SUPPORTED)
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+            set(LTO_ENABLED true)
+            message(STATUS "IPO / LTO enabled")
+            set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto=thin -fuse-ld=ldd")
+        else()
+            message(WARNING "IPO / LTO only supported with clang")
+        endif()
+    else()
+      message(WARNING "IPO / LTO not supported: '${LTO_ERROR}'")
+    endif()
+endif()
 
 enable_testing()
 
@@ -33,15 +57,14 @@ generate_product_version(
 
 # generate stringtable headers
 find_package(Python3 3.7 COMPONENTS Interpreter REQUIRED)
-message("Generating stringtable...")
+message(STATUS "Generating stringtable...")
 execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Resources/generate_translations.py"
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 RESULT_VARIABLE GENERATE_STRINGTABLE_RESULT)
 if(NOT GENERATE_STRINGTABLE_RESULT EQUAL "0")
     message(FATAL_ERROR "Failed to generate stringtable")
 endif()
-message("Generating resource qrc...")
-message("${CMAKE_CURRENT_SOURCE_DIR}/Resources")
+message(STATUS "Generating resource qrc...")
 execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Resources/generate_qrc.py"
                 WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Resources"
                 RESULT_VARIABLE GENERATE_QRC_RESULT)
