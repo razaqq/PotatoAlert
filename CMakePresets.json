@@ -1,0 +1,131 @@
+﻿{
+	"version": 3,
+	"configurePresets": [
+		{
+			"name": "windows-base",
+			"description": "Target Windows with the Visual Studio development environment.",
+			"hidden": true,
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/out/build/${presetName}",
+			"installDir": "${sourceDir}/out/install/${presetName}",
+			"cacheVariables": {
+				"CMAKE_PREFIX_PATH": "C:\\Qt\\6.3.1\\msvc2019_64",
+				"CMAKE_C_COMPILER": "clang-cl.exe",
+				"CMAKE_CXX_COMPILER": "clang-cl.exe"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			}
+		},
+		{
+			"name": "win-x64-debug",
+			"displayName": "Win x64 Debug",
+			"description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
+			"inherits": "windows-base",
+			"architecture": {
+				"value": "x64",
+				"strategy": "external"
+			},
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"PA_ENABLE_LTO": "OFF",
+				"PA_BUILD_STANDALONE_REPLAYPARSER": "ON"
+			}
+		},
+		{
+			"name": "win-x64-release",
+			"displayName": "Win x64 Release",
+			"description": "Target Windows (64-bit) with the Visual Studio development environment. (Release)",
+			"inherits": "win-x64-debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"PA_ENABLE_LTO": "ON"
+			}
+		},
+		{
+			"name": "win-x64-relwithdebinfo",
+			"displayName": "Win x64 RelWithDebInfo",
+			"description": "Target Windows (64-bit) with the Visual Studio development environment. (RelWithDebInfo)",
+			"inherits": "win-x64-release",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			}
+		},
+		{
+			"name": "win-x64-release-profile",
+			"displayName": "Win x64 Release Profile",
+			"description": "Target Windows (64-bit) with Visual Studio development environment. (RelWithDebInfo)",
+			"inherits": "win-x64-relwithdebinfo",
+			"cacheVariables": {
+				"PA_PROFILE": "ON"
+			}
+		},
+		{
+			"name": "linux-base",
+			"hidden": true,
+			"description": "",
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/out/build/${presetName}",
+			"installDir": "${sourceDir}/out/install/${presetName}",
+			"cacheVariables": {
+				"LIBCXX_USE_COMPILER_RT": "YES",
+				"LIBCXXABI_USE_COMPILER_RT": "YES",
+				"CMAKE_CXX_FLAGS": "-v -stdlib=libc++ -lc++abi --rtlib=compiler-rt -I/usr/lib/llvm-14/include/c++/v1/format",
+				"CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=lld",
+				"CMAKE_C_COMPILER": "clang",
+				"CMAKE_CXX_COMPILER": "clang++",
+				"LIBCXX_ENABLE_INCOMPLETE_FEATURES": "ON"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Linux"
+			}
+		},
+		{
+			"name": "linux-x64-debug",
+			"displayName": "Linux x64 Debug",
+			"description": "Target Linux (64-bit) with the Visual Studio development environment. (Debug)",
+			"inherits": "linux-base",
+			"architecture": {
+				"value": "x64",
+				"strategy": "external"
+			},
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"PA_ENABLE_LTO": "OFF",
+				"PA_BUILD_STANDALONE_REPLAYPARSER": "ON"
+			}
+		},
+		{
+			"name": "linux-x64-release",
+			"displayName": "Linux x64 Release",
+			"description": "Target Windows (64-bit) with the Visual Studio development environment. (Release)",
+			"inherits": "linux-x64-debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"PA_ENABLE_LTO": "ON"
+			}
+		},
+		{
+			"name": "linux-x64-relwithdebinfo",
+			"displayName": "Linux x64 RelWithDebInfo",
+			"description": "Target Windows (64-bit) with the Visual Studio development environment. (RelWithDebInfo)",
+			"inherits": "linux-x64-release",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			}
+		},
+		{
+			"name": "linux-x64-release-profile",
+			"displayName": "Linux x64 Release Profile",
+			"description": "Target Windows (64-bit) with Visual Studio development environment. (RelWithDebInfo)",
+			"inherits": "linux-x64-relwithdebinfo",
+			"cacheVariables": {
+				"PA_PROFILE": "ON"
+			}
+		}
+	]
+}
