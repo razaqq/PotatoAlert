@@ -34,10 +34,8 @@ static int RunMain(int argc, char* argv[])
 	if (guard.OtherInstance())
 	{
 		NativeWindow::RequestFocus();
-		std::exit(0);
+		ExitProcess(0);
 	}
-	
-	wangwenx190::FramelessHelper::FramelessHelper::Core::initialize();
 
 	Q_INIT_RESOURCE(PotatoAlert);
 
