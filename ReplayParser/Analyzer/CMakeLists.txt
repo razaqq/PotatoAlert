@@ -27,9 +27,9 @@ message(STATUS "ReplayAnalyzer CARGO_BUILD_TYPE set to ${CARGO_BUILD_TYPE}")
 if(WIN32 AND LTO_ENABLED AND "${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")
     # have to set explicit target on win32 with clang-cl and proc macros when using LTO
     set(RUST_LIB_DIR "x86_64-pc-windows-msvc/${RUST_LIB_DIR}")
-    set(CARGO_CMD cargo build --profile=${CARGO_BUILD_TYPE} --verbose --target x86_64-pc-windows-msvc)
+    set(CARGO_CMD cargo build --profile=${CARGO_BUILD_TYPE} --target x86_64-pc-windows-msvc)
 else()
-    set(CARGO_CMD cargo build --profile=${CARGO_BUILD_TYPE} --verbose)
+    set(CARGO_CMD cargo build --profile=${CARGO_BUILD_TYPE})
 endif()
 
 set(RUST_PART_CXX "${CMAKE_CURRENT_BINARY_DIR}/ReplayAnalyzerRust.cpp")
