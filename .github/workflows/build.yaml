@@ -15,6 +15,11 @@ jobs:
       with:
         arch: x64
 
+    - name: Setup Rust
+      uses: ATiltedTree/setup-rust@v1
+      with:
+        rust-version: stable
+
     - name: Setup Ninja
       uses: ashutoshvarma/setup-ninja@master
       with:
