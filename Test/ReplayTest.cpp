@@ -45,8 +45,8 @@ TEST_CASE( "ReplayTest" )
 	std::optional<Replay> res = Replay::FromFile(GetReplay("20201107_155356_PISC110-Venezia_19_OC_prey.wowsreplay"));
 	REQUIRE(res.has_value());
 	Replay replay = res.value();
-	REQUIRE(replay.meta.name == "12x12");
-	REQUIRE(replay.meta.dateTime == "07.11.2020 15:53:56");
+	REQUIRE(replay.meta.Name == "12x12");
+	REQUIRE(replay.meta.DateTime == "07.11.2020 15:53:56");
 	REQUIRE(replay.packets.empty());
 	REQUIRE(replay.ReadPackets({ root }));
 	REQUIRE(replay.packets.size() == 153376);
@@ -55,7 +55,7 @@ TEST_CASE( "ReplayTest" )
 	REQUIRE(result.value().Outcome == MatchOutcome::Win);
 	ClearMem(replay);
 
-	res = Replay::FromFile(GetReplay("20210914_212320_PRSC610-Smolensk_25_sea_hope.wowsreplay"));  // WIN
+	res = Replay::FromFile(GetReplay("20210914_212320_PRSC610-Smolensk_25_sea_hope.wowsreplay"));
 	REQUIRE(res.has_value());
 	Replay replay2 = res.value();
 	REQUIRE(replay2.ReadPackets({ root }));
@@ -64,7 +64,7 @@ TEST_CASE( "ReplayTest" )
 	REQUIRE(result2.value().Outcome == MatchOutcome::Win);
 	ClearMem(replay2);
 
-	res = Replay::FromFile(GetReplay("20210913_011502_PASD510-Somers_53_Shoreside.wowsreplay"));  // LOSS
+	res = Replay::FromFile(GetReplay("20210913_011502_PASD510-Somers_53_Shoreside.wowsreplay"));
 	REQUIRE(res.has_value());
 	Replay replay3 = res.value();
 	REQUIRE(replay3.ReadPackets({ root }));
@@ -73,8 +73,7 @@ TEST_CASE( "ReplayTest" )
 	REQUIRE(result3.value().Outcome == MatchOutcome::Loss);
 	ClearMem(replay3);
 
-
-	res = Replay::FromFile(GetReplay("20210912_002554_PRSB110-Sovetskaya-Rossiya_53_Shoreside.wowsreplay"));  // WIN
+	res = Replay::FromFile(GetReplay("20210912_002554_PRSB110-Sovetskaya-Rossiya_53_Shoreside.wowsreplay"));
 	REQUIRE(res.has_value());
 	Replay replay4 = res.value();
 	REQUIRE(replay4.ReadPackets({ root }));
@@ -83,7 +82,7 @@ TEST_CASE( "ReplayTest" )
 	REQUIRE(result4.value().Outcome == MatchOutcome::Win);
 	ClearMem(replay4);
 
-	res = Replay::FromFile(GetReplay("20210915_180756_PRSC610-Smolensk_35_NE_north_winter.wowsreplay"));  // LOSS
+	res = Replay::FromFile(GetReplay("20210915_180756_PRSC610-Smolensk_35_NE_north_winter.wowsreplay"));
 	REQUIRE(res.has_value());
 	Replay replay5 = res.value();
 	REQUIRE(replay5.ReadPackets({ root }));
@@ -92,13 +91,22 @@ TEST_CASE( "ReplayTest" )
 	REQUIRE(result5.value().Outcome == MatchOutcome::Loss);
 	ClearMem(replay5);
 
-	res = Replay::FromFile(GetReplay("20201117_104604_PWSD508-Orkan_50_Gold_harbor.wowsreplay"));  // DRAW
+	res = Replay::FromFile(GetReplay("20201117_104604_PWSD508-Orkan_50_Gold_harbor.wowsreplay"));
 	REQUIRE(res.has_value());
 	Replay replay6 = res.value();
 	REQUIRE(replay6.ReadPackets({ root }));
 	std::optional<ReplaySummary> result6 = replay6.Analyze();
 	REQUIRE(result6);
 	REQUIRE(result6.value().Outcome == MatchOutcome::Draw);
+
+	res = Replay::FromFile(GetReplay("20220815_100927_PRSB518-Lenin_19_OC_prey.wowsreplay"));
+	REQUIRE(res.has_value());
+	Replay replay7 = res.value();
+	REQUIRE(replay7.ReadPackets({ root }));
+	std::optional<ReplaySummary> result7 = replay7.Analyze();
+	REQUIRE(result7);
+	REQUIRE(result7->Outcome == MatchOutcome::Loss);
+	REQUIRE(static_cast<int>(result7->DamageDealt) == 132976);
 }
 
 TEST_CASE( "ReplayGameFileTest" )
