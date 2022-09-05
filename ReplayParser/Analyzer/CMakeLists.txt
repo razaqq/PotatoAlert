@@ -54,8 +54,3 @@ add_custom_command(
 )
 
 target_include_directories(ReplayAnalyzer INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
-
-add_test(NAME rust_part_test
-    COMMAND cargo test
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
