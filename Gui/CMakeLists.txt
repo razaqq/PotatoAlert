@@ -15,6 +15,7 @@ target_sources(
     src/NativeWindow.cpp
     src/Palette.cpp
     src/QuestionDialog.cpp
+    src/ReplaySummary.cpp
     src/TitleBar.cpp
     src/VerticalMenuBar.cpp
 
@@ -37,6 +38,7 @@ target_sources(
 
     include/Gui/MatchHistory.hpp
     include/Gui/NativeWindow.hpp
+    include/Gui/ReplaySummary.hpp
     include/Gui/SettingsWidget/SettingsSwitch.hpp
     include/Gui/SettingsWidget/SettingsWidget.hpp
     include/Gui/StatsWidget/StatsHeader.hpp
