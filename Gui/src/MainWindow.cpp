@@ -10,6 +10,7 @@
 
 #include "Gui/MainWindow.hpp"
 #include "Gui/MatchHistory.hpp"
+#include "Gui/ReplaySummary.hpp"
 #include "Gui/QuestionDialog.hpp"
 #include "Gui/StatsWidget/StatsWidget.hpp"
 #include "Gui/VerticalMenuBar.hpp"
@@ -39,57 +40,59 @@ MainWindow::MainWindow() : QMainWindow()
 void MainWindow::Init()
 {
 	// central widget
-	this->setCentralWidget(this->m_centralW);
+	setCentralWidget(m_centralW);
 
-	this->layout()->setContentsMargins(0, 0, 0, 0);
-	this->layout()->setSpacing(0);
+	layout()->setContentsMargins(0, 0, 0, 0);
+	layout()->setSpacing(0);
 
-	this->m_centralLayout->setContentsMargins(0, 0, 0, 0);
-	this->m_centralLayout->setSpacing(0);
-	this->m_centralW->setLayout(m_centralLayout);
+	m_centralLayout->setContentsMargins(0, 0, 0, 0);
+	m_centralLayout->setSpacing(0);
+	m_centralW->setLayout(m_centralLayout);
 
 	// menubar dock widget
 	const bool leftSide = PotatoConfig().Get<ConfigKey::MenuBarLeft>();
 	const auto side = leftSide ? Qt::DockWidgetArea::LeftDockWidgetArea : Qt::DockWidgetArea::RightDockWidgetArea;
-	this->addDockWidget(side, this->m_menuBar);
-	connect(this->m_menuBar, &VerticalMenuBar::dockLocationChanged, [](Qt::DockWidgetArea area)
+	addDockWidget(side, m_menuBar);
+	connect(m_menuBar, &VerticalMenuBar::dockLocationChanged, [](Qt::DockWidgetArea area)
 	{
 		PotatoConfig().Set<ConfigKey::MenuBarLeft>(area == Qt::DockWidgetArea::LeftDockWidgetArea);
 	});
 
 	// set other tabs invisible
-	this->m_settingsWidget->setVisible(false);
-	this->m_matchHistory->setVisible(false);
-	this->m_aboutWidget->setVisible(false);
+	m_settingsWidget->setVisible(false);
+	m_matchHistory->setVisible(false);
+	m_replaySummary->setVisible(false);
+	m_aboutWidget->setVisible(false);
 
-	this->m_centralLayout->addWidget(this->m_statsWidget);
-	this->m_centralLayout->addWidget(this->m_settingsWidget);
-	this->m_centralLayout->addWidget(this->m_matchHistory);
-	this->m_centralLayout->addWidget(this->m_aboutWidget);
+	m_centralLayout->addWidget(m_statsWidget);
+	m_centralLayout->addWidget(m_settingsWidget);
+	m_centralLayout->addWidget(m_matchHistory);
+	m_centralLayout->addWidget(m_replaySummary);
+	m_centralLayout->addWidget(m_aboutWidget);
 
 	// trigger run
-	this->m_settingsWidget->CheckPath();
+	m_settingsWidget->CheckPath();
 }
 
 void MainWindow::SwitchTab(MenuEntry i)
 {
-	QWidget* oldWidget = this->m_activeWidget;
+	QWidget* oldWidget = m_activeWidget;
 	switch (i)
 	{
 	case MenuEntry::Table:
-		this->m_activeWidget = this->m_statsWidget;
+		m_activeWidget = m_statsWidget;
 		break;
 	case MenuEntry::Settings:
-		this->m_activeWidget = this->m_settingsWidget;
+		m_activeWidget = m_settingsWidget;
 		break;
 	case MenuEntry::MatchHistory:
-		this->m_activeWidget = this->m_matchHistory;
+		m_activeWidget = m_matchHistory;
 		break;
 	case MenuEntry::Discord:
 		QDesktopServices::openUrl(QUrl("https://discord.gg/Ut8t8PA"));
 		return;
 	case MenuEntry::Screenshot:
-		CaptureScreenshot(this->window());
+		CaptureScreenshot(window());
 		return;
 	case MenuEntry::CSV:
 		QDesktopServices::openUrl(QUrl(Client::MatchHistory::GetDir().absolutePath()));
@@ -101,34 +104,48 @@ void MainWindow::SwitchTab(MenuEntry i)
 		QDesktopServices::openUrl(QUrl("https://github.com/razaqq/PotatoAlert"));
 		return;
 	case MenuEntry::About:
-		this->m_activeWidget = this->m_aboutWidget;
+		m_activeWidget = m_aboutWidget;
 		break;
 	}
 	oldWidget->setVisible(false);
-	this->m_activeWidget->setVisible(true);
+	m_activeWidget->setVisible(true);
 }
 
 void MainWindow::ConnectSignals()
 {
-	connect(this->m_menuBar, &VerticalMenuBar::EntryClicked, this, &MainWindow::SwitchTab);
+	connect(m_menuBar, &VerticalMenuBar::EntryClicked, this, &MainWindow::SwitchTab);
 
-	connect(&PotatoClient::Instance(), &PotatoClient::StatusReady, this->m_statsWidget, &StatsWidget::SetStatus);
-	connect(&PotatoClient::Instance(), &PotatoClient::MatchReady, this->m_statsWidget, &StatsWidget::Update);
+	connect(&PotatoClient::Instance(), &PotatoClient::StatusReady, m_statsWidget, &StatsWidget::SetStatus);
+	connect(&PotatoClient::Instance(), &PotatoClient::MatchReady, m_statsWidget, &StatsWidget::Update);
 
-	connect(&PotatoClient::Instance(), &PotatoClient::MatchHistoryChanged, this->m_matchHistory, &MatchHistory::UpdateLatest);
-	connect(&PotatoClient::Instance(), &PotatoClient::MatchSummaryChanged, this->m_matchHistory, &MatchHistory::SetSummary);
+	connect(&PotatoClient::Instance(), &PotatoClient::MatchHistoryChanged, m_matchHistory, &MatchHistory::UpdateLatest);
+	connect(&PotatoClient::Instance(), &PotatoClient::MatchSummaryChanged, m_matchHistory, &MatchHistory::SetSummary);
 
-	connect(this->m_matchHistory, &MatchHistory::ReplaySelected, [this](const Match& match)
+	connect(m_matchHistory, &MatchHistory::ReplaySelected, [this](const MatchType& match)
 	{
-		this->m_statsWidget->Update(match);
-		this->SwitchTab(MenuEntry::Table);
-		this->m_menuBar->SetChecked(MenuEntry::Table);
+		m_statsWidget->Update(match);
+		SwitchTab(MenuEntry::Table);
+		m_menuBar->SetChecked(MenuEntry::Table);
 	});
 
-	connect(this->m_settingsWidget, &SettingsWidget::Done, [this]()
+	connect(m_replaySummary, &ReplaySummary::ReplaySummaryBack, [this]()
 	{
-		this->SwitchTab(MenuEntry::Table);
-		this->m_menuBar->SetChecked(MenuEntry::Table);
+		SwitchTab(MenuEntry::MatchHistory);
+	});
+
+	// connect(m_matchHistory, &MatchHistory::ReplaySummarySelected, [this](const ReplayParser::ReplaySummary& replaySummary)
+	connect(m_matchHistory, &MatchHistory::ReplaySummarySelected, [this](const Client::MatchHistory::Entry& entry)
+	{
+		m_activeWidget->setVisible(false);
+		m_replaySummary->SetReplaySummary(entry);
+		m_replaySummary->setVisible(true);
+		m_activeWidget = m_replaySummary;
+	});
+
+	connect(m_settingsWidget, &SettingsWidget::Done, [this]()
+	{
+		SwitchTab(MenuEntry::Table);
+		m_menuBar->SetChecked(MenuEntry::Table);
 	});
 }
 
