@@ -37,7 +37,6 @@ target_sources(
 
     include/Gui/MatchHistory.hpp
     include/Gui/NativeWindow.hpp
-    include/Gui/MenuBar/VerticalMenuBar.hpp
     include/Gui/SettingsWidget/SettingsSwitch.hpp
     include/Gui/SettingsWidget/SettingsWidget.hpp
     include/Gui/StatsWidget/StatsHeader.hpp
