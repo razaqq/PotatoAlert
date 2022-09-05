@@ -62,10 +62,7 @@ private:
 	// std::function<void(bool)> m_toggleReplaysFolderOverride;
 
 signals:
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "NotImplementedFunctions"
 	void Done();
-#pragma clang diagnostic pop
 };
 
 }  // namespace PotatoAlert::Gui
