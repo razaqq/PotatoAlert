@@ -53,12 +53,6 @@ jobs:
     - name: Run Build
       run: cmake --build build --config Release --target PotatoAlert PotatoUpdater PotatoTest
 
-    #- name: Start SSH session
-    #  uses: luchihoratiu/debug-via-ssh@main
-    #  with:
-    #    NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-    #    SSH_PASS: ${{ secrets.SSH_PASS }}
-
     - name: Run CTest
       working-directory: ${{env.GITHUB_WORKSPACE}}/build
       env:
@@ -76,27 +70,10 @@ jobs:
         path: PotatoAlert.zip
 
     - name: Create Release
-      uses: actions/create-release@v1
-      id: create_release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
       with:
-        draft: true
-        prerelease: false
-        release_name: ${{ steps.version.outputs.version }}
-        tag_name: ${{ github.ref }}
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      if: ${{ github.event_name == 'create' && github.event.ref_type == 'tag' }}
-
-    - name: Upload Artifact To Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: PotatoAlert.zip
-        asset_name: PotatoAlert.zip
-        asset_content_type: application/zip
-      if: ${{ github.event_name == 'create' && github.event.ref_type == 'tag' }}
+        files: PotatoAlert.zip
 
   build-linux:
     if: ${{ false }}  # disable for now
@@ -181,24 +158,7 @@ jobs:
         path: PotatoAlert.zip
 
     - name: Create Release
-      uses: actions/create-release@v1
-      id: create_release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
       with:
-        draft: true
-        prerelease: false
-        release_name: ${{ steps.version.outputs.version }}
-        tag_name: ${{ github.ref }}
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      if: ${{ github.event_name == 'create' && github.event.ref_type == 'tag' }}
-
-    - name: Upload Artifact To Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: PotatoAlert.zip
-        asset_name: PotatoAlert.zip
-        asset_content_type: application/zip
-      if: ${{ github.event_name == 'create' && github.event.ref_type == 'tag' }}
+        files: PotatoAlert.zip
