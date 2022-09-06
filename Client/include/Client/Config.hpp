@@ -8,7 +8,6 @@
 #include <QString>
 
 #include <filesystem>
-#include <optional>
 #include <string>
 
 
@@ -40,6 +39,7 @@ enum class ConfigKey : uint64_t
 	DECL_TYPE(WindowX,                  ConfigType::Int,       3),
 	DECL_TYPE(WindowY,                  ConfigType::Int,       4),
 	DECL_TYPE(Language,                 ConfigType::Int,       5),
+	DECL_TYPE(WindowState,              ConfigType::Int,       6),
 	DECL_TYPE(GameDirectory,            ConfigType::String,    1),
 	DECL_TYPE(ReplaysDirectory,         ConfigType::String,    2),
 };

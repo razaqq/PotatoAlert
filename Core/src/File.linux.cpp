@@ -1,5 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/Bytes.hpp"
 #include "Core/File.hpp"
 #include "Core/Flags.hpp"
 
@@ -10,20 +11,20 @@
 #include <vector>
 
 
-using PotatoAlert::Core::File;
+using namespace PotatoAlert::Core;
 
 namespace {
 
 template<typename T>
 static constexpr T CreateHandle(int handle)
 {
-	return static_cast<T>((uintptr_t)(handle));
+	return static_cast<T>(static_cast<uintptr_t>(handle) + 1);
 }
 
 template<typename T>
 static constexpr T UnwrapHandle(File::Handle handle)
 {
-	return static_cast<T>(static_cast<uintptr_t>(handle));
+	return static_cast<T>(static_cast<uintptr_t>(handle) - 1);
 }
 
 int GetFileOpenFlags(File::Flags flags)
@@ -96,7 +97,35 @@ uint64_t File::RawGetSize(Handle handle)
 }
 
 template<typename T>
-bool File::RawRead(Handle handle, std::vector<T>& out, bool resetFilePointer)
+bool File::RawRead(Handle handle, std::vector<T>& out, uint64_t size, bool resetFilePointer)
+{
+	if (handle == Handle::Null)
+	{
+		return false;
+	}
+
+	if (resetFilePointer)
+	{
+		RawMoveFilePointer(handle, 0, FilePointerMoveMethod::Begin);
+	}
+
+	out.resize(size);
+
+	if (read(UnwrapHandle<int>(handle), std::data(out), size) == -1)
+	{
+		// TODO: handle error
+		return false;
+	}
+	return true;
+}
+template bool File::RawRead(Handle, std::vector<uint8_t>&, uint64_t, bool);
+template bool File::RawRead(Handle, std::vector<int8_t>&, uint64_t, bool);
+template bool File::RawRead(Handle, std::vector<std::byte>&, uint64_t, bool);
+template bool File::RawRead(Handle, std::vector<unsigned char>&, uint64_t, bool);
+template bool File::RawRead(Handle, std::vector<char>&, uint64_t, bool);
+
+template<typename T>
+bool File::RawReadAll(Handle handle, std::vector<T>& out, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
 	{
@@ -118,12 +147,36 @@ bool File::RawRead(Handle handle, std::vector<T>& out, bool resetFilePointer)
 	}
 	return true;
 }
-template bool File::RawRead(Handle, std::vector<int8_t>&, bool);
-template bool File::RawRead(Handle, std::vector<std::byte>&, bool);
-template bool File::RawRead(Handle, std::vector<unsigned char>&, bool);
-template bool File::RawRead(Handle, std::vector<char>&, bool);
+template bool File::RawReadAll(Handle, std::vector<uint8_t>&, bool);
+template bool File::RawReadAll(Handle, std::vector<int8_t>&, bool);
+template bool File::RawReadAll(Handle, std::vector<std::byte>&, bool);
+template bool File::RawReadAll(Handle, std::vector<unsigned char>&, bool);
+template bool File::RawReadAll(Handle, std::vector<char>&, bool);
 
-bool File::RawReadString(Handle handle, std::string& out, bool resetFilePointer)
+bool File::RawReadString(Handle handle, std::string& out, uint64_t size, bool resetFilePointer)
+{
+	if (handle == Handle::Null)
+	{
+		return false;
+	}
+
+	if (resetFilePointer)
+	{
+		RawMoveFilePointer(handle, 0, FilePointerMoveMethod::Begin);
+	}
+
+	out.resize(size);
+
+	ssize_t r = read(UnwrapHandle<int>(handle), std::data(out), size);
+	if (r == -1)
+	{
+		// TODO: handle error
+		return false;
+	}
+	return true;
+}
+
+bool File::RawReadAllString(Handle handle, std::string& out, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
 	{
@@ -147,7 +200,8 @@ bool File::RawReadString(Handle handle, std::string& out, bool resetFilePointer)
 	return true;
 }
 
-bool File::RawWrite(Handle handle, std::span<const std::byte> data, bool resetFilePointer)
+template<is_byte T>
+bool File::RawWrite(Handle handle, std::span<const T> data, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
 	{
@@ -180,6 +234,11 @@ bool File::RawWrite(Handle handle, std::span<const std::byte> data, bool resetFi
 
 	return true;
 }
+template bool File::RawWrite(Handle, std::span<const uint8_t>, bool);
+template bool File::RawWrite(Handle, std::span<const int8_t>, bool);
+template bool File::RawWrite(Handle, std::span<const std::byte>, bool);
+template bool File::RawWrite(Handle, std::span<const unsigned char>, bool);
+template bool File::RawWrite(Handle, std::span<const char>, bool);
 
 bool File::RawWriteString(Handle handle, std::string_view data, bool resetFilePointer)
 {

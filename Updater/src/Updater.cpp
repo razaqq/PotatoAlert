@@ -21,6 +21,8 @@
 #include <string>
 #include <utility>
 
+#include "win32.h"
+#include "tlhelp32.h"
 
 /*
  * CURRENT WAY:
@@ -52,6 +54,31 @@ namespace fs = std::filesystem;
 // needs libssl-1_1-x64.dll and libcrypto-1_1-x64.dll from OpenSSL
 static std::string_view g_updateURL = "https://github.com/razaqq/PotatoAlert/releases/latest/download/PotatoAlert.zip";
 static std::string_view g_versionURL = "https://api.github.com/repos/razaqq/PotatoAlert/releases/latest";
+
+
+namespace {
+
+std::optional<DWORD> FindProcessByName(LPCTSTR Name)
+{
+	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (hSnap != INVALID_HANDLE_VALUE)
+	{
+		PROCESSENTRY32 pe;
+		ZeroMemory(&pe, sizeof(PROCESSENTRY32));
+		pe.dwSize = sizeof(PROCESSENTRY32);
+		Process32First(hSnap, &pe);
+		do
+		{
+			if (!lstrcmpi(pe.szExeFile, Name))
+			{
+				return pe.th32ProcessID;
+			}
+		} while (Process32Next(hSnap, &pe));
+	}
+	return {};
+}
+
+}
 
 struct DownloadProgress
 {
@@ -142,7 +169,7 @@ void Updater::Run()
 {
 	LOG_INFO("Starting update...");
 
-	if (!ElevationInfo().first)
+	if (!GetElevationInfo().IsElevated)
 	{
 		LOG_ERROR("Updater needs to be started with admin privileges.");
 		End(false);
@@ -181,7 +208,8 @@ void Updater::Run()
 		}
 
 		// make backup
-		if (!CreateBackup()) End(false);
+		if (!CreateBackup())
+			End(false);
 
 		// rename exe/dll to trash
 		if (!RenameToTrash())
@@ -257,14 +285,18 @@ void Updater::End(bool success, bool revert)
 	RemoveBackup();
 
 	if (success)
+	{
 		StartUpdater("--clear");
+	}
 	else
+	{
 		StartMain();
+	}
 	QApplication::exit(0); // exit this process
 }
 
 // gets info about the elevation state {bool isElevated, bool canElevate}
-std::pair<bool, bool> Updater::ElevationInfo()
+Updater::ElevationInfo Updater::GetElevationInfo()
 {
 	HANDLE hToken;
 	if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
@@ -392,6 +424,9 @@ void Updater::RemoveTrash()
 {
 	LOG_INFO("Clearing trash of old version.");
 
+	// have to wait, otherwise some dlls are still locked by the other process
+	WaitForOtherProcessExit();
+
 	std::error_code ec;
 	auto it = fs::recursive_directory_iterator(UpdateDest(), ec);
 	if (ec)
@@ -427,4 +462,19 @@ bool Updater::StartMain(std::string_view args)
 {
 	LOG_INFO("Restarting main binary.");
 	return CreateNewProcess(m_mainBinary, args, false);
+}
+
+void Updater::WaitForOtherProcessExit()
+{
+	std::optional<DWORD> pid = FindProcessByName(L"PotatoUpdater.exe");
+
+	if (pid && GetCurrentProcessId() != pid.value())
+	{
+		if (HANDLE hHandle = OpenProcess(SYNCHRONIZE, false, pid.value()))
+		{
+			LOG_INFO("Waiting for other updater process to terminate");
+			WaitForSingleObject(hHandle, 10000);
+			LOG_INFO("Other updater process terminated");
+		}
+	}
 }

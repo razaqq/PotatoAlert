@@ -1,12 +1,13 @@
 // Copyright 2022 <github.com/razaqq>
 
+#include "Core/Bytes.hpp"
 #include "Core/Sha1.hpp"
 
 #include <span>
 #include <string>
 
 
-using PotatoAlert::Core::Sha1;
+using namespace PotatoAlert::Core;
 
 // value, steps
 constexpr unsigned int LeftRotate(unsigned int x, size_t n)
@@ -27,11 +28,11 @@ void Sha1::Reset()
 	m_bitCountHigh = 0;
 }
 
-Sha1& Sha1::Process(const std::string& s)
+Sha1& Sha1::Process(std::string_view s)
 {
 	for (char const& byte : s)
 	{
-		ProcessByte(static_cast<std::byte>(byte));
+		ProcessByte(static_cast<Byte>(byte));
 	}
 	return *this;
 }
@@ -54,7 +55,8 @@ std::string Sha1::GetHash()
 	return buf.str();
 }
 
-inline bool Sha1::ProcessByte(const std::byte byte)
+template<is_byte T>
+inline bool Sha1::ProcessByte(const T byte)
 {
 	ProcessByteImpl(byte);
 
@@ -78,15 +80,21 @@ inline bool Sha1::ProcessByte(const std::byte byte)
 	return true;
 }
 
-bool Sha1::ProcessBytes(std::span<std::byte> bytes)
+template<is_byte T>
+bool Sha1::ProcessBytes(std::span<T> bytes)
 {
 	return ProcessBlock(bytes);
 }
+template bool Sha1::ProcessBytes(std::span<uint8_t>);
+template bool Sha1::ProcessBytes(std::span<int8_t>);
+template bool Sha1::ProcessBytes(std::span<std::byte>);
+template bool Sha1::ProcessBytes(std::span<unsigned char>);
+template bool Sha1::ProcessBytes(std::span<char>);
 
 inline void Sha1::GetDigest(DigestType& digest)
 {
 	// append the bit '1' to the message
-	ProcessByteImpl(std::byte{ 0x80 });
+	ProcessByteImpl(Byte{ 0x80 });
 
 	// append k bits '0', where k is the minimum number >= 0
 	// such that the resulting message length is congruent to 56 (mod 64)
@@ -96,33 +104,33 @@ inline void Sha1::GetDigest(DigestType& digest)
 		// finish this block
 		while (m_blockByteIndex != 0)
 		{
-			ProcessByteImpl(std::byte{ 0 });
+			ProcessByteImpl(Byte{ 0 });
 		}
 
 		// one more block
 		while (m_blockByteIndex < 56)
 		{
-			ProcessByteImpl(std::byte{ 0 });
+			ProcessByteImpl(Byte{ 0 });
 		}
 	}
 	else
 	{
 		while (m_blockByteIndex < 56)
 		{
-			ProcessByteImpl(std::byte{ 0 });
+			ProcessByteImpl(Byte{ 0 });
 		}
 	}
 
 	// append length of message (before pre-processing)
 	// as a 64-bit big-endian integer
-	ProcessByteImpl(static_cast<std::byte>((m_bitCountHigh >> 24) & 0xFF));
-	ProcessByteImpl(static_cast<std::byte>((m_bitCountHigh >> 16) & 0xFF));
-	ProcessByteImpl(static_cast<std::byte>((m_bitCountHigh >> 8) & 0xFF));
-	ProcessByteImpl(static_cast<std::byte>((m_bitCountHigh)&0xFF));
-	ProcessByteImpl(static_cast<std::byte>((m_bitCountLow >> 24) & 0xFF));
-	ProcessByteImpl(static_cast<std::byte>((m_bitCountLow >> 16) & 0xFF));
-	ProcessByteImpl(static_cast<std::byte>((m_bitCountLow >> 8) & 0xFF));
-	ProcessByteImpl(static_cast<std::byte>((m_bitCountLow)&0xFF));
+	ProcessByteImpl(static_cast<Byte>((m_bitCountHigh >> 24) & 0xFF));
+	ProcessByteImpl(static_cast<Byte>((m_bitCountHigh >> 16) & 0xFF));
+	ProcessByteImpl(static_cast<Byte>((m_bitCountHigh >> 8) & 0xFF));
+	ProcessByteImpl(static_cast<Byte>((m_bitCountHigh) & 0xFF));
+	ProcessByteImpl(static_cast<Byte>((m_bitCountLow >> 24) & 0xFF));
+	ProcessByteImpl(static_cast<Byte>((m_bitCountLow >> 16) & 0xFF));
+	ProcessByteImpl(static_cast<Byte>((m_bitCountLow >> 8) & 0xFF));
+	ProcessByteImpl(static_cast<Byte>((m_bitCountLow) & 0xFF));
 
 	// get final digest
 	digest[0] = m_h[0];
@@ -138,10 +146,10 @@ inline void Sha1::ProcessBlock()
 
 	for (size_t i = 0; i < 16; ++i)
 	{
-		w[i] = static_cast<unsigned int>(static_cast<unsigned char>(m_block[i * 4 + 0]) << 24);
-		w[i] |= static_cast<unsigned int>(static_cast<unsigned char>(m_block[i * 4 + 1]) << 16);
-		w[i] |= static_cast<unsigned int>(static_cast<unsigned char>(m_block[i * 4 + 2]) << 8);
-		w[i] |= static_cast<unsigned int>(static_cast<unsigned char>(m_block[i * 4 + 3]));
+		w[i] = static_cast<unsigned int>(m_block[i * 4 + 0] << 24);
+		w[i] |= static_cast<unsigned int>(m_block[i * 4 + 1] << 16);
+		w[i] |= static_cast<unsigned int>(m_block[i * 4 + 2] << 8);
+		w[i] |= static_cast<unsigned int>(m_block[i * 4 + 3]);
 	}
 
 	for (size_t i = 16; i < 80; ++i)
@@ -196,9 +204,10 @@ inline void Sha1::ProcessBlock()
 	m_h[4] += e;
 }
 
-inline void Sha1::ProcessByteImpl(const std::byte byte)
+template<is_byte T>
+inline void Sha1::ProcessByteImpl(const T byte)
 {
-	m_block[m_blockByteIndex++] = byte;
+	m_block[m_blockByteIndex++] = static_cast<Byte>(byte);
 
 	if (m_blockByteIndex == 64)
 	{

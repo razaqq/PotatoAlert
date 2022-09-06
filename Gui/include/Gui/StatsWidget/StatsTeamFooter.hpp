@@ -9,13 +9,13 @@
 
 namespace PotatoAlert::Gui {
 
-using Client::StatsParser::Match;
+using Client::StatsParser::MatchType;
 
 class StatsTeamFooter : public QWidget
 {
 public:
 	explicit StatsTeamFooter(QWidget* parent = nullptr);
-	void Update(const Match& match) const;
+	void Update(const MatchType& match) const;
 private:
 	void Init();
 	void changeEvent(QEvent* event) override;

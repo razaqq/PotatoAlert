@@ -33,7 +33,7 @@ void AboutWidget::Init()
 	horLayout->setSpacing(0);
 
 	auto appIcon = new QLabel();
-	appIcon->setPixmap(QPixmap(":/potato.png").scaledToWidth(100));
+	appIcon->setPixmap(QPixmap(":/potato.png").scaledToWidth(100, Qt::SmoothTransformation));
 	horLayout->addWidget(appIcon);
 
 	auto gridLayout = new QGridLayout();
@@ -61,7 +61,7 @@ void AboutWidget::Init()
 
 	auto poweredLabel = new QLabel("Powered by:");
 	poweredLabel->setFont(labelFont);
-	auto poweredText = new QLabel("Qt5, nlohmann/json, tinyxml2, spdlog, zip, sqlite3");
+	auto poweredText = new QLabel("Qt, nlohmann/json, tinyxml2, spdlog, zip, zlib, sqlite3");
 	poweredText->setFont(labelFont);
 	poweredLabel->setBuddy(poweredText);
 	gridLayout->addWidget(poweredLabel, 3, 0);

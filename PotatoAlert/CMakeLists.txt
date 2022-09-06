@@ -3,14 +3,14 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_executable(PotatoAlert ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
-set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED true)
+set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 
 if(WIN32)
     target_sources(PotatoAlert PRIVATE PotatoAlert.win32.cpp)
-    target_link_libraries(PotatoAlert PRIVATE updater Win32)
+    target_link_libraries(PotatoAlert PRIVATE Updater Win32)
 endif()
 
 if(UNIX)
@@ -38,7 +38,7 @@ else()
     message(FATAL_ERROR "Unsupported compiler!")
 endif()
 
-target_link_libraries(PotatoAlert PRIVATE core gui Qt5::Widgets)
+target_link_libraries(PotatoAlert PRIVATE Core Gui Qt6::Widgets FramelessHelper::Widgets)
 
 set_target_properties(PotatoAlert
     PROPERTIES
@@ -46,7 +46,6 @@ set_target_properties(PotatoAlert
 )
 
 include(packaging)
-replayversions(PotatoAlert)
 if(WIN32)
     windeployqt(PotatoAlert)
     ssllibraries(PotatoAlert)

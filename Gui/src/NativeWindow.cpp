@@ -2,7 +2,7 @@
 
 #include "Client/Config.hpp"
 
-#include "framelesswindowsmanager.h"
+#include <FramelessWidgetsHelper>
 
 #include "Gui/NativeWindow.hpp"
 #include "Gui/TitleBar.hpp"
@@ -10,40 +10,39 @@
 #include <QApplication>
 #include <QMainWindow>
 #include <QMenu>
+#include <QScreen>
 #include <QSystemTrayIcon>
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QWindow>
 
 
-#include <QDebug>
-
-FRAMELESSHELPER_USE_NAMESPACE
-
+using wangwenx190::FramelessHelper::FramelessWidgetsHelper;
+using wangwenx190::FramelessHelper::Global::SystemButtonType;
 using PotatoAlert::Core::PotatoConfig;
 using PotatoAlert::Gui::NativeWindow;
 
-NativeWindow::NativeWindow(QMainWindow* mainWindow) : QWidget(), m_mainWindow(mainWindow)
+NativeWindow::NativeWindow(QMainWindow* mainWindow, QWidget* parent) : QWidget(parent), m_mainWindow(mainWindow)
 {
 	createWinId();
-	this->m_mainWindow->setParent(this);
-	this->Init();
-}
+	m_mainWindow->setParent(this);
+	Init();
 
-void NativeWindow::showEvent(QShowEvent* event)
-{
-	static bool initialized = false;
-	if (!initialized)
-	{
-		QWindow* w = windowHandle();
-		FramelessWindowsManager::addWindow(w);
-		FramelessWindowsManager::setResizeBorderThickness(w, 4);
-		for (auto& o : this->m_titleBar->GetIgnores())
-			FramelessWindowsManager::setHitTestVisible(w, o, true);
-		FramelessWindowsManager::setTitleBarHeight(w, this->m_titleBar->height());
-		initialized = true;
-	}
-	QWidget::showEvent(event);
+	QWindow* w = windowHandle();
+	FramelessWidgetsHelper* helper = FramelessWidgetsHelper::get(this);
+
+	helper->extendsContentIntoTitleBar();
+	helper->setTitleBarWidget(m_titleBar);
+
+	helper->setSystemButton(m_titleBar->GetMaximizeButton(), SystemButtonType::Maximize);
+	helper->setSystemButton(m_titleBar->GetMinimizeButton(), SystemButtonType::Minimize);
+	helper->setSystemButton(m_titleBar->GetCloseButton(), SystemButtonType::Close);
+	helper->setSystemButton(m_titleBar->GetRestoreButton(), SystemButtonType::Restore);
+
+	helper->setHitTestVisible(m_titleBar->GetMaximizeButton(), true);
+	helper->setHitTestVisible(m_titleBar->GetMinimizeButton(), true);
+	helper->setHitTestVisible(m_titleBar->GetCloseButton(), true);
+	helper->setHitTestVisible(m_titleBar->GetRestoreButton(), true);
 }
 
 void NativeWindow::closeEvent(QCloseEvent* event)
@@ -54,10 +53,15 @@ void NativeWindow::closeEvent(QCloseEvent* event)
 	}
 	else
 	{
-		PotatoConfig().Set<Core::ConfigKey::WindowHeight>(this->height());
-		PotatoConfig().Set<Core::ConfigKey::WindowWidth>(this->width());
-		PotatoConfig().Set<Core::ConfigKey::WindowX>(this->windowHandle()->position().x());
-		PotatoConfig().Set<Core::ConfigKey::WindowY>(this->windowHandle()->position().y());
+		if ((windowState() & Qt::WindowMaximized) == 0)
+		{
+			PotatoConfig().Set<Core::ConfigKey::WindowHeight>(height());
+			PotatoConfig().Set<Core::ConfigKey::WindowWidth>(width());
+			PotatoConfig().Set<Core::ConfigKey::WindowX>(windowHandle()->framePosition().x());
+			PotatoConfig().Set<Core::ConfigKey::WindowY>(windowHandle()->framePosition().y());
+		}
+		PotatoConfig().Set<Core::ConfigKey::WindowState>(windowState());
+
 		QWidget::closeEvent(event);
 		QApplication::exit(0);
 	}
@@ -74,7 +78,7 @@ void NativeWindow::Init()
 		{
 			if (reason == QSystemTrayIcon::DoubleClick  || reason == QSystemTrayIcon::Trigger)
 			{
-				this->show();
+				show();
 			}
 		});
 
@@ -95,17 +99,36 @@ void NativeWindow::Init()
 		trayIcon->show();
 	}
 
-	this->m_titleBar->setFixedHeight(23);
+	m_titleBar->setFixedHeight(23);
 
 	auto layout = new QVBoxLayout();
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(0);
 
-	layout->addWidget(this->m_titleBar);
-	layout->addWidget(this->m_mainWindow);
+	layout->addWidget(m_titleBar);
+	layout->addWidget(m_mainWindow);
 
-	this->setLayout(layout);
+	setLayout(layout);
+	
+	resize(PotatoConfig().Get<Core::ConfigKey::WindowWidth>(), PotatoConfig().Get<Core::ConfigKey::WindowHeight>());
+	windowHandle()->setFramePosition(QPoint(PotatoConfig().Get<Core::ConfigKey::WindowX>(), PotatoConfig().Get<Core::ConfigKey::WindowY>()));
+	setWindowState(static_cast<decltype(windowState())>(PotatoConfig().Get<Core::ConfigKey::WindowState>()));
 
-	this->resize(PotatoConfig().Get<Core::ConfigKey::WindowWidth>(), PotatoConfig().Get<Core::ConfigKey::WindowHeight>());
-	this->windowHandle()->setPosition(PotatoConfig().Get<Core::ConfigKey::WindowX>(), PotatoConfig().Get<Core::ConfigKey::WindowY>());
+	bool reachable = false;
+	QRect titleBarGeo = windowHandle()->frameGeometry();
+	titleBarGeo.setBottom(titleBarGeo.top() + m_titleBar->height());
+
+	for (const QScreen* screen : QApplication::screens())
+	{
+		if (titleBarGeo.intersects(screen->availableGeometry()))
+		{
+			reachable = true;
+			break;
+		}
+	}
+
+	if (!reachable)
+	{
+		windowHandle()->setPosition(100, 100);
+	}
 }

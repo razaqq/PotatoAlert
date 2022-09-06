@@ -18,83 +18,83 @@ using PotatoAlert::Gui::TitleBar;
 
 TitleBar::TitleBar(QWidget* parent) : QWidget(parent), m_parentWindow(parent)
 {
-	this->Init();
+	Init();
 }
 
 void TitleBar::Init()
 {
-	this->setAttribute(Qt::WA_StyledBackground, true);
-	this->setObjectName("titleBar");
+	setAttribute(Qt::WA_StyledBackground, true);
+	setObjectName("titleBar");
 
-	auto hLayout = new QHBoxLayout;
+	auto hLayout = new QHBoxLayout();
 	hLayout->setContentsMargins(5, 0, 0, 0);
 	hLayout->setSpacing(0);
 
-	this->m_parentWindow->installEventFilter(this);
+	m_parentWindow->installEventFilter(this);
 
-	this->m_appName->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-	this->m_appName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	m_appName->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+	m_appName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
 	QSizePolicy buttonPolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-	this->m_btnMinimize->setSizePolicy(buttonPolicy);
-	this->m_btnMaximize->setSizePolicy(buttonPolicy);
-	this->m_btnRestore->setSizePolicy(buttonPolicy);
-	this->m_btnClose->setSizePolicy(buttonPolicy);
+	m_btnMinimize->setSizePolicy(buttonPolicy);
+	m_btnMaximize->setSizePolicy(buttonPolicy);
+	m_btnRestore->setSizePolicy(buttonPolicy);
+	m_btnClose->setSizePolicy(buttonPolicy);
 
-	this->m_btnMinimize->setIcon(QIcon(QPixmap(":/minimize.svg")));
-	this->m_btnMaximize->setIcon(QIcon(QPixmap(":/maximize.svg")));
-	this->m_btnRestore->setIcon(QIcon(QPixmap(":/restore.svg")));
-	this->m_btnClose->setIcon(QIcon(QPixmap(":/close.svg")));
+	m_btnMinimize->setIcon(QIcon(QPixmap(":/Minimize.svg").scaledToHeight(20, Qt::SmoothTransformation)));
+	m_btnMaximize->setIcon(QIcon(QPixmap(":/Maximize.svg").scaledToHeight(20, Qt::SmoothTransformation)));
+	m_btnRestore->setIcon(QIcon(QPixmap(":/Restore.svg").scaledToHeight(20, Qt::SmoothTransformation)));
+	m_btnClose->setIcon(QIcon(QPixmap(":/Close.svg").scaledToHeight(20, Qt::SmoothTransformation)));
 
-	this->m_appName->setText("PotatoAlert");
-	this->m_appName->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-	this->m_appName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	m_appName->setText("PotatoAlert");
+	m_appName->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+	m_appName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-	this->m_appIcon->setIcon(QIcon(":/potato.png"));
-	this->m_appIcon->setIconSize(QSize(12, 12));
+	m_appIcon->setIcon(QIcon(":/potato.png"));
+	m_appIcon->setIconSize(QSize(12, 12));
 
-	this->m_appIcon->setObjectName("appIcon");
-	this->m_btnMinimize->setObjectName("btnMinimize");
-	this->m_btnMaximize->setObjectName("btnMaximize");
-	this->m_btnRestore->setObjectName("btnRestore");
-	this->m_btnClose->setObjectName("btnClose");
+	m_appIcon->setObjectName("appIcon");
+	m_btnMinimize->setObjectName("btnMinimize");
+	m_btnMaximize->setObjectName("btnMaximize");
+	m_btnRestore->setObjectName("btnRestore");
+	m_btnClose->setObjectName("btnClose");
 
-	this->m_btnRestore->setVisible(false);
+	m_btnRestore->setVisible(false);
 
-	connect(this->m_btnClose, &QToolButton::clicked, this->m_parentWindow, &QWidget::close);
-	connect(this->m_btnMinimize, &QToolButton::clicked, this, &TitleBar::OnBtnMinimizeClicked);
-	connect(this->m_btnMaximize, &QToolButton::clicked, this, &TitleBar::OnBtnMaximizeClicked);
-	connect(this->m_btnRestore, &QToolButton::clicked, this, &TitleBar::OnBtnRestoreClicked);
+	connect(m_btnClose, &QToolButton::clicked, m_parentWindow, &QWidget::close);
+	connect(m_btnMinimize, &QToolButton::clicked, this, &TitleBar::OnBtnMinimizeClicked);
+	connect(m_btnMaximize, &QToolButton::clicked, this, &TitleBar::OnBtnMaximizeClicked);
+	connect(m_btnRestore, &QToolButton::clicked, this, &TitleBar::OnBtnRestoreClicked);
 
-	hLayout->addWidget(this->m_appIcon);
+	hLayout->addWidget(m_appIcon);
 	hLayout->addSpacing(5);
-	hLayout->addWidget(this->m_appName);
+	hLayout->addWidget(m_appName);
 	hLayout->addStretch();
-	hLayout->addWidget(this->m_btnMinimize);
-	hLayout->addWidget(this->m_btnMaximize);
-	hLayout->addWidget(this->m_btnRestore);
-	hLayout->addWidget(this->m_btnClose);
+	hLayout->addWidget(m_btnMinimize);
+	hLayout->addWidget(m_btnMaximize);
+	hLayout->addWidget(m_btnRestore);
+	hLayout->addWidget(m_btnClose);
 
-	this->setLayout(hLayout);
+	setLayout(hLayout);
 }
 
 bool TitleBar::eventFilter(QObject* object, QEvent* event)
 {
 	if (event->type() == QEvent::WindowStateChange)
 	{
-		if (this->m_parentWindow->windowState() == Qt::WindowMaximized)
+		if (m_parentWindow->windowState() == Qt::WindowMaximized)
 		{
-			this->m_btnMaximize->setVisible(false);
-			this->m_btnRestore->setVisible(true);
+			m_btnMaximize->setVisible(false);
+			m_btnRestore->setVisible(true);
 		}
 		else
 		{
-			this->m_btnMaximize->setVisible(true);
-			this->m_btnRestore->setVisible(false);
+			m_btnMaximize->setVisible(true);
+			m_btnRestore->setVisible(false);
 		}
 
-		this->m_btnMaximize->setAttribute(Qt::WA_UnderMouse, false);
-		this->m_btnRestore->setAttribute(Qt::WA_UnderMouse, false);
+		m_btnMaximize->setAttribute(Qt::WA_UnderMouse, false);
+		m_btnRestore->setAttribute(Qt::WA_UnderMouse, false);
 	}
 	QWidget::eventFilter(object, event);
 	return false;
@@ -102,27 +102,27 @@ bool TitleBar::eventFilter(QObject* object, QEvent* event)
 
 void TitleBar::OnBtnMinimizeClicked() const
 {
-	this->m_parentWindow->setWindowState(Qt::WindowMinimized);
+	m_parentWindow->setWindowState(Qt::WindowMinimized);
 }
 
 void TitleBar::OnBtnMaximizeClicked() const
 {
-	this->m_parentWindow->setWindowState(Qt::WindowMaximized);
-	this->m_btnMaximize->setVisible(false);
-	this->m_btnRestore->setVisible(true);
+	m_parentWindow->setWindowState(Qt::WindowMaximized);
+	m_btnMaximize->setVisible(false);
+	m_btnRestore->setVisible(true);
 }
 
 void TitleBar::OnBtnRestoreClicked() const
 {
-	this->m_parentWindow->setWindowState(Qt::WindowNoState);
-	this->m_btnMaximize->setVisible(true);
-	this->m_btnRestore->setVisible(false);
+	m_parentWindow->setWindowState(Qt::WindowNoState);
+	m_btnMaximize->setVisible(true);
+	m_btnRestore->setVisible(false);
 }
 
 void TitleBar::mouseDoubleClickEvent([[maybe_unused]] QMouseEvent* event)
 {
-	if (this->m_parentWindow->windowState() == Qt::WindowMaximized)
-		this->OnBtnRestoreClicked();
+	if (m_parentWindow->windowState() == Qt::WindowMaximized)
+		OnBtnRestoreClicked();
 	else
-		this->OnBtnMaximizeClicked();
+		OnBtnMaximizeClicked();
 }

@@ -4,21 +4,47 @@
 
 #include "Core/Json.hpp"
 
+#include <QGraphicsEffect>
+#include <QHBoxLayout>
 #include <QLabel>
 
 #include <array>
 #include <format>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <vector>
 
 
 using namespace PotatoAlert::Client::StatsParser;
 
+namespace {
+
 static QString ToQString(const std::string_view& str)
 {
 	return QString::fromUtf8(str.data(), static_cast<int>(str.size()));
 }
+
+static constexpr std::string_view TierToString(uint8_t tier)
+{
+	switch (tier)
+	{
+		case 1: return "I";
+		case 2: return "II";
+		case 3: return "III";
+		case 4: return "IV";
+		case 5: return "V";
+		case 6: return "VI";
+		case 7: return "VII";
+		case 8: return "VIII";
+		case 9: return "IX";
+		case 10: return "X";
+		default: return "Err";
+	}
+}
+
+}
+
 
 namespace _JSON {
 
@@ -117,23 +143,65 @@ struct Clan
 
 struct Ship
 {
-	std::string name;
+	std::string Name;
+	std::string Class;
+	std::string Nation;
+	uint8_t Tier;
 	// Color color;
 
-	[[nodiscard]] QTableWidgetItem* GetField(const QFont& font, const QColor& bg, const QFlags<Qt::AlignmentFlag>& align) const
+	[[nodiscard]] QWidget* GetField(const QFont& font, const Color& bg, const QFlags<Qt::AlignmentFlag>& align) const
 	{
-		auto item = new QTableWidgetItem(ToQString(this->name));
-		// item->setForeground(this->color.QColor());
-		item->setBackground(bg);
-		item->setFont(font);
-		item->setTextAlignment(align);
-		return item;
+		QWidget* ship = new QWidget();
+		QHBoxLayout* layout = new QHBoxLayout();
+		layout->setContentsMargins(3, 0, 3, 0);
+		layout->setSpacing(3);
+
+		QLabel* shipIcon = new QLabel();
+		shipIcon->setPixmap(QPixmap(std::format(":/{}.svg", Class).c_str()).scaledToHeight(9, Qt::SmoothTransformation));
+		shipIcon->setStyleSheet("background-color: transparent;");
+		shipIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+		shipIcon->setAlignment(Qt::AlignLeft);
+		// shipIcon->setFixedWidth(21);
+		auto effect = new QGraphicsOpacityEffect();
+		effect->setOpacity(0.85);
+		shipIcon->setGraphicsEffect(effect);
+
+		QLabel* shipTier = new QLabel();
+		shipTier->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+		shipTier->setStyleSheet("background-color: transparent;");
+		if (Tier == 11)
+		{
+			shipTier->setPixmap(QPixmap(":/Star.svg").scaledToHeight(13, Qt::SmoothTransformation));
+		}
+		else
+		{
+			shipTier->setText(TierToString(Tier).data());
+			shipTier->setFont(font);
+		}
+
+		QLabel* shipName = new QLabel(Name.c_str());
+		shipName->setFont(font);
+		shipName->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+		shipName->setStyleSheet("background-color: transparent;");
+
+		layout->addWidget(shipIcon, 0, align);
+		layout->addWidget(shipTier, 0, align);
+		layout->addWidget(shipName, 0, align);
+		layout->addStretch();
+
+		ship->setLayout(layout);
+		ship->setStyleSheet(std::format("background-color: {};", bg.ToString()).c_str());
+
+		return ship;
 	}
 };
 
 [[maybe_unused]] static void from_json(const json& j, Ship& s)
 {
-	j.at("name").get_to(s.name);
+	j.at("name").get_to(s.Name);
+	j.at("class").get_to(s.Class);
+	j.at("nation").get_to(s.Nation);
+	j.at("tier").get_to(s.Tier);
 	// s.color = Color(j.at("color").get<std::array<int, 3>>());
 }
 
@@ -161,7 +229,7 @@ struct Player
 		font16.setPixelSize(16);
 
 		QColor bg = this->prColor.QColor();
-		auto shipItem = this->ship ? this->ship->GetField(font13, bg, Qt::AlignVCenter | Qt::AlignLeft)  : new QTableWidgetItem();
+		QWidget* shipItem = this->ship ? this->ship->GetField(font13, prColor, Qt::AlignVCenter | Qt::AlignLeft)  : new QWidget();
 		
 		return {
 				this->GetNameField(),
@@ -296,7 +364,7 @@ static std::string GetCSV(const Match& match)
 
 			std::string shipName;
 			if (player.ship)
-				shipName = player.ship->name;
+				shipName = player.ship->Name;
 
 			out += std::format("{};{};{};{};{};{};{};{};{};{};{}\n",
 					teamID, player.name, clanName, shipName,
@@ -319,12 +387,12 @@ namespace pn = PotatoAlert::Client::StatsParser;
 
 void pn::Label::UpdateLabel(QLabel* label) const
 {
-	label->setText(this->text);
+	label->setText(this->Text);
 
-	if (this->color)
+	if (this->Color)
 	{
 		auto palette = label->palette();
-		palette.setColor(QPalette::WindowText, this->color.value());
+		palette.setColor(QPalette::WindowText, this->Color.value());
 		label->setPalette(palette);
 	}
 }
@@ -336,9 +404,10 @@ StatsParseResult pn::ParseMatch(const json& j, const MatchContext& matchContext,
 	const auto match = j.get<_JSON::Match>();
 
 	if (parseCsv)
-		result.csv = _JSON::GetCSV(match);
+		result.Csv = _JSON::GetCSV(match);
 
-	std::string playerShip;
+	_JSON::Ship playerShip;
+
 
 	// parse match stats
 	auto getTeam = [&match, &matchContext, &playerShip](const _JSON::Team& inTeam, Team& outTeam)
@@ -353,54 +422,80 @@ StatsParseResult pn::ParseMatch(const json& j, const MatchContext& matchContext,
 		for (auto& player : inTeam.players)
 		{
 			if (player.name == matchContext.PlayerName && player.ship.has_value())
-				playerShip = player.ship->name;
+			{
+				playerShip = player.ship.value();
+			}
 
 			auto row = player.GetTableRow();
 			teamTable.push_back(row);
-			outTeam.wowsNumbers.push_back(ToQString(player.wowsNumbers));
+			outTeam.WowsNumbers.push_back(ToQString(player.wowsNumbers));
 		}
-		outTeam.avgDmg = inTeam.avgDmg.GetLabel();
-		outTeam.winrate = inTeam.avgWr.GetLabel("%");
-		outTeam.table = teamTable;
+		outTeam.AvgDmg = inTeam.avgDmg.GetLabel();
+		outTeam.Winrate = inTeam.avgWr.GetLabel("%");
+		outTeam.Table = teamTable;
 	};
-	getTeam(match.team1, result.match.team1);
-	getTeam(match.team2, result.match.team2);
+	getTeam(match.team1, result.Match.Team1);
+	getTeam(match.team2, result.Match.Team2);
 
 	// parse clan tag+name
 	if (match.matchGroup == "clan")
 	{
 		auto findClan = [](const _JSON::Team& inTeam, Team& outTeam)
 		{
-			for (auto& player : inTeam.players)
+			struct Clan
+			{
+				size_t count;
+				const _JSON::Clan& clan;
+			};
+			std::map<std::string, Clan> clans;
+			for (const _JSON::Player& player : inTeam.players)
 			{
 				if (!player.clan)
 					continue;
-				outTeam.clan.show = true;
-				outTeam.clan.tag = player.clan->GetTagLabel();
-				outTeam.clan.name = player.clan->GetNameLabel();
-				outTeam.clan.region = player.clan->GetRegionLabel();
+
+				const _JSON::Clan& clan = player.clan.value();
+				if (clans.contains(clan.tag))
+				{
+					clans.at(clan.tag).count++;
+				}
+				else
+				{
+					clans.emplace(clan.tag, Clan{ 1, clan });
+				}
+			}
+
+			if (!clans.empty())
+			{
+				outTeam.Clan.Show = true;
+				const auto max_elem = std::ranges::max_element(clans, [](const auto& a, const auto& b)
+				{
+					return a.second.count < b.second.count;
+				});
+
+				outTeam.Clan.Tag = max_elem->second.clan.GetTagLabel();
+				outTeam.Clan.Name = max_elem->second.clan.GetNameLabel();
+				outTeam.Clan.Region = max_elem->second.clan.GetRegionLabel();
 			}
 		};
-		findClan(match.team1, result.match.team1);
-		findClan(match.team2, result.match.team2);
+		findClan(match.team1, result.Match.Team1);
+		findClan(match.team2, result.Match.Team2);
 	}
 
 	// parse match info
-	Match::Info& info = result.match.info;
-	info.matchGroup = match.matchGroup;
-	info.statsMode = match.statsMode;
-	info.region = match.region;
-	info.map = match.map;
-	info.dateTime = match.dateTime;
-	info.player = matchContext.PlayerName;
-	info.shipIdent = matchContext.ShipIdent;
-	info.ship = playerShip;
+	MatchType::InfoType& info = result.Match.Info;
+	info.MatchGroup = std::move(match.matchGroup);
+	info.StatsMode = std::move(match.statsMode);
+	info.Region = std::move(match.region);
+	info.Map = std::move(match.map);
+	info.DateTime = std::move(match.dateTime);
+	info.Player = std::move(matchContext.PlayerName);
+	info.ShipIdent = std::move(matchContext.ShipIdent);
+	info.ShipName = std::move(playerShip.Name);
+	info.ShipClass = std::move(playerShip.Class);
+	info.ShipNation = std::move(playerShip.Nation);
+	info.ShipTier = playerShip.Tier;
 
-	// result.match.info.ship = match.ship;
-	// result.match.info.shipIdent = match.shipIdent;
-	// result.match.info.player = match.player;
-
-	result.success = true;
+	result.Success = true;
 	return result;
 }
 

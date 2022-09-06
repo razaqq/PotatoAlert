@@ -31,9 +31,9 @@ private:
 	QLabel* m_team1Label = new QLabel();
 	QLabel* m_team2Label = new QLabel();
 
-	QMovie* m_loading = new QMovie(":/loading.gif");
-	QPixmap m_ready = QPixmap(":/ready.png");
-	QPixmap m_error = QPixmap(":/error.png");
+	QMovie* m_loading = new QMovie(":/Loading.gif");
+	QPixmap m_ready = QPixmap(":/Ready.png");
+	QPixmap m_error = QPixmap(":/Error.png");
 };
 
 }  // namespace PotatoAlert::Gui

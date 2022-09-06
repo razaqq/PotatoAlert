@@ -16,7 +16,7 @@ class NativeWindow : public QWidget
 	Q_OBJECT
 
 public:
-	explicit NativeWindow(QMainWindow* mainWindow);
+	explicit NativeWindow(QMainWindow* mainWindow, QWidget* parent = nullptr);
 	static void RequestFocus();
 
 private:
@@ -25,9 +25,8 @@ private:
 
 	void Init();
 
-	void showEvent(QShowEvent* event) override;
 	void closeEvent(QCloseEvent* event) override;
-	bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
+	bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
 };
 
 }  // namespace PotatoAlert::Gui

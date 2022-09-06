@@ -21,59 +21,59 @@ using PotatoAlert::Gui::StatsWidget;
 
 StatsWidget::StatsWidget(QWidget* parent) : QWidget(parent)
 {
-	this->Init();
+	Init();
 }
 
 void StatsWidget::Init()
 {
-	this->setMinimumWidth(1000);
+	setMinimumWidth(1000);
 	auto vLayout = new QVBoxLayout();
 	vLayout->setContentsMargins(0, 0, 0, 10);
 	vLayout->setSpacing(0);
 
-	vLayout->addWidget(this->m_header);
+	vLayout->addWidget(m_header);
 
 	auto tableLayout = new QHBoxLayout();
-	tableLayout->addWidget(this->m_leftTable);
-	tableLayout->addWidget(this->m_rightTable);
+	tableLayout->addWidget(m_leftTable);
+	tableLayout->addWidget(m_rightTable);
 	tableLayout->setSpacing(10);
-	tableLayout->setContentsMargins(10, 0, 10, 0);
+	tableLayout->setContentsMargins(10, 0, 10,  0);
 	vLayout->addLayout(tableLayout);
 
-	vLayout->addWidget(this->m_footer);
+	vLayout->addWidget(m_footer);
 
-	this->setLayout(vLayout);
+	setLayout(vLayout);
 
 
 	// add hooks to open wows-numbers link when double clicking cell
 	auto openWowsNumbers = [](int row, const Client::StatsParser::Team& team)
 	{
-		auto wowsNumbers = team.wowsNumbers;
+		auto wowsNumbers = team.WowsNumbers;
 
-		if (static_cast<size_t>(row) < team.wowsNumbers.size())
+		if (static_cast<size_t>(row) < team.WowsNumbers.size())
 		{
-			const QUrl url(team.wowsNumbers[row]);
+			const QUrl url(team.WowsNumbers[row]);
 			if (url.isValid())
 				QDesktopServices::openUrl(url);
 		}
 	};
-	connect(this->m_leftTable, &StatsTable::cellDoubleClicked, [&](int row, [[maybe_unused]] int column)
+	connect(m_leftTable, &StatsTable::cellDoubleClicked, [&](int row, [[maybe_unused]] int column)
 	{
-		openWowsNumbers(row, this->m_lastMatch.team1);
+		openWowsNumbers(row, m_lastMatch.Team1);
 	});
-	connect(this->m_rightTable, &StatsTable::cellDoubleClicked, [&](int row, [[maybe_unused]] int column)
+	connect(m_rightTable, &StatsTable::cellDoubleClicked, [&](int row, [[maybe_unused]] int column)
 	{
-		openWowsNumbers(row, this->m_lastMatch.team2);
+		openWowsNumbers(row, m_lastMatch.Team2);
 	});
 }
 
-void StatsWidget::Update(const Match& match)
+void StatsWidget::Update(const MatchType& match)
 {
-	this->m_lastMatch = match;
+	m_lastMatch = match;
 
 	// update the tables
-	this->m_leftTable->clearContents();
-	this->m_rightTable->clearContents();
+	m_leftTable->clearContents();
+	m_rightTable->clearContents();
 
 	auto fillTable = [](QTableWidget* table, const Client::StatsParser::TeamType& team)
 	{
@@ -87,20 +87,23 @@ void StatsWidget::Update(const Match& match)
 					table->setItem(row, col, std::get<QTableWidgetItem*>(field));
 				if (std::holds_alternative<QLabel*>(field))
 					table->setCellWidget(row, col, std::get<QLabel*>(field));
+				if (std::holds_alternative<QWidget*>(field))
+					table->setCellWidget(row, col, std::get<QWidget*>(field));
 				col++;
 			}
 			row++;
 		}
+		table->resizeColumnToContents(1);
 	};
-
-	fillTable(this->m_leftTable, match.team1.table);
-	fillTable(this->m_rightTable, match.team2.table);
+	
+	fillTable(m_leftTable, match.Team1.Table);
+	fillTable(m_rightTable, match.Team2.Table);
 
 	// update the footer
-	this->m_footer->Update(match);
+	m_footer->Update(match);
 }
 
 void StatsWidget::SetStatus(Status status, const std::string& statusText) const
 {
-	this->m_header->SetStatus(status, statusText);
+	m_header->SetStatus(status, statusText);
 }

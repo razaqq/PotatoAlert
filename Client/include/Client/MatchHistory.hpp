@@ -13,8 +13,6 @@
 #include <vector>
 
 
-using PotatoAlert::ReplayParser::ReplaySummary;
-
 namespace PotatoAlert::Client {
 
 class MatchHistory
@@ -29,6 +27,9 @@ public:
 		std::string ReplayName;
 		std::string Date;
 		std::string Ship;
+		std::string ShipNation;
+		std::string ShipClass;
+		uint8_t ShipTier;
 		std::string Map;
 		std::string MatchGroup;
 		std::string StatsMode;
@@ -37,14 +38,14 @@ public:
 		std::string Json;
 		std::string ArenaInfo;
 		bool Analyzed = false;
-		ReplaySummary ReplaySummary;
+		ReplayParser::ReplaySummary ReplaySummary;
 	};
 
 	static QDir GetDir();
 
-	bool SaveMatch(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view hash, std::string_view json, std::string_view csv) const;
-	[[nodiscard]] std::optional<StatsParser::Match> GetMatchJson(std::string_view hash) const;
-	[[nodiscard]] std::optional<StatsParser::Match> GetMatchJson(uint32_t id) const;
+	bool SaveMatch(const StatsParser::MatchType::InfoType& info, std::string_view arenaInfo, std::string_view hash, std::string_view json, std::string_view csv) const;
+	[[nodiscard]] std::optional<StatsParser::MatchType> GetMatchJson(std::string_view hash) const;
+	[[nodiscard]] std::optional<StatsParser::MatchType> GetMatchJson(uint32_t id) const;
 
 	[[nodiscard]] std::vector<Entry> GetEntries() const;
 	[[nodiscard]] std::optional<Entry> GetEntry(std::string_view hash) const;
@@ -64,16 +65,16 @@ public:
 	};
 
 	[[nodiscard]] std::vector<NonAnalyzedMatch> GetNonAnalyzedMatches() const;
-	void SetAnalyzeResult(std::string_view hash, ReplaySummary summary) const;
+	void SetAnalyzeResult(std::string_view hash, const ReplayParser::ReplaySummary& summary) const;
 
 private:
 	MatchHistory();
 	~MatchHistory();
 
 	bool WriteEntry(const Entry& entry) const;
-	static Entry CreateEntry(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view hash);
+	static Entry CreateEntry(const StatsParser::MatchType::InfoType& info, std::string_view arenaInfo, std::string_view json, std::string_view hash);
 
-	bool WriteJson(const StatsParser::Match::Info& info, std::string_view arenaInfo, std::string_view json, std::string_view hash) const;
+	bool WriteJson(const StatsParser::MatchType::InfoType& info, std::string_view arenaInfo, std::string_view json, std::string_view hash) const;
 	static bool WriteCsv(std::string_view csv);
 
 	void ApplyDatabaseUpdates() const;

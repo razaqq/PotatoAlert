@@ -218,24 +218,168 @@ QMainWindow::separator
   border: transparent;
 }
 
+/* IconButton */
+#IconButton
+{
+  border-radius: 0px;
+  border: 1px solid transparent;
+  background-color: transparent;
+}
+
+#IconButton:checked
+{
+  border-radius: 2px;
+  background-color: palette(alternate-base);
+  border: 1px solid palette(midlight);
+}
+
+/* REPLAY SUMMARY */
+
+#ReplaySummary
+{
+  /*border: 1px solid red;*/
+  font-family: WarHeliosCondC,Arial Narrow,Tahoma,arial,sans-serif;
+  font-size: 50px;
+  color: #9CBABA;
+}
+
+#ReplaySummary_ShadowLabel
+{
+  color: #9CBABA;
+  font-family: WarHeliosCondC,Arial Narrow,Tahoma,arial,sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.43px;
+}
+
+#ReplaySummary_battlePerformanceLabel
+{
+  color: #CECECE;
+  font-family: WarHeliosCondCBold,Arial Narrow,Tahoma,arial,sans-serif;
+  font-size: 25px;
+  font-weight: 400;
+  letter-spacing: 0.43px;
+}
+
+#ReplaySummary_winLabel, #ReplaySummary_lossLabel, #ReplaySummary_drawLabel, #ReplaySummary_unknownLabel, #ReplaySummary_RibbonTitle, #ReplaySummary_dmgDone
+{
+  color: #9CBABA;
+  font-family: WarHeliosCondCBold,Arial Narrow,Tahoma,arial,sans-serif;
+  font-size: 60px;
+  font-weight: 400;
+  letter-spacing: 0.43px;
+}
+
+#ReplaySummary_Ribbon
+{
+  /*height: 46px;*/
+  color: #FFFFFF;
+  min-width: 100px;
+  /*font-size: 100%;*/
+  font-weight: 400;
+  letter-spacing: 0.43px;
+}
+
+#ReplaySummary_RibbonSmall
+{
+  /*height: 46px;*/
+  color: #FFFFFF;
+  min-width: 80px;
+  /*font-size: 100%;*/
+  font-weight: 400;
+  letter-spacing: 0.43px;
+}
+
+#ReplaySummary_RibbonTitle
+{
+  text-align: center;
+  font-family: WarHeliosCondC,Arial Narrow,Tahoma,arial,sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.43px;
+}
+
+#ReplaySummary_RibbonTitleSmall
+{
+  text-align: center;
+  font-family: WarHeliosCondC,Arial Narrow,Tahoma,arial,sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.43px;
+}
+
+#ReplaySummary_DamageLabel
+{
+  min-height: 40px;
+  max-height: 40px;
+  padding: 0px 0px 0px 0px;
+  qproperty-indent: 0;
+  color: #e7e9ea;
+  text-align: center;
+  font-family: WarHeliosCondCBold,Arial Narrow,Tahoma,arial,sans-serif;
+  font-size: 40px;
+  font-weight: 400;
+  letter-spacing: 0.43px;
+}
+
+#ReplaySummary_DamageLabelSmall
+{
+
+  min-height: 20px;
+  max-height: 20px;
+  padding: 0px 0px 0px 0px;
+  qproperty-indent: 0;
+  color: #e7e9ea;
+  text-align: center;
+  font-family: WarHeliosCondCBold,Arial Narrow,Tahoma,arial,sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0.43px;
+}
+
+#ReplaySummary_ribbonCountLabel
+{
+  color: #FFFFFF;
+  font-family: WarHeliosCondCBold,Arial Narrow,Tahoma,arial,sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.43px;
+}
+
+#ReplaySummary_achievementCountLabel
+{
+  color: #FFFFFF;
+  font-family: WarHeliosCondCBold,Arial Narrow,Tahoma,arial,sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0.43px;
+  padding: 0px 0px 0px 0px;
+  qproperty-indent: 0;
+}
+
+#ReplaySummary_playerInfoLabel
+{
+  color: #FFCC66;
+  text-align: center;
+  font-family: WarHeliosCondC,Arial Narrow,Tahoma,arial,sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.43px;
+}
+
+#ReplaySummary_winLabel
+{
+  color: #FFCC66;
+}
+
+#ReplaySummary_hat
+{
+  width: 100%;
+  height: 200px;
+  padding: 60px 80px;
+}
+
 /* menu bar */
-#menuEntry
-{
-  border-radius: 10px;
-}
-
-#menuEntry:hover
-{
-  background-color: palette(link-visited);
-  border-radius: 10px;
-}
-
-#menuEntry:checked
-{
-  background-color: palette(midlight);
-  border-radius: 10px;
-}
-
 #menuBar
 {
   /* border-radius: 15px; */
@@ -312,4 +456,19 @@ QFrame#hLine
 #matchHistoryTable
 {
   background-color: transparent;
+}
+
+#matchHistoryTable::item::selected
+{
+  selection-background-color: rgba(66, 66, 66, 0);
+}
+
+#matchHistoryTable::item:selected
+{
+  selection-background-color: rgba(66, 66, 66, 0);
+}
+
+#matchHistoryTable::item:focus
+{
+  selection-background-color: rgba(66, 66, 66, 0);
 }

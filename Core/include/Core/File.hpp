@@ -1,8 +1,9 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include "Flags.hpp"
-#include "Version.hpp"
+#include "Core/Bytes.hpp"
+#include "Core/Flags.hpp"
+#include "Core/Version.hpp"
 
 #include <filesystem>
 #include <span>
@@ -82,18 +83,30 @@ public:
 		return RawGetSize(m_handle);
 	}
 
-	template<typename T> requires(sizeof(T) == 1)
-	bool Read(std::vector<T>& out, bool resetFilePointer = true) const
+	template<is_byte T>
+	bool Read(std::vector<T>& out, uint64_t size, bool resetFilePointer = true) const
 	{
-		return RawRead(m_handle, out, resetFilePointer);
+		return RawRead(m_handle, out, size, resetFilePointer);
 	}
 
-	bool ReadString(std::string& out, bool resetFilePointer = true) const
+	template<is_byte T>
+	bool ReadAll(std::vector<T>& out, bool resetFilePointer = true) const
 	{
-		return RawReadString(m_handle, out, resetFilePointer);
+		return RawReadAll(m_handle, out, resetFilePointer);
 	}
 
-	bool Write(std::span<const std::byte> data, bool resetFilePointer = true) const
+	bool ReadAllString(std::string& out, uint64_t size, bool resetFilePointer = true) const
+	{
+		return RawReadString(m_handle, out, size, resetFilePointer);
+	}
+
+	bool ReadAllString(std::string& out, bool resetFilePointer = true) const
+	{
+		return RawReadAllString(m_handle, out, resetFilePointer);
+	}
+
+	template<is_byte T>
+	bool Write(std::span<const T> data, bool resetFilePointer = true) const
 	{
 		return RawWrite(m_handle, data, resetFilePointer);
 	}
@@ -176,10 +189,14 @@ private:
 	Handle m_handle;
 
 	// these have to be implemented for each os
-	template<typename T>
-	static bool RawRead(Handle handle, std::vector<T>& out, bool resetFilePointer);
-	static bool RawReadString(Handle handle, std::string& out, bool resetFilePointer);
-	static bool RawWrite(Handle handle, std::span<const std::byte> data, bool resetFilePointer);
+	template<is_byte T>
+	static bool RawRead(Handle handle, std::vector<T>& out, uint64_t size, bool resetFilePointer);
+	template<is_byte T>
+	static bool RawReadAll(Handle handle, std::vector<T>& out, bool resetFilePointer);
+	static bool RawReadString(Handle handle, std::string& out, uint64_t size, bool resetFilePointer);
+	static bool RawReadAllString(Handle handle, std::string& out, bool resetFilePointer);
+	template<is_byte T>
+	static bool RawWrite(Handle handle, std::span<const T> data, bool resetFilePointer);
 	static bool RawWriteString(Handle handle, std::string_view data, bool resetFilePointer);
 	static bool RawFlushBuffer(Handle handle);
 	static uint64_t RawGetSize(Handle handle);

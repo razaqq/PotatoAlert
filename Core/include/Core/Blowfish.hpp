@@ -1,6 +1,8 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Core/Bytes.hpp"
+
 #include <array>
 #include <memory>
 #include <span>
@@ -15,7 +17,7 @@ class Blowfish
 {
 public:
 	Blowfish() : m_pArray({}), m_sBoxes({}) {}
-	Blowfish(std::span<const std::byte> key);
+	Blowfish(std::span<const Byte> key);
 	Blowfish(Blowfish const&) = delete;
 	Blowfish(Blowfish&&) = delete;
 
@@ -24,10 +26,10 @@ public:
 	
 	~Blowfish() = default;
 
-	void InitKey(std::span<const std::byte> key);
+	void InitKey(std::span<const Byte> key);
 
-	bool Decrypt(std::span<const std::byte> src, std::span<std::byte> dst) const;
-	bool Encrypt(std::span<const std::byte> src, std::span<std::byte> dst) const;
+	bool Decrypt(std::span<const Byte> src, std::span<Byte> dst) const;
+	bool Encrypt(std::span<const Byte> src, std::span<Byte> dst) const;
 
 	void EncryptBlock(uint32_t* left, uint32_t* right) const;
 	void DecryptBlock(uint32_t* left, uint32_t* right) const;

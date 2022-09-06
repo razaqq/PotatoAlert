@@ -13,8 +13,7 @@
 #include <QNetworkAccessManager>
 #include <QObject>
 #include <QString>
-#include <QTableWidgetItem>
-#include <QtWebSockets/QWebSocket>
+#include <QNetworkReply>
 
 #include <string>
 
@@ -42,6 +41,7 @@ public:
 
 	void Init();
 	void TriggerRun();
+	void ForceRun();
 	DirectoryStatus CheckPath();
 
 private:
@@ -58,12 +58,12 @@ private:
 	std::string m_lastArenaInfoHash;
 	DirectoryStatus m_dirStatus;
 	ReplayAnalyzer m_replayAnalyzer;
-	QNetworkAccessManager* m_networkAccessManager = new QNetworkAccessManager(this);
+	QNetworkAccessManager* m_networkAccessManager = new QNetworkAccessManager();
 
 signals:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
-	void MatchReady(const StatsParser::Match& match);
+	void MatchReady(const StatsParser::MatchType& match);
 	void MatchHistoryChanged();
 	void MatchSummaryChanged(uint32_t id, const ReplaySummary& summary);
 	void StatusReady(Status status, const std::string& statusText);

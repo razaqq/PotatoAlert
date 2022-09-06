@@ -17,13 +17,15 @@
 namespace rp = PotatoAlert::ReplayParser;
 using namespace PotatoAlert;
 using namespace ReplayParser;
+using Core::Byte;
 using Core::Take;
 using Core::TakeInto;
 using Core::TakeString;
 
 ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 {
-	static const std::unordered_map<std::string, BasicType> types{
+	static const std::unordered_map<std::string, BasicType> types
+	{
 		{ "UINT8", BasicType::Uint8 },
 		{ "UINT16", BasicType::Uint16 },
 		{ "UINT32", BasicType::Uint32 },
@@ -57,7 +59,7 @@ ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 		ArrayType arr{};
 		if (XMLElement* ofElem = elem->FirstChildElement("of"))
 		{
-			arr.subType = std::make_shared<ArgType>(ParseType(ofElem, aliases));
+			arr.SubType = std::make_shared<ArgType>(ParseType(ofElem, aliases));
 		}
 
 		if (XMLElement* sizeElem = elem->FirstChildElement("size"))
@@ -65,7 +67,7 @@ ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 			size_t size;
 			if (Core::String::ParseNumber<size_t>(sizeElem->GetText(), size))
 			{
-				arr.size = size;
+				arr.Size = size;
 			}
 		}
 
@@ -78,7 +80,7 @@ ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 
 		if (XMLElement* allowNoneElem = elem->FirstChildElement("AllowNone"))
 		{
-			if (!Core::String::ParseBool(Core::String::Trim(allowNoneElem->GetText()), dict.allowNone))
+			if (!Core::String::ParseBool(Core::String::Trim(allowNoneElem->GetText()), dict.AllowNone))
 			{
 				LOG_ERROR("Failed to parse bool for FixtedDictType");
 			}
@@ -90,7 +92,7 @@ ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 			{
 				if (XMLElement* typeElem = prop->FirstChildElement("Type"))
 				{
-					dict.properties.emplace_back(FixedDictProperty{ prop->Name(), std::make_shared<ArgType>(ParseType(typeElem, aliases)) });
+					dict.Properties.emplace_back(FixedDictProperty{ prop->Name(), std::make_shared<ArgType>(ParseType(typeElem, aliases)) });
 				}
 			}
 		}
@@ -103,7 +105,7 @@ ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 		TupleType tuple{};
 		if (XMLElement* ofElem = elem->FirstChildElement("of"))
 		{
-			tuple.subType = std::make_shared<ArgType>(ParseType(ofElem, aliases));
+			tuple.SubType = std::make_shared<ArgType>(ParseType(ofElem, aliases));
 		}
 
 		if (XMLElement* sizeElem = elem->FirstChildElement("size"))
@@ -111,7 +113,7 @@ ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 			size_t size;
 			if (Core::String::ParseNumber<size_t>(sizeElem->GetText(), size))
 			{
-				tuple.size = size;
+				tuple.Size = size;
 			}
 		}
 		return tuple;
@@ -133,24 +135,24 @@ size_t rp::TypeSize(const ArgType& type)
 
 		if constexpr (std::is_same_v<T, PrimitiveType>)
 		{
-			return PrimitiveSize(arg.type);
+			return PrimitiveSize(arg.Type);
 		}
 
 		if constexpr (std::is_same_v<T, ArrayType>)
 		{
-			if (!arg.size) return Infinity;
-			size_t size = TypeSize(*arg.subType);
+			if (!arg.Size) return Infinity;
+			size_t size = TypeSize(*arg.SubType);
 			if (size == Infinity) return Infinity;
-			return size * arg.size.value();
+			return size * arg.Size.value();
 		}
 
 		if constexpr (std::is_same_v<T, FixedDictType>)
 		{
-			if (arg.allowNone) return Infinity;
+			if (arg.AllowNone) return Infinity;
 			size_t totalSize = 0;
-			for (const FixedDictProperty& prop : arg.properties)
+			for (const FixedDictProperty& prop : arg.Properties)
 			{
-				const size_t size = TypeSize(*prop.type);
+				const size_t size = TypeSize(*prop.Type);
 				if (size == Infinity) return Infinity;
 				totalSize += size;
 			}
@@ -159,9 +161,9 @@ size_t rp::TypeSize(const ArgType& type)
 
 		if constexpr (std::is_same_v<T, TupleType>)
 		{
-			size_t size = TypeSize(*arg.subType);
+			size_t size = TypeSize(*arg.SubType);
 			if (size == Infinity) return Infinity;
-			return size * arg.size;
+			return size * arg.Size;
 		}
 
 		return Infinity;
@@ -169,9 +171,9 @@ size_t rp::TypeSize(const ArgType& type)
 	type);
 }
 
-static ArgValue ParsePrimitive(PrimitiveType type, std::span<std::byte>& data)
+static ArgValue ParsePrimitive(PrimitiveType type, std::span<Byte>& data)
 {
-	switch (type.type)
+	switch (type.Type)
 	{
 		case BasicType::Uint8:
 		{
@@ -342,7 +344,7 @@ static ArgValue ParsePrimitive(PrimitiveType type, std::span<std::byte>& data)
 				if (data.size() >= blobSize)
 				{
 					auto s = Take(data, blobSize);
-					return std::vector<std::byte>{ s.begin(), s.end() };
+					return std::vector<Byte>{ s.begin(), s.end() };
 				}
 			}
 			else
@@ -350,7 +352,7 @@ static ArgValue ParsePrimitive(PrimitiveType type, std::span<std::byte>& data)
 				if (data.size() >= size)
 				{
 					auto s = Take(data, size);
-					return std::vector<std::byte>{ s.begin(), s.end() };
+					return std::vector<Byte>{ s.begin(), s.end() };
 				}
 			}
 			break;
@@ -360,14 +362,14 @@ static ArgValue ParsePrimitive(PrimitiveType type, std::span<std::byte>& data)
 }
 
 #ifndef NDEBUG
-static std::string PrintType(const ArgType& type)
+std::string rp::PrintType(const ArgType& type)
 {
 	return std::visit([](auto&& t) -> std::string
 	{
 		using T = std::decay_t<decltype(t)>;
 		if constexpr (std::is_same_v<T, PrimitiveType>)
 		{
-			switch (t.type)
+			switch (t.Type)
 			{
 				case BasicType::Uint8: return "uint8_t";
 				case BasicType::Uint16: return "uint16_t";
@@ -388,21 +390,21 @@ static std::string PrintType(const ArgType& type)
 		}
 		else if constexpr (std::is_same_v<T, ArrayType>)
 		{
-			if (t.size)
-				return std::format("Array<{}, {}>", t.size.value(), PrintType(*t.subType));
-			return std::format("Array<-1, {}>", PrintType(*t.subType));
+			if (t.Size)
+				return std::format("Array<{}, {}>", t.Size.value(), PrintType(*t.SubType));
+			return std::format("Array<-1, {}>", PrintType(*t.SubType));
 		}
 		else if constexpr (std::is_same_v<T, FixedDictType>)
 		{
-			std::string dict = std::format("FixedDict<{}, [", t.allowNone);
+			std::string dict = std::format("FixedDict<{}, [", t.AllowNone);
 
-			for (auto begin = t.properties.begin(); begin != t.properties.end();)
+			for (auto begin = t.Properties.begin(); begin != t.Properties.end();)
 			{
 				const FixedDictProperty p = *begin;
-				dict += std::format("Property(name: {} type: {})", p.name, PrintType(*p.type));
+				dict += std::format("Property(name: {} type: {})", p.Name, PrintType(*p.Type));
 
 				++begin;
-				if (begin != t.properties.end())
+				if (begin != t.Properties.end())
 					dict += ", ";
 			}
 			dict += "]>";
@@ -414,7 +416,7 @@ static std::string PrintType(const ArgType& type)
 }
 #endif
 
-ArgValue rp::ParseValue(std::span<std::byte>& data, const ArgType& type)
+ArgValue rp::ParseValue(std::span<Byte>& data, const ArgType& type)
 {
 	if (data.empty()) return {};
 
@@ -429,7 +431,7 @@ ArgValue rp::ParseValue(std::span<std::byte>& data, const ArgType& type)
 		{
 			std::vector<ArgValue> values;
 			uint8_t size = 0;
-			if (!t.size)
+			if (!t.Size)
 			{
 				if (!TakeInto(data, size))
 				{
@@ -438,18 +440,18 @@ ArgValue rp::ParseValue(std::span<std::byte>& data, const ArgType& type)
 			}
 			else
 			{
-				size = t.size.value();
+				size = t.Size.value();
 			}
 			for (size_t i = 0; i < size; i++)
 			{
-				values.emplace_back(ParseValue(data, *t.subType));
+				values.emplace_back(ParseValue(data, *t.SubType));
 			}
 			return values;
 		}
 		else if constexpr (std::is_same_v<T, FixedDictType>)
 		{
  			std::unordered_map<std::string, ArgValue> dict;
-			if (t.allowNone)
+			if (t.AllowNone)
 			{
 				uint8_t flag;
 				if (!TakeInto(data, flag))
@@ -467,9 +469,9 @@ ArgValue rp::ParseValue(std::span<std::byte>& data, const ArgType& type)
 				}
 			}
 
-			for (const FixedDictProperty& property : t.properties)
+			for (const FixedDictProperty& property : t.Properties)
 			{
-				dict.emplace(property.name, ParseValue(data, *property.type));
+				dict.emplace(property.Name, ParseValue(data, *property.Type));
 			}
 
 			return dict;

@@ -5,7 +5,7 @@ project(zip
   VERSION "0.1.19")
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set(CMAKE_VERBOSE_MAKEFILE ON)
-option(CMAKE_DISABLE_TESTING "Disable test creation" OFF)
+# option(CMAKE_DISABLE_TESTING "Disable test creation" OFF)
 
 # zip
 set(SRC src/miniz.h src/zip.h src/zip.c)

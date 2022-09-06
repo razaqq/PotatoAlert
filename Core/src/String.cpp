@@ -104,7 +104,35 @@ std::string s::Join(std::span<std::string_view> v, std::string_view del)
 	if (v.empty()) return "";
 	if (v.size() == 1) return std::string(v[0]);
 
-	const size_t size = std::accumulate(v.begin(), v.end(), 0, [](size_t current, std::string_view str) -> size_t { return current + str.size(); });
+	const size_t size = std::accumulate(v.begin(), v.end(), 0, [](size_t current, std::string_view str) -> size_t
+	{
+		return current + str.size();
+	});
+
+	std::string out;
+	out.reserve(size + ((v.size() - 1) * del.size()));
+
+	for (auto begin = v.begin(); begin != v.end();)
+	{
+		out += *begin;
+
+		++begin;
+		if (begin != v.end())
+			out += del;
+	}
+	return out;
+}
+
+std::string s::Join(std::span<const std::string> v, std::string_view del)
+{
+	if (v.empty()) return "";
+	if (v.size() == 1) return std::string(v[0]);
+
+	const size_t size = std::accumulate(v.begin(), v.end(), 0, [](size_t current, std::string_view str) -> size_t
+	{
+		return current + str.size();
+	});
+
 	std::string out;
 	out.reserve(size + ((v.size() - 1) * del.size()));
 

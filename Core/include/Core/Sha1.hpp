@@ -1,6 +1,8 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Core/Bytes.hpp"
+
 #include <cstddef>
 #include <iomanip>
 #include <sstream>
@@ -23,21 +25,24 @@ public:
 		Reset();
 	}
 
-	explicit Sha1(const std::string& s)
+	explicit Sha1(std::string_view s)
 	{
-		if (!s.empty()) this->Process(s);
+		if (!s.empty())
+			Process(s);
 	}
 
-	Sha1& Process(const std::string& s);
+	Sha1& Process(std::string_view s);
 
 	operator std::string();
 	std::string GetHash();
 
 	void Reset();
-	bool ProcessByte(std::byte byte);
-	bool ProcessBytes(std::span<std::byte> bytes);
+	template<is_byte T>
+	bool ProcessByte(T byte);
+	template<is_byte T>
+	bool ProcessBytes(std::span<T> bytes);
 
-	template<range_of<std::byte> R>
+	template<is_byteRange R>
 	bool ProcessBlock(const R& range)
 	{
 		auto begin = range.begin();
@@ -55,9 +60,10 @@ public:
 
 private:
 	void ProcessBlock();
-	void ProcessByteImpl(std::byte byte);
+	template<is_byte T>
+	void ProcessByteImpl(T byte);
 
-	std::byte m_block[64] = {};
+	Byte m_block[64] = {};
 	DigestType m_h;
 	size_t m_blockByteIndex;
 	size_t m_bitCountLow;

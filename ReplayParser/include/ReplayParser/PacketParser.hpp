@@ -14,32 +14,35 @@ namespace PotatoAlert::ReplayParser {
 
 struct Entity
 {
-	uint16_t type;
-	std::vector<ArgValue> properties;
+	uint16_t Type;
+	std::vector<ArgValue> Properties;
 };
 
 struct PacketParser
 {
-	std::vector<EntitySpec> specs;
-	std::unordered_map<uint32_t, Entity> entities;
+	std::vector<EntitySpec> Specs;
+	std::unordered_map<uint32_t, Entity> Entities;
 };
 
-PacketType ParsePacket(std::span<std::byte>& data, PacketParser& parser);
+PacketType ParsePacket(std::span<Byte>& data, PacketParser& parser);
 
-std::variant<EntityMethodPacket, InvalidPacket> ParseEntityMethodPacket(std::span<std::byte>& data, PacketParser& parser, float clock);
-std::variant<EntityCreatePacket, InvalidPacket> ParseEntityCreatePacket(std::span<std::byte>& data, PacketParser& parser, float clock);
-std::variant<EntityPropertyPacket, InvalidPacket> ParseEntityPropertyPacket(std::span<std::byte>& data, const PacketParser& parser, float clock);
-std::variant<BasePlayerCreatePacket, InvalidPacket> ParseBasePlayerCreatePacket(std::span<std::byte>& data, PacketParser& parser, float clock);
-std::variant<CellPlayerCreatePacket, InvalidPacket> ParseCellPlayerCreatePacket(std::span<std::byte>& data, const PacketParser& parser, float clock);
-std::variant<EntityControlPacket, InvalidPacket> ParseEntityControlPacket(std::span<std::byte>& data, float clock);
-std::variant<EntityEnterPacket, InvalidPacket> ParseEntityEnterPacket(std::span<std::byte>& data, float clock);
-std::variant<EntityLeavePacket, InvalidPacket> ParseEntityLeavePacket(std::span<std::byte>& data, float clock);
-std::variant<NestedPropertyUpdatePacket, InvalidPacket> ParseNestedPropertyUpdatePacket(std::span<std::byte>& data, PacketParser& parser, float clock);
-std::variant<PlayerOrientationPacket, InvalidPacket> ParsePlayerOrientationPacket(std::span<std::byte>& data, float clock);
-std::variant<PlayerPositionPacket, InvalidPacket> ParsePlayerPositionPacketPacket(std::span<std::byte>& data, float clock);
-std::variant<CameraPacket, InvalidPacket> ParseCameraPacket(std::span<std::byte>& data, float clock);
-std::variant<MapPacket, InvalidPacket> ParseMapPacket(std::span<std::byte>& data, float clock);
-std::variant<VersionPacket, InvalidPacket> ParseVersionPacket(std::span<std::byte>& data, float clock);
-std::variant<PlayerEntityPacket, InvalidPacket> ParsePlayerEntityPacket(std::span<std::byte>& data, float clock);
+std::variant<EntityMethodPacket, InvalidPacket> ParseEntityMethodPacket(std::span<Byte>& data, PacketParser& parser, float clock);
+std::variant<EntityCreatePacket, InvalidPacket> ParseEntityCreatePacket(std::span<Byte>& data, PacketParser& parser, float clock);
+std::variant<EntityPropertyPacket, InvalidPacket> ParseEntityPropertyPacket(std::span<Byte>& data, const PacketParser& parser, float clock);
+std::variant<BasePlayerCreatePacket, InvalidPacket> ParseBasePlayerCreatePacket(std::span<Byte>& data, PacketParser& parser, float clock);
+std::variant<CellPlayerCreatePacket, InvalidPacket> ParseCellPlayerCreatePacket(std::span<Byte>& data, const PacketParser& parser, float clock);
+std::variant<EntityControlPacket, InvalidPacket> ParseEntityControlPacket(std::span<Byte>& data, float clock);
+std::variant<EntityEnterPacket, InvalidPacket> ParseEntityEnterPacket(std::span<Byte>& data, float clock);
+std::variant<EntityLeavePacket, InvalidPacket> ParseEntityLeavePacket(std::span<Byte>& data, float clock);
+std::variant<NestedPropertyUpdatePacket, InvalidPacket> ParseNestedPropertyUpdatePacket(std::span<Byte>& data, PacketParser& parser, float clock);
+std::variant<PlayerOrientationPacket, InvalidPacket> ParsePlayerOrientationPacket(std::span<Byte>& data, float clock);
+std::variant<PlayerPositionPacket, InvalidPacket> ParsePlayerPositionPacketPacket(std::span<Byte>& data, float clock);
+std::variant<CameraPacket, InvalidPacket> ParseCameraPacket(std::span<Byte>& data, float clock);
+std::variant<MapPacket, InvalidPacket> ParseMapPacket(std::span<Byte>& data, float clock);
+std::variant<VersionPacket, InvalidPacket> ParseVersionPacket(std::span<Byte>& data, float clock);
+std::variant<PlayerEntityPacket, InvalidPacket> ParsePlayerEntityPacket(std::span<Byte>& data, float clock);
+std::variant<CameraModePacket, InvalidPacket> ParseCameraModePacket(std::span<Byte>& data, float clock);
+std::variant<CruiseStatePacket, InvalidPacket> ParseCruiseStatePacket(std::span<Byte>& data, float clock);
+std::variant<CameraFreeLookPacket, InvalidPacket> ParseCameraFreeLookPacket(std::span<Byte>& data, float clock);
 
 }  // namespace PotatoAlert::ReplayParser

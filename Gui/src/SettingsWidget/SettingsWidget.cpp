@@ -4,7 +4,6 @@
 #include "Client/PotatoClient.hpp"
 #include "Client/StringTable.hpp"
 
-
 #include "Gui/SettingsWidget/FolderStatus.hpp"
 #include "Gui/SettingsWidget/HorizontalLine.hpp"
 #include "Gui/SettingsWidget/SettingsChoice.hpp"
@@ -24,8 +23,8 @@
 #include <QWidget>
 
 
-static const int LABEL_WIDTH = 280;
-static const int ROW_HEIGHT = 20;
+static constexpr int LABEL_WIDTH = 280;
+static constexpr int ROW_HEIGHT = 20;
 
 using namespace PotatoAlert::Core;
 using PotatoAlert::Gui::SettingsWidget;
@@ -89,7 +88,7 @@ void SettingsWidget::Init()
 	m_gamePathEdit->setFocusPolicy(Qt::NoFocus);
 	gamePathLayout->addWidget(m_gamePathEdit, 0, Qt::AlignVCenter | Qt::AlignRight);
 
-	m_gamePathButton->setIcon(QIcon(QPixmap(":/folder.svg")));
+	m_gamePathButton->setIcon(QIcon(QPixmap(":/Folder.svg")));
 	m_gamePathButton->setIconSize(QSize(ROW_HEIGHT, ROW_HEIGHT));
 	m_gamePathButton->setCursor(Qt::PointingHandCursor);
 	gamePathLayout->addWidget(m_gamePathButton, 0, Qt::AlignVCenter | Qt::AlignRight);
@@ -237,12 +236,19 @@ void SettingsWidget::ConnectSignals()
 {
 	connect(m_saveButton, &QPushButton::clicked, [this]()
 	{
+		if (m_forceRun)
+		{
+			m_forceRun = false;
+			Client::PotatoClient::Instance().ForceRun();
+		}
+
 		PotatoConfig().Save();
 		CheckPath();
 		emit Done();
 	});
 	connect(m_cancelButton, &QPushButton::clicked, [this]()
 	{
+		m_forceRun = false;
 		PotatoConfig().Load();
 		Load();
 		CheckPath();
@@ -252,7 +258,11 @@ void SettingsWidget::ConnectSignals()
 	});
 	connect(m_updates, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<ConfigKey::UpdateNotifications>(checked); });
 	connect(m_minimizeTray, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<ConfigKey::MinimizeTray>(checked); });
-	connect(m_statsMode->m_btnGroup, &QButtonGroup::idClicked, [](int id) { PotatoConfig().Set<ConfigKey::StatsMode>(static_cast<StatsMode>(id)); });
+	connect(m_statsMode->m_btnGroup, &QButtonGroup::idClicked, [this](int id)
+	{
+		m_forceRun = true;
+		PotatoConfig().Set<ConfigKey::StatsMode>(static_cast<StatsMode>(id));
+	});
 	connect(m_matchHistory, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<ConfigKey::MatchHistory>(checked); });
 	connect(m_language->m_btnGroup, &QButtonGroup::idClicked, [this](int id)
 	{

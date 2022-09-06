@@ -13,6 +13,9 @@
 ![default](.github/potatoalert.png)
 
 ## Features
+- Fetch stats of current match automatically when your game starts
+- Match history to record all played matches
+- Replay parser to extract information from replays automatically (into match history)
 - Compact layout, so should easily fit on your second monitor
 - Stats are colored based on wows-numbers.com, they are always taken from game mode "randoms"
 - Backgrounds are colored by player's overall personal rating

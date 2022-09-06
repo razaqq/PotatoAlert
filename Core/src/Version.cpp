@@ -56,37 +56,47 @@ void Version::Parse(std::string_view str)
 	}
 }
 
-bool PotatoAlert::Core::operator==(const Version& v1, const Version& v2)
+bool Version::operator==(const Version& other) const
 {
-	if (v1.m_success != v2.m_success)
+	if (m_success != other.m_success)
 		return false;
 
-	return v1.m_version == v2.m_version;
+	return m_version == other.m_version;
 }
 
-bool PotatoAlert::Core::operator!=(const Version& v1, const Version& v2)
+bool Version::operator!=(const Version& other) const
 {
-	return !(v1 == v2);
+	return !(*this == other);
 }
 
-bool PotatoAlert::Core::operator>(const Version& v1, const Version& v2)
+bool Version::operator>(const Version& other) const
 {
-	if (!v1.m_success)
+	if (!this->m_success)
 		return false;
-	if (!v2.m_success)
+	if (!other.m_success)
 		return true;
 
-	return v1.m_version > v2.m_version;
+	return this->m_version > other.m_version;
 }
 
-bool PotatoAlert::Core::operator<(const Version& v1, const Version& v2)
+bool Version::operator<(const Version& other) const
 {
-	if (!v2.m_success)
+	if (!other.m_success)
 		return false;
-	if (!v1.m_success)
+	if (!this->m_success)
 		return true;
 
-	return v1.m_version < v2.m_version;
+	return this->m_version < other.m_version;
+}
+
+bool Version::operator<=(const Version& other) const
+{
+	return !(*this > other);
+}
+
+bool Version::operator>=(const Version& other) const
+{
+	return !(*this < other);
 }
 
 std::string Version::ToString(std::string_view del, bool includeBuild) const

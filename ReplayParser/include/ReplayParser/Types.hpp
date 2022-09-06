@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Core/Bytes.hpp"
 #include "Core/Math.hpp"
 
 #include <memory>
@@ -15,6 +16,7 @@
 #include <vector>
 
 
+using PotatoAlert::Core::Byte;
 using PotatoAlert::Core::Vec2;
 using PotatoAlert::Core::Vec3;
 
@@ -44,7 +46,7 @@ enum class BasicType
 	Blob,
 };
 
-inline size_t PrimitiveSize(BasicType type)
+constexpr size_t PrimitiveSize(BasicType type)
 {
 	switch (type)
 	{
@@ -73,35 +75,44 @@ struct FixedDictType;
 struct TupleType;
 struct UnknownType;
 typedef std::variant<PrimitiveType, ArrayType, FixedDictType, TupleType, UnknownType> ArgType;
-typedef std::any ArgValue;
+
+struct ArgValue;
+using ValueVariant = std::variant<
+		uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t,
+		float, double, Vec2, Vec3, std::string, std::unordered_map<std::string, ArgValue>,
+		std::vector<ArgValue>, std::vector<Byte>>;
+struct ArgValue : ValueVariant
+{
+	using ValueVariant::ValueVariant;
+};
 
 struct PrimitiveType
 {
-	BasicType type;
+	BasicType Type;
 };
 
 struct ArrayType
 {
-	std::shared_ptr<ArgType> subType;
-	std::optional<size_t> size;
+	std::shared_ptr<ArgType> SubType;
+	std::optional<size_t> Size;
 };
 
 struct FixedDictProperty
 {
-	std::string name;
-	std::shared_ptr<ArgType> type;
+	std::string Name;
+	std::shared_ptr<ArgType> Type;
 };
 
 struct FixedDictType
 {
-	bool allowNone = false;
-	std::vector<FixedDictProperty> properties = {};
+	bool AllowNone = false;
+	std::vector<FixedDictProperty> Properties = {};
 };
 
 struct TupleType
 {
-	std::shared_ptr<ArgType> subType;
-	size_t size;
+	std::shared_ptr<ArgType> SubType;
+	size_t Size;
 };
 
 struct UnknownType {};
@@ -110,6 +121,10 @@ typedef std::unordered_map<std::string, ArgType> AliasType;
 
 ArgType ParseType(XMLElement* elem, const AliasType& aliases);
 size_t TypeSize(const ArgType& type);
-ArgValue ParseValue(std::span<std::byte>& data, const ArgType& type);
+ArgValue ParseValue(std::span<Core::Byte>& data, const ArgType& type);
+
+#ifndef NDEBUG
+std::string PrintType(const ArgType& type);
+#endif
 
 }  // namespace PotatoAlert::ReplayParser

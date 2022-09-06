@@ -15,7 +15,7 @@ void NativeWindow::RequestFocus()
 	PostMessageA(HWND_BROADCAST, WM_SHOWME, 0, 0);
 }
 
-bool NativeWindow::nativeEvent(const QByteArray& eventType, void* message, long* result)
+bool NativeWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr* result)
 {
 	const MSG* msg = static_cast<MSG*>(message);
 	if (msg->message == WM_SHOWME)

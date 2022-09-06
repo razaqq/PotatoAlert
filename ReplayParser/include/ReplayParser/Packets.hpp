@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Core/Bytes.hpp"
 #include "Core/Math.hpp"
 #include "GameFiles.hpp"
 #include "Types.hpp"
@@ -11,46 +12,46 @@
 #include <vector>
 
 
+using PotatoAlert::Core::Byte;
 using PotatoAlert::Core::Mat4;
 using PotatoAlert::Core::Rot3;
 using PotatoAlert::Core::Vec3;
 
 namespace PotatoAlert::ReplayParser {
 
-/*
-#if defined(__GNUC__) || defined(__clang__)
-#define PACK(...) __VA_ARGS__ __attribute__((__packed__))
-#elif defined(_MSC_VER)
-#define PACK(...) __pragma("pack(push, 1)") __VA_ARGS__ __pragma("pack(pop)")
-#else
-#error Unsupported compiler!
-#endif
-*/
+typedef int32_t TypeEntityId;
+typedef int32_t TypeSpaceId;
+typedef int32_t TypeVehicleId;
+typedef int32_t TypeMethodId;
+typedef uint16_t TypeEntityType;
 
 enum class PacketBaseType : uint32_t
 {
-	BasePlayerCreate = 0x0,
-	CellPlayerCreate = 0x1,
-	EntityControl = 0x2,
-	EntityEnter = 0x3,
-	EntityLeave = 0x4,
-	EntityCreate = 0x5,
-	EntityProperty = 0x7,
-	EntityMethod = 0x8,
-	PlayerPosition = 0xA,
-	Version = 0x16,
-	PlayerEntity = 0x20,
+	BasePlayerCreate     = 0x00,
+	CellPlayerCreate     = 0x01,
+	EntityControl        = 0x02,
+	EntityEnter          = 0x03,
+	EntityLeave          = 0x04,
+	EntityCreate         = 0x05,
+	EntityProperty       = 0x07,
+	EntityMethod         = 0x08,
+	PlayerPosition       = 0x0A,
+	Version              = 0x16,
+	PlayerEntity         = 0x20,
 	NestedPropertyUpdate = 0x22,
-	// Chat = 0x23,
-	Camera = 0x24,
-	Map = 0x27,
-	PlayerOrientation = 0x2B
+	// Chat              = 0x23,
+	Camera               = 0x24,
+	CameraMode           = 0x26,
+	Map                  = 0x27,
+	PlayerOrientation    = 0x2B,
+	CameraFreeLook       = 0x2E,
+	CruiseState          = 0x31,
 };
 
 struct Packet
 {
-	PacketBaseType type;
-	float clock;
+	PacketBaseType Type;
+	float Clock;
 };
 
 struct UnknownPacket : Packet
@@ -59,8 +60,8 @@ struct UnknownPacket : Packet
 
 struct InvalidPacket : Packet
 {
-	std::string message;
-	std::vector<std::byte> raw;
+	std::string Message;
+	std::vector<Byte> Raw;
 };
 
 /**
@@ -73,9 +74,9 @@ struct InvalidPacket : Packet
  **/
 struct BasePlayerCreatePacket : Packet
 {
-	uint32_t entityId;
-	uint16_t entityType;
-	std::vector<std::byte> data;
+	TypeEntityId EntityId;
+	TypeEntityType EntityType;
+	std::vector<Byte> Data;
 };
 
 /**
@@ -93,13 +94,13 @@ struct BasePlayerCreatePacket : Packet
  **/
 struct CellPlayerCreatePacket : Packet
 {
-	uint32_t entityId;
-	uint32_t spaceId;
-	uint16_t unknown;
-	uint32_t vehicleId;
-	Vec3 position;
-	Rot3 rotation;
-	std::unordered_map<std::string, ArgValue> values;
+	TypeEntityId EntityId;
+	TypeSpaceId SpaceId;
+	uint16_t Unknown;
+	TypeVehicleId VehicleId;
+	Vec3 Position;
+	Rot3 Rotation;
+	std::unordered_map<std::string, ArgValue> Values;
 };
 
 /**
@@ -111,8 +112,8 @@ struct CellPlayerCreatePacket : Packet
  **/
 struct EntityControlPacket : Packet
 {
-	uint32_t entityId;
-	bool isControlled;
+	TypeEntityId EntityId;
+	bool IsControlled;
 };
 
 /**
@@ -124,13 +125,12 @@ struct EntityControlPacket : Packet
  *	@param	id			entity id.
  *	@param	spaceID		id of space where to create the entity in.
  *	@param	vehicleID	id of an entity to use as vehicle.
- *
  **/
 struct EntityEnterPacket : Packet
 {
-	uint32_t entityId;
-	uint32_t spaceId;
-	uint32_t vehicleId;
+	TypeEntityId EntityId;
+	TypeSpaceId SpaceId;
+	TypeVehicleId VehicleId;
 };
 
 /**
@@ -142,7 +142,7 @@ struct EntityEnterPacket : Packet
  **/
 struct EntityLeavePacket : Packet
 {
-	uint32_t entityId;
+	TypeEntityId EntityId;
 };
 
 /**
@@ -165,13 +165,13 @@ struct EntityLeavePacket : Packet
  **/
 struct EntityCreatePacket : Packet
 {
-	uint32_t entityId;
-	uint16_t entityType;
-	uint32_t spaceId;
-	uint32_t vehicleId;
-	Vec3 position;
-	Rot3 rotation;
-	std::unordered_map<std::string, ArgValue> values;
+	TypeEntityId EntityId;
+	TypeEntityType EntityType;
+	TypeSpaceId SpaceId;
+	TypeVehicleId VehicleId;
+	Vec3 Position;
+	Rot3 Rotation;
+	std::unordered_map<std::string, ArgValue> Values;
 };
 
 /**
@@ -184,12 +184,10 @@ struct EntityCreatePacket : Packet
  **/
 struct EntityMethodPacket : Packet
 {
-	uint32_t entityId;
-	uint32_t methodId;
-	std::string methodName;
-	std::vector<ArgValue> values;
-	// uint32_t size;
-	// std::vector<std::byte> data;
+	TypeEntityId EntityId;
+	TypeMethodId MethodId;
+	std::string MethodName;
+	std::vector<ArgValue> Values;
 };
 
 /**
@@ -202,29 +200,27 @@ struct EntityMethodPacket : Packet
  **/
 struct EntityPropertyPacket : Packet
 {
-	uint32_t entityId;
-	uint32_t methodId;
-	// uint32_t size;
-	// std::vector<std::byte> data;
-	ArgValue value;
+	TypeEntityId EntityId;
+	TypeMethodId MethodId;
+	ArgValue Value;
 };
 
 struct PlayerOrientationPacket : Packet
 {
-	uint32_t pid;
-	uint32_t parentId;
-	Vec3 position;
-	Rot3 rotation;
+	uint32_t Pid;
+	uint32_t ParentId;
+	Vec3 Position;
+	Rot3 Rotation;
 };
 
 struct PlayerPositionPacket : Packet
 {
-	uint32_t entityId;
-	uint32_t vehicleId;
-	Vec3 position;
-	Vec3 positionError;
-	Rot3 rotation;
-	bool isError;
+	TypeEntityId EntityId;
+	TypeVehicleId VehicleId;
+	Vec3 Position;
+	Vec3 PositionError;
+	Rot3 Rotation;
+	bool IsError;
 };
 
 /*
@@ -232,45 +228,64 @@ struct PlayerPositionPacket : Packet
  */
 struct NestedPropertyUpdatePacket : Packet
 {
-	uint32_t entityId;
-	std::string propertyName;
+	TypeEntityId EntityId;
+	std::string PropertyName;
 };
 
 struct MapPacket : Packet
 {
-	uint32_t spaceId;
-	int64_t arenaId;
-	uint32_t unknown1;
-	uint32_t unknown2;
-	std::string name;
-	Mat4 matrix;
-	bool unknown3;
+	TypeSpaceId SpaceId;
+	int64_t ArenaId;
+	uint32_t Unknown1;
+	uint32_t Unknown2;
+	std::string Name;
+	Mat4 Matrix;
+	bool Unknown3;
 };
 
 struct CameraPacket : Packet
 {
-	Vec3 unknown;
-	uint32_t unknown2;
-	Vec3 absolutePosition;
-	float fov;
-	Vec3 position;
-	Rot3 rotation;
+	Vec3 Unknown;
+	float Unknown2;
+	Vec3 AbsolutePosition;
+	float Fov;
+	Vec3 Position;
+	Rot3 Rotation;
+	float Unknown3;  // only in newer versions
 };
 
 struct VersionPacket : Packet
 {
-	std::string version;
+	std::string Version;
 };
 
 struct PlayerEntityPacket : Packet
 {
-	uint32_t entityId;
+	TypeEntityId EntityId;
+};
+
+struct CruiseStatePacket : Packet
+{
+	uint32_t Key;
+	int32_t Value;
+};
+
+struct CameraFreeLookPacket : Packet
+{
+	bool Locked;
+};
+
+struct CameraModePacket : Packet
+{
+	uint32_t Mode;
 };
 
 typedef std::variant<
 	BasePlayerCreatePacket, CellPlayerCreatePacket, EntityControlPacket, EntityEnterPacket,
 	EntityLeavePacket, EntityCreatePacket, EntityMethodPacket, EntityPropertyPacket,
 	PlayerPositionPacket, PlayerOrientationPacket, MapPacket, NestedPropertyUpdatePacket,
-	VersionPacket, CameraPacket, PlayerEntityPacket, UnknownPacket, InvalidPacket> PacketType;
+	VersionPacket, CameraPacket, PlayerEntityPacket, UnknownPacket, InvalidPacket,
+	CruiseStatePacket, CameraFreeLookPacket, CameraModePacket
+> PacketType;
 
 }  // namespace PotatoAlert::ReplayParser

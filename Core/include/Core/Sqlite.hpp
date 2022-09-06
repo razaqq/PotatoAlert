@@ -119,9 +119,11 @@ public:
 		[[nodiscard]] bool Bind(int index, std::string_view value) const;
 
 		bool GetText(int index, std::string& outStr) const;
-		bool GetInt(int index, int& outInt) const;
-		bool GetUInt(int index, uint32_t& outInt) const;
-		// TODO: maybe add a couple more getters?
+		template<typename T>
+		bool GetInt(int index, T& outInt) const;
+		template<typename T>
+		bool GetInt64(int index, T& outInt) const;
+		bool GetBool(int index, bool& outBool) const;
 
 		void ExecuteStep();
 		[[nodiscard]] bool IsDone() const { return m_done; }

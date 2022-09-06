@@ -16,11 +16,13 @@ public:
 		) {}
 	explicit Version(std::string_view versionString);
 
-	explicit operator bool() const { return this->m_success; }
-	friend bool operator==(const Version& v1, const Version& v2);
-	friend bool operator!=(const Version& v1, const Version& v2);
-	friend bool operator>(const Version& v1, const Version& v2);
-	friend bool operator<(const Version& v1, const Version& v2);
+	explicit operator bool() const { return m_success; }
+	bool operator==(const Version& other) const;
+	bool operator!=(const Version& other) const;
+	bool operator>(const Version& other) const;
+	bool operator<(const Version& other) const;
+	bool operator>=(const Version& other) const;
+	bool operator<=(const Version& other) const;
 
 	[[nodiscard]] uint8_t Major() const
 	{
@@ -38,6 +40,8 @@ public:
 	{
 		return m_version >> 0x00 & 0xFFU;
 	}
+
+	[[nodiscard]] uint32_t GetRaw() const { return m_version; }
 
 	[[nodiscard]] std::string ToString(std::string_view del = ".", bool includeBuild = true) const;
 

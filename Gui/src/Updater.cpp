@@ -42,12 +42,12 @@ UpdaterGui::Updater() : FramelessDialog(nullptr)
 	this->setLayout(vLayout);
 
 	connect(&UpdaterCore::Instance(), &UpdaterCore::DownloadProgress,
-			[progressBar, progressLabel, speedLabel](int percent, const QString& progress, const QString& speed)
-			{
-				progressBar->setValue(percent);
-				progressLabel->setText(progress);
-				speedLabel->setText(speed);
-			});
+	[progressBar, progressLabel, speedLabel](int percent, const QString& progress, const QString& speed)
+	{
+		progressBar->setValue(percent);
+		progressLabel->setText(progress);
+		speedLabel->setText(speed);
+	});
 
 	/*
 	connect(updater, &Updater::errorOccurred, [this](const QString& text)

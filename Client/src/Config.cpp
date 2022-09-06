@@ -8,7 +8,7 @@
 
 #include "Client/Config.hpp"
 
-#include "Client/StandardPaths.hpp"
+#include "Core/StandardPaths.hpp"
 
 #include <QApplication>
 #include <QDir>
@@ -37,6 +37,7 @@ static std::unordered_map<ConfigKey, std::string> g_keyNames =
 	{ ConfigKey::WindowWidth,              "window_width" },
 	{ ConfigKey::WindowX,                  "window_x" },
 	{ ConfigKey::WindowY,                  "window_y" },
+	{ ConfigKey::WindowState,              "window_state" },
 	{ ConfigKey::GameDirectory,            "game_directory" },
 	{ ConfigKey::OverrideReplaysDirectory, "override_replays_directory" },
 	{ ConfigKey::ReplaysDirectory,         "replays_directory" },
@@ -55,6 +56,7 @@ Config::Config(std::string_view fileName)
 		{ g_keyNames[ConfigKey::WindowWidth],              1500 },
 		{ g_keyNames[ConfigKey::WindowX],                  0 },
 		{ g_keyNames[ConfigKey::WindowY],                  0 },
+		{ g_keyNames[ConfigKey::WindowState],              Qt::WindowState::WindowActive },
 		{ g_keyNames[ConfigKey::GameDirectory],            GetGamePath().value_or("") },
 		{ g_keyNames[ConfigKey::OverrideReplaysDirectory], false },
 		{ g_keyNames[ConfigKey::ReplaysDirectory],         "" },
@@ -62,7 +64,7 @@ Config::Config(std::string_view fileName)
 		{ g_keyNames[ConfigKey::MenuBarLeft],              true }
 	};
 
-	m_filePath = Client::AppDataPath() / fileName;
+	m_filePath = AppDataPath("PotatoAlert") / fileName;
 
 	if (!Exists())
 	{
@@ -100,7 +102,7 @@ void Config::Load()
 	}
 
 	std::string str;
-	if (!m_file.ReadString(str))
+	if (!m_file.ReadAllString(str))
 	{
 		LOG_ERROR("Failed to read config file: {}", File::LastError());
 		QApplication::exit(1);

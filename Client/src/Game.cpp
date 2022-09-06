@@ -189,7 +189,7 @@ bool ReadPreferences(DirectoryStatus& status, const std::string& basePath)
 	std::string pref;
 	if (File file = File::Open(preferencesPath, File::Flags::Open | File::Flags::Read); file)
 	{
-		if (!file.ReadString(pref))
+		if (!file.ReadAllString(pref))
 		{
 			LOG_ERROR("Failed to read preferences.xml: {}", File::LastError());
 			return false;

@@ -14,6 +14,8 @@
 
 namespace PotatoAlert::Core {
 
+typedef unsigned char Byte;
+
 template<typename T>
 concept is_byte = sizeof(T) == 1 && (std::is_integral_v<T> || std::is_same_v<T, std::byte>) && !std::is_same_v<T, bool>;
 
@@ -53,6 +55,23 @@ static bool TakeInto(std::span<TIn>& data, TVal&& dst)  // requires std::is_fund
 	*/
 	
 	return false;
+}
+
+template<is_byteRange T> requires std::is_integral_v<std::ranges::range_value_t<T>>
+std::string FormatBytes(const T& data)
+{
+	std::ostringstream result;
+	for (auto begin = data.begin(); begin != data.end();)
+	{
+		result << "0x" << std::setw(2) << std::setfill('0') << std::hex << std::uppercase << *begin;
+		++begin;
+		if (begin != data.end())
+		{
+			result << " ";
+		}
+	}
+
+	return result.str();
 }
 
 template<is_byteRange T>

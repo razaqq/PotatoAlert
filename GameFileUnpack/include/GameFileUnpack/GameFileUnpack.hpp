@@ -1,6 +1,8 @@
 // Copyright 2022 <github.com/razaqq>
 #pragma once
 
+#include "Core/Bytes.hpp"
+
 #include <array>
 #include <cstddef>
 #include <optional>
@@ -27,7 +29,7 @@ struct IdxHeader
 	int64_t Unknown1;
 	int64_t Unknown2;
 
-	static std::optional<IdxHeader> Parse(std::span<std::byte> data);
+	static std::optional<IdxHeader> Parse(std::span<Core::Byte> data);
 };
 
 static constexpr uint32_t NodeSize = 32;
@@ -36,9 +38,9 @@ struct Node
 	std::string Name;
 	uint64_t Id;
 	uint64_t Parent;
-	std::array<std::byte, 8> Unknown;
+	std::array<Core::Byte, 8> Unknown;
 
-	static std::optional<Node> Parse(std::span<std::byte> data, std::span<std::byte> fullData);
+	static std::optional<Node> Parse(std::span<Core::Byte> data, std::span<Core::Byte> fullData);
 };
 
 static constexpr uint32_t FileRecordSize = 48;
@@ -51,7 +53,7 @@ struct FileRecord
 	int32_t Size;
 	int64_t UncompressedSize;
 
-	static std::optional<FileRecord> Parse(std::span<std::byte> data, const std::unordered_map<uint64_t, Node>& nodes);
+	static std::optional<FileRecord> Parse(std::span<Core::Byte> data, const std::unordered_map<uint64_t, Node>& nodes);
 };
 
 
@@ -61,7 +63,7 @@ struct IdxFile
 	std::unordered_map<uint64_t, Node> Nodes;
 	std::unordered_map<std::string, FileRecord> Files;
 
-	static std::optional<IdxFile> Parse(std::span<std::byte> data);
+	static std::optional<IdxFile> Parse(std::span<Core::Byte> data);
 };
 
 class DirectoryTree
