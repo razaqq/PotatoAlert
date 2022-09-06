@@ -10,7 +10,9 @@
 
 ## Screenshots
 
-![default](.github/potatoalert.png)
+![default](.github/screen1.png)
+![default](.github/screen2.png)
+![default](.github/screen3.png)
 
 ## Features
 - Fetch stats of current match automatically when your game starts
@@ -31,36 +33,38 @@ If you think you cannot follow this simple rule, then you hereby don't have my p
 
 ### Windows
 #### Requirements
-- [Qt](https://www.qt.io/) >= 5.15.0 (Qt6 currently not supported)
+- [Qt](https://www.qt.io/) >= 6.3.1
 - [clang](https://clang.llvm.org/) >= 11.0.0
 - [ninja](https://ninja-build.org/) >= 1.10.2
 - [cmake](https://cmake.org/) >= 3.17
-- [Visual Studio 2019](https://visualstudio.microsoft.com)
+- [Visual Studio 2022](https://visualstudio.microsoft.com)
 - Windows SDK >= 10
 - [python](https://www.python.org/) >= 3.7
+- [rust](https://www.rust-lang.org/) >= 1.60
 
 #### Steps
 - Get Paths
-    - Qt5 `-DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64`
+    - Qt6 `-DCMAKE_PREFIX_PATH=C:\Qt\6.3.1\msvc2019_64`
 - Add clang to PATH and set `CC` and `CXX` env vars to set clang as compiler
   - `set CC=clang`
   - `set CXX=clang++`
 - Call cmake (from x64 Native Tools Command Prompt for VS2019)
 ```console
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=C:\Qt\5.15.0\msvc2019_64 -DCMAKE_RC_COMPILER=RC
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=C:\Qt\6.3.1\msvc2019_64 -DCMAKE_RC_COMPILER=RC
 cmake --build build --config Release --target PotatoAlert PotatoUpdater
 ```
 - You find the build output in `.\build\bin\`
 
 ### Linux
 #### Requirements
-- [Qt](https://www.qt.io/) >= 5.15.0 (Qt6 currently not supported)
+- [Qt](https://www.qt.io/) >= 6.3.1
 - [clang](https://clang.llvm.org/) >= 14.0.0
 - [libc++](https://libcxx.llvm.org/) >= 14.0.0 (libstdc++ has no support for `std::format` yet)
-- [lld](https://lld.llvm.org/) >= 14.0.0 (maybe g++ linker works too, idk)
+- [lld](https://lld.llvm.org/) >= 14.0.0 (other linkers might work too, but untested)
 - [ninja](https://ninja-build.org/) >= 1.10.2
 - [cmake](https://cmake.org/) >= 3.17
 - [python](https://www.python.org/) >= 3.7
+- [rust](https://www.rust-lang.org/) >= 1.60
 
 #### Steps
 - Add clang to PATH and set `CC` and `CXX` env vars to set clang as compiler
