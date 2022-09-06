@@ -1,1 +1,0 @@
-All files in this folder are intellectual property of Wargaming Group Limited.
