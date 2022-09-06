@@ -106,7 +106,17 @@ TEST_CASE( "ReplayTest" )
 	std::optional<ReplaySummary> result7 = replay7.Analyze();
 	REQUIRE(result7);
 	REQUIRE(result7->Outcome == MatchOutcome::Loss);
-	REQUIRE(static_cast<int>(result7->DamageDealt) == 132976);
+	REQUIRE((int)std::round(result7->DamageDealt) == 132976);
+	REQUIRE((int)std::round(result7->DamageTaken) == 94536);
+	REQUIRE((int)std::round(result7->DamageSpotting) == 17263);
+	REQUIRE((int)std::round(result7->DamagePotential) == 1616598);
+	REQUIRE(result7->Achievements.size() == 2);
+	REQUIRE(result7->Ribbons.size() == 10);
+	uint32_t count = std::accumulate(result7->Ribbons.begin(), result7->Ribbons.end(), 0, [](int current, const auto& ribbon)
+	{
+		return current + ribbon.second;
+	});
+	REQUIRE(count == 96);
 }
 
 TEST_CASE( "ReplayGameFileTest" )
