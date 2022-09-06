@@ -50,8 +50,8 @@ generate_product_version(
         COMPANY_NAME "github.com/razaqq"
         ICON ${PROJECT_SOURCE_DIR}/Resources/potato.ico
         VERSION_MAJOR 3
-        VERSION_MINOR 0
-        VERSION_PATCH 1
+        VERSION_MINOR 1
+        VERSION_PATCH 0
         VERSION_REVISION ${BUILD_REVISION}
 )
 
