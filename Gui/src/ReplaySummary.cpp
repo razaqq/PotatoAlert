@@ -266,9 +266,9 @@ void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
 		scenarioInfo->setContentsMargins(0, 0, 0, 0);
 		scenarioInfo->setSpacing(0);
 		ShadowLabel* mapModeLabel = new ShadowLabel(
-				std::format("{} \u23AF  {}", entry.Map, entry.MatchGroup).c_str(), 0, 2, 1, QColor(0, 0, 0, 242));
-		ShadowLabel* startTimeLabel = new ShadowLabel("Battle Start Time:", 0, 2, 1, QColor(0, 0, 0, 242));
-		ShadowLabel* startTime = new ShadowLabel(entry.Date.c_str(), 0, 2, 1, QColor(0, 0, 0, 242));
+				std::format("{} \u23AF  {}", entry.Map, entry.MatchGroup).c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
+		ShadowLabel* startTimeLabel = new ShadowLabel("Battle Start Time:", 0, 1, 4, QColor(0, 0, 0, 242));
+		ShadowLabel* startTime = new ShadowLabel(entry.Date.c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
 		QHBoxLayout* timeLayout = new QHBoxLayout();
 		timeLayout->setContentsMargins(0, 0, 0, 0);
 		timeLayout->setSpacing(5);
