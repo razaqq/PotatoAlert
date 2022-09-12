@@ -139,7 +139,7 @@ inline RibbonType GetParent(RibbonType ribbon)
 	X(DevastatingStrike,      4282573744) \
 	X(HighCaliber,            4290962352) \
 	X(AADefenseExpert,        4111655856) \
-	X(ItsJustaFleshWound,     4283622320) \
+	X(ItsJustAFleshWound,     4283622320) \
 	X(Dreadnought,            4289913776) \
 	X(Confederate,            4288865200) \
 	X(KrakenUnleashed,        4269990832) \
