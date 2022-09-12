@@ -1,6 +1,8 @@
 // Copyright 2022 <github.com/razaqq>
 #pragma once
 
+#include "Core/Log.hpp"
+
 #include <QApplication>
 #include <QDir>
 #include <QStandardPaths>
