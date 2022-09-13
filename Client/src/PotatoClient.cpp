@@ -60,10 +60,23 @@ static TempArenaInfoResult ReadArenaInfo(std::string_view filePath)
 	TempArenaInfoResult result;
 
 	using namespace std::chrono_literals;
-	const auto startTime = std::chrono::high_resolution_clock::now();
-	auto now = std::chrono::high_resolution_clock::now();
 
-	File file = File::Open(filePath, File::Flags::Open | File::Flags::Read);
+	using TimePoint = std::chrono::high_resolution_clock::time_point;
+	TimePoint startTime = std::chrono::high_resolution_clock::now();
+	TimePoint now = std::chrono::high_resolution_clock::now();
+
+	// wait for the game to close the write handle
+	File file;
+	while (std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime) < 3000ms)
+	{
+		file = File::Open(filePath, File::Flags::Open | File::Flags::Read);
+
+		if (file)
+			break;
+
+		std::this_thread::sleep_for(500ms);
+		now = std::chrono::high_resolution_clock::now();
+	}
 
 	if (!file)
 	{
@@ -74,12 +87,14 @@ static TempArenaInfoResult ReadArenaInfo(std::string_view filePath)
 	// close the file when the scope ends
 	auto defer = MakeDefer([&file]() { if (file) file.Close(); });
 
+	startTime = std::chrono::high_resolution_clock::now();
+	now = std::chrono::high_resolution_clock::now();
 	while (std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime) < 1000ms)
 	{
 		if (!File::Exists(filePath))
 		{
 			// we have to assume its not an error, because the game sometimes touches it at the end of a match
-			// when in reality its about to get deleted
+			// when its about to get deleted
 			return { false, false, "" };
 		}
 
