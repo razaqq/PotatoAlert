@@ -4,22 +4,32 @@
     <Key ID="SETTINGS_REPLAYSFOLDER_STATUS">
         <English>Status:</English>
         <Deutsch>Status:</Deutsch>
+        <Chinese>状态:</Chinese>
+        <Japanese>状態:</Japanese>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_FOLDERS">
         <English>Replays Folder(s):</English>
         <Deutsch>Replays Ordner:</Deutsch>
+        <Chinese>录像文件夹:</Chinese>
+        <Japanese>リプレイフォルダ:</Japanese>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_REGION">
         <English>Region:</English>
         <Deutsch>Region:</Deutsch>
+        <Chinese>地区:</Chinese>
+        <Japanese>地域:</Japanese>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_GAMEVERSION">
         <English>Game Version:</English>
         <Deutsch>Spielversion:</Deutsch>
+        <Chinese>游戏版本:</Chinese>
+        <Japanese>ゲームバージョン:</Japanese>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_STEAM">
         <English>Steam:</English>
         <Deutsch>Steam:</Deutsch>
+        <Chinese>Steam:</Chinese>
+        <Japanese>Steam:</Japanese>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_VERSIONED">
         <English>Versioned Replays:</English>
@@ -29,46 +39,68 @@
     <Key ID="SETTINGS_UPDATES">
         <English>Update Notifications</English>
         <Deutsch>Update Benachrichtigungen</Deutsch>
+        <Chinese>更新通知</Chinese>
+        <Japanese>更新通知</Japanese>
     </Key>
     <Key ID="SETTINGS_MINIMIZETRAY">
         <English>Minimize To Tray On Close</English>
         <Deutsch>In Tray Minimieren</Deutsch>
+        <Chinese>关闭时最小化到托盘</Chinese>
+        <Japanese>閉じるとトレイに最小化</Japanese>
     </Key>
     <Key ID="SETTINGS_SAVE_MATCHHISTORY">
         <English>Save Match History</English>
         <Deutsch>Gefechtsverlauf Speichern</Deutsch>
+        <Chinese>保存战斗历史</Chinese>
+        <Japanese>戦闘履歴を保存</Japanese>
     </Key>
     <Key ID="SETTINGS_GAME_DIRECTORY">
         <English>Game Directory</English>
         <Deutsch>Spiel Verzeichnis</Deutsch>
+        <Chinese>游戏目录</Chinese>
+        <Japanese>ゲームディレクトリ</Japanese>
     </Key>
     <Key ID="SETTINGS_MANUAL_REPLAYS">
         <English>Override Replays Folder</English>
         <Deutsch>Replays Ordner überschreiben</Deutsch>
+        <Chinese>覆盖录像文件夹</Chinese>
+        <Japanese>リプレイフォルダを上書き</Japanese>
     </Key>
     <Key ID="SETTINGS_MANUAL_REPLAYS_DESC">
         <English>Game Directory setting will be ignored!\nOnly use if auto-detection does not work.</English>
         <Deutsch>Spielverzeichnis Einstellung wird ignoriert!\nNur benutzen falls auto-Erkennung nicht funktioniert.</Deutsch>
+        <Chinese>游戏目录设置将被忽略!\n只有在自动检测不工作时才使用。</Chinese>
+        <Japanese>ゲームディレクトリ設定は無視されます!\n自動検出が機能しない場合のみ使用してください。</Japanese>
     </Key>
     <Key ID="SETTINGS_STATS_MODE">
         <English>Stats Mode</English>
         <Deutsch>Statistik Modus</Deutsch>
+        <Chinese>统计模式</Chinese>
+        <Japanese>統計モード</Japanese>
     </Key>
     <Key ID="SETTINGS_GA">
         <English>Allow Google Analytics</English>
         <Deutsch>Google Analytics Erlauben</Deutsch>
+        <Chinese>允许谷歌分析</Chinese>
+        <Japanese>Google Analyticsを許可</Japanese>
     </Key>
     <Key ID="SETTINGS_LANGUAGE">
         <English>Language</English>
         <Deutsch>Sprache</Deutsch>
+        <Chinese>语言</Chinese>
+        <Japanese>言語</Japanese>
     </Key>
     <Key ID="SETTINGS_SAVE">
         <English>Save</English>
         <Deutsch>Speichern</Deutsch>
+        <Chinese>保存</Chinese>
+        <Japanese>セーブ</Japanese>
     </Key>
     <Key ID="SETTINGS_CANCEL">
         <English>Cancel</English>
         <Deutsch>Abbrechen</Deutsch>
+        <Chinese>取消</Chinese>
+        <Japanese>キャンセル</Japanese>
     </Key>
 
 
@@ -98,89 +130,131 @@
     <Key ID="COLUMN_PLAYER">
         <English>Player</English>
         <Deutsch>Spieler</Deutsch>
+        <Chinese>玩家</Chinese>
+        <Japanese>プレイヤー</Japanese>
     </Key>
     <Key ID="COLUMN_SHIP">
         <English>Ship</English>
         <Deutsch>Schiff</Deutsch>
+        <Chinese>战舰</Chinese>
+        <Japanese>艦船</Japanese>
     </Key>
     <Key ID="COLUMN_MATCHES">
         <English>Matches</English>
         <Deutsch>Gefechte</Deutsch>
+        <Chinese>总场数</Chinese>
+        <Japanese>総バトル数</Japanese>
     </Key>
     <Key ID="COLUMN_WINRATE">
         <English>Winrate</English>
         <Deutsch>Winrate</Deutsch>
+        <Chinese>总胜率</Chinese>
+        <Japanese>総勝率</Japanese>
     </Key>
     <Key ID="COLUMN_AVERAGE_DAMAGE">
         <English>Avg DMG</English>
         <Deutsch>Avg DMG</Deutsch>
+        <Chinese>总平均伤害</Chinese>
+        <Japanese>総平均ダメージ</Japanese>
     </Key>
     <Key ID="COLUMN_MATCHES_SHIP">
         <English>M Ship</English>
         <Deutsch>Gef. Schiff</Deutsch>
+        <Chinese>场数</Chinese>
+        <Japanese>バトル数</Japanese>
     </Key>
     <Key ID="COLUMN_WINRATE_SHIP">
         <English>WR Ship</English>
         <Deutsch>WR Schiff</Deutsch>
+        <Chinese>胜率</Chinese>
+        <Japanese>勝率</Japanese>
     </Key>
     <Key ID="COLUMN_AVERAGE_DAMAGE_SHIP">
         <English>DMG Ship</English>
         <Deutsch>DMG Schiff</Deutsch>
+        <Chinese>战舰平均伤害</Chinese>
+        <Japanese>艦船平均ダメージ</Japanese>
     </Key>
 
     <!-- UPDATER -->
     <Key ID="UPDATE_QUESTION">
         <English>There is a new version available. Would you like to update now?</English>
         <Deutsch>Es ist eine neue Version verfügbar, jetzt aktualisieren?</Deutsch>
+        <Chinese>有新版本可用。你想现在更新吗？</Chinese>
+        <Japanese>新しいバージョンが利用可能です。今すぐ更新しますか？</Japanese>
     </Key>
     <Key ID="YES">
         <English>Yes</English>
         <Deutsch>Ja</Deutsch>
+        <Chinese>好</Chinese>
+        <Japanese>はい</Japanese>
     </Key>
     <Key ID="NO">
         <English>No</English>
         <Deutsch>Nein</Deutsch>
+        <Chinese>不好</Chinese>
+        <Japanese>いいえ</Japanese>
     </Key>
     <Key ID="OK">
         <English>Ok</English>
         <Deutsch>Ok</Deutsch>
+        <Chinese>好的</Chinese>
+        <Japanese>はい</Japanese>
     </Key>
     <Key ID="UPDATE_FAILED">
         <English>Update failed: </English>
         <Deutsch>Das Update ist fehlgeschlagen: </Deutsch>
+        <Chinese>更新失败： </Chinese>
+        <Japanese>更新に失敗しました： </Japanese>
     </Key>
     <Key ID="UPDATE_DOWNLOADING">
         <English>Downloading update, please wait...</English>
         <Deutsch>Update wird heruntergeladen, bitte warten...</Deutsch>
+        <Chinese>正在下载更新，请稍候...</Chinese>
+        <Japanese>更新をダウンロードしています。少々お待ちください。</Japanese>
     </Key>
 
     <!-- MATCH HISTORY-->
     <Key ID="HISTORY_DATE">
 	    <English>Date</English>
 	    <Deutsch>Datum</Deutsch>
+        <Chinese>日期</Chinese>
+        <Japanese>日付</Japanese>
     </Key>
     <Key ID="HISTORY_MODE">
 	    <English>Mode</English>
 	    <Deutsch>Modus</Deutsch>
+        <Chinese>模式</Chinese>
+        <Japanese>モード</Japanese>
     </Key>
     <Key ID="HISTORY_MAP">
 	    <English>Map</English>
 	    <Deutsch>Karte</Deutsch>
+        <Chinese>地图</Chinese>
+        <Japanese>マップ</Japanese>
     </Key>
     <Key ID="HISTORY_REGION">
 	    <English>Region</English>
 	    <Deutsch>Region</Deutsch>
+        <Chinese>地区</Chinese>
+        <Japanese>地域</Japanese>
     </Key>
     <Key ID="HISTORY_ANALYZE">
 	    <English>Re-Analyze</English>
 	    <Deutsch>Reanalysieren</Deutsch>
+        <Chinese>重新分析</Chinese>
+        <Japanese>再分析</Japanese>
     </Key>
     <Key ID="HISTORY_DELETE">
 	    <English>Delete</English>
 	    <Deutsch>Löschen</Deutsch>
+        <Chinese>删除</Chinese>
+        <Japanese>削除</Japanese>
     </Key>
     <Key ID="HISTORY_DELETE_QUESTION">
 	    <English>Do you really want to delete the selected match?</English>
 	    <Deutsch>Wirklich das markierte Gefecht löschen?</Deutsch>
+        <Chinese>真的要删除选中的战斗吗？</Chinese>
+        <Japanese>選択した戦闘を削除しますか？</Japanese>
     </Key>
 </Package>
