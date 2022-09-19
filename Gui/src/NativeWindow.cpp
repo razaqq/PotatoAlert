@@ -45,7 +45,7 @@ NativeWindow::NativeWindow(QMainWindow* mainWindow, QWidget* parent) : QWidget(p
 	helper->setHitTestVisible(m_titleBar->GetRestoreButton(), true);
 }
 
-void NativeWindow::closeEvent(QCloseEvent* event)
+void NativeWindow::hideEvent(QHideEvent* event)
 {
 	if (PotatoConfig().Get<Core::ConfigKey::MinimizeTray>())
 	{
@@ -62,7 +62,7 @@ void NativeWindow::closeEvent(QCloseEvent* event)
 		}
 		PotatoConfig().Set<Core::ConfigKey::WindowState>(windowState());
 
-		QWidget::closeEvent(event);
+		QWidget::hideEvent(event);
 		QApplication::exit(0);
 	}
 }

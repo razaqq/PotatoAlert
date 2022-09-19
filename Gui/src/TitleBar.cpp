@@ -61,7 +61,7 @@ void TitleBar::Init()
 
 	m_btnRestore->setVisible(false);
 
-	connect(m_btnClose, &QToolButton::clicked, m_parentWindow, &QWidget::close);
+	connect(m_btnClose, &QToolButton::clicked, m_parentWindow, &QWidget::hide);
 	connect(m_btnMinimize, &QToolButton::clicked, this, &TitleBar::OnBtnMinimizeClicked);
 	connect(m_btnMaximize, &QToolButton::clicked, this, &TitleBar::OnBtnMaximizeClicked);
 	connect(m_btnRestore, &QToolButton::clicked, this, &TitleBar::OnBtnRestoreClicked);

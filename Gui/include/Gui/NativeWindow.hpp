@@ -25,7 +25,7 @@ private:
 
 	void Init();
 
-	void closeEvent(QCloseEvent* event) override;
+	void hideEvent(QHideEvent* event) override;
 	bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
 };
 
