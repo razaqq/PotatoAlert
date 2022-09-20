@@ -28,7 +28,7 @@ void StatsTeamFooter::Init()
 {
 	qApp->installEventFilter(this);
 
-	auto layout = new QHBoxLayout()();
+	auto layout = new QHBoxLayout();
 	layout->setContentsMargins(10, 0, 10, 0);
 	layout->setSpacing(10);
 
