@@ -196,121 +196,211 @@
     <Key ID="REPLAY_OUTCOME_WIN">
         <English>Victory!</English>
         <Deutsch>Sieg!</Deutsch>
+        <日本語>勝利!</日本語>
+        <简体中文>胜利！</简体中文>
+        <繁體中文>勝利！</繁體中文>
     </Key>
     <Key ID="REPLAY_OUTCOME_LOSS">
         <English>Defeat</English>
         <Deutsch>Verloren</Deutsch>
+        <日本語>敗北</日本語>
+        <简体中文>失败</简体中文>
+        <繁體中文>失敗</繁體中文>
     </Key>
     <Key ID="REPLAY_OUTCOME_DRAW">
         <English>Draw</English>
         <Deutsch>Unentschieden</Deutsch>
+        <日本語>引き分け</日本語>
+        <简体中文>平局</简体中文>
+        <繁體中文>平手</繁體中文>
     </Key>
     <Key ID="REPLAY_OUTCOME_UNKNOWN">
         <English>Unknown</English>
         <Deutsch>Unbekannt</Deutsch>
+        <日本語>わからない</日本語>
+        <简体中文>未知</简体中文>
+        <繁體中文>未知</繁體中文>
     </Key>
     <Key ID="REPLAY_BATTLE_START_TIME">
         <English>Battle Start Time:</English>
         <Deutsch>Gefechtsstartzeit:</Deutsch>
+        <日本語>戦闘開始時間:</日本語>
+        <简体中文>战斗开始时间：</简体中文>
+        <繁體中文>戰鬥開始時間：</繁體中文>
     </Key>
     <Key ID="REPLAY_ACHIEVEMENTS">
         <English>Achievements</English>
         <Deutsch>Erfolge</Deutsch>
+        <日本語>実績</日本語>
+        <简体中文>成就</简体中文>
+        <繁體中文>成就</繁體中文>
     </Key>
     <Key ID="REPLAY_BATTLE_PERFORMANCE">
         <English>Battle Performance</English>
         <Deutsch>Gefechtsleistung</Deutsch>
+        <日本語>戦績</日本語>
+        <简体中文>战斗表现</简体中文>
+        <繁體中文>戰鬥表現</繁體中文>
     </Key>
     <Key ID="REPLAY_DAMAGE">
         <English>Damage</English>
         <Deutsch>Schaden</Deutsch>
+        <日本語>ダメージ</日本語>
+        <简体中文>伤害</简体中文>
+        <繁體中文>傷害</繁體中文>
     </Key>
     <Key ID="REPLAY_SPOTTING_DAMAGE">
         <English>Spotting DMG</English>
         <Deutsch>Aufkl. Schaden</Deutsch>
+        <日本語>スポッティングダメージ</日本語>
+        <简体中文>发现损坏</简体中文>
+        <繁體中文>發現損壞</繁體中文>
     </Key>
     <Key ID="REPLAY_RECEIVED_DAMAGE">
         <English>Received DMG</English>
         <Deutsch>Erlitt. Schaden</Deutsch>
+        <日本語>被ダメージ</日本語>
+        <简体中文>受到的伤害</简体中文>
+        <繁體中文>受到的傷害</繁體中文>
     </Key>
     <Key ID="REPLAY_POTENTIAL_DAMAGE">
         <English>Potential DMG</English>
         <Deutsch>Pot. Schaden</Deutsch>
+        <日本語>潜在ダメージ</日本語>
+        <简体中文>潜在伤害</简体中文>
+        <繁體中文>潛在傷害</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_HITS">
         <English>Target hits</English>
         <Deutsch>Zieltreffer</Deutsch>
+        <日本語>目標に命中</日本語>
+        <简体中文>命中</简体中文>
+        <繁體中文>命中目標</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_PLANESHOWDOWN">
         <English>Aircraft shot down</English>
         <Deutsch>Flugzeug abgeschossen</Deutsch>
+        <日本語>航空機撃墜</日本語>
+        <简体中文>击落飞机</简体中文>
+        <繁體中文>擊落飛機</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_INCAPACITATION">
         <English>Incapacitations</English>
         <Deutsch>Ausfälle</Deutsch>
+        <日本語>機能停止</日本語>
+        <简体中文>瘫痪</简体中文>
+        <繁體中文>失去作用</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_DESTROYED">
         <English>Destroyed</English>
         <Deutsch>Zerstört</Deutsch>
+        <日本語>撃破</日本語>
+        <简体中文>已摧毁</简体中文>
+        <繁體中文>擊毀</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_SETONFIRE">
         <English>Set on fire</English>
         <Deutsch>In Brand gesteckt</Deutsch>
+        <日本語>火災を発生させた</日本語>
+        <简体中文>使敌舰起火</简体中文>
+        <繁體中文>引發火災</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_FLOODING">
         <English>Caused flooding</English>
         <Deutsch>Wassereinbruch verursacht</Deutsch>
+        <日本語>浸水を発生させた</日本語>
+        <简体中文>造成进水</简体中文>
+        <繁體中文>造成進水</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_CITADEL">
         <English>Hits to citadel</English>
         <Deutsch>Treffer an Zitadelle</Deutsch>
+        <日本語>防郭への命中</日本語>
+        <简体中文>命中装甲区</简体中文>
+        <繁體中文>命中裝甲區</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_DEFENDED">
         <English>Defended</English>
         <Deutsch>Verteidigt</Deutsch>
+        <日本語>防衛</日本語>
+        <简体中文>防御</简体中文>
+        <繁體中文>防禦</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_CAPTURED">
         <English>Captured</English>
         <Deutsch>Erobert</Deutsch>
+        <日本語>占領</日本語>
+        <简体中文>占领</简体中文>
+        <繁體中文>佔領</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_ASSISTEDINCAPTURE">
         <English>Assisted in capture</English>
         <Deutsch>Eroberung unterstützt</Deutsch>
+        <日本語>占領アシスト</日本語>
+        <简体中文>协助占领</简体中文>
+        <繁體中文>協助佔領</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_SUPPRESSED">
         <English>Suppressed</English>
         <Deutsch>Unterdrückt</Deutsch>
+        <日本語>制圧完了</日本語>
+        <简体中文>压制</简体中文>
+        <繁體中文>壓制</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_SPOTTED">
         <English>Spotted</English>
         <Deutsch>Aufgeklärt</Deutsch>
+        <日本語>発見</日本語>
+        <简体中文>已发现</简体中文>
+        <繁體中文>發現</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_SHOTDOWNBYAIRCRAFT">
         <English>Shot down by fighter</English>
         <Deutsch>Abschuss durch Jäger</Deutsch>
+        <日本語>戦闘機による撃墜</日本語>
+        <简体中文>被战斗机击落</简体中文>
+        <繁體中文>以戰鬥機擊落</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_BUFFSEIZED">
         <English>Buff picked up</English>
         <Deutsch>Buff aufgesammelt</Deutsch>
+        <日本語>強化を確保</日本語>
+        <简体中文>拾得增益</简体中文>
+        <繁體中文>拾得增益效果</繁體中文>
     </Key>
     <Key ID="REPLAY_RIBBON_UNKNOWN">
         <English>Unknown</English>
         <Deutsch>Unbekannt</Deutsch>
+        <日本語>わからない</日本語>
+        <简体中文>未知</简体中文>
+        <繁體中文>未知</繁體中文>
     </Key>
     <Key ID="REPLAY_MATCHGROUP_PVP">
         <English>Random Battle</English>
         <Deutsch>Zufallsgefecht</Deutsch>
+        <日本語>ランダム戦</日本語>
+        <简体中文>随机战</简体中文>
+        <繁體中文>隨機戰鬥</繁體中文>
     </Key>
     <Key ID="REPLAY_MATCHGROUP_RANKED">
         <English>Ranked Battle</English>
         <Deutsch>Gewertetes Gefecht</Deutsch>
+        <日本語>ランク戦</日本語>
+        <简体中文>排位战</简体中文>
+        <繁體中文>排名戰</繁體中文>
     </Key>
     <Key ID="REPLAY_MATCHGROUP_CLAN">
         <English>Clan Battle</English>
         <Deutsch>Clangefecht</Deutsch>
+        <日本語>クラン戦</日本語>
+        <简体中文>军团战</简体中文>
+        <繁體中文>公會戰鬥</繁體中文>
     </Key>
     <Key ID="REPLAY_MATCHGROUP_PVE">
         <English>Operations</English>
         <Deutsch>Unternehmen</Deutsch>
+        <日本語>オペレーション</日本語>
+        <简体中文>行动</简体中文>
+        <繁體中文>行動</繁體中文>
     </Key>
 </Package>
