@@ -12,6 +12,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QSize>
+#include <QSvgWidget>
 #include <QWidget>
 #include <QWindow>
 
@@ -30,10 +31,14 @@ void StatsHeader::Init()
 {
 	qApp->installEventFilter(this);
 
-	this->m_loading->setSpeed(1000);
-	this->m_loading->setScaledSize(QSize(20, 20));
-	this->m_ready = this->m_ready.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-	this->m_error = this->m_error.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	m_loading = new QSvgWidget(":/Loading.svg");
+	m_ready = QIcon(":/Ready.svg").pixmap(QSize(20, 20), window()->devicePixelRatio());
+	m_error = QIcon(":/Error.svg").pixmap(QSize(20, 20), window()->devicePixelRatio());
+	
+	QHBoxLayout* iconLayout = new QHBoxLayout();
+	iconLayout->setContentsMargins(0, 0, 0, 0);
+	iconLayout->addWidget(m_loading);
+	m_statusIcon->setLayout(iconLayout);
 
 	auto layout = new QHBoxLayout();
 	layout->setContentsMargins(10, 0, 10, 0);
