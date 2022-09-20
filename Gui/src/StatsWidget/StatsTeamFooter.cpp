@@ -12,7 +12,7 @@
 #include <QLabel>
 #include <QWidget>
 
-#include <vector>
+#include <array>
 
 
 using namespace PotatoAlert::Client::StringTable;
@@ -47,9 +47,9 @@ void StatsTeamFooter::Init()
 	rightLayout->setSpacing(20);
 
 	// set font on all labels
-	std::vector<std::vector<QLabel*>> labels{
-		std::vector<QLabel*>{ this->m_team1WrLabel, this->m_team1Wr, this->m_team1DmgLabel, this->m_team1Dmg, this->m_team1Tag, this->m_team1Name, this->m_team1RegionLabel, this->m_team1Region },
-		std::vector<QLabel*>{ this->m_team2WrLabel, this->m_team2Wr, this->m_team2DmgLabel, this->m_team2Dmg, this->m_team2Tag, this->m_team2Name, this->m_team2RegionLabel, this->m_team2Region }
+	const std::array labels{
+		std::array{ m_team1WrLabel, m_team1Wr, m_team1DmgLabel, m_team1Dmg, m_team1Tag, m_team1Name, m_team1RegionLabel, m_team1Region },
+		std::array{ m_team2WrLabel, m_team2Wr, m_team2DmgLabel, m_team2Dmg, m_team2Tag, m_team2Name, m_team2RegionLabel, m_team2Region }
 	};
 	for (auto& side : labels)
 		for (auto& label : side)
