@@ -272,52 +272,174 @@
 
     <!-- MATCH HISTORY-->
     <Key ID="HISTORY_DATE">
-	    <English>Date</English>
-	    <Deutsch>Datum</Deutsch>
+        <English>Date</English>
+        <Deutsch>Datum</Deutsch>
         <简体中文>日期</简体中文>
         <繁體中文>日期</繁體中文>
         <日本語>日付</日本語>
     </Key>
     <Key ID="HISTORY_MODE">
-	    <English>Mode</English>
-	    <Deutsch>Modus</Deutsch>
+        <English>Mode</English>
+        <Deutsch>Modus</Deutsch>
         <简体中文>模式</简体中文>
         <繁體中文>模式</繁體中文>
         <日本語>モード</日本語>
     </Key>
     <Key ID="HISTORY_MAP">
-	    <English>Map</English>
-	    <Deutsch>Karte</Deutsch>
+        <English>Map</English>
+        <Deutsch>Karte</Deutsch>
         <简体中文>地图</简体中文>
         <繁體中文>地圖</繁體中文>
         <日本語>マップ</日本語>
     </Key>
     <Key ID="HISTORY_REGION">
-	    <English>Region</English>
-	    <Deutsch>Region</Deutsch>
+        <English>Region</English>
+        <Deutsch>Region</Deutsch>
         <简体中文>服务器</简体中文>
         <繁體中文>伺服器</繁體中文>
         <日本語>サーバー</日本語>
     </Key>
     <Key ID="HISTORY_ANALYZE">
-	    <English>Re-Analyze</English>
-	    <Deutsch>Reanalysieren</Deutsch>
+        <English>Re-Analyze</English>
+        <Deutsch>Reanalysieren</Deutsch>
         <简体中文>重新分析</简体中文>
         <繁體中文>重新分析</繁體中文>
         <日本語>再分析</日本語>
     </Key>
     <Key ID="HISTORY_DELETE">
-	    <English>Delete</English>
-	    <Deutsch>Löschen</Deutsch>
+        <English>Delete</English>
+        <Deutsch>Löschen</Deutsch>
         <简体中文>删除</简体中文>
         <繁體中文>刪除</繁體中文>
         <日本語>削除</日本語>
     </Key>
     <Key ID="HISTORY_DELETE_QUESTION">
-	    <English>Do you really want to delete the selected match?</English>
-	    <Deutsch>Wirklich das markierte Gefecht löschen?</Deutsch>
+        <English>Do you really want to delete the selected match?</English>
+        <Deutsch>Wirklich das markierte Gefecht löschen?</Deutsch>
         <简体中文>你确定要删除选中的战斗吗？</简体中文>
         <繁體中文>你確定要刪除選中的戰鬥嗎？</繁體中文>
         <日本語>選択した戦闘を削除しますか？</日本語>
+    </Key>
+
+    <!-- REPLAY SUMMARY -->
+    <Key ID="REPLAY_OUTCOME_WIN">
+        <English>Victory!</English>
+        <Deutsch>Sieg!</Deutsch>
+    </Key>
+    <Key ID="REPLAY_OUTCOME_LOSS">
+        <English>Defeat</English>
+        <Deutsch>Verloren</Deutsch>
+    </Key>
+    <Key ID="REPLAY_OUTCOME_DRAW">
+        <English>Draw</English>
+        <Deutsch>Unentschieden</Deutsch>
+    </Key>
+    <Key ID="REPLAY_OUTCOME_UNKNOWN">
+        <English>Unknown</English>
+        <Deutsch>Unbekannt</Deutsch>
+    </Key>
+    <Key ID="REPLAY_BATTLE_START_TIME">
+        <English>Battle Start Time:</English>
+        <Deutsch>Gefechtsstartzeit:</Deutsch>
+    </Key>
+    <Key ID="REPLAY_ACHIEVEMENTS">
+        <English>Achievements</English>
+        <Deutsch>Erfolge</Deutsch>
+    </Key>
+    <Key ID="REPLAY_BATTLE_PERFORMANCE">
+        <English>Battle Performance</English>
+        <Deutsch>Gefechtsleistung</Deutsch>
+    </Key>
+    <Key ID="REPLAY_DAMAGE">
+        <English>Damage</English>
+        <Deutsch>Schaden</Deutsch>
+    </Key>
+    <Key ID="REPLAY_SPOTTING_DAMAGE">
+        <English>Spotting DMG</English>
+        <Deutsch>Aufkl. Schaden</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RECEIVED_DAMAGE">
+        <English>Received DMG</English>
+        <Deutsch>Erlitt. Schaden</Deutsch>
+    </Key>
+    <Key ID="REPLAY_POTENTIAL_DAMAGE">
+        <English>Potential DMG</English>
+        <Deutsch>Pot. Schaden</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_HITS">
+        <English>Target hits</English>
+        <Deutsch>Zieltreffer</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_PLANESHOWDOWN">
+        <English>Aircraft shot down</English>
+        <Deutsch>Flugzeug abgeschossen</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_INCAPACITATION">
+        <English>Incapacitations</English>
+        <Deutsch>Ausfälle</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_DESTROYED">
+        <English>Destroyed</English>
+        <Deutsch>Zerstört</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_SETONFIRE">
+        <English>Set on fire</English>
+        <Deutsch>In Brand gesteckt</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_FLOODING">
+        <English>Caused flooding</English>
+        <Deutsch>Wassereinbruch verursacht</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_CITADEL">
+        <English>Hits to citadel</English>
+        <Deutsch>Treffer an Zitadelle</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_DEFENDED">
+        <English>Defended</English>
+        <Deutsch>Verteidigt</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_CAPTURED">
+        <English>Captured</English>
+        <Deutsch>Erobert</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_ASSISTEDINCAPTURE">
+        <English>Assisted in capture</English>
+        <Deutsch>Eroberung unterstützt</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_SUPPRESSED">
+        <English>Suppressed</English>
+        <Deutsch>Unterdrückt</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_SPOTTED">
+        <English>Spotted</English>
+        <Deutsch>Aufgeklärt</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_SHOTDOWNBYAIRCRAFT">
+        <English>Shot down by fighter</English>
+        <Deutsch>Abschuss durch Jäger</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_BUFFSEIZED">
+        <English>Buff picked up</English>
+        <Deutsch>Buff aufgesammelt</Deutsch>
+    </Key>
+    <Key ID="REPLAY_RIBBON_UNKNOWN">
+        <English>Unknown</English>
+        <Deutsch>Unbekannt</Deutsch>
+    </Key>
+    <Key ID="REPLAY_MATCHGROUP_PVP">
+        <English>Random Battle</English>
+        <Deutsch>Zufallsgefecht</Deutsch>
+    </Key>
+    <Key ID="REPLAY_MATCHGROUP_RANKED">
+        <English>Ranked Battle</English>
+        <Deutsch>Gewertetes Gefecht</Deutsch>
+    </Key>
+    <Key ID="REPLAY_MATCHGROUP_CLAN">
+        <English>Clan Battle</English>
+        <Deutsch>Clangefecht</Deutsch>
+    </Key>
+    <Key ID="REPLAY_MATCHGROUP_PVE">
+        <English>Operations</English>
+        <Deutsch>Unternehmen</Deutsch>
     </Key>
 </Package>
