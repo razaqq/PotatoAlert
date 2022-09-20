@@ -93,6 +93,14 @@
         <繁體中文>數據模式</繁體中文>
         <日本語>データモード</日本語>
     </Key>
+    <Key ID="SETTINGS_TEAM_DAMAGE_MODE">
+        <English>Team Damage Mode</English>
+        <Deutsch>Team Schaden Modus</Deutsch>
+    </Key>
+    <Key ID="SETTINGS_TEAM_WIN_RATE_MODE">
+        <English>Team Winrate Mode</English>
+        <Deutsch>Team Winrate Modus</Deutsch>
+    </Key>
     <Key ID="SETTINGS_GA">
         <English>Allow Google Analytics</English>
         <Deutsch>Google Analytics Erlauben</Deutsch>
