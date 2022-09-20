@@ -13,6 +13,7 @@
 #include "Gui/LanguageChangeEvent.hpp"
 
 #include <QApplication>
+#include <QComboBox>
 #include <QEvent>
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -52,7 +53,8 @@ void SettingsWidget::Init()
 	horLayout->addWidget(centralWidget);
 	horLayout->addStretch();
 
-	QFont labelFont("Helvetica Neue", 13, QFont::Bold);
+	// QFont labelFont("Helvetica Neue", 13, QFont::Bold);
+	QFont labelFont("Noto Sans", 13, QFont::Bold);
 	labelFont.setStyleStrategy(QFont::PreferAntialias);
 
 	auto layout = new QVBoxLayout();
@@ -110,25 +112,49 @@ void SettingsWidget::Init()
 	m_statsModeLabel->setFixedWidth(LABEL_WIDTH);
 	statsModeLayout->addWidget(m_statsModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
-	m_statsMode = new SettingsChoice(this, std::vector<QString>{ "current mode", "randoms", "ranked", "pve" });  // TODO: localize
+	m_statsMode = new SettingsChoice(this, { "current mode", "randoms", "ranked", "pve" });  // TODO: localize
 	statsModeLayout->addWidget(m_statsMode, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(statsModeLayout);
 	/* DISPLAYED STATS MODE */
 
 	layout->addWidget(new HorizontalLine(centralWidget));
 
+	/* TEAM DAMAGE MODE */
+	auto teamDamageModeLayout = new QHBoxLayout();
+	m_teamDamageModeLabel->setFont(labelFont);
+	m_teamDamageModeLabel->setFixedWidth(LABEL_WIDTH);
+	teamDamageModeLayout->addWidget(m_teamDamageModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+
+	m_teamDamageMode = new SettingsChoice(this, { "weighted", "average", "median" });  // TODO: localize
+	teamDamageModeLayout->addWidget(m_teamDamageMode, 0, Qt::AlignVCenter | Qt::AlignRight);
+	layout->addLayout(teamDamageModeLayout);
+	/* TEAM DAMAGE MODE */
+
+	layout->addWidget(new HorizontalLine(centralWidget));
+
+	/* TEAM WIN RATE MODE */
+	auto teamWinRateLayout = new QHBoxLayout();
+	m_teamWinRateModeLabel->setFont(labelFont);
+	m_teamWinRateModeLabel->setFixedWidth(LABEL_WIDTH);
+	teamWinRateLayout->addWidget(m_teamWinRateModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+
+	m_teamWinRateMode = new SettingsChoice(this, { "weighted", "average", "median" });  // TODO: localize
+	teamWinRateLayout->addWidget(m_teamWinRateMode, 0, Qt::AlignVCenter | Qt::AlignRight);
+	layout->addLayout(teamWinRateLayout);
+	/* TEAM WIN RATE MODE */
+
+	layout->addWidget(new HorizontalLine(centralWidget));
+
 	/* LANGUAGE */
-	auto languageLayout = new QHBoxLayout;
+	auto languageLayout = new QHBoxLayout();
 	m_languageLabel->setFont(labelFont);
 	m_languageLabel->setFixedWidth(LABEL_WIDTH);
 	languageLayout->addWidget(m_languageLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
-	std::vector<QString> langs;
-	for (auto& lang : StringTable::Languages)
+	for (const std::string_view lang : Languages)
 	{
-		langs.push_back(QString::fromUtf8(lang.data()));
+		m_language->addItem(lang.data());
 	}
-	m_language = new SettingsChoice(this, langs);
 	languageLayout->addWidget(m_language, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(languageLayout);
 	/* LANGUAGE */
@@ -146,56 +172,7 @@ void SettingsWidget::Init()
 	/* CSV OUTPUT */
 
 	layout->addWidget(new HorizontalLine(centralWidget));
-
-	/* MANUAL REPLAYS FOLDER */
-	/*
-	m_toggleReplaysFolderOverride = [this](bool override)
-	{
-		m_replaysFolderLabel->setEnabled(override);
-		m_replaysFolderDesc->setEnabled(override);
-		m_replaysFolderButton->setEnabled(override);
-		m_replaysFolderEdit->setEnabled(override);
-
-		m_gamePathButton->setDisabled(override);
-		m_gamePathEdit->setDisabled(override);
-		m_gamePathLabel->setDisabled(override);
-		m_folderStatusGui->setDisabled(override);
-	};
-	*/
-
-	/*
-	auto replaysFolderVLayout = new QVBoxLayout();
-
-	auto replaysFolderFirstRowLayout = new QHBoxLayout();
-	replaysFolderFirstRowLayout->setContentsMargins(0, 0, 0, 0);
-	m_replaysFolderLabel->setFont(labelFont);
-	m_replaysFolderLabel->setFixedWidth(LABEL_WIDTH);
-	replaysFolderFirstRowLayout->addWidget(m_replaysFolderLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
-	replaysFolderFirstRowLayout->addWidget(m_overrideReplaysFolder, 0, Qt::AlignVCenter | Qt::AlignRight);
-
-	auto replaysFolderSecondRowLayout = new QHBoxLayout();
-	replaysFolderSecondRowLayout->setContentsMargins(0, 0, 0, 0);
-
-	replaysFolderSecondRowLayout->addWidget(m_replaysFolderDesc, 0, Qt::AlignVCenter | Qt::AlignLeft);
-	replaysFolderSecondRowLayout->addStretch();
-
-	m_replaysFolderEdit->setFixedSize(278, ROW_HEIGHT);
-	m_replaysFolderEdit->setReadOnly(true);
-	m_replaysFolderEdit->setFocusPolicy(Qt::NoFocus);
-	replaysFolderSecondRowLayout->addWidget(m_replaysFolderEdit, 0, Qt::AlignVCenter | Qt::AlignRight);
-
-	m_replaysFolderButton = new QToolButton(this);
-	m_replaysFolderButton->setIcon(QIcon(QPixmap(":/folder.svg")));
-	m_replaysFolderButton->setIconSize(QSize(ROW_HEIGHT, ROW_HEIGHT));
-	m_replaysFolderButton->setCursor(Qt::PointingHandCursor);
-	replaysFolderSecondRowLayout->addWidget(m_replaysFolderButton, 0, Qt::AlignVCenter | Qt::AlignRight);
-
-	replaysFolderVLayout->addLayout(replaysFolderFirstRowLayout);
-	replaysFolderVLayout->addLayout(replaysFolderSecondRowLayout);
-
-	layout->addLayout(replaysFolderVLayout);
-	*/
-
+	
 	layout->addStretch();
 
 	/* SAVE & CANCEL BUTTON */
@@ -284,21 +261,6 @@ void SettingsWidget::ConnectSignals()
 			PotatoConfig().Set<ConfigKey::GameDirectory>(dir.toStdString());
 			CheckPath();
 		}
-	});
-	/*
-	connect(m_replaysFolderButton, &QToolButton::clicked, [this]()
-	{
-		QString dir = QFileDialog::getExistingDirectory(this, "Select Replays Folder", "", QFileDialog::ShowDirsOnly);
-		if (dir != "")
-		{
-			m_replaysFolderEdit->setText(dir);
-			PotatoConfig().Set<ConfigKey::ReplaysDirectory>(dir.toStdString());
-		}
-	});
-	*/
-	connect(m_overrideReplaysFolder, &SettingsSwitch::clicked, [this](bool checked)
-	{
-		PotatoConfig().Set<ConfigKey::OverrideReplaysDirectory>(checked);
 	});
 }
 

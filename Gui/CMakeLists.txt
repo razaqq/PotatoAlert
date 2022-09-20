@@ -40,6 +40,7 @@ target_sources(
     include/Gui/MatchHistory.hpp
     include/Gui/NativeWindow.hpp
     include/Gui/ReplaySummary.hpp
+    include/Gui/SettingsWidget/SettingsChoiceButton.hpp
     include/Gui/SettingsWidget/SettingsSwitch.hpp
     include/Gui/SettingsWidget/SettingsWidget.hpp
     include/Gui/StatsWidget/StatsHeader.hpp

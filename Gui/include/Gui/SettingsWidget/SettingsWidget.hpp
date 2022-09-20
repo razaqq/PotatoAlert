@@ -18,9 +18,6 @@ namespace PotatoAlert::Gui {
 class SettingsWidget : public QWidget
 {
 	Q_OBJECT
-public:
-	explicit SettingsWidget(QWidget* parent = nullptr);
-	void CheckPath() const;
 
 private:
 	void Init();
@@ -32,19 +29,19 @@ private:
 	QLabel* m_minimizeTrayLabel = new QLabel();
 	QLabel* m_matchHistoryLabel = new QLabel();
 	QLabel* m_gamePathLabel = new QLabel();
-	QLabel* m_replaysFolderLabel = new QLabel();
-	QLabel* m_replaysFolderDesc = new QLabel();
 	QLabel* m_statsModeLabel = new QLabel();
-	QLabel* m_gaLabel = new QLabel();
+	QLabel* m_teamDamageModeLabel = new QLabel();
+	QLabel* m_teamWinRateModeLabel = new QLabel();
 	QLabel* m_languageLabel = new QLabel();
 
 	SettingsSwitch* m_updates = new SettingsSwitch();
 	SettingsSwitch* m_minimizeTray = new SettingsSwitch();
 	SettingsSwitch* m_matchHistory = new SettingsSwitch();
-	SettingsSwitch* m_overrideReplaysFolder = new SettingsSwitch();
 	
 	SettingsChoice* m_statsMode;
-	SettingsChoice* m_language;
+	SettingsChoice* m_teamDamageMode;
+	SettingsChoice* m_teamWinRateMode;
+	QComboBox* m_language = new QComboBox();
 
 	QPushButton* m_saveButton;
 	QPushButton* m_cancelButton;
@@ -56,6 +53,7 @@ private:
 
 	bool m_forceRun = false;
 
+public:
 	bool eventFilter(QObject* watched, QEvent* event) override;
 
 signals:

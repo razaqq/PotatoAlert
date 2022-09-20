@@ -4,50 +4,61 @@
 #include <QAbstractButton>
 #include <QBrush>
 #include <QColor>
-#include <QMouseEvent>
 #include <QPaintEvent>
-#include <QResizeEvent>
+#include <QPropertyAnimation>
 #include <QSize>
 #include <QString>
 #include <QWidget>
 
-#include <functional>
+#include <array>
 #include <map>
 
 
 typedef std::map<bool, QBrush> BrushType;
-typedef std::map<bool, QColor> ColorType;
 typedef std::map<bool, QString> TextType;
-typedef std::map<bool, std::function<int()>> OffsetType;
 
 namespace PotatoAlert::Gui {
 
 class SettingsSwitch : public QAbstractButton
 {
 	Q_OBJECT
-	Q_PROPERTY(int offset READ GetOffset WRITE SetOffset)
+	Q_PROPERTY(int Offset READ GetOffset WRITE SetOffset)
+	Q_PROPERTY(QColor TrackColor WRITE SetTrackColor MEMBER m_trackColor)
+	Q_PROPERTY(QColor ThumbColor WRITE SetThumbColor MEMBER m_thumbColor)
+
 public:
 	explicit SettingsSwitch(QWidget* parent = nullptr);
 
 	void Init();
 	void paintEvent(QPaintEvent* event) override;
-	void mouseReleaseEvent(QMouseEvent* event) override;
-	void resizeEvent(QResizeEvent* event) override;
-	void setChecked(bool checked);
 	[[nodiscard]] QSize sizeHint() const override;
 
-	int m_trackRadius;  // track radius > thumb radius
+private:
+	QPropertyAnimation* m_moveAnim = new QPropertyAnimation(this, "Offset");
+	QPropertyAnimation* m_trackColorAnim = new QPropertyAnimation(this, "TrackColor");
+	QPropertyAnimation* m_thumbColorAnim = new QPropertyAnimation(this, "ThumbColor");
+
+	int m_trackRadius;
 	int m_thumbRadius;
 
 	int m_offset;
-	OffsetType m_endOffset;
+	QColor m_trackColor;
+	QColor m_thumbColor;
+
 	[[nodiscard]] int GetOffset() const;
 	void SetOffset(int value);
 
-	BrushType m_thumbColor;
-	BrushType m_trackColor;
-	ColorType m_textColor;
-	TextType m_thumbText;
+	void SetTrackColor(const QColor& color)
+	{
+		m_trackColor = color;
+	}
+	void SetThumbColor(const QColor& color)
+	{
+		m_thumbColor = color;
+	}
+	
+	std::array<QColor, 2> m_thumbColors;
+	std::array<QColor, 2> m_trackColors;
 };
 
-}  // namespace PotatoAlert
+}  // namespace PotatoAlert::Gui
