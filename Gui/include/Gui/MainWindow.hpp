@@ -32,12 +32,21 @@ private:
 
 	VerticalMenuBar* m_menuBar = new VerticalMenuBar(this);
 	StatsWidget* m_statsWidget = new StatsWidget(this);
-	SettingsWidget* m_settingsWidget = new SettingsWidget(this);
-	MatchHistory* m_matchHistory = new MatchHistory(this);
-	ReplaySummary* m_replaySummary = new ReplaySummary(this);
+	SettingsWidget* m_settingsWidget = new SettingsWidget(m_services, this);
+	MatchHistory* m_matchHistory = new MatchHistory(m_services, this);
+	ReplaySummary* m_replaySummary = new ReplaySummary(m_services, this);
 	AboutWidget* m_aboutWidget = new AboutWidget(this);
 
-	QWidget* m_activeWidget = this->m_statsWidget;
+	QWidget* m_activeWidget = m_statsWidget;
+
+public:
+	bool ConfirmUpdate();
+
+private:
+	void Init();
+
+	void SwitchTab(MenuEntry i);
+	void ConnectSignals();
 };
 
 }  // namespace PotatoAlert::Gui

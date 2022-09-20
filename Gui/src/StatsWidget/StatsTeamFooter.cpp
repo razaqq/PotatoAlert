@@ -28,21 +28,21 @@ void StatsTeamFooter::Init()
 {
 	qApp->installEventFilter(this);
 
-	auto layout = new QHBoxLayout();
+	auto layout = new QHBoxLayout()();
 	layout->setContentsMargins(10, 0, 10, 0);
 	layout->setSpacing(10);
 
 	const QFont labelFont = QFont("Segoe UI", 10, QFont::Bold);
 
 	// left side
-	auto leftWidget = new QWidget;
-	auto leftLayout = new QHBoxLayout;
+	auto leftWidget = new QWidget();
+	auto leftLayout = new QHBoxLayout();
 	leftLayout->setContentsMargins(10, 0, 10, 0);
 	leftLayout->setSpacing(20);
 
 	// right side
-	auto rightWidget = new QWidget;
-	auto rightLayout = new QHBoxLayout;
+	auto rightWidget = new QWidget();
+	auto rightLayout = new QHBoxLayout();
 	rightLayout->setContentsMargins(10, 0, 10, 0);
 	rightLayout->setSpacing(20);
 
@@ -60,8 +60,8 @@ void StatsTeamFooter::Init()
 	{
 		for (size_t element = 0; element < 4; element++)
 		{
-			auto w = new QWidget;
-			auto l = new QHBoxLayout;
+			auto w = new QWidget();
+			auto l = new QHBoxLayout();
 			l->setContentsMargins(0, 0, 0, 0);
 			l->setSpacing(0);
 
@@ -85,48 +85,48 @@ void StatsTeamFooter::Init()
 		}
 	}
 
-	this->m_team1RegionLabel->setVisible(false);
-	this->m_team2RegionLabel->setVisible(false);
+	m_team1RegionLabel->setVisible(false);
+	m_team2RegionLabel->setVisible(false);
 
 	leftWidget->setLayout(leftLayout);
 	rightWidget->setLayout(rightLayout);
 	layout->addWidget(leftWidget);
 	layout->addWidget(rightWidget);
-	this->setLayout(layout);
+	setLayout(layout);
 }
 
 void StatsTeamFooter::Update(const MatchType& match) const
 {
 	// set average stats per team
-	match.Team1.Winrate.UpdateLabel(this->m_team1Wr);
-	match.Team1.AvgDmg.UpdateLabel(this->m_team1Dmg);
-	match.Team2.Winrate.UpdateLabel(this->m_team2Wr);
-	match.Team2.AvgDmg.UpdateLabel(this->m_team2Dmg);
+	match.Team1.Winrate.UpdateLabel(m_team1Wr);
+	match.Team1.AvgDmg.UpdateLabel(m_team1Dmg);
+	match.Team2.Winrate.UpdateLabel(m_team2Wr);
+	match.Team2.AvgDmg.UpdateLabel(m_team2Dmg);
 
 	// set clan battle stuff
 	bool show1 = match.Team1.Clan.Show;
 	if (show1)
 	{
-		match.Team1.Clan.Tag.UpdateLabel(this->m_team1Tag);
-		match.Team1.Clan.Name.UpdateLabel(this->m_team1Name);
-		match.Team1.Clan.Region.UpdateLabel(this->m_team1Region);
+		match.Team1.Clan.Tag.UpdateLabel(m_team1Tag);
+		match.Team1.Clan.Name.UpdateLabel(m_team1Name);
+		match.Team1.Clan.Region.UpdateLabel(m_team1Region);
 	}
-	this->m_team1Tag->setVisible(show1);
-	this->m_team1Name->setVisible(show1);
-	this->m_team1Region->setVisible(show1);
-	this->m_team1RegionLabel->setVisible(show1);
+	m_team1Tag->setVisible(show1);
+	m_team1Name->setVisible(show1);
+	m_team1Region->setVisible(show1);
+	m_team1RegionLabel->setVisible(show1);
 
 	bool show2 = match.Team1.Clan.Show;
 	if (show2)
 	{
-		match.Team2.Clan.Tag.UpdateLabel(this->m_team2Tag);
-		match.Team2.Clan.Name.UpdateLabel(this->m_team2Name);
-		match.Team2.Clan.Region.UpdateLabel(this->m_team2Region);
+		match.Team2.Clan.Tag.UpdateLabel(m_team2Tag);
+		match.Team2.Clan.Name.UpdateLabel(m_team2Name);
+		match.Team2.Clan.Region.UpdateLabel(m_team2Region);
 	}
-	this->m_team2Tag->setVisible(show2);
-	this->m_team2Name->setVisible(show2);
-	this->m_team2Region->setVisible(show2);
-	this->m_team2RegionLabel->setVisible(show2);
+	m_team2Tag->setVisible(show2);
+	m_team2Name->setVisible(show2);
+	m_team2Region->setVisible(show2);
+	m_team2RegionLabel->setVisible(show2);
 }
 
 bool StatsTeamFooter::eventFilter(QObject* watched, QEvent* event)

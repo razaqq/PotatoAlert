@@ -50,18 +50,18 @@ void StatsHeader::Init()
 	statusLayout->setContentsMargins(0, 0, 0, 0);
 	statusLayout->setSpacing(0);
 	status->setFixedWidth(130);
-	this->m_statusIcon->setFixedSize(20, 20);
-	statusLayout->addWidget(this->m_statusIcon);
+	m_statusIcon->setFixedSize(20, 20);
+	statusLayout->addWidget(m_statusIcon);
 	statusLayout->addSpacing(5);
-	this->m_statusText->setAlignment(Qt::AlignCenter);
-	this->m_statusText->setStyleSheet("font-size: 10px;");
-	statusLayout->addWidget(this->m_statusText);
+	m_statusText->setAlignment(Qt::AlignCenter);
+	m_statusText->setStyleSheet("font-size: 10px;");
+	statusLayout->addWidget(m_statusText);
 	statusLayout->addStretch();
 	status->setLayout(statusLayout);
 
 	// team labels
-	this->m_team1Label->setFont(labelFont);
-	this->m_team2Label->setFont(labelFont);
+	m_team1Label->setFont(labelFont);
+	m_team2Label->setFont(labelFont);
 
 	// dummy with same width as status
 	auto dummy = new QWidget();
@@ -70,17 +70,17 @@ void StatsHeader::Init()
 	// add to layouts
 	leftLayout->addWidget(status);
 	leftLayout->addStretch();
-	leftLayout->addWidget(this->m_team1Label);
+	leftLayout->addWidget(m_team1Label);
 	leftLayout->addStretch();
 	leftLayout->addWidget(dummy);
 
 	rightLayout->addStretch();
-	rightLayout->addWidget(this->m_team2Label);
+	rightLayout->addWidget(m_team2Label);
 	rightLayout->addStretch();
 
 	layout->addLayout(leftLayout);
 	layout->addLayout(rightLayout);
-	this->setLayout(layout);
+	setLayout(layout);
 }
 
 bool StatsHeader::eventFilter(QObject* watched, QEvent* event)

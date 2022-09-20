@@ -66,7 +66,7 @@ signals:
 	void MatchReady(const StatsParser::MatchType& match);
 	void MatchHistoryChanged();
 	void MatchSummaryChanged(uint32_t id, const ReplaySummary& summary);
-	void StatusReady(Status status, const std::string& statusText);
+	void StatusReady(Status status, std::string_view statusText);
 #pragma clang diagnostic pop
 };
 

@@ -15,6 +15,12 @@ class NativeWindow : public QWidget
 {
 	Q_OBJECT
 
+private:
+	const Client::ServiceProvider& m_services;
+
+	QMainWindow* m_mainWindow;
+	TitleBar* m_titleBar = new TitleBar(this);
+
 public:
 	explicit NativeWindow(QMainWindow* mainWindow, QWidget* parent = nullptr);
 	static void RequestFocus();

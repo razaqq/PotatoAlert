@@ -12,13 +12,7 @@ namespace PotatoAlert::Gui {
 
 class FolderStatus : public QWidget
 {
-public:
-	explicit FolderStatus(QWidget* parent = nullptr);
-	void Update(const Client::Game::DirectoryStatus& status) const;
 private:
-	void Init();
-	void changeEvent(QEvent* event) override;
-
 	QLabel* m_statusLabel = new QLabel();
 	QLabel* m_replaysLabel = new QLabel();
 	QLabel* m_regionLabel = new QLabel();
@@ -32,7 +26,14 @@ private:
 	QLabel* m_replaysFolders = new QLabel();
 	QLabel* m_versionedReplays = new QLabel();
 	QLabel* m_statusText = new QLabel();
+
+public:
+	explicit FolderStatus(QWidget* parent = nullptr);
+	void Update(const Client::Game::DirectoryStatus& status) const;
 	bool eventFilter(QObject* watched, QEvent* event) override;
+
+private:
+	void Init();
 };
 
 }  // namespace PotatoAlert::Gui
