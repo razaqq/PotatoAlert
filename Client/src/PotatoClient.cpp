@@ -354,11 +354,10 @@ void PotatoClient::HandleReply(QNetworkReply* reply, auto& successHandler)
 		case QNetworkReply::HostNotFoundError:
 			emit StatusReady(Status::Error, "Host Not Found");
 			break;
+		// this means the request was cancelled along the way, aka timeout
+		case QNetworkReply::OperationCanceledError:
 		case QNetworkReply::TimeoutError:
 			emit StatusReady(Status::Error, "Connection Timeout");
-			break;
-		case QNetworkReply::OperationCanceledError:
-			emit StatusReady(Status::Error, "Operation Cancelled");
 			break;
 		case QNetworkReply::SslHandshakeFailedError:
 			emit StatusReady(Status::Error, "SSL Error");
