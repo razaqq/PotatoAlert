@@ -30,7 +30,7 @@ void MatchHistory::paintEvent(QPaintEvent* _)
 	style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
-MatchHistory::MatchHistory(QWidget* parent) : QWidget(parent)
+MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidget* parent) : QWidget(parent), m_services(serviceProvider)
 {
 	Init();
 	InitHeaders();
@@ -94,7 +94,7 @@ void MatchHistory::Init()
 		if (QTableWidgetItem* item = m_table->item(row, m_jsonColumn))
 		{
 			const int id = item->data(Qt::DisplayRole).toInt();
-			const auto match = Client::MatchHistory::Instance().GetMatchJson(id);
+			const auto match = m_services.Get<Client::MatchHistory>().GetMatchJson(id);
 			if (match.has_value())
 			{
 				emit ReplaySelected(match.value());
@@ -121,11 +121,12 @@ void MatchHistory::Init()
 		const int row = m_table->currentRow();
 		if (QTableWidgetItem* item = m_table->item(row, m_jsonColumn))
 		{
-			auto dialog = new QuestionDialog(this, GetString(StringTable::Keys::HISTORY_DELETE_QUESTION));
+			int lang = m_services.Get<Config>().Get<Client::ConfigKey::Language>();
+			auto dialog = new QuestionDialog(lang, this, GetString(lang, StringTableKey::HISTORY_DELETE_QUESTION));
 			if (dialog->Run() == QuestionAnswer::Yes)
 			{
 				const int id = item->data(Qt::DisplayRole).toInt();
-				Client::MatchHistory::Instance().DeleteEntry(id);
+				m_services.Get<Client::MatchHistory>().DeleteEntry(id);
 				m_table->removeRow(row);
 			}
 		}
@@ -188,7 +189,7 @@ void MatchHistory::UpdateAll()
 	m_table->setRowCount(0);
 
 	m_table->setSortingEnabled(false);
-	for (auto& entry : Client::MatchHistory::Instance().GetEntries())
+	for (auto& entry : m_services.Get<Client::MatchHistory>().GetEntries())
 	{
 		AddEntry(entry);
 	}
@@ -198,7 +199,7 @@ void MatchHistory::UpdateAll()
 
 void MatchHistory::UpdateLatest()
 {
-	if (auto res = Client::MatchHistory::Instance().GetLatestEntry())
+	if (auto res = m_services.Get<Client::MatchHistory>().GetLatestEntry())
 	{
 		const Client::MatchHistory::Entry entry = res.value();
 
@@ -246,7 +247,7 @@ void MatchHistory::AddEntry(const Client::MatchHistory::Entry& entry)
 	const uint32_t entryId = entry.Id;
 	connect(btn, &QPushButton::clicked, [entryId, this](bool _)
 	{
-		if (const std::optional<Client::MatchHistory::Entry> entry = Client::MatchHistory::Instance().GetEntry(entryId))
+		if (const std::optional<Client::MatchHistory::Entry> entry = m_services.Get<Client::MatchHistory>().GetEntry(entryId))
 		{
 			emit ReplaySummarySelected(entry.value());
 		}

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Client/Config.hpp"
+#include "Client/ServiceProvider.hpp"
 
 #include "TitleBar.hpp"
 
@@ -22,12 +23,10 @@ private:
 	TitleBar* m_titleBar = new TitleBar(this);
 
 public:
-	explicit NativeWindow(QMainWindow* mainWindow, QWidget* parent = nullptr);
+	explicit NativeWindow(const Client::ServiceProvider& serviceProvider, QMainWindow* mainWindow, QWidget* parent = nullptr);
 	static void RequestFocus();
 
 private:
-	QMainWindow* m_mainWindow;
-	TitleBar* m_titleBar = new TitleBar(this);
 
 	void Init();
 

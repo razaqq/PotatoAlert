@@ -1,6 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Client/ServiceProvider.hpp"
+
 #include "Gui/AboutWidget.hpp"
 #include "Gui/MatchHistory.hpp"
 #include "Gui/ReplaySummary.hpp"
@@ -17,15 +19,8 @@ namespace PotatoAlert::Gui {
 
 class MainWindow : public QMainWindow
 {
-public:
-	MainWindow();
-	bool ConfirmUpdate();
-
 private:
-	void Init();
-
-	void SwitchTab(MenuEntry i);
-	void ConnectSignals();
+	const Client::ServiceProvider& m_services;
 
 	QWidget* m_centralW = new QWidget(this);
 	QVBoxLayout* m_centralLayout = new QVBoxLayout();
@@ -40,6 +35,7 @@ private:
 	QWidget* m_activeWidget = m_statsWidget;
 
 public:
+	MainWindow(const Client::ServiceProvider& serviceProvider);
 	bool ConfirmUpdate();
 
 private:

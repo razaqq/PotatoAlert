@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Client/MatchHistory.hpp"
+#include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
 
 #include "Gui/IconButton.hpp"
@@ -21,13 +22,9 @@ namespace PotatoAlert::Gui {
 class MatchHistory : public QWidget
 {
 	Q_OBJECT
-public:
-	explicit MatchHistory(QWidget* parent = nullptr);
-	void UpdateAll();
-	void UpdateLatest();
-	void SetSummary(uint32_t id, const ReplayParser::ReplaySummary& summary) const;
-
 private:
+	const Client::ServiceProvider& m_services;
+
 	struct GuiEntry
 	{
 		std::array<QTableWidgetItem*, 7> Fields;
@@ -41,6 +38,7 @@ private:
 	int m_jsonColumn;
 
 public:
+	explicit MatchHistory(const Client::ServiceProvider& serviceProvider, QWidget* parent = nullptr);
 	void UpdateAll();
 	void UpdateLatest();
 	void SetSummary(uint32_t id, const ReplayParser::ReplaySummary& summary) const;

@@ -2,6 +2,7 @@
 
 #include "Client/Config.hpp"
 #include "Client/PotatoClient.hpp"
+#include "Client/ServiceProvider.hpp"
 #include "Client/StringTable.hpp"
 
 #include "Gui/SettingsWidget/FolderStatus.hpp"
@@ -31,10 +32,12 @@ static constexpr int ROW_HEIGHT = 20;
 
 using namespace PotatoAlert::Client::StringTable;
 using namespace PotatoAlert::Core;
+using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Gui::SettingsWidget;
 using PotatoAlert::Gui::SettingsChoice;
 
-SettingsWidget::SettingsWidget(QWidget* parent) : QWidget(parent)
+SettingsWidget::SettingsWidget(const Client::ServiceProvider& serviceProvider, QWidget* parent)
+	: QWidget(parent), m_services(serviceProvider)
 {
 	Init();
 	ConnectSignals();
@@ -199,66 +202,66 @@ void SettingsWidget::Init()
 
 void SettingsWidget::Load() const
 {
-	m_updates->setChecked(PotatoConfig().Get<ConfigKey::UpdateNotifications>());
-	m_minimizeTray->setChecked(PotatoConfig().Get<ConfigKey::MinimizeTray>());
-	m_gamePathEdit->setText(QString::fromStdString(
-			PotatoConfig().Get<ConfigKey::GameDirectory>()));
-	m_statsMode->m_btnGroup->button(static_cast<int>(PotatoConfig().Get<ConfigKey::StatsMode>()))->setChecked(true);
-	m_language->m_btnGroup->button(PotatoConfig().Get<ConfigKey::Language>())->setChecked(true);
-	m_matchHistory->setChecked(PotatoConfig().Get<ConfigKey::MatchHistory>());
+	const Config& config = m_services.Get<Config>();
 
-	// m_replaysFolderEdit->setText(QString::fromStdString(
-	//		PotatoConfig().Get<ConfigKey::ReplaysDirectory>()));
-	bool manualReplays = PotatoConfig().Get<ConfigKey::OverrideReplaysDirectory>();
-	m_overrideReplaysFolder->setChecked(manualReplays);
-	// m_toggleReplaysFolderOverride(manualReplays);
+	m_updates->setChecked(config.Get<ConfigKey::UpdateNotifications>());
+	m_minimizeTray->setChecked(config.Get<ConfigKey::MinimizeTray>());
+	m_gamePathEdit->setText(QString::fromStdString(config.Get<ConfigKey::GameDirectory>()));
+	m_statsMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::StatsMode>()))->setChecked(true);
+	m_language->setCurrentIndex(config.Get<ConfigKey::Language>());
+	m_matchHistory->setChecked(config.Get<ConfigKey::MatchHistory>());
 }
 
 void SettingsWidget::ConnectSignals()
 {
-	connect(m_saveButton, &QPushButton::clicked, [this]()
+	Config& config = m_services.Get<Config>();
+
+	connect(m_saveButton, &QPushButton::clicked, [this, &config]()
 	{
 		if (m_forceRun)
 		{
 			m_forceRun = false;
-			Client::PotatoClient::Instance().ForceRun();
+			m_services.Get<Client::PotatoClient>().ForceRun();
 		}
 
-		PotatoConfig().Save();
+		config.Save();
 		CheckPath();
 		emit Done();
 	});
-	connect(m_cancelButton, &QPushButton::clicked, [this]()
+	connect(m_cancelButton, &QPushButton::clicked, [this, &config]()
 	{
 		m_forceRun = false;
-		PotatoConfig().Load();
+		config.Load();
 		Load();
 		CheckPath();
 		QEvent event(QEvent::LanguageChange);
 		QApplication::sendEvent(window(), &event);
 		emit Done();
 	});
-	connect(m_updates, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<ConfigKey::UpdateNotifications>(checked); });
-	connect(m_minimizeTray, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<ConfigKey::MinimizeTray>(checked); });
-	connect(m_statsMode->m_btnGroup, &QButtonGroup::idClicked, [this](int id)
+	connect(m_updates, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::UpdateNotifications>(checked); });
+	connect(m_minimizeTray, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::MinimizeTray>(checked); });
+	connect(m_statsMode->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
 	{
 		m_forceRun = true;
-		PotatoConfig().Set<ConfigKey::StatsMode>(static_cast<StatsMode>(id));
+		config.Set<ConfigKey::StatsMode>(static_cast<Client::StatsMode>(id));
 	});
 	connect(m_matchHistory, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<ConfigKey::MatchHistory>(checked); });
 	connect(m_language->m_btnGroup, &QButtonGroup::idClicked, [this](int id)
 	{
-		PotatoConfig().Set<ConfigKey::Language>(id);
-		QEvent event(QEvent::LanguageChange);
+	connect(m_matchHistory, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::MatchHistory>(checked); });
+	connect(m_language, &QComboBox::currentIndexChanged, [this, &config](int id)
+	{
+		config.Set<ConfigKey::Language>(id);
+		LanguageChangeEvent event(id);
 		QApplication::sendEvent(window(), &event);
 	});
-	connect(m_gamePathButton, &QToolButton::clicked, [this]()
+	connect(m_gamePathButton, &QToolButton::clicked, [this, &config]()
 	{
 		QString dir = QFileDialog::getExistingDirectory(this, "Select Game Directory", "", QFileDialog::ShowDirsOnly);
 		if (dir != "")
 		{
 			m_gamePathEdit->setText(dir);
-			PotatoConfig().Set<ConfigKey::GameDirectory>(dir.toStdString());
+			config.Set<ConfigKey::GameDirectory>(dir.toStdString());
 			CheckPath();
 		}
 	});
@@ -266,7 +269,7 @@ void SettingsWidget::ConnectSignals()
 
 void SettingsWidget::CheckPath() const
 {
-	m_folderStatusGui->Update(Client::PotatoClient::Instance().CheckPath());
+	m_folderStatusGui->Update(m_services.Get<Client::PotatoClient>().CheckPath());
 }
 
 bool SettingsWidget::eventFilter(QObject* watched, QEvent* event)

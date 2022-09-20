@@ -54,9 +54,11 @@ void ReplayAnalyzer::AnalyzeReplay(std::string_view path, std::chrono::seconds r
 		if (std::optional<ReplaySummary> res = ReplayParser::AnalyzeReplay(file, m_scriptsSearchPaths))
 		{
 			const ReplaySummary summary = res.value();
-			if (std::optional<MatchHistory::Entry> entry = MatchHistory::Instance().GetEntry(summary.Hash))
+			const MatchHistory& matchHistory = m_services.Get<MatchHistory>();
+
+			if (std::optional<MatchHistory::Entry> entry = matchHistory.GetEntry(summary.Hash))
 			{
-				MatchHistory::Instance().SetAnalyzeResult(summary.Hash, summary);
+				matchHistory.SetAnalyzeResult(summary.Hash, summary);
 				emit this->ReplaySummaryReady(entry.value().Id, summary);
 			}
 		}
@@ -67,7 +69,9 @@ void ReplayAnalyzer::AnalyzeReplay(std::string_view path, std::chrono::seconds r
 
 void ReplayAnalyzer::AnalyzeDirectory(std::string_view directory)
 {
-	auto entries = MatchHistory::Instance().GetNonAnalyzedMatches();
+	const MatchHistory& matchHistory = m_services.Get<MatchHistory>();
+
+	auto entries = matchHistory.GetNonAnalyzedMatches();
 	std::ranges::sort(entries,
 	[](const MatchHistory::NonAnalyzedMatch& left, const MatchHistory::NonAnalyzedMatch& right)
 	{

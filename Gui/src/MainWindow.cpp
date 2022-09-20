@@ -24,17 +24,19 @@
 
 
 using namespace PotatoAlert::Client::StringTable;
+using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::MatchHistory;
 using PotatoAlert::Gui::QuestionAnswer;
 using PotatoAlert::Gui::QuestionDialog;
 
-MainWindow::MainWindow() : QMainWindow()
+MainWindow::MainWindow(const Client::ServiceProvider& serviceProvider)
+	: QMainWindow(), m_services(serviceProvider)
 {
-	this->Init();
-	this->ConnectSignals();
-	PotatoClient::Instance().Init();
+	Init();
+	ConnectSignals();
+	serviceProvider.Get<PotatoClient>().Init();
 }
 
 void MainWindow::Init()
@@ -49,13 +51,15 @@ void MainWindow::Init()
 	m_centralLayout->setSpacing(0);
 	m_centralW->setLayout(m_centralLayout);
 
+	Config& config = m_services.Get<Config>();
+
 	// menubar dock widget
-	const bool leftSide = PotatoConfig().Get<ConfigKey::MenuBarLeft>();
+	const bool leftSide = config.Get<ConfigKey::MenuBarLeft>();
 	const auto side = leftSide ? Qt::DockWidgetArea::LeftDockWidgetArea : Qt::DockWidgetArea::RightDockWidgetArea;
 	addDockWidget(side, m_menuBar);
-	connect(m_menuBar, &VerticalMenuBar::dockLocationChanged, [](Qt::DockWidgetArea area)
+	connect(m_menuBar, &VerticalMenuBar::dockLocationChanged, [&config](Qt::DockWidgetArea area)
 	{
-		PotatoConfig().Set<ConfigKey::MenuBarLeft>(area == Qt::DockWidgetArea::LeftDockWidgetArea);
+		config.Set<ConfigKey::MenuBarLeft>(area == Qt::DockWidgetArea::LeftDockWidgetArea);
 	});
 
 	// set other tabs invisible
@@ -92,13 +96,13 @@ void MainWindow::SwitchTab(MenuEntry i)
 		QDesktopServices::openUrl(QUrl("https://discord.gg/Ut8t8PA"));
 		return;
 	case MenuEntry::Screenshot:
-		CaptureScreenshot(window());
+		Core::CaptureScreenshot(window());
 		return;
 	case MenuEntry::CSV:
 		QDesktopServices::openUrl(QUrl(Client::MatchHistory::GetDir().absolutePath()));
 		return;
 	case MenuEntry::Log:
-		QDesktopServices::openUrl(QUrl(Log::GetDir().absolutePath()));
+		QDesktopServices::openUrl(QUrl(Core::Log::GetDir().absolutePath()));
 		return;
 	case MenuEntry::Github:
 		QDesktopServices::openUrl(QUrl("https://github.com/razaqq/PotatoAlert"));
@@ -115,11 +119,13 @@ void MainWindow::ConnectSignals()
 {
 	connect(m_menuBar, &VerticalMenuBar::EntryClicked, this, &MainWindow::SwitchTab);
 
-	connect(&PotatoClient::Instance(), &PotatoClient::StatusReady, m_statsWidget, &StatsWidget::SetStatus);
-	connect(&PotatoClient::Instance(), &PotatoClient::MatchReady, m_statsWidget, &StatsWidget::Update);
+	const PotatoClient& potatoClient = m_services.Get<PotatoClient>();
 
-	connect(&PotatoClient::Instance(), &PotatoClient::MatchHistoryChanged, m_matchHistory, &MatchHistory::UpdateLatest);
-	connect(&PotatoClient::Instance(), &PotatoClient::MatchSummaryChanged, m_matchHistory, &MatchHistory::SetSummary);
+	connect(&potatoClient, &PotatoClient::StatusReady, m_statsWidget, &StatsWidget::SetStatus);
+	connect(&potatoClient, &PotatoClient::MatchReady, m_statsWidget, &StatsWidget::Update);
+
+	connect(&potatoClient, &PotatoClient::MatchHistoryChanged, m_matchHistory, &MatchHistory::UpdateLatest);
+	connect(&potatoClient, &PotatoClient::MatchSummaryChanged, m_matchHistory, &MatchHistory::SetSummary);
 
 	connect(m_matchHistory, &MatchHistory::ReplaySelected, [this](const MatchType& match)
 	{
@@ -156,6 +162,7 @@ bool MainWindow::ConfirmUpdate()
 	 * QWindowsWindow::setGeometry: Unable to set geometry
 	*/
 
-	auto dialog = new QuestionDialog(this, GetString(StringTable::Keys::UPDATE_QUESTION));
+	int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
+	auto dialog = new QuestionDialog(lang, this, GetString(lang, StringTableKey::UPDATE_QUESTION));
 	return dialog->Run() == QuestionAnswer::Yes;
 }

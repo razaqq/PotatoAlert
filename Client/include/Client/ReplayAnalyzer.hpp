@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Client/MatchHistory.hpp"
+#include "Client/ServiceProvider.hpp"
 
 #include "Core/ThreadPool.hpp"
 
@@ -32,8 +33,8 @@ class ReplayAnalyzer : public QObject
 	Q_OBJECT
 
 public:
-	ReplayAnalyzer(std::vector<fs::path> scriptsSearchPaths)
-		: m_scriptsSearchPaths(std::move(scriptsSearchPaths))
+	ReplayAnalyzer(const ServiceProvider& serviceProvider, std::vector<fs::path> scriptsSearchPaths)
+		: m_services(serviceProvider), m_scriptsSearchPaths(std::move(scriptsSearchPaths))
 	{
 		qRegisterMetaType<uint32_t>("uint32_t");
 		qRegisterMetaType<ReplaySummary>("ReplaySummary");
@@ -47,6 +48,7 @@ public:
 private:
 	void AnalyzeReplay(std::string_view path, std::chrono::seconds readDelay = 0s);
 
+	const ServiceProvider& m_services;
 	std::unordered_set<std::string> m_analyzedReplays;
 	Core::ThreadPool m_threadPool;
 	std::vector<std::future<void>> m_futures;

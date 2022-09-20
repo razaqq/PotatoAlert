@@ -1,10 +1,11 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "FolderStatus.hpp"
-#include "SettingsChoice.hpp"
-#include "SettingsSwitch.hpp"
+#include "Gui/SettingsWidget/FolderStatus.hpp"
+#include "Gui/SettingsWidget/SettingsChoice.hpp"
+#include "Gui/SettingsWidget/SettingsSwitch.hpp"
 
+#include <QComboBox>
 #include <QEvent>
 #include <QLabel>
 #include <QLineEdit>
@@ -20,10 +21,7 @@ class SettingsWidget : public QWidget
 	Q_OBJECT
 
 private:
-	void Init();
-	void Load() const;
-	void ConnectSignals();
-	void changeEvent(QEvent* event) override;
+	const Client::ServiceProvider& m_services;
 
 	QLabel* m_updateLabel = new QLabel();
 	QLabel* m_minimizeTrayLabel = new QLabel();
@@ -54,7 +52,14 @@ private:
 	bool m_forceRun = false;
 
 public:
+	explicit SettingsWidget(const Client::ServiceProvider& serviceProvider, QWidget* parent = nullptr);
+	void CheckPath() const;
 	bool eventFilter(QObject* watched, QEvent* event) override;
+
+private:
+	void Init();
+	void Load() const;
+	void ConnectSignals();
 
 signals:
 	void Done();

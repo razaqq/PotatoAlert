@@ -12,6 +12,7 @@
 
 
 namespace fs = std::filesystem;
+using PotatoAlert::Core::File;
 
 namespace PotatoAlert::Core {
 
@@ -69,14 +70,16 @@ class Config final : public QObject
 {
 	Q_OBJECT
 
+class Config
+{
 public:
-	explicit Config(std::string_view fileName);
+	explicit Config(const fs::path& path, std::string_view fileName);
 	Config(const Config& config) = delete;
 	Config(Config&& config) noexcept = delete;
 	Config& operator=(const Config& config) = delete;
 	Config operator=(Config&& config) noexcept = delete;
 
-	~Config() override;
+	~Config();
 
 	void Load();
 	bool Save() const;
@@ -135,6 +138,4 @@ private:
 	[[nodiscard]] bool Exists() const;
 };
 
-Config& PotatoConfig();
-
-}  // namespace PotatoAlert::Core
+}  // namespace PotatoAlert::Client

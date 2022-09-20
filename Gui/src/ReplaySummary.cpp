@@ -1,6 +1,8 @@
 // Copyright 2022 <github.com/razaqq>
 
+#include "Client/Config.hpp"
 #include "Client/MatchHistory.hpp"
+#include "Client/ServiceProvider.hpp"
 #include "Client/StringTable.hpp"
 
 #include "Gui/IconButton.hpp"
@@ -16,6 +18,8 @@
 using namespace PotatoAlert::Client::StringTable;
 using PotatoAlert::ReplayParser::AchievementType;
 using PotatoAlert::ReplayParser::RibbonType;
+using PotatoAlert::Client::Config;
+using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Client::MatchHistory;
 using PotatoAlert::Gui::ShadowLabel;
 using ReplaySummaryData = PotatoAlert::ReplayParser::ReplaySummary;
@@ -186,7 +190,7 @@ void ReplaySummaryGui::paintEvent(QPaintEvent* _)
 	style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
-ReplaySummaryGui::ReplaySummary(QWidget* parent) : QWidget(parent)
+ReplaySummaryGui::ReplaySummary(const Client::ServiceProvider& serviceProvider, QWidget* parent) : QWidget(parent), m_services(serviceProvider)
 {
 	QFontDatabase::addApplicationFont(":/WarHeliosCondC.ttf");
 	QFontDatabase::addApplicationFont(":/WarHeliosCondCBold.ttf");
@@ -195,6 +199,8 @@ ReplaySummaryGui::ReplaySummary(QWidget* parent) : QWidget(parent)
 void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
 {
 	ClearLayout(layout());
+
+	int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
 
 	m_background = new Background(
 		std::format(":/{}.jpg", entry.Map).c_str(), 

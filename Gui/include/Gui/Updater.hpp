@@ -1,6 +1,8 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Client/ServiceProvider.hpp"
+
 #include "Gui/FramelessDialog.hpp"
 
 
@@ -11,7 +13,7 @@ namespace PotatoAlert::Gui {
 class Updater : FramelessDialog
 {
 public:
-	Updater();
+	Updater(const Client::ServiceProvider& serviceProvider);
 };
 
 }  // namespace PotatoAlert::Gui

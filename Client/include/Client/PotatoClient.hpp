@@ -1,12 +1,13 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Client/Config.hpp"
 #include "Client/Game.hpp"
 #include "Client/ReplayAnalyzer.hpp"
+#include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
 
 #include "Core/DirectoryWatcher.hpp"
-#include "Core/Singleton.hpp"
 
 #include "ReplayParser/ReplayParser.hpp"
 
@@ -18,6 +19,7 @@
 #include <string>
 
 
+using PotatoAlert::Client::Config;
 using PotatoAlert::Client::Game::DirectoryStatus;
 using PotatoAlert::Client::StatsParser::MatchContext;
 
@@ -34,10 +36,18 @@ class PotatoClient : public QObject
 {
 	Q_OBJECT
 
-public:
-	~PotatoClient() override = default;
+private:
+	const ServiceProvider& m_services;
+	Core::DirectoryWatcher m_watcher;
+	std::string m_lastArenaInfoHash;
+	DirectoryStatus m_dirStatus;
+	ReplayAnalyzer& m_replayAnalyzer;
+	QNetworkAccessManager* m_networkAccessManager = new QNetworkAccessManager();
 
-	PA_SINGLETON(PotatoClient);
+public:
+	explicit PotatoClient(const ServiceProvider& serviceProvider)
+		: m_services(serviceProvider), m_replayAnalyzer(serviceProvider.Get<ReplayAnalyzer>()) {}
+	~PotatoClient() override = default;
 
 	void Init();
 	void TriggerRun();
@@ -45,20 +55,10 @@ public:
 	DirectoryStatus CheckPath();
 
 private:
-	PotatoClient();
 	void OnFileChanged(const std::string& file);
-
 	void SendRequest(std::string_view request, MatchContext&& matchContext);
 	void HandleReply(QNetworkReply* reply, auto& successHandler);
 	void LookupResult(const std::string& url, const std::string& authToken, const MatchContext& matchContext);
-
-	Core::DirectoryWatcher m_watcher;
-
-	// std::string m_tempArenaInfo;
-	std::string m_lastArenaInfoHash;
-	DirectoryStatus m_dirStatus;
-	ReplayAnalyzer m_replayAnalyzer;
-	QNetworkAccessManager* m_networkAccessManager = new QNetworkAccessManager();
 
 signals:
 #pragma clang diagnostic push

@@ -22,8 +22,8 @@
 
 namespace fs = std::filesystem;
 
-using PotatoAlert::Core::Config;
-using PotatoAlert::Core::ConfigKey;
+using PotatoAlert::Client::Config;
+using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Client::Game::GetGamePath;
 
 static json g_defaultConfig;
@@ -274,10 +274,4 @@ void Config::ApplyUpdates()
 std::string& Config::GetKeyName(ConfigKey key)
 {
 	return g_keyNames[key];
-}
-
-Config& PotatoAlert::Core::PotatoConfig()
-{
-	static Config p("config.json");
-	return p;
 }
