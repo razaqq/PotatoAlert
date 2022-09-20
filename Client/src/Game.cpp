@@ -202,7 +202,7 @@ bool ReadPreferences(DirectoryStatus& status, const std::string& basePath)
 	}
 
 	static const std::regex versionRegex(R"regex(<clientVersion>([\s,0-9]*)<\/clientVersion>)regex");
-	static const std::regex regionRegex(R"regex(<active_server>([\sA-Z]*)<\/active_server>)regex");
+	static const std::regex regionRegex(R"regex(<active_server>([\sA-Z,0-9]*)<\/active_server>)regex");
 	std::smatch versionMatch;
 	std::smatch regionMatch;
 
@@ -222,6 +222,7 @@ bool ReadPreferences(DirectoryStatus& status, const std::string& basePath)
 		status.region = String::ToLower(String::Trim(regionMatch.str(1)));
 		status.region = std::regex_replace(status.region, std::regex("wows "), "");  // remove 'WOWS '
 		status.region = std::regex_replace(status.region, std::regex("cis"), "ru");  // cis server to ru
+		status.region = std::regex_replace(status.region, std::regex("360"), "china");  // 360 to china
 	}
 	else
 	{
