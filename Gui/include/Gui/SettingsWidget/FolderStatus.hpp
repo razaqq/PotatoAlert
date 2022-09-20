@@ -32,6 +32,7 @@ private:
 	QLabel* m_replaysFolders = new QLabel();
 	QLabel* m_versionedReplays = new QLabel();
 	QLabel* m_statusText = new QLabel();
+	bool eventFilter(QObject* watched, QEvent* event) override;
 };
 
 }  // namespace PotatoAlert::Gui

@@ -7,6 +7,7 @@
 #include "Gui/MainWindow.hpp"
 #include "Gui/NativeWindow.hpp"
 #include "Gui/Palette.hpp"
+#include "Gui/LanguageChangeEvent.hpp"
 
 #include "Updater/Updater.hpp"
 
@@ -19,11 +20,13 @@
 
 #include <QApplication>
 #include <QFile>
+#include <QEvent>
 
 
 using PotatoAlert::Core::ApplicationGuard;
 using PotatoAlert::Core::PotatoConfig;
 using PotatoAlert::Gui::DarkPalette;
+using PotatoAlert::Gui::LanguageChangeEvent;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::NativeWindow;
 using PotatoAlert::Updater::Updater;
@@ -65,7 +68,7 @@ static int RunMain(int argc, char* argv[])
 	nativeWindow->show();
 
 	// force update of language
-	QEvent event(QEvent::LanguageChange);
+	LanguageChangeEvent event(serviceProvider.Get<Config>().Get<ConfigKey::Language>());
 	QApplication::sendEvent(mainWindow, &event);
 
 	// check if there is a new version available

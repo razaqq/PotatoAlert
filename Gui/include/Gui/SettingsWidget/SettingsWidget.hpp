@@ -56,10 +56,7 @@ private:
 
 	bool m_forceRun = false;
 
-	// manual replays folder
-	// QLineEdit* m_replaysFolderEdit = new QLineEdit();
-	// QToolButton* m_replaysFolderButton = new QToolButton();
-	// std::function<void(bool)> m_toggleReplaysFolderOverride;
+	bool eventFilter(QObject* watched, QEvent* event) override;
 
 signals:
 	void Done();

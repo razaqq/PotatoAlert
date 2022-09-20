@@ -3,8 +3,10 @@
 #include "Client/StatsParser.hpp"
 #include "Client/StringTable.hpp"
 
+#include "Gui/LanguageChangeEvent.hpp"
 #include "Gui/StatsWidget/StatsTeamFooter.hpp"
 
+#include <QApplication>
 #include <QEvent>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -13,17 +15,20 @@
 #include <vector>
 
 
+using namespace PotatoAlert::Client::StringTable;
 using namespace PotatoAlert::Core;
 using PotatoAlert::Gui::StatsTeamFooter;
 
 StatsTeamFooter::StatsTeamFooter(QWidget* parent) : QWidget(parent)
 {
-	this->Init();
+	Init();
 }
 
 void StatsTeamFooter::Init()
 {
-	auto layout = new QHBoxLayout;
+	qApp->installEventFilter(this);
+
+	auto layout = new QHBoxLayout();
 	layout->setContentsMargins(10, 0, 10, 0);
 	layout->setSpacing(10);
 
@@ -124,19 +129,17 @@ void StatsTeamFooter::Update(const MatchType& match) const
 	this->m_team2RegionLabel->setVisible(show2);
 }
 
-void StatsTeamFooter::changeEvent(QEvent* event)
+bool StatsTeamFooter::eventFilter(QObject* watched, QEvent* event)
 {
-	if (event->type() == QEvent::LanguageChange)
+	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		this->m_team1WrLabel->setText(GetString(StringTable::Keys::LABEL_WINRATE));
-		this->m_team1DmgLabel->setText(GetString(StringTable::Keys::LABEL_DAMAGE));
-		this->m_team1RegionLabel->setText(GetString(StringTable::Keys::LABEL_REGION));
-		this->m_team2WrLabel->setText(GetString(StringTable::Keys::LABEL_WINRATE));
-		this->m_team2DmgLabel->setText(GetString(StringTable::Keys::LABEL_DAMAGE));
-		this->m_team2RegionLabel->setText(GetString(StringTable::Keys::LABEL_REGION));
+		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		m_team1WrLabel->setText(GetString(lang, StringTableKey::LABEL_WINRATE));
+		m_team1DmgLabel->setText(GetString(lang, StringTableKey::LABEL_DAMAGE));
+		m_team1RegionLabel->setText(GetString(lang, StringTableKey::LABEL_REGION));
+		m_team2WrLabel->setText(GetString(lang, StringTableKey::LABEL_WINRATE));
+		m_team2DmgLabel->setText(GetString(lang, StringTableKey::LABEL_DAMAGE));
+		m_team2RegionLabel->setText(GetString(lang, StringTableKey::LABEL_REGION));
 	}
-	else
-	{
-		QWidget::changeEvent(event);
-	}
+	return QWidget::eventFilter(watched, event);
 }

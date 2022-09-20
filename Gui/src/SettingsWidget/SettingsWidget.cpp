@@ -10,6 +10,8 @@
 #include "Gui/SettingsWidget/SettingsSwitch.hpp"
 #include "Gui/SettingsWidget/SettingsWidget.hpp"
 
+#include "Gui/LanguageChangeEvent.hpp"
+
 #include <QApplication>
 #include <QEvent>
 #include <QFileDialog>
@@ -26,6 +28,7 @@
 static constexpr int LABEL_WIDTH = 280;
 static constexpr int ROW_HEIGHT = 20;
 
+using namespace PotatoAlert::Client::StringTable;
 using namespace PotatoAlert::Core;
 using PotatoAlert::Gui::SettingsWidget;
 using PotatoAlert::Gui::SettingsChoice;
@@ -38,6 +41,8 @@ SettingsWidget::SettingsWidget(QWidget* parent) : QWidget(parent)
 
 void SettingsWidget::Init()
 {
+	qApp->installEventFilter(this);
+
 	auto horLayout = new QHBoxLayout();
 	horLayout->setContentsMargins(10, 10, 10, 10);
 	horLayout->setSpacing(0);
@@ -302,24 +307,21 @@ void SettingsWidget::CheckPath() const
 	m_folderStatusGui->Update(Client::PotatoClient::Instance().CheckPath());
 }
 
-void SettingsWidget::changeEvent(QEvent* event)
+bool SettingsWidget::eventFilter(QObject* watched, QEvent* event)
 {
-	if (event->type() == QEvent::LanguageChange)
+	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		m_updateLabel->setText(GetString(StringTable::Keys::SETTINGS_UPDATES));
-		m_minimizeTrayLabel->setText(GetString(StringTable::Keys::SETTINGS_MINIMIZETRAY));
-		m_matchHistoryLabel->setText(GetString(StringTable::Keys::SETTINGS_SAVE_MATCHHISTORY));
-		m_gamePathLabel->setText(GetString(StringTable::Keys::SETTINGS_GAME_DIRECTORY));
-		m_replaysFolderLabel->setText(GetString(StringTable::Keys::SETTINGS_MANUAL_REPLAYS));
-		m_replaysFolderDesc->setText(GetString(StringTable::Keys::SETTINGS_MANUAL_REPLAYS_DESC));
-		m_statsModeLabel->setText(GetString(StringTable::Keys::SETTINGS_STATS_MODE));
-		m_gaLabel->setText(GetString(StringTable::Keys::SETTINGS_GA));
-		m_languageLabel->setText(GetString(StringTable::Keys::SETTINGS_LANGUAGE));
-		m_saveButton->setText(GetString(StringTable::Keys::SETTINGS_SAVE));
-		m_cancelButton->setText(GetString(StringTable::Keys::SETTINGS_CANCEL));
+		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		m_updateLabel->setText(GetString(lang, StringTableKey::SETTINGS_UPDATES));
+		m_minimizeTrayLabel->setText(GetString(lang, StringTableKey::SETTINGS_MINIMIZETRAY));
+		m_matchHistoryLabel->setText(GetString(lang, StringTableKey::SETTINGS_SAVE_MATCHHISTORY));
+		m_gamePathLabel->setText(GetString(lang, StringTableKey::SETTINGS_GAME_DIRECTORY));
+		m_statsModeLabel->setText(GetString(lang, StringTableKey::SETTINGS_STATS_MODE));
+		m_teamDamageModeLabel->setText(GetString(lang, StringTableKey::SETTINGS_TEAM_DAMAGE_MODE));
+		m_teamWinRateModeLabel->setText(GetString(lang, StringTableKey::SETTINGS_TEAM_WIN_RATE_MODE));
+		m_languageLabel->setText(GetString(lang, StringTableKey::SETTINGS_LANGUAGE));
+		m_saveButton->setText(GetString(lang, StringTableKey::SETTINGS_SAVE));
+		m_cancelButton->setText(GetString(lang, StringTableKey::SETTINGS_CANCEL));
 	}
-	else
-	{
-		QWidget::changeEvent(event);
-	}
+	return QWidget::eventFilter(watched, event);
 }

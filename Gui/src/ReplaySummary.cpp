@@ -1,8 +1,10 @@
 // Copyright 2022 <github.com/razaqq>
 
 #include "Client/MatchHistory.hpp"
+#include "Client/StringTable.hpp"
 
 #include "Gui/IconButton.hpp"
+#include "Gui/LanguageChangeEvent.hpp"
 #include "Gui/ReplaySummary.hpp"
 
 #include <QApplication>
@@ -11,7 +13,7 @@
 #include <QHBoxLayout>
 #include <QPainter>
 
-
+using namespace PotatoAlert::Client::StringTable;
 using PotatoAlert::ReplayParser::AchievementType;
 using PotatoAlert::ReplayParser::RibbonType;
 using PotatoAlert::Client::MatchHistory;

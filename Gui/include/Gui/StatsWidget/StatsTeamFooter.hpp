@@ -13,13 +13,7 @@ using Client::StatsParser::MatchType;
 
 class StatsTeamFooter : public QWidget
 {
-public:
-	explicit StatsTeamFooter(QWidget* parent = nullptr);
-	void Update(const MatchType& match) const;
 private:
-	void Init();
-	void changeEvent(QEvent* event) override;
-
 	QLabel* m_team1WrLabel = new QLabel();
 	QLabel* m_team1DmgLabel = new QLabel();
 	QLabel* m_team2WrLabel = new QLabel();
@@ -38,6 +32,14 @@ private:
 	QLabel* m_team2Tag = new QLabel();
 	QLabel* m_team2Name = new QLabel();
 	QLabel* m_team2Region = new QLabel();
+
+public:
+	explicit StatsTeamFooter(QWidget* parent = nullptr);
+	void Update(const MatchType& match) const;
+	bool eventFilter(QObject* watched, QEvent* event) override;
+
+private:
+	void Init();
 };
 
 }  // namespace PotatoAlert::Gui

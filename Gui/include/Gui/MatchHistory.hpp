@@ -44,7 +44,7 @@ private:
 	QPushButton* m_deleteButton = new QPushButton();
 	int m_btnColumn;
 	int m_jsonColumn;
-	// QPushButton* m_analyzeButton = new QPushButton();
+	bool eventFilter(QObject* watched, QEvent* event) override;
 
 signals:
 	void ReplaySelected(const Client::StatsParser::MatchType& match);

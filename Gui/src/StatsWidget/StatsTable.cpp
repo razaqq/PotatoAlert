@@ -2,14 +2,16 @@
 
 #include "Client/StringTable.hpp"
 
+#include "Gui/LanguageChangeEvent.hpp"
 #include "Gui/StatsWidget/StatsTable.hpp"
 
+#include <QApplication>
 #include <QEvent>
 #include <QHeaderView>
 #include <QTableWidgetItem>
 
 
-using namespace PotatoAlert::Core;
+using namespace PotatoAlert::Client::StringTable;
 using PotatoAlert::Gui::StatsTable;
 
 StatsTable::StatsTable(QWidget* parent) : QTableWidget(parent)
@@ -20,8 +22,10 @@ StatsTable::StatsTable(QWidget* parent) : QTableWidget(parent)
 
 void StatsTable::Init()
 {
-	setEditTriggers(QAbstractItemView::NoEditTriggers);
-	setSelectionMode(QAbstractItemView::NoSelection);
+	qApp->installEventFilter(this);
+
+	setEditTriggers(NoEditTriggers);
+	setSelectionMode(NoSelection);
 	setFocusPolicy(Qt::NoFocus);
 	setAlternatingRowColors(false);
 
@@ -55,21 +59,19 @@ void StatsTable::InitHeaders()
 	setCursor(Qt::PointingHandCursor);
 }
 
-void StatsTable::changeEvent(QEvent* event)
+bool StatsTable::eventFilter(QObject* watched, QEvent* event)
 {
-	if (event->type() == QEvent::LanguageChange)
+	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		horizontalHeaderItem(0)->setText(GetString(StringTable::Keys::COLUMN_PLAYER));
-		horizontalHeaderItem(1)->setText(GetString(StringTable::Keys::COLUMN_SHIP));
-		horizontalHeaderItem(2)->setText(GetString(StringTable::Keys::COLUMN_MATCHES));
-		horizontalHeaderItem(3)->setText(GetString(StringTable::Keys::COLUMN_WINRATE));
-		horizontalHeaderItem(4)->setText(GetString(StringTable::Keys::COLUMN_AVERAGE_DAMAGE));
-		horizontalHeaderItem(5)->setText(GetString(StringTable::Keys::COLUMN_MATCHES_SHIP));
-		horizontalHeaderItem(6)->setText(GetString(StringTable::Keys::COLUMN_WINRATE_SHIP));
-		horizontalHeaderItem(7)->setText(GetString(StringTable::Keys::COLUMN_AVERAGE_DAMAGE_SHIP));
+		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		horizontalHeaderItem(0)->setText(GetString(lang, StringTableKey::COLUMN_PLAYER));
+		horizontalHeaderItem(1)->setText(GetString(lang, StringTableKey::COLUMN_SHIP));
+		horizontalHeaderItem(2)->setText(GetString(lang, StringTableKey::COLUMN_MATCHES));
+		horizontalHeaderItem(3)->setText(GetString(lang, StringTableKey::COLUMN_WINRATE));
+		horizontalHeaderItem(4)->setText(GetString(lang, StringTableKey::COLUMN_AVERAGE_DAMAGE));
+		horizontalHeaderItem(5)->setText(GetString(lang, StringTableKey::COLUMN_MATCHES_SHIP));
+		horizontalHeaderItem(6)->setText(GetString(lang, StringTableKey::COLUMN_WINRATE_SHIP));
+		horizontalHeaderItem(7)->setText(GetString(lang, StringTableKey::COLUMN_AVERAGE_DAMAGE_SHIP));
 	}
-	else
-	{
-		QTableWidget::changeEvent(event);
-	}
+	return QWidget::eventFilter(watched, event);
 }

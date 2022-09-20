@@ -15,7 +15,7 @@ enum class QuestionAnswer
 class QuestionDialog : public FramelessDialog
 {
 public:
-	QuestionDialog(QWidget* parent = nullptr, const QString& questionText = "");
+	QuestionDialog(int language, QWidget* parent = nullptr, const QString& questionText = "");
 	QuestionAnswer Run();
 };
 

@@ -5,6 +5,9 @@
 
 #include "Gui/SettingsWidget/FolderStatus.hpp"
 
+#include "Gui/LanguageChangeEvent.hpp"
+
+#include <QApplication>
 #include <QEvent>
 #include <QGridLayout>
 #include <QLabel>
@@ -15,6 +18,7 @@
 #include <sstream>
 
 
+using namespace PotatoAlert::Client::StringTable;
 using namespace PotatoAlert::Core;
 using PotatoAlert::Gui::FolderStatus;
 
@@ -25,6 +29,8 @@ FolderStatus::FolderStatus(QWidget* parent) : QWidget(parent)
 
 void FolderStatus::Init()
 {
+	qApp->installEventFilter(this);
+
 	auto gridLayout = new QGridLayout();
 	gridLayout->setContentsMargins(10, 0, 10, 0);
 
@@ -84,19 +90,17 @@ void FolderStatus::Update(const Client::Game::DirectoryStatus& status) const
 	}
 }
 
-void FolderStatus::changeEvent(QEvent* event)
+bool FolderStatus::eventFilter(QObject* watched, QEvent* event)
 {
-	if (event->type() == QEvent::LanguageChange)
+	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		this->m_statusLabel->setText(GetString(StringTable::Keys::SETTINGS_REPLAYSFOLDER_STATUS));
-		this->m_replaysLabel->setText(GetString(StringTable::Keys::SETTINGS_REPLAYSFOLDER_FOLDERS));
-		this->m_regionLabel->setText(GetString(StringTable::Keys::SETTINGS_REPLAYSFOLDER_REGION));
-		this->m_versionLabel->setText(GetString(StringTable::Keys::SETTINGS_REPLAYSFOLDER_GAMEVERSION));
-		this->m_steamLabel->setText(GetString(StringTable::Keys::SETTINGS_REPLAYSFOLDER_STEAM));
-		this->m_versionedLabel->setText(GetString(StringTable::Keys::SETTINGS_REPLAYSFOLDER_VERSIONED));
+		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		m_statusLabel->setText(GetString(lang, StringTableKey::SETTINGS_REPLAYSFOLDER_STATUS));
+		m_replaysLabel->setText(GetString(lang, StringTableKey::SETTINGS_REPLAYSFOLDER_FOLDERS));
+		m_regionLabel->setText(GetString(lang, StringTableKey::SETTINGS_REPLAYSFOLDER_REGION));
+		m_versionLabel->setText(GetString(lang, StringTableKey::SETTINGS_REPLAYSFOLDER_GAMEVERSION));
+		m_steamLabel->setText(GetString(lang, StringTableKey::SETTINGS_REPLAYSFOLDER_STEAM));
+		m_versionedLabel->setText(GetString(lang, StringTableKey::SETTINGS_REPLAYSFOLDER_VERSIONED));
 	}
-	else
-	{
-		QWidget::changeEvent(event);
-	}
+	return QWidget::eventFilter(watched, event);
 }

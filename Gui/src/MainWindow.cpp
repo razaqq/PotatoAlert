@@ -23,7 +23,7 @@
 #include <QWindow>
 
 
-using namespace PotatoAlert::Core;
+using namespace PotatoAlert::Client::StringTable;
 using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::MatchHistory;

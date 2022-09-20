@@ -10,6 +10,7 @@ target_sources(
     PRIVATE
 
     src/AboutWidget.cpp
+    src/LanguageChangeEvent.cpp
     src/MainWindow.cpp
     src/MatchHistory.cpp
     src/NativeWindow.cpp

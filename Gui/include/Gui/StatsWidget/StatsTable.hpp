@@ -12,10 +12,11 @@ class StatsTable : public QTableWidget
 {
 public:
 	explicit StatsTable(QWidget* parent = nullptr);
+	bool eventFilter(QObject* watched, QEvent* event) override;
+
 private:
 	void Init();
 	void InitHeaders();
-	void changeEvent(QEvent* event) override;
 };
 
 }  // namespace PotatoAlert::Gui

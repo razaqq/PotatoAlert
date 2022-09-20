@@ -12,6 +12,7 @@
 #include <QVBoxLayout>
 
 
+using namespace PotatoAlert::Client::StringTable;
 using namespace PotatoAlert::Core;
 using PotatoAlert::Gui::FramelessDialog;
 using UpdaterGui = PotatoAlert::Gui::Updater;
