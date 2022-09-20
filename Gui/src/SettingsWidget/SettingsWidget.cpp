@@ -208,6 +208,8 @@ void SettingsWidget::Load() const
 	m_minimizeTray->setChecked(config.Get<ConfigKey::MinimizeTray>());
 	m_gamePathEdit->setText(QString::fromStdString(config.Get<ConfigKey::GameDirectory>()));
 	m_statsMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::StatsMode>()))->setChecked(true);
+	m_teamDamageMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::TeamDamageMode>()))->setChecked(true);
+	m_teamWinRateMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::TeamWinRateMode>()))->setChecked(true);
 	m_language->setCurrentIndex(config.Get<ConfigKey::Language>());
 	m_matchHistory->setChecked(config.Get<ConfigKey::MatchHistory>());
 }
@@ -245,9 +247,14 @@ void SettingsWidget::ConnectSignals()
 		m_forceRun = true;
 		config.Set<ConfigKey::StatsMode>(static_cast<Client::StatsMode>(id));
 	});
-	connect(m_matchHistory, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<ConfigKey::MatchHistory>(checked); });
-	connect(m_language->m_btnGroup, &QButtonGroup::idClicked, [this](int id)
+	connect(m_teamDamageMode->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
 	{
+		config.Set<ConfigKey::TeamDamageMode>(static_cast<Client::TeamStatsMode>(id));
+	});
+	connect(m_teamWinRateMode->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
+	{
+		config.Set<ConfigKey::TeamWinRateMode>(static_cast<Client::TeamStatsMode>(id));
+	});
 	connect(m_matchHistory, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::MatchHistory>(checked); });
 	connect(m_language, &QComboBox::currentIndexChanged, [this, &config](int id)
 	{

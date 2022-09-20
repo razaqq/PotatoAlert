@@ -432,6 +432,8 @@ void PotatoClient::OnFileChanged(const std::string& file)
 		{ "Player", arenaInfo.PlayerName },
 		{ "Region", m_dirStatus.region },
 		{ "StatsMode", m_services.Get<Config>().Get<ConfigKey::StatsMode>() },
+		{ "TeamDamageMode", m_services.Get<Config>().Get<ConfigKey::TeamDamageMode>() },
+		{ "TeamWinRateMode", m_services.Get<Config>().Get<ConfigKey::TeamWinRateMode>() },
 		{ "ArenaInfo", arenaInfo.Json }
 	};
 
