@@ -39,9 +39,9 @@
     <Key ID="SETTINGS_REPLAYSFOLDER_VERSIONED">
         <English>Versioned Replays:</English>
         <Deutsch>Versioned Replays:</Deutsch>
-        <简体中文>录像版本化:</简体中文>
-        <繁體中文>錄像版本化:</繁體中文>
-        <日本語>バージョン化されたリプレイ:</日本語>
+        <简体中文>录像是否版本化:</简体中文>
+        <繁體中文>錄像是否版本化:</繁體中文>
+        <日本語>リプレイがバージョン化されたか:</日本語>
     </Key>
 
     <Key ID="SETTINGS_UPDATES">
@@ -96,16 +96,22 @@
     <Key ID="SETTINGS_TEAM_DAMAGE_MODE">
         <English>Team Damage Mode</English>
         <Deutsch>Team Schaden Modus</Deutsch>
+        <简体中文>队伍伤害模式</简体中文>
+        <繁體中文>隊伍傷害模式</繁體中文>
+        <日本語>チームダメージモード</日本語>
     </Key>
     <Key ID="SETTINGS_TEAM_WIN_RATE_MODE">
         <English>Team Winrate Mode</English>
         <Deutsch>Team Winrate Modus</Deutsch>
+        <简体中文>队伍胜率模式</简体中文>
+        <繁體中文>隊伍勝率模式</繁體中文>
+        <日本語>チーム勝率モード</日本語>
     </Key>
     <Key ID="SETTINGS_GA">
         <English>Allow Google Analytics</English>
         <Deutsch>Google Analytics Erlauben</Deutsch>
-        <简体中文>允许使用谷歌 Analytics</简体中文>
-        <繁體中文>允許使用谷歌 Analytics</繁體中文>
+        <简体中文>允许使用谷歌分析</简体中文>
+        <繁體中文>允許使用谷歌分析</繁體中文>
         <日本語>Google Analyticsを許可</日本語>
     </Key>
     <Key ID="SETTINGS_LANGUAGE">
@@ -325,121 +331,211 @@
     <Key ID="REPLAY_OUTCOME_WIN">
         <English>Victory!</English>
         <Deutsch>Sieg!</Deutsch>
+        <简体中文>胜利！</简体中文>
+        <繁體中文>勝利！</繁體中文>
+        <日本語>勝利！</日本語>
     </Key>
     <Key ID="REPLAY_OUTCOME_LOSS">
         <English>Defeat</English>
         <Deutsch>Verloren</Deutsch>
+        <简体中文>失败</简体中文>
+        <繁體中文>失敗</繁體中文>
+        <日本語>敗北</日本語>
     </Key>
     <Key ID="REPLAY_OUTCOME_DRAW">
         <English>Draw</English>
         <Deutsch>Unentschieden</Deutsch>
+        <简体中文>平局</简体中文>
+        <繁體中文>平局</繁體中文>
+        <日本語>引き分け</日本語>
     </Key>
     <Key ID="REPLAY_OUTCOME_UNKNOWN">
         <English>Unknown</English>
         <Deutsch>Unbekannt</Deutsch>
+        <简体中文>未知</简体中文>
+        <繁體中文>未知</繁體中文>
+        <日本語>不明</日本語>
     </Key>
     <Key ID="REPLAY_BATTLE_START_TIME">
         <English>Battle Start Time:</English>
         <Deutsch>Gefechtsstartzeit:</Deutsch>
+        <简体中文>战斗开始时间：</简体中文>
+        <繁體中文>戰鬥開始時間：</繁體中文>
+        <日本語>戦闘開始時間：</日本語>
     </Key>
     <Key ID="REPLAY_ACHIEVEMENTS">
         <English>Achievements</English>
         <Deutsch>Erfolge</Deutsch>
+        <简体中文>成就</简体中文>
+        <繁體中文>成就</繁體中文>
+        <日本語>実績</日本語>
     </Key>
     <Key ID="REPLAY_BATTLE_PERFORMANCE">
         <English>Battle Performance</English>
         <Deutsch>Gefechtsleistung</Deutsch>
+        <简体中文>战斗表现</简体中文>
+        <繁體中文>戰鬥表現</繁體中文>
+        <日本語>戦闘パフォーマンス</日本語>
     </Key>
     <Key ID="REPLAY_DAMAGE">
         <English>Damage</English>
         <Deutsch>Schaden</Deutsch>
+        <简体中文>伤害</简体中文>
+        <繁體中文>傷害</繁體中文>
+        <日本語>ダメージ</日本語>
     </Key>
     <Key ID="REPLAY_SPOTTING_DAMAGE">
         <English>Spotting DMG</English>
         <Deutsch>Aufkl. Schaden</Deutsch>
+        <简体中文>侦察伤害</简体中文>
+        <繁體中文>偵察傷害</繁體中文>
+        <日本語>スポッティングダメージ</日本語>
     </Key>
     <Key ID="REPLAY_RECEIVED_DAMAGE">
         <English>Received DMG</English>
         <Deutsch>Erlitt. Schaden</Deutsch>
+        <简体中文>受到伤害</简体中文>
+        <繁體中文>受到傷害</繁體中文>
+        <日本語>受けたダメージ</日本語>
     </Key>
     <Key ID="REPLAY_POTENTIAL_DAMAGE">
         <English>Potential DMG</English>
         <Deutsch>Pot. Schaden</Deutsch>
+        <简体中文>潜在伤害</简体中文>
+        <繁體中文>潛在傷害</繁體中文>
+        <日本語>潜在ダメージ</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_HITS">
         <English>Target hits</English>
         <Deutsch>Zieltreffer</Deutsch>
+        <简体中文>命中</简体中文>
+        <繁體中文>命中</繁體中文>
+        <日本語>ターゲットヒット</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_PLANESHOWDOWN">
         <English>Aircraft shot down</English>
         <Deutsch>Flugzeug abgeschossen</Deutsch>
+        <简体中文>击落飞机</简体中文>
+        <繁體中文>擊落飛機</繁體中文>
+        <日本語>機体撃墜</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_INCAPACITATION">
         <English>Incapacitations</English>
         <Deutsch>Ausfälle</Deutsch>
+        <简体中文>瘫痪</简体中文>
+        <繁體中文>瘫痪</繁體中文>
+        <日本語>機能停止</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_DESTROYED">
         <English>Destroyed</English>
         <Deutsch>Zerstört</Deutsch>
+        <简体中文>已摧毁</简体中文>
+        <繁體中文>已摧毀</繁體中文>
+        <日本語>撃破</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_SETONFIRE">
         <English>Set on fire</English>
         <Deutsch>In Brand gesteckt</Deutsch>
+        <简体中文>使敌舰起火</简体中文>
+        <繁體中文>使敵艦起火</繁體中文>
+        <日本語>火災を発生させた</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_FLOODING">
         <English>Caused flooding</English>
         <Deutsch>Wassereinbruch verursacht</Deutsch>
+        <简体中文>造成进水</简体中文>
+        <繁體中文>造成進水</繁體中文>
+        <日本語>浸水を発生させた</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_CITADEL">
         <English>Hits to citadel</English>
         <Deutsch>Treffer an Zitadelle</Deutsch>
+        <简体中文>命中装甲区</简体中文>
+        <繁體中文>命中裝甲區</繁體中文>
+        <日本語>防郭への命中</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_DEFENDED">
         <English>Defended</English>
         <Deutsch>Verteidigt</Deutsch>
+        <简体中文>防御</简体中文>
+        <繁體中文>防禦</繁體中文>
+        <日本語>防衛</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_CAPTURED">
         <English>Captured</English>
         <Deutsch>Erobert</Deutsch>
+        <简体中文>占领</简体中文>
+        <繁體中文>佔領</繁體中文>
+        <日本語>占領</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_ASSISTEDINCAPTURE">
         <English>Assisted in capture</English>
         <Deutsch>Eroberung unterstützt</Deutsch>
+        <简体中文>协助占领</简体中文>
+        <繁體中文>協助佔領</繁體中文>
+        <日本語>占領支援</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_SUPPRESSED">
         <English>Suppressed</English>
         <Deutsch>Unterdrückt</Deutsch>
+        <简体中文>压制</简体中文>
+        <繁體中文>壓制</繁體中文>
+        <日本語>制圧完了</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_SPOTTED">
         <English>Spotted</English>
         <Deutsch>Aufgeklärt</Deutsch>
+        <简体中文>已发现</简体中文>
+        <繁體中文>已发现</繁體中文>
+        <日本語>発見</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_SHOTDOWNBYAIRCRAFT">
         <English>Shot down by fighter</English>
         <Deutsch>Abschuss durch Jäger</Deutsch>
+        <简体中文>被战斗机击落</简体中文>
+        <繁體中文>被戰鬥機擊落</繁體中文>
+        <日本語>戦闘機による撃墜</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_BUFFSEIZED">
         <English>Buff picked up</English>
         <Deutsch>Buff aufgesammelt</Deutsch>
+        <简体中文>拾得增益</简体中文>
+        <繁體中文>拾得增益</繁體中文>
+        <日本語>強化を確保</日本語>
     </Key>
     <Key ID="REPLAY_RIBBON_UNKNOWN">
         <English>Unknown</English>
         <Deutsch>Unbekannt</Deutsch>
+        <简体中文>未知</简体中文>
+        <繁體中文>未知</繁體中文>
+        <日本語>不明</日本語>
     </Key>
     <Key ID="REPLAY_MATCHGROUP_PVP">
         <English>Random Battle</English>
         <Deutsch>Zufallsgefecht</Deutsch>
+        <简体中文>随机战斗</简体中文>
+        <繁體中文>隨機戰鬥</繁體中文>
+        <日本語>ランダム戦</日本語>
     </Key>
     <Key ID="REPLAY_MATCHGROUP_RANKED">
         <English>Ranked Battle</English>
         <Deutsch>Gewertetes Gefecht</Deutsch>
+        <简体中文>排位战斗</简体中文>
+        <繁體中文>排位戰鬥</繁體中文>
+        <日本語>ランク戦</日本語>
     </Key>
     <Key ID="REPLAY_MATCHGROUP_CLAN">
         <English>Clan Battle</English>
         <Deutsch>Clangefecht</Deutsch>
+        <简体中文>公会战斗</简体中文>
+        <繁體中文>公會戰鬥</繁體中文>
+        <日本語>クラン戦</日本語>
     </Key>
     <Key ID="REPLAY_MATCHGROUP_PVE">
         <English>Operations</English>
         <Deutsch>Unternehmen</Deutsch>
+        <简体中文>行动</简体中文>
+        <繁體中文>行動</繁體中文>
+        <日本語>オペレーション</日本語>
     </Key>
 </Package>
