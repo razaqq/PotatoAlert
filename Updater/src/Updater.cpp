@@ -134,7 +134,7 @@ private:
 bool Updater::UpdateAvailable()
 {
 #ifndef NDEBUG
-	return true;
+	return false;
 #endif
 
 	QEventLoop loop;

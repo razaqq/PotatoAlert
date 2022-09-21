@@ -45,7 +45,9 @@ UpdaterGui::Updater(const Client::ServiceProvider& serviceProvider) : FramelessD
 	vLayout->addLayout(progressLayout);
 	this->setLayout(vLayout);
 
-	connect(&UpdaterCore::Instance(), &UpdaterCore::DownloadProgress,
+	UpdaterCore& updater = serviceProvider.Get<UpdaterCore>();
+
+	connect(&updater, &UpdaterCore::DownloadProgress,
 	[progressBar, progressLabel, speedLabel](int percent, const QString& progress, const QString& speed)
 	{
 		progressBar->setValue(percent);
@@ -86,6 +88,6 @@ UpdaterGui::Updater(const Client::ServiceProvider& serviceProvider) : FramelessD
 	});
 	*/
 
-	serviceProvider.Get<UpdaterCore>().Run();
+	updater.Run();
 	this->exec();  // TODO
 }

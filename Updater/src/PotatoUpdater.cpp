@@ -1,6 +1,10 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Client/Config.hpp"
+#include "Client/ServiceProvider.hpp"
+
 #include "Core/Log.hpp"
+#include "Core/StandardPaths.hpp"
 
 #include "Gui/Palette.hpp"
 #include "Gui/Updater.hpp"
@@ -11,6 +15,9 @@
 #include <QFile>
 
 
+using PotatoAlert::Client::Config;
+using PotatoAlert::Client::ServiceProvider;
+using PotatoAlert::Core::AppDataPath;
 using PotatoAlert::Updater::Updater;
 
 static int RunMain(int argc, char* argv[])
@@ -35,7 +42,17 @@ static int RunMain(int argc, char* argv[])
 	QApplication::setPalette(PotatoAlert::Gui::DarkPalette());
 	app.setStyleSheet(style);
 
-	new PotatoAlert::Gui::Updater();
+	ServiceProvider serviceProvider;
+
+	fs::path appDataPath = AppDataPath("PotatoAlert");
+
+	Config config(appDataPath, "config.json");
+	serviceProvider.Add(config);
+
+	Updater updater;
+	serviceProvider.Add(updater);
+
+	PotatoAlert::Gui::Updater gui(serviceProvider);
 	return QApplication::exec();
 }
 

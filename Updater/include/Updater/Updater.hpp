@@ -1,8 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include "Core/Singleton.hpp"
-
 #include <QtNetwork/QNetworkAccessManager>
 #include <QWidget>
 
@@ -20,8 +18,6 @@ class Updater : public QWidget
 	Q_OBJECT
 
 public:
-	PA_SINGLETON(Updater);
-
 	static bool UpdateAvailable();
 
 	void Run();
@@ -33,7 +29,6 @@ public:
 	static void RemoveTrash();
 
 private:
-	Updater() = default;
 	QNetworkReply* Download();
 
 	[[noreturn]] static void End(bool success = true, bool revert = false);
