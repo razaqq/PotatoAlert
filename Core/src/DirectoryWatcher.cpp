@@ -10,8 +10,6 @@
 #include <string>
 #include <unordered_set>
 
-#include <QDebug>
-
 
 using PotatoAlert::Core::DirectoryWatcher;
 

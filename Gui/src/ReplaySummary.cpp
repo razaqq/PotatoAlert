@@ -1,8 +1,12 @@
 // Copyright 2022 <github.com/razaqq>
 
+#include "Client/Config.hpp"
 #include "Client/MatchHistory.hpp"
+#include "Client/ServiceProvider.hpp"
+#include "Client/StringTable.hpp"
 
 #include "Gui/IconButton.hpp"
+#include "Gui/LanguageChangeEvent.hpp"
 #include "Gui/ReplaySummary.hpp"
 
 #include <QApplication>
@@ -11,9 +15,11 @@
 #include <QHBoxLayout>
 #include <QPainter>
 
-
+using namespace PotatoAlert::Client::StringTable;
 using PotatoAlert::ReplayParser::AchievementType;
 using PotatoAlert::ReplayParser::RibbonType;
+using PotatoAlert::Client::Config;
+using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Client::MatchHistory;
 using PotatoAlert::Gui::ShadowLabel;
 using ReplaySummaryData = PotatoAlert::ReplayParser::ReplaySummary;
@@ -85,7 +91,8 @@ static constexpr std::string_view TierToString(uint8_t tier)
 	}
 }
 
-static constexpr std::string_view GetRibbonName(RibbonType ribbon)
+
+static constexpr std::string_view GetRibbonName(int lang, RibbonType ribbon)
 {
 	switch (GetParent(ribbon))
 	{
@@ -96,36 +103,36 @@ static constexpr std::string_view GetRibbonName(RibbonType ribbon)
 		case RibbonType::Bomb:
 		case RibbonType::Rocket:
 		case RibbonType::DepthChargeHit:
-			return "Target hits";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_HITS);
 		case RibbonType::PlaneShotDown:
-			return "Aircraft shot down";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_PLANESHOWDOWN);
 		case RibbonType::Incapacitation:
-			return "Incapacitations";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_INCAPACITATION);
 		case RibbonType::Destroyed:
 		case RibbonType::BuildingDestroyed:
-			return "Destroyed";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_DESTROYED);
 		case RibbonType::SetFire:
-			return "Set on fire";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_SETONFIRE);
 		case RibbonType::Flooding:
-			return "Caused flooding";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_FLOODING);
 		case RibbonType::Citadel:
-			return "Hits to citadel";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_CITADEL);
 		case RibbonType::Defended:
-			return "Defended";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_DEFENDED);
 		case RibbonType::Captured:
-			return "Captured";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_CAPTURED);
 		case RibbonType::AssistedInCapture:
-			return "Assisted in capture";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_ASSISTEDINCAPTURE);
 		case RibbonType::Suppressed:
-			return "Suppressed";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_SUPPRESSED);
 		case RibbonType::Spotted:
-			return "Spotted";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_SPOTTED);
 		case RibbonType::ShotDownByAircraft:
-			return "Shot down by fighter";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_SHOTDOWNBYAIRCRAFT);
 		case RibbonType::BuffSeized:
-			return "Buff picked up";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_BUFFSEIZED);
 		default:
-			return "Unknown";
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_UNKNOWN);
 	}
 }
 
@@ -184,7 +191,7 @@ void ReplaySummaryGui::paintEvent(QPaintEvent* _)
 	style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
-ReplaySummaryGui::ReplaySummary(QWidget* parent) : QWidget(parent)
+ReplaySummaryGui::ReplaySummary(const Client::ServiceProvider& serviceProvider, QWidget* parent) : QWidget(parent), m_services(serviceProvider)
 {
 	QFontDatabase::addApplicationFont(":/WarHeliosCondC.ttf");
 	QFontDatabase::addApplicationFont(":/WarHeliosCondCBold.ttf");
@@ -193,6 +200,8 @@ ReplaySummaryGui::ReplaySummary(QWidget* parent) : QWidget(parent)
 void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
 {
 	ClearLayout(layout());
+
+	int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
 
 	m_background = new Background(
 		std::format(":/{}.jpg", entry.Map).c_str(), 
@@ -216,10 +225,10 @@ void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
 	setLayout(mainLayout);
 
 	// create labels for outcome
-	m_winLabel = new ShadowLabel("Victory!", 0, 1, 4);
-	m_lossLabel = new ShadowLabel("Defeat", 0, 1, 4);
-	m_drawLabel = new ShadowLabel("Draw", 0, 1, 4);
-	m_unknownLabel = new ShadowLabel("Unknown", 0, 1, 4);
+	m_winLabel = new ShadowLabel(GetStringView(lang, StringTableKey::REPLAY_OUTCOME_WIN), 0, 1, 4);
+	m_lossLabel = new ShadowLabel(GetStringView(lang, StringTableKey::REPLAY_OUTCOME_LOSS), 0, 1, 4);
+	m_drawLabel = new ShadowLabel(GetStringView(lang, StringTableKey::REPLAY_OUTCOME_DRAW), 0, 1, 4);
+	m_unknownLabel = new ShadowLabel(GetStringView(lang, StringTableKey::REPLAY_OUTCOME_UNKNOWN), 0, 1, 4);
 	m_winLabel->setObjectName("ReplaySummary_winLabel");
 	m_lossLabel->setObjectName("ReplaySummary_lossLabel");
 	m_drawLabel->setObjectName("ReplaySummary_drawLabel");
@@ -267,7 +276,7 @@ void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
 		scenarioInfo->setSpacing(0);
 		ShadowLabel* mapModeLabel = new ShadowLabel(
 				std::format("{} \u23AF  {}", entry.Map, entry.MatchGroup).c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
-		ShadowLabel* startTimeLabel = new ShadowLabel("Battle Start Time:", 0, 1, 4, QColor(0, 0, 0, 242));
+		ShadowLabel* startTimeLabel = new ShadowLabel(GetStringView(lang, StringTableKey::REPLAY_BATTLE_START_TIME), 0, 1, 4, QColor(0, 0, 0, 242));
 		ShadowLabel* startTime = new ShadowLabel(entry.Date.c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
 		QHBoxLayout* timeLayout = new QHBoxLayout();
 		timeLayout->setContentsMargins(0, 0, 0, 0);
@@ -330,7 +339,7 @@ void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
 		/* ----- ACHIEVEMENTS ----- */
 		if (!s.Achievements.empty())
 		{
-			ShadowLabel* achievementsLabel = new ShadowLabel("Achievements", 0, 1, 4);
+			ShadowLabel* achievementsLabel = new ShadowLabel(GetStringView(lang, StringTableKey::REPLAY_ACHIEVEMENTS), 0, 1, 4);
 			achievementsLabel->setObjectName("ReplaySummary_battlePerformanceLabel");
 			vLayout->addWidget(achievementsLabel);
 
@@ -362,7 +371,7 @@ void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
 		}
 
 		/* ----- BATTLE PERFORMANCE ----- */
-		ShadowLabel* battlePerformanceLabel = new ShadowLabel("Battle Performance", 0, 1, 4);
+		ShadowLabel* battlePerformanceLabel = new ShadowLabel(GetStringView(lang, StringTableKey::REPLAY_BATTLE_PERFORMANCE), 0, 1, 4);
 		battlePerformanceLabel->setObjectName("ReplaySummary_battlePerformanceLabel");
 
 		QFrame* battlePerformance = new QFrame();
@@ -373,7 +382,7 @@ void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
 		bpLayout->setAlignment(Qt::AlignLeft);
 		ShadowLabel* dmgDone = new ShadowLabel(FormatDamageNumber(s.DamageDealt).c_str(), 1, 1, 1);
 		dmgDone->setObjectName("ReplaySummary_DamageLabel");
-		bpLayout->addWidget(new Ribbon(dmgDone, "Damage"), 0, 0, Qt::AlignTop | Qt::AlignLeft);
+		bpLayout->addWidget(new Ribbon(dmgDone, GetStringView(lang, StringTableKey::REPLAY_DAMAGE)), 0, 0, Qt::AlignTop | Qt::AlignLeft);
 
 		// group ribbons by parent
 		std::unordered_map<RibbonType, uint32_t> ribbons;
@@ -413,7 +422,7 @@ void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
 			QFlags ribbonAlign = Qt::AlignTop | Qt::AlignLeft;
 			if (row > 0 && column == 0)
 				ribbonAlign = Qt::AlignTop | Qt::AlignRight;
-			bpLayout->addWidget(new Ribbon(ribbonLabel, GetRibbonName(ribbon)), row, column++, ribbonAlign);
+			bpLayout->addWidget(new Ribbon(ribbonLabel, GetRibbonName(lang, ribbon)), row, column++, ribbonAlign);
 		}
 		battlePerformance->setLayout(bpLayout);
 
@@ -432,13 +441,13 @@ void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
 		drLayout->setAlignment(Qt::AlignLeft);
 		ShadowLabel* dmgSpotting = new ShadowLabel(FormatDamageNumber(s.DamageSpotting).c_str(), 1, 1, 1);
 		dmgSpotting->setObjectName("ReplaySummary_DamageLabelSmall");
-		drLayout->addWidget(new RibbonSmall(dmgSpotting, "Spotting DMG"), 0, Qt::AlignTop | Qt::AlignLeft);
+		drLayout->addWidget(new RibbonSmall(dmgSpotting, GetStringView(lang, StringTableKey::REPLAY_SPOTTING_DAMAGE)), 0, Qt::AlignTop | Qt::AlignLeft);
 		ShadowLabel* dmgTaken = new ShadowLabel(FormatDamageNumber(s.DamageTaken).c_str(), 1, 1, 1);
 		dmgTaken->setObjectName("ReplaySummary_DamageLabelSmall");
-		drLayout->addWidget(new RibbonSmall(dmgTaken, "DMG Received"), 0, Qt::AlignTop | Qt::AlignLeft);
+		drLayout->addWidget(new RibbonSmall(dmgTaken, GetStringView(lang, StringTableKey::REPLAY_RECEIVED_DAMAGE)), 0, Qt::AlignTop | Qt::AlignLeft);
 		ShadowLabel* dmgPotential = new ShadowLabel(FormatDamageNumber(s.DamagePotential).c_str(), 1, 1, 1);
 		dmgPotential->setObjectName("ReplaySummary_DamageLabelSmall");
-		drLayout->addWidget(new RibbonSmall(dmgPotential, "Potential DMG"), 0, Qt::AlignTop | Qt::AlignLeft);
+		drLayout->addWidget(new RibbonSmall(dmgPotential, GetStringView(lang, StringTableKey::REPLAY_POTENTIAL_DAMAGE)), 0, Qt::AlignTop | Qt::AlignLeft);
 		detailedReport->setLayout(drLayout);
 
 		// vLayout->addWidget(detailedReportLabel);

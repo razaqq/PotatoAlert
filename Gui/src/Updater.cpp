@@ -1,5 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Client/Config.hpp"
+#include "Client/ServiceProvider.hpp"
 #include "Client/StringTable.hpp"
 
 #include "Gui/FramelessDialog.hpp"
@@ -12,16 +14,18 @@
 #include <QVBoxLayout>
 
 
+using namespace PotatoAlert::Client::StringTable;
 using namespace PotatoAlert::Core;
 using PotatoAlert::Gui::FramelessDialog;
 using UpdaterGui = PotatoAlert::Gui::Updater;
 using UpdaterCore = PotatoAlert::Updater::Updater;
 
-UpdaterGui::Updater() : FramelessDialog(nullptr)
+UpdaterGui::Updater(const Client::ServiceProvider& serviceProvider) : FramelessDialog(nullptr)
 {
 	auto vLayout = new QVBoxLayout();
 
-	auto waitLabel = new QLabel(GetString(StringTable::Keys::UPDATE_DOWNLOADING));
+	int lang = serviceProvider.Get<Client::Config>().Get<Client::ConfigKey::Language>();
+	auto waitLabel = new QLabel(GetString(lang, StringTableKey::UPDATE_DOWNLOADING));
 
 	auto progressBar = new QProgressBar();
 	progressBar->setValue(0);
@@ -82,6 +86,6 @@ UpdaterGui::Updater() : FramelessDialog(nullptr)
 	});
 	*/
 
-	UpdaterCore::Instance().Run();
-	this->exec();
+	serviceProvider.Get<UpdaterCore>().Run();
+	this->exec();  // TODO
 }

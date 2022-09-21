@@ -1,6 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Client/Config.hpp"
+#include "Client/ServiceProvider.hpp"
 
 #include <FramelessWidgetsHelper>
 
@@ -19,16 +20,16 @@
 
 using wangwenx190::FramelessHelper::FramelessWidgetsHelper;
 using wangwenx190::FramelessHelper::Global::SystemButtonType;
-using PotatoAlert::Core::PotatoConfig;
+using PotatoAlert::Client::Config;
+using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Gui::NativeWindow;
 
-NativeWindow::NativeWindow(QMainWindow* mainWindow, QWidget* parent) : QWidget(parent), m_mainWindow(mainWindow)
+NativeWindow::NativeWindow(const Client::ServiceProvider& serviceProvider, QMainWindow* mainWindow, QWidget* parent) : QWidget(parent), m_services(serviceProvider), m_mainWindow(mainWindow)
 {
 	createWinId();
 	m_mainWindow->setParent(this);
 	Init();
 
-	QWindow* w = windowHandle();
 	FramelessWidgetsHelper* helper = FramelessWidgetsHelper::get(this);
 
 	helper->extendsContentIntoTitleBar();
@@ -47,7 +48,9 @@ NativeWindow::NativeWindow(QMainWindow* mainWindow, QWidget* parent) : QWidget(p
 
 void NativeWindow::hideEvent(QHideEvent* event)
 {
-	if (PotatoConfig().Get<Core::ConfigKey::MinimizeTray>())
+	Config& config = m_services.Get<Config>();
+
+	if (config.Get<ConfigKey::MinimizeTray>())
 	{
 		hide();
 	}
@@ -55,12 +58,12 @@ void NativeWindow::hideEvent(QHideEvent* event)
 	{
 		if ((windowState() & Qt::WindowMaximized) == 0)
 		{
-			PotatoConfig().Set<Core::ConfigKey::WindowHeight>(height());
-			PotatoConfig().Set<Core::ConfigKey::WindowWidth>(width());
-			PotatoConfig().Set<Core::ConfigKey::WindowX>(windowHandle()->framePosition().x());
-			PotatoConfig().Set<Core::ConfigKey::WindowY>(windowHandle()->framePosition().y());
+			config.Set<ConfigKey::WindowHeight>(height());
+			config.Set<ConfigKey::WindowWidth>(width());
+			config.Set<ConfigKey::WindowX>(windowHandle()->framePosition().x());
+			config.Set<ConfigKey::WindowY>(windowHandle()->framePosition().y());
 		}
-		PotatoConfig().Set<Core::ConfigKey::WindowState>(windowState());
+		config.Set<ConfigKey::WindowState>(windowState());
 
 		QWidget::hideEvent(event);
 		QApplication::exit(0);
@@ -69,6 +72,8 @@ void NativeWindow::hideEvent(QHideEvent* event)
 
 void NativeWindow::Init()
 {
+	const Config& config = m_services.Get<Config>();
+
 	if (QSystemTrayIcon::isSystemTrayAvailable())
 	{
 		auto trayIcon = new QSystemTrayIcon(QIcon(":/potato.png"));
@@ -90,7 +95,7 @@ void NativeWindow::Init()
 		trayMenu->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
 		trayIcon->setContextMenu(trayMenu);
 
-		connect(openAction, &QAction::triggered, this, &QWidget::show);
+		connect(openAction, &QAction::triggered, this, &NativeWindow::show);
 		connect(closeAction, &QAction::triggered, []()
 		{
 			QApplication::exit(0);
@@ -110,9 +115,9 @@ void NativeWindow::Init()
 
 	setLayout(layout);
 	
-	resize(PotatoConfig().Get<Core::ConfigKey::WindowWidth>(), PotatoConfig().Get<Core::ConfigKey::WindowHeight>());
-	windowHandle()->setFramePosition(QPoint(PotatoConfig().Get<Core::ConfigKey::WindowX>(), PotatoConfig().Get<Core::ConfigKey::WindowY>()));
-	setWindowState(static_cast<decltype(windowState())>(PotatoConfig().Get<Core::ConfigKey::WindowState>()));
+	resize(config.Get<ConfigKey::WindowWidth>(), config.Get<ConfigKey::WindowHeight>());
+	windowHandle()->setFramePosition(QPoint(config.Get<ConfigKey::WindowX>(), config.Get<ConfigKey::WindowY>()));
+	setWindowState(static_cast<decltype(windowState())>(config.Get<ConfigKey::WindowState>()));
 
 	bool reachable = false;
 	QRect titleBarGeo = windowHandle()->frameGeometry();

@@ -5,6 +5,7 @@
 #include "Client/ReplayAnalyzer.hpp"
 #include "Client/MatchHistory.hpp"
 #include "Client/PotatoClient.hpp"
+#include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
 
 #include "Core/Defer.hpp"
@@ -167,11 +168,6 @@ struct ServerResponse
 
 }
 
-PotatoClient::PotatoClient()
-	: m_replayAnalyzer(ReplayAnalyzer({ GetModuleRootPath().value() / "ReplayVersions", AppDataPath("PotatoAlert") / "ReplayVersions" }))
-{
-}
-
 void PotatoClient::Init()
 {
 	emit StatusReady(Status::Ready, "Ready");
@@ -307,9 +303,9 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 						}
 
 						// TODO: this could use some cleanup
-						if (PotatoConfig().Get<ConfigKey::MatchHistory>())
+						if (m_services.Get<Config>().Get<ConfigKey::MatchHistory>())
 						{
-							if (MatchHistory::Instance().SaveMatch(
+							if (m_services.Get<MatchHistory>().SaveMatch(
 								res.Match.Info, matchContext.ArenaInfo, m_lastArenaInfoHash, serverResponse.Result.value().dump(), res.Csv.value()))
 							{
 								emit MatchHistoryChanged();
@@ -358,11 +354,10 @@ void PotatoClient::HandleReply(QNetworkReply* reply, auto& successHandler)
 		case QNetworkReply::HostNotFoundError:
 			emit StatusReady(Status::Error, "Host Not Found");
 			break;
+		// this means the request was cancelled along the way, aka timeout
+		case QNetworkReply::OperationCanceledError:
 		case QNetworkReply::TimeoutError:
 			emit StatusReady(Status::Error, "Connection Timeout");
-			break;
-		case QNetworkReply::OperationCanceledError:
-			emit StatusReady(Status::Error, "Operation Cancelled");
 			break;
 		case QNetworkReply::SslHandshakeFailedError:
 			emit StatusReady(Status::Error, "SSL Error");
@@ -435,7 +430,9 @@ void PotatoClient::OnFileChanged(const std::string& file)
 		{ "Guid", "placeholder123" },
 		{ "Player", arenaInfo.PlayerName },
 		{ "Region", m_dirStatus.region },
-		{ "StatsMode", PotatoConfig().Get<ConfigKey::StatsMode>() },
+		{ "StatsMode", m_services.Get<Config>().Get<ConfigKey::StatsMode>() },
+		{ "TeamDamageMode", m_services.Get<Config>().Get<ConfigKey::TeamDamageMode>() },
+		{ "TeamWinRateMode", m_services.Get<Config>().Get<ConfigKey::TeamWinRateMode>() },
 		{ "ArenaInfo", arenaInfo.Json }
 	};
 
@@ -452,7 +449,7 @@ DirectoryStatus PotatoClient::CheckPath()
 
 	m_watcher.ClearDirectories();
 
-	const std::string gamePath = PotatoConfig().Get<ConfigKey::GameDirectory>();
+	const std::string gamePath = m_services.Get<Config>().Get<ConfigKey::GameDirectory>();
 
 	if (Game::CheckPath(gamePath, dirStatus))
 	{

@@ -5,48 +5,76 @@
 #include <QButtonGroup>
 #include <QFont>
 #include <QHBoxLayout>
+#include <QPropertyAnimation>
 #include <QPushButton>
 #include <QSizePolicy>
 #include <QString>
+#include <QStyle>
 #include <QWidget>
 
 
-const int WIDGET_HEIGHT = 20;
+constexpr int WIDGET_HEIGHT = 20;
 
 using PotatoAlert::Gui::SettingsChoice;
 
-SettingsChoice::SettingsChoice(QWidget* parent, const std::vector<QString>& buttons) : QWidget(parent)
+SettingsChoice::SettingsChoice(QWidget* parent, std::initializer_list<const QString> buttons) : QWidget(parent)
 {
-	this->setObjectName("settingsChoice");
+	Init(buttons.begin(), buttons.end());
+}
 
-	auto layout = new QHBoxLayout;
+SettingsChoice::SettingsChoice(QWidget* parent, std::span<const QString> buttons) : QWidget(parent)
+{
+	Init(buttons.begin(), buttons.end());
+}
+
+template<typename Iterator>
+void SettingsChoice::Init(Iterator begin, Iterator end)
+{
+	setObjectName("settingsChoice");
+
+	auto layout = new QHBoxLayout();
 	layout->setContentsMargins(0, 0, 0, 0);
-	layout->setSpacing(0);
+	layout->setSpacing(1);
 
-	this->setCursor(Qt::PointingHandCursor);
-	this->setFixedHeight(WIDGET_HEIGHT);
+	setCursor(Qt::PointingHandCursor);
+	setFixedHeight(WIDGET_HEIGHT);
 
-	this->m_btnGroup = new QButtonGroup(this);
-	this->m_btnGroup->setExclusive(true);
+	m_btnGroup = new QButtonGroup(this);
+	m_btnGroup->setExclusive(true);
 
-	QFont btnFont("Helvetica Neue", 10, QFont::DemiBold);
+	// QFont btnFont("Helvetica Neue", 10, QFont::DemiBold);
+	QFont btnFont("Noto Sans", 10, QFont::DemiBold);
 	btnFont.setStyleStrategy(QFont::PreferAntialias);
 
-	for (size_t i = 0; i < buttons.size(); i++)
+	size_t i = 0;
+	for (auto it = begin; it != end; it++)
 	{
-		auto button = new QPushButton(buttons[i], this);
+		auto button = new SettingsChoiceButton(*it, this);
+
+		static constexpr const char* PosProp = "GroupPosition";
+		if (it == begin)
+			button->setProperty(PosProp, "First");
+		else if (it == end-1)
+			button->setProperty(PosProp, "Last");
+		else if (begin+1 == end)
+			button->setProperty(PosProp, "Single");
+		else
+			button->setProperty(PosProp, "Middle");
+
 		button->setObjectName("settingsChoiceButton");
 		button->setMinimumWidth(5);
 		button->setFont(btnFont);
 		button->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
-		int width = button->fontMetrics().boundingRect(buttons[i]).width() + 10;
+		int width = button->fontMetrics().boundingRect(*it).width() + 10;
 		button->setFixedWidth(width);
 		button->setFixedHeight(WIDGET_HEIGHT);
 		button->setFlat(true);
 		button->setCheckable(true);
 
-		this->m_btnGroup->addButton(button, static_cast<int>(i));
+		m_btnGroup->addButton(button, static_cast<int>(i));
 		layout->addWidget(button);
+		i++;
 	}
-	this->setLayout(layout);
+
+	setLayout(layout);
 }

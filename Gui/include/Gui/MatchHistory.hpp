@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Client/MatchHistory.hpp"
+#include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
 
 #include "Gui/IconButton.hpp"
@@ -21,30 +22,33 @@ namespace PotatoAlert::Gui {
 class MatchHistory : public QWidget
 {
 	Q_OBJECT
-public:
-	explicit MatchHistory(QWidget* parent = nullptr);
-	void UpdateAll();
-	void UpdateLatest();
-	void SetSummary(uint32_t id, const ReplayParser::ReplaySummary& summary) const;
-
 private:
+	const Client::ServiceProvider& m_services;
+
 	struct GuiEntry
 	{
 		std::array<QTableWidgetItem*, 7> Fields;
 		IconButton* Button;
 	};
 
-	void Init();
-	void InitHeaders() const;
-	void changeEvent(QEvent* event) override;
-	void paintEvent(QPaintEvent* _) override;
 	QTableWidget* m_table = new QTableWidget();
-	void AddEntry(const Client::MatchHistory::Entry& entry);
 	std::map<uint32_t, GuiEntry> m_entries;
 	QPushButton* m_deleteButton = new QPushButton();
 	int m_btnColumn;
 	int m_jsonColumn;
-	// QPushButton* m_analyzeButton = new QPushButton();
+
+public:
+	explicit MatchHistory(const Client::ServiceProvider& serviceProvider, QWidget* parent = nullptr);
+	void UpdateAll();
+	void UpdateLatest();
+	void SetSummary(uint32_t id, const ReplayParser::ReplaySummary& summary) const;
+	bool eventFilter(QObject* watched, QEvent* event) override;
+
+private:
+	void Init();
+	void InitHeaders() const;
+	void paintEvent(QPaintEvent* _) override;
+	void AddEntry(const Client::MatchHistory::Entry& entry);
 
 signals:
 	void ReplaySelected(const Client::StatsParser::MatchType& match);

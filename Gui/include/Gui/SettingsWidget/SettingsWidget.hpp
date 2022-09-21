@@ -1,10 +1,11 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "FolderStatus.hpp"
-#include "SettingsChoice.hpp"
-#include "SettingsSwitch.hpp"
+#include "Gui/SettingsWidget/FolderStatus.hpp"
+#include "Gui/SettingsWidget/SettingsChoice.hpp"
+#include "Gui/SettingsWidget/SettingsSwitch.hpp"
 
+#include <QComboBox>
 #include <QEvent>
 #include <QLabel>
 #include <QLineEdit>
@@ -18,33 +19,27 @@ namespace PotatoAlert::Gui {
 class SettingsWidget : public QWidget
 {
 	Q_OBJECT
-public:
-	explicit SettingsWidget(QWidget* parent = nullptr);
-	void CheckPath() const;
 
 private:
-	void Init();
-	void Load() const;
-	void ConnectSignals();
-	void changeEvent(QEvent* event) override;
+	const Client::ServiceProvider& m_services;
 
 	QLabel* m_updateLabel = new QLabel();
 	QLabel* m_minimizeTrayLabel = new QLabel();
 	QLabel* m_matchHistoryLabel = new QLabel();
 	QLabel* m_gamePathLabel = new QLabel();
-	QLabel* m_replaysFolderLabel = new QLabel();
-	QLabel* m_replaysFolderDesc = new QLabel();
 	QLabel* m_statsModeLabel = new QLabel();
-	QLabel* m_gaLabel = new QLabel();
+	QLabel* m_teamDamageModeLabel = new QLabel();
+	QLabel* m_teamWinRateModeLabel = new QLabel();
 	QLabel* m_languageLabel = new QLabel();
 
 	SettingsSwitch* m_updates = new SettingsSwitch();
 	SettingsSwitch* m_minimizeTray = new SettingsSwitch();
 	SettingsSwitch* m_matchHistory = new SettingsSwitch();
-	SettingsSwitch* m_overrideReplaysFolder = new SettingsSwitch();
 	
 	SettingsChoice* m_statsMode;
-	SettingsChoice* m_language;
+	SettingsChoice* m_teamDamageMode;
+	SettingsChoice* m_teamWinRateMode;
+	QComboBox* m_language = new QComboBox();
 
 	QPushButton* m_saveButton;
 	QPushButton* m_cancelButton;
@@ -56,10 +51,15 @@ private:
 
 	bool m_forceRun = false;
 
-	// manual replays folder
-	// QLineEdit* m_replaysFolderEdit = new QLineEdit();
-	// QToolButton* m_replaysFolderButton = new QToolButton();
-	// std::function<void(bool)> m_toggleReplaysFolderOverride;
+public:
+	explicit SettingsWidget(const Client::ServiceProvider& serviceProvider, QWidget* parent = nullptr);
+	void CheckPath() const;
+	bool eventFilter(QObject* watched, QEvent* event) override;
+
+private:
+	void Init();
+	void Load() const;
+	void ConnectSignals();
 
 signals:
 	void Done();

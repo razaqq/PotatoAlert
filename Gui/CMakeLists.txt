@@ -10,6 +10,7 @@ target_sources(
     PRIVATE
 
     src/AboutWidget.cpp
+    src/LanguageChangeEvent.cpp
     src/MainWindow.cpp
     src/MatchHistory.cpp
     src/NativeWindow.cpp
@@ -39,6 +40,7 @@ target_sources(
     include/Gui/MatchHistory.hpp
     include/Gui/NativeWindow.hpp
     include/Gui/ReplaySummary.hpp
+    include/Gui/SettingsWidget/SettingsChoiceButton.hpp
     include/Gui/SettingsWidget/SettingsSwitch.hpp
     include/Gui/SettingsWidget/SettingsWidget.hpp
     include/Gui/StatsWidget/StatsHeader.hpp
@@ -67,9 +69,9 @@ if(UNIX)
     )
 endif()
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS SvgWidgets Widgets REQUIRED)
 
-target_link_libraries(Gui PRIVATE FramelessHelperWidgets Qt6::Widgets)
+target_link_libraries(Gui PRIVATE FramelessHelperWidgets Qt6::SvgWidgets Qt6::Widgets)
 
 if(WIN32)
     target_link_libraries(Gui PRIVATE Dwmapi Win32 Updater)

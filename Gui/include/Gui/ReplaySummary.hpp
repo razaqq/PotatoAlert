@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Client/MatchHistory.hpp"
+#include "Client/ServiceProvider.hpp"
 
 #include "Gui/AspectRatioWidget.hpp"
 
@@ -16,8 +17,8 @@ namespace PotatoAlert::Gui {
 class ShadowLabel : public QLabel
 {
 public:
-	explicit ShadowLabel(const QString& text, int shadowX = 0, int shadowY = 0, int blurRadius = 0,
-						 QColor shadowColor = QColor(0, 0, 0), QWidget* parent = nullptr) : QLabel(text, parent)
+	explicit ShadowLabel(std::string_view text, int shadowX = 0, int shadowY = 0, int blurRadius = 0,
+						 QColor shadowColor = QColor(0, 0, 0), QWidget* parent = nullptr) : QLabel(text.data(), parent)
 	{
 		QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect(this);
 		effect->setBlurRadius(blurRadius);
@@ -65,7 +66,7 @@ class ReplaySummary : public QWidget
 	Q_OBJECT
 
 public:
-	explicit ReplaySummary(QWidget* parent = nullptr);
+	explicit ReplaySummary(const Client::ServiceProvider& serviceProvider, QWidget* parent = nullptr);
 	void SetReplaySummary(const Client::MatchHistory::Entry& entry);
 
 private:
@@ -76,6 +77,7 @@ private:
 	ShadowLabel* m_lossLabel;
 	ShadowLabel* m_drawLabel;
 	ShadowLabel* m_unknownLabel;
+	const Client::ServiceProvider& m_services;
 
 signals:
 	void ReplaySummaryBack();

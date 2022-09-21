@@ -5,6 +5,8 @@
 #include "Client/StringTable.hpp"
 
 #include "Gui/MatchHistory.hpp"
+
+#include "Gui/LanguageChangeEvent.hpp"
 #include "Gui/QuestionDialog.hpp"
 
 #include <QApplication>
@@ -15,6 +17,7 @@
 #include <QVBoxLayout>
 
 
+using namespace PotatoAlert::Client::StringTable;
 using namespace PotatoAlert::Core;
 using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Gui::MatchHistory;
@@ -27,7 +30,7 @@ void MatchHistory::paintEvent(QPaintEvent* _)
 	style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
-MatchHistory::MatchHistory(QWidget* parent) : QWidget(parent)
+MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidget* parent) : QWidget(parent), m_services(serviceProvider)
 {
 	Init();
 	InitHeaders();
@@ -36,6 +39,8 @@ MatchHistory::MatchHistory(QWidget* parent) : QWidget(parent)
 
 void MatchHistory::Init()
 {
+	qApp->installEventFilter(this);
+
 	QHBoxLayout* horLayout = new QHBoxLayout();
 	horLayout->setContentsMargins(10, 10, 10, 10);
 	horLayout->setSpacing(0);
@@ -89,7 +94,7 @@ void MatchHistory::Init()
 		if (QTableWidgetItem* item = m_table->item(row, m_jsonColumn))
 		{
 			const int id = item->data(Qt::DisplayRole).toInt();
-			const auto match = Client::MatchHistory::Instance().GetMatchJson(id);
+			const auto match = m_services.Get<Client::MatchHistory>().GetMatchJson(id);
 			if (match.has_value())
 			{
 				emit ReplaySelected(match.value());
@@ -116,11 +121,12 @@ void MatchHistory::Init()
 		const int row = m_table->currentRow();
 		if (QTableWidgetItem* item = m_table->item(row, m_jsonColumn))
 		{
-			auto dialog = new QuestionDialog(this, GetString(StringTable::Keys::HISTORY_DELETE_QUESTION));
+			int lang = m_services.Get<Config>().Get<Client::ConfigKey::Language>();
+			auto dialog = new QuestionDialog(lang, this, GetString(lang, StringTableKey::HISTORY_DELETE_QUESTION));
 			if (dialog->Run() == QuestionAnswer::Yes)
 			{
 				const int id = item->data(Qt::DisplayRole).toInt();
-				Client::MatchHistory::Instance().DeleteEntry(id);
+				m_services.Get<Client::MatchHistory>().DeleteEntry(id);
 				m_table->removeRow(row);
 			}
 		}
@@ -158,25 +164,23 @@ void MatchHistory::InitHeaders() const
 	m_table->setCursor(Qt::PointingHandCursor);
 }
 
-void MatchHistory::changeEvent(QEvent* event)
+bool MatchHistory::eventFilter(QObject* watched, QEvent* event)
 {
-	if (event->type() == QEvent::LanguageChange)
+	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		m_table->horizontalHeaderItem(0)->setText(GetString(StringTable::Keys::HISTORY_DATE));
-		m_table->horizontalHeaderItem(1)->setText(GetString(StringTable::Keys::COLUMN_SHIP));
-		m_table->horizontalHeaderItem(2)->setText(GetString(StringTable::Keys::HISTORY_MAP));
-		m_table->horizontalHeaderItem(3)->setText(GetString(StringTable::Keys::HISTORY_MODE));
-		m_table->horizontalHeaderItem(4)->setText(GetString(StringTable::Keys::SETTINGS_STATS_MODE));
-		m_table->horizontalHeaderItem(5)->setText(GetString(StringTable::Keys::COLUMN_PLAYER));
-		m_table->horizontalHeaderItem(6)->setText(GetString(StringTable::Keys::HISTORY_REGION));
+		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		m_table->horizontalHeaderItem(0)->setText(GetString(lang, StringTableKey::HISTORY_DATE));
+		m_table->horizontalHeaderItem(1)->setText(GetString(lang, StringTableKey::COLUMN_SHIP));
+		m_table->horizontalHeaderItem(2)->setText(GetString(lang, StringTableKey::HISTORY_MAP));
+		m_table->horizontalHeaderItem(3)->setText(GetString(lang, StringTableKey::HISTORY_MODE));
+		m_table->horizontalHeaderItem(4)->setText(GetString(lang, StringTableKey::SETTINGS_STATS_MODE));
+		m_table->horizontalHeaderItem(5)->setText(GetString(lang, StringTableKey::COLUMN_PLAYER));
+		m_table->horizontalHeaderItem(6)->setText(GetString(lang, StringTableKey::HISTORY_REGION));
 
-		// m_analyzeButton->setText(GetString(StringTable::Keys::HISTORY_ANALYZE));
-		m_deleteButton->setText(GetString(StringTable::Keys::HISTORY_DELETE));
+		// m_analyzeButton->setText(GetString(lang, StringTable::Keys::HISTORY_ANALYZE));
+		m_deleteButton->setText(GetString(lang, StringTableKey::HISTORY_DELETE));
 	}
-	else
-	{
-		QWidget::changeEvent(event);
-	}
+	return QWidget::eventFilter(watched, event);
 }
 
 void MatchHistory::UpdateAll()
@@ -185,7 +189,7 @@ void MatchHistory::UpdateAll()
 	m_table->setRowCount(0);
 
 	m_table->setSortingEnabled(false);
-	for (auto& entry : Client::MatchHistory::Instance().GetEntries())
+	for (auto& entry : m_services.Get<Client::MatchHistory>().GetEntries())
 	{
 		AddEntry(entry);
 	}
@@ -195,7 +199,7 @@ void MatchHistory::UpdateAll()
 
 void MatchHistory::UpdateLatest()
 {
-	if (auto res = Client::MatchHistory::Instance().GetLatestEntry())
+	if (auto res = m_services.Get<Client::MatchHistory>().GetLatestEntry())
 	{
 		const Client::MatchHistory::Entry entry = res.value();
 
@@ -243,7 +247,7 @@ void MatchHistory::AddEntry(const Client::MatchHistory::Entry& entry)
 	const uint32_t entryId = entry.Id;
 	connect(btn, &QPushButton::clicked, [entryId, this](bool _)
 	{
-		if (const std::optional<Client::MatchHistory::Entry> entry = Client::MatchHistory::Instance().GetEntry(entryId))
+		if (const std::optional<Client::MatchHistory::Entry> entry = m_services.Get<Client::MatchHistory>().GetEntry(entryId))
 		{
 			emit ReplaySummarySelected(entry.value());
 		}

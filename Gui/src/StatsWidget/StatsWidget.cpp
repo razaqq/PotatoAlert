@@ -103,7 +103,7 @@ void StatsWidget::Update(const MatchType& match)
 	m_footer->Update(match);
 }
 
-void StatsWidget::SetStatus(Status status, const std::string& statusText) const
+void StatsWidget::SetStatus(Status status, std::string_view statusText) const
 {
 	m_header->SetStatus(status, statusText);
 }

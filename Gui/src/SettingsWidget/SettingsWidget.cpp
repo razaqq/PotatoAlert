@@ -2,6 +2,7 @@
 
 #include "Client/Config.hpp"
 #include "Client/PotatoClient.hpp"
+#include "Client/ServiceProvider.hpp"
 #include "Client/StringTable.hpp"
 
 #include "Gui/SettingsWidget/FolderStatus.hpp"
@@ -10,7 +11,10 @@
 #include "Gui/SettingsWidget/SettingsSwitch.hpp"
 #include "Gui/SettingsWidget/SettingsWidget.hpp"
 
+#include "Gui/LanguageChangeEvent.hpp"
+
 #include <QApplication>
+#include <QComboBox>
 #include <QEvent>
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -26,11 +30,14 @@
 static constexpr int LABEL_WIDTH = 280;
 static constexpr int ROW_HEIGHT = 20;
 
+using namespace PotatoAlert::Client::StringTable;
 using namespace PotatoAlert::Core;
+using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Gui::SettingsWidget;
 using PotatoAlert::Gui::SettingsChoice;
 
-SettingsWidget::SettingsWidget(QWidget* parent) : QWidget(parent)
+SettingsWidget::SettingsWidget(const Client::ServiceProvider& serviceProvider, QWidget* parent)
+	: QWidget(parent), m_services(serviceProvider)
 {
 	Init();
 	ConnectSignals();
@@ -38,6 +45,8 @@ SettingsWidget::SettingsWidget(QWidget* parent) : QWidget(parent)
 
 void SettingsWidget::Init()
 {
+	qApp->installEventFilter(this);
+
 	auto horLayout = new QHBoxLayout();
 	horLayout->setContentsMargins(10, 10, 10, 10);
 	horLayout->setSpacing(0);
@@ -47,7 +56,8 @@ void SettingsWidget::Init()
 	horLayout->addWidget(centralWidget);
 	horLayout->addStretch();
 
-	QFont labelFont("Helvetica Neue", 13, QFont::Bold);
+	// QFont labelFont("Helvetica Neue", 13, QFont::Bold);
+	QFont labelFont("Noto Sans", 13, QFont::Bold);
 	labelFont.setStyleStrategy(QFont::PreferAntialias);
 
 	auto layout = new QVBoxLayout();
@@ -105,25 +115,49 @@ void SettingsWidget::Init()
 	m_statsModeLabel->setFixedWidth(LABEL_WIDTH);
 	statsModeLayout->addWidget(m_statsModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
-	m_statsMode = new SettingsChoice(this, std::vector<QString>{ "current mode", "randoms", "ranked", "pve" });  // TODO: localize
+	m_statsMode = new SettingsChoice(this, { "current mode", "randoms", "ranked", "pve" });  // TODO: localize
 	statsModeLayout->addWidget(m_statsMode, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(statsModeLayout);
 	/* DISPLAYED STATS MODE */
 
 	layout->addWidget(new HorizontalLine(centralWidget));
 
+	/* TEAM DAMAGE MODE */
+	auto teamDamageModeLayout = new QHBoxLayout();
+	m_teamDamageModeLabel->setFont(labelFont);
+	m_teamDamageModeLabel->setFixedWidth(LABEL_WIDTH);
+	teamDamageModeLayout->addWidget(m_teamDamageModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+
+	m_teamDamageMode = new SettingsChoice(this, { "weighted", "average", "median" });  // TODO: localize
+	teamDamageModeLayout->addWidget(m_teamDamageMode, 0, Qt::AlignVCenter | Qt::AlignRight);
+	layout->addLayout(teamDamageModeLayout);
+	/* TEAM DAMAGE MODE */
+
+	layout->addWidget(new HorizontalLine(centralWidget));
+
+	/* TEAM WIN RATE MODE */
+	auto teamWinRateLayout = new QHBoxLayout();
+	m_teamWinRateModeLabel->setFont(labelFont);
+	m_teamWinRateModeLabel->setFixedWidth(LABEL_WIDTH);
+	teamWinRateLayout->addWidget(m_teamWinRateModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+
+	m_teamWinRateMode = new SettingsChoice(this, { "weighted", "average", "median" });  // TODO: localize
+	teamWinRateLayout->addWidget(m_teamWinRateMode, 0, Qt::AlignVCenter | Qt::AlignRight);
+	layout->addLayout(teamWinRateLayout);
+	/* TEAM WIN RATE MODE */
+
+	layout->addWidget(new HorizontalLine(centralWidget));
+
 	/* LANGUAGE */
-	auto languageLayout = new QHBoxLayout;
+	auto languageLayout = new QHBoxLayout();
 	m_languageLabel->setFont(labelFont);
 	m_languageLabel->setFixedWidth(LABEL_WIDTH);
 	languageLayout->addWidget(m_languageLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
-	std::vector<QString> langs;
-	for (auto& lang : StringTable::Languages)
+	for (const std::string_view lang : Languages)
 	{
-		langs.push_back(QString::fromUtf8(lang.data()));
+		m_language->addItem(lang.data());
 	}
-	m_language = new SettingsChoice(this, langs);
 	languageLayout->addWidget(m_language, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(languageLayout);
 	/* LANGUAGE */
@@ -141,56 +175,7 @@ void SettingsWidget::Init()
 	/* CSV OUTPUT */
 
 	layout->addWidget(new HorizontalLine(centralWidget));
-
-	/* MANUAL REPLAYS FOLDER */
-	/*
-	m_toggleReplaysFolderOverride = [this](bool override)
-	{
-		m_replaysFolderLabel->setEnabled(override);
-		m_replaysFolderDesc->setEnabled(override);
-		m_replaysFolderButton->setEnabled(override);
-		m_replaysFolderEdit->setEnabled(override);
-
-		m_gamePathButton->setDisabled(override);
-		m_gamePathEdit->setDisabled(override);
-		m_gamePathLabel->setDisabled(override);
-		m_folderStatusGui->setDisabled(override);
-	};
-	*/
-
-	/*
-	auto replaysFolderVLayout = new QVBoxLayout();
-
-	auto replaysFolderFirstRowLayout = new QHBoxLayout();
-	replaysFolderFirstRowLayout->setContentsMargins(0, 0, 0, 0);
-	m_replaysFolderLabel->setFont(labelFont);
-	m_replaysFolderLabel->setFixedWidth(LABEL_WIDTH);
-	replaysFolderFirstRowLayout->addWidget(m_replaysFolderLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
-	replaysFolderFirstRowLayout->addWidget(m_overrideReplaysFolder, 0, Qt::AlignVCenter | Qt::AlignRight);
-
-	auto replaysFolderSecondRowLayout = new QHBoxLayout();
-	replaysFolderSecondRowLayout->setContentsMargins(0, 0, 0, 0);
-
-	replaysFolderSecondRowLayout->addWidget(m_replaysFolderDesc, 0, Qt::AlignVCenter | Qt::AlignLeft);
-	replaysFolderSecondRowLayout->addStretch();
-
-	m_replaysFolderEdit->setFixedSize(278, ROW_HEIGHT);
-	m_replaysFolderEdit->setReadOnly(true);
-	m_replaysFolderEdit->setFocusPolicy(Qt::NoFocus);
-	replaysFolderSecondRowLayout->addWidget(m_replaysFolderEdit, 0, Qt::AlignVCenter | Qt::AlignRight);
-
-	m_replaysFolderButton = new QToolButton(this);
-	m_replaysFolderButton->setIcon(QIcon(QPixmap(":/folder.svg")));
-	m_replaysFolderButton->setIconSize(QSize(ROW_HEIGHT, ROW_HEIGHT));
-	m_replaysFolderButton->setCursor(Qt::PointingHandCursor);
-	replaysFolderSecondRowLayout->addWidget(m_replaysFolderButton, 0, Qt::AlignVCenter | Qt::AlignRight);
-
-	replaysFolderVLayout->addLayout(replaysFolderFirstRowLayout);
-	replaysFolderVLayout->addLayout(replaysFolderSecondRowLayout);
-
-	layout->addLayout(replaysFolderVLayout);
-	*/
-
+	
 	layout->addStretch();
 
 	/* SAVE & CANCEL BUTTON */
@@ -217,109 +202,98 @@ void SettingsWidget::Init()
 
 void SettingsWidget::Load() const
 {
-	m_updates->setChecked(PotatoConfig().Get<ConfigKey::UpdateNotifications>());
-	m_minimizeTray->setChecked(PotatoConfig().Get<ConfigKey::MinimizeTray>());
-	m_gamePathEdit->setText(QString::fromStdString(
-			PotatoConfig().Get<ConfigKey::GameDirectory>()));
-	m_statsMode->m_btnGroup->button(static_cast<int>(PotatoConfig().Get<ConfigKey::StatsMode>()))->setChecked(true);
-	m_language->m_btnGroup->button(PotatoConfig().Get<ConfigKey::Language>())->setChecked(true);
-	m_matchHistory->setChecked(PotatoConfig().Get<ConfigKey::MatchHistory>());
+	const Config& config = m_services.Get<Config>();
 
-	// m_replaysFolderEdit->setText(QString::fromStdString(
-	//		PotatoConfig().Get<ConfigKey::ReplaysDirectory>()));
-	bool manualReplays = PotatoConfig().Get<ConfigKey::OverrideReplaysDirectory>();
-	m_overrideReplaysFolder->setChecked(manualReplays);
-	// m_toggleReplaysFolderOverride(manualReplays);
+	m_updates->setChecked(config.Get<ConfigKey::UpdateNotifications>());
+	m_minimizeTray->setChecked(config.Get<ConfigKey::MinimizeTray>());
+	m_gamePathEdit->setText(QString::fromStdString(config.Get<ConfigKey::GameDirectory>()));
+	m_statsMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::StatsMode>()))->setChecked(true);
+	m_teamDamageMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::TeamDamageMode>()))->setChecked(true);
+	m_teamWinRateMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::TeamWinRateMode>()))->setChecked(true);
+	m_language->setCurrentIndex(config.Get<ConfigKey::Language>());
+	m_matchHistory->setChecked(config.Get<ConfigKey::MatchHistory>());
 }
 
 void SettingsWidget::ConnectSignals()
 {
-	connect(m_saveButton, &QPushButton::clicked, [this]()
+	Config& config = m_services.Get<Config>();
+
+	connect(m_saveButton, &QPushButton::clicked, [this, &config]()
 	{
 		if (m_forceRun)
 		{
 			m_forceRun = false;
-			Client::PotatoClient::Instance().ForceRun();
+			m_services.Get<Client::PotatoClient>().ForceRun();
 		}
 
-		PotatoConfig().Save();
+		config.Save();
 		CheckPath();
 		emit Done();
 	});
-	connect(m_cancelButton, &QPushButton::clicked, [this]()
+	connect(m_cancelButton, &QPushButton::clicked, [this, &config]()
 	{
 		m_forceRun = false;
-		PotatoConfig().Load();
+		config.Load();
 		Load();
 		CheckPath();
 		QEvent event(QEvent::LanguageChange);
 		QApplication::sendEvent(window(), &event);
 		emit Done();
 	});
-	connect(m_updates, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<ConfigKey::UpdateNotifications>(checked); });
-	connect(m_minimizeTray, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<ConfigKey::MinimizeTray>(checked); });
-	connect(m_statsMode->m_btnGroup, &QButtonGroup::idClicked, [this](int id)
+	connect(m_updates, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::UpdateNotifications>(checked); });
+	connect(m_minimizeTray, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::MinimizeTray>(checked); });
+	connect(m_statsMode->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
 	{
 		m_forceRun = true;
-		PotatoConfig().Set<ConfigKey::StatsMode>(static_cast<StatsMode>(id));
+		config.Set<ConfigKey::StatsMode>(static_cast<Client::StatsMode>(id));
 	});
-	connect(m_matchHistory, &SettingsSwitch::clicked, [](bool checked) { PotatoConfig().Set<ConfigKey::MatchHistory>(checked); });
-	connect(m_language->m_btnGroup, &QButtonGroup::idClicked, [this](int id)
+	connect(m_teamDamageMode->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
 	{
-		PotatoConfig().Set<ConfigKey::Language>(id);
-		QEvent event(QEvent::LanguageChange);
+		config.Set<ConfigKey::TeamDamageMode>(static_cast<Client::TeamStatsMode>(id));
+	});
+	connect(m_teamWinRateMode->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
+	{
+		config.Set<ConfigKey::TeamWinRateMode>(static_cast<Client::TeamStatsMode>(id));
+	});
+	connect(m_matchHistory, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::MatchHistory>(checked); });
+	connect(m_language, &QComboBox::currentIndexChanged, [this, &config](int id)
+	{
+		config.Set<ConfigKey::Language>(id);
+		LanguageChangeEvent event(id);
 		QApplication::sendEvent(window(), &event);
 	});
-	connect(m_gamePathButton, &QToolButton::clicked, [this]()
+	connect(m_gamePathButton, &QToolButton::clicked, [this, &config]()
 	{
 		QString dir = QFileDialog::getExistingDirectory(this, "Select Game Directory", "", QFileDialog::ShowDirsOnly);
 		if (dir != "")
 		{
 			m_gamePathEdit->setText(dir);
-			PotatoConfig().Set<ConfigKey::GameDirectory>(dir.toStdString());
+			config.Set<ConfigKey::GameDirectory>(dir.toStdString());
 			CheckPath();
 		}
-	});
-	/*
-	connect(m_replaysFolderButton, &QToolButton::clicked, [this]()
-	{
-		QString dir = QFileDialog::getExistingDirectory(this, "Select Replays Folder", "", QFileDialog::ShowDirsOnly);
-		if (dir != "")
-		{
-			m_replaysFolderEdit->setText(dir);
-			PotatoConfig().Set<ConfigKey::ReplaysDirectory>(dir.toStdString());
-		}
-	});
-	*/
-	connect(m_overrideReplaysFolder, &SettingsSwitch::clicked, [this](bool checked)
-	{
-		PotatoConfig().Set<ConfigKey::OverrideReplaysDirectory>(checked);
 	});
 }
 
 void SettingsWidget::CheckPath() const
 {
-	m_folderStatusGui->Update(Client::PotatoClient::Instance().CheckPath());
+	m_folderStatusGui->Update(m_services.Get<Client::PotatoClient>().CheckPath());
 }
 
-void SettingsWidget::changeEvent(QEvent* event)
+bool SettingsWidget::eventFilter(QObject* watched, QEvent* event)
 {
-	if (event->type() == QEvent::LanguageChange)
+	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		m_updateLabel->setText(GetString(StringTable::Keys::SETTINGS_UPDATES));
-		m_minimizeTrayLabel->setText(GetString(StringTable::Keys::SETTINGS_MINIMIZETRAY));
-		m_matchHistoryLabel->setText(GetString(StringTable::Keys::SETTINGS_SAVE_MATCHHISTORY));
-		m_gamePathLabel->setText(GetString(StringTable::Keys::SETTINGS_GAME_DIRECTORY));
-		m_replaysFolderLabel->setText(GetString(StringTable::Keys::SETTINGS_MANUAL_REPLAYS));
-		m_replaysFolderDesc->setText(GetString(StringTable::Keys::SETTINGS_MANUAL_REPLAYS_DESC));
-		m_statsModeLabel->setText(GetString(StringTable::Keys::SETTINGS_STATS_MODE));
-		m_gaLabel->setText(GetString(StringTable::Keys::SETTINGS_GA));
-		m_languageLabel->setText(GetString(StringTable::Keys::SETTINGS_LANGUAGE));
-		m_saveButton->setText(GetString(StringTable::Keys::SETTINGS_SAVE));
-		m_cancelButton->setText(GetString(StringTable::Keys::SETTINGS_CANCEL));
+		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		m_updateLabel->setText(GetString(lang, StringTableKey::SETTINGS_UPDATES));
+		m_minimizeTrayLabel->setText(GetString(lang, StringTableKey::SETTINGS_MINIMIZETRAY));
+		m_matchHistoryLabel->setText(GetString(lang, StringTableKey::SETTINGS_SAVE_MATCHHISTORY));
+		m_gamePathLabel->setText(GetString(lang, StringTableKey::SETTINGS_GAME_DIRECTORY));
+		m_statsModeLabel->setText(GetString(lang, StringTableKey::SETTINGS_STATS_MODE));
+		m_teamDamageModeLabel->setText(GetString(lang, StringTableKey::SETTINGS_TEAM_DAMAGE_MODE));
+		m_teamWinRateModeLabel->setText(GetString(lang, StringTableKey::SETTINGS_TEAM_WIN_RATE_MODE));
+		m_languageLabel->setText(GetString(lang, StringTableKey::SETTINGS_LANGUAGE));
+		m_saveButton->setText(GetString(lang, StringTableKey::SETTINGS_SAVE));
+		m_cancelButton->setText(GetString(lang, StringTableKey::SETTINGS_CANCEL));
 	}
-	else
-	{
-		QWidget::changeEvent(event);
-	}
+	return QWidget::eventFilter(watched, event);
 }

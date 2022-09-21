@@ -4,30 +4,41 @@
 #include "Client/PotatoClient.hpp"
 #include "Client/StringTable.hpp"
 
+#include "Gui/LanguageChangeEvent.hpp"
 #include "Gui/StatsWidget/StatsHeader.hpp"
 
+#include <QApplication>
 #include <QFont>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QSize>
+#include <QSvgWidget>
 #include <QWidget>
+#include <QWindow>
 
 #include <string>
 
 
+using namespace PotatoAlert::Client::StringTable;
 using PotatoAlert::Gui::StatsHeader;
 
 StatsHeader::StatsHeader(QWidget* parent) : QWidget(parent)
 {
-	this->Init();
+	Init();
 }
 
 void StatsHeader::Init()
 {
-	this->m_loading->setSpeed(1000);
-	this->m_loading->setScaledSize(QSize(20, 20));
-	this->m_ready = this->m_ready.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-	this->m_error = this->m_error.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	qApp->installEventFilter(this);
+
+	m_loading = new QSvgWidget(":/Loading.svg");
+	m_ready = QIcon(":/Ready.svg").pixmap(QSize(20, 20), window()->devicePixelRatio());
+	m_error = QIcon(":/Error.svg").pixmap(QSize(20, 20), window()->devicePixelRatio());
+	
+	QHBoxLayout* iconLayout = new QHBoxLayout();
+	iconLayout->setContentsMargins(0, 0, 0, 0);
+	iconLayout->addWidget(m_loading);
+	m_statusIcon->setLayout(iconLayout);
 
 	auto layout = new QHBoxLayout();
 	layout->setContentsMargins(10, 0, 10, 0);
@@ -44,18 +55,18 @@ void StatsHeader::Init()
 	statusLayout->setContentsMargins(0, 0, 0, 0);
 	statusLayout->setSpacing(0);
 	status->setFixedWidth(130);
-	this->m_statusIcon->setFixedSize(20, 20);
-	statusLayout->addWidget(this->m_statusIcon);
+	m_statusIcon->setFixedSize(20, 20);
+	statusLayout->addWidget(m_statusIcon);
 	statusLayout->addSpacing(5);
-	this->m_statusText->setAlignment(Qt::AlignCenter);
-	this->m_statusText->setStyleSheet("font-size: 10px;");
-	statusLayout->addWidget(this->m_statusText);
+	m_statusText->setAlignment(Qt::AlignCenter);
+	m_statusText->setStyleSheet("font-size: 10px;");
+	statusLayout->addWidget(m_statusText);
 	statusLayout->addStretch();
 	status->setLayout(statusLayout);
 
 	// team labels
-	this->m_team1Label->setFont(labelFont);
-	this->m_team2Label->setFont(labelFont);
+	m_team1Label->setFont(labelFont);
+	m_team2Label->setFont(labelFont);
 
 	// dummy with same width as status
 	auto dummy = new QWidget();
@@ -64,50 +75,52 @@ void StatsHeader::Init()
 	// add to layouts
 	leftLayout->addWidget(status);
 	leftLayout->addStretch();
-	leftLayout->addWidget(this->m_team1Label);
+	leftLayout->addWidget(m_team1Label);
 	leftLayout->addStretch();
 	leftLayout->addWidget(dummy);
 
 	rightLayout->addStretch();
-	rightLayout->addWidget(this->m_team2Label);
+	rightLayout->addWidget(m_team2Label);
 	rightLayout->addStretch();
 
 	layout->addLayout(leftLayout);
 	layout->addLayout(rightLayout);
-	this->setLayout(layout);
+	setLayout(layout);
 }
 
-void StatsHeader::changeEvent(QEvent* event)
+bool StatsHeader::eventFilter(QObject* watched, QEvent* event)
 {
-	if (event->type() == QEvent::LanguageChange)
+	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		this->m_team1Label->setText(GetString(Core::StringTable::Keys::LABEL_MYTEAM));
-		this->m_team2Label->setText(GetString(Core::StringTable::Keys::LABEL_ENEMYTEAM));
+		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		m_team1Label->setText(GetString(lang, StringTableKey::LABEL_MYTEAM));
+		m_team2Label->setText(GetString(lang, StringTableKey::LABEL_ENEMYTEAM));
 	}
-	else
-	{
-		QWidget::changeEvent(event);
-	}
+	return QWidget::eventFilter(watched, event);
 }
 
-void StatsHeader::SetStatus(Status status, const std::string& text)
+void StatsHeader::SetStatus(Status status, std::string_view text) const
 {
-	this->m_statusText->setText(QString::fromStdString(text));
-	this->m_statusIcon->clear();
+	m_statusText->setText(text.data());
+	m_loading->setVisible(false);
+	m_statusIcon->clear();
 
 	switch (status)
 	{
-	case Status::Ready:
-		m_loading->stop();
-		this->m_statusIcon->setPixmap(this->m_ready);
-		break;
-	case Status::Loading:
-		this->m_statusIcon->setMovie(this->m_loading);
-		m_loading->start();
-		break;
-	case Status::Error:
-		m_loading->stop();
-		this->m_statusIcon->setPixmap(this->m_error);
-		break;
+		case Status::Ready:
+		{
+			m_statusIcon->setPixmap(m_ready);
+			break;
+		}
+		case Status::Loading:
+		{
+			m_loading->setVisible(true);
+			break;
+		}
+		case Status::Error:
+		{
+			m_statusIcon->setPixmap(m_error);
+			break;
+		}
 	}
 }

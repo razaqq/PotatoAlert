@@ -18,7 +18,8 @@ namespace PotatoAlert::Client {
 class MatchHistory
 {
 public:
-	PA_SINGLETON(MatchHistory);
+	MatchHistory();
+	~MatchHistory();
 
 	struct Entry
 	{
@@ -68,9 +69,6 @@ public:
 	void SetAnalyzeResult(std::string_view hash, const ReplayParser::ReplaySummary& summary) const;
 
 private:
-	MatchHistory();
-	~MatchHistory();
-
 	bool WriteEntry(const Entry& entry) const;
 	static Entry CreateEntry(const StatsParser::MatchType::InfoType& info, std::string_view arenaInfo, std::string_view json, std::string_view hash);
 

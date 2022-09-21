@@ -22,14 +22,16 @@
 
 namespace fs = std::filesystem;
 
-using PotatoAlert::Core::Config;
-using PotatoAlert::Core::ConfigKey;
+using PotatoAlert::Client::Config;
+using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Client::Game::GetGamePath;
 
 static json g_defaultConfig;
 static std::unordered_map<ConfigKey, std::string> g_keyNames =
 {
 	{ ConfigKey::StatsMode,                "stats_mode" },
+	{ ConfigKey::TeamDamageMode,           "team_damage_mode" },
+	{ ConfigKey::TeamWinRateMode,          "team_win_rate_mode" },
 	{ ConfigKey::UpdateNotifications,      "update_notifications" },
 	{ ConfigKey::MinimizeTray,             "minimize_tray" },
 	{ ConfigKey::MatchHistory,             "match_history" },
@@ -45,12 +47,15 @@ static std::unordered_map<ConfigKey, std::string> g_keyNames =
 	{ ConfigKey::MenuBarLeft,              "menubar_left" }
 };
 
-Config::Config(std::string_view fileName)
+Config::Config(const fs::path& path, std::string_view fileName)
+	: m_filePath(path / fileName)
 {
 	g_defaultConfig = {
 		{ g_keyNames[ConfigKey::StatsMode],                StatsMode::Pvp },
+		{ g_keyNames[ConfigKey::TeamDamageMode],           TeamStatsMode::Average },
+		{ g_keyNames[ConfigKey::TeamWinRateMode],          TeamStatsMode::Average },
 		{ g_keyNames[ConfigKey::UpdateNotifications],      true },
-		{ g_keyNames[ConfigKey::MinimizeTray],             true },
+		{ g_keyNames[ConfigKey::MinimizeTray],             false },
 		{ g_keyNames[ConfigKey::MatchHistory],             true },
 		{ g_keyNames[ConfigKey::WindowHeight],             450 },
 		{ g_keyNames[ConfigKey::WindowWidth],              1500 },
@@ -63,8 +68,6 @@ Config::Config(std::string_view fileName)
 		{ g_keyNames[ConfigKey::Language],                 0 },
 		{ g_keyNames[ConfigKey::MenuBarLeft],              true }
 	};
-
-	m_filePath = AppDataPath("PotatoAlert") / fileName;
 
 	if (!Exists())
 	{
@@ -274,10 +277,4 @@ void Config::ApplyUpdates()
 std::string& Config::GetKeyName(ConfigKey key)
 {
 	return g_keyNames[key];
-}
-
-Config& PotatoAlert::Core::PotatoConfig()
-{
-	static Config p("config.json");
-	return p;
 }

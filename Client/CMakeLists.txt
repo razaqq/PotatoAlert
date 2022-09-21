@@ -15,7 +15,6 @@ target_sources(
     src/PotatoClient.cpp
     src/ReplayAnalyzer.cpp
     src/StatsParser.cpp
-    src/StringTable.cpp
 )
 
 if(WIN32)

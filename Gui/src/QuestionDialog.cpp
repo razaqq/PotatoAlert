@@ -12,28 +12,28 @@
 #include <QStyle>
 
 
-using namespace PotatoAlert::Core;
+using namespace PotatoAlert::Client::StringTable;
 using PotatoAlert::Gui::QuestionAnswer;
 using PotatoAlert::Gui::QuestionDialog;
 
-QuestionDialog::QuestionDialog(QWidget* parent, const QString& questionText) : FramelessDialog(parent)
+QuestionDialog::QuestionDialog(int language, QWidget* parent, const QString& questionText) : FramelessDialog(parent)
 {
 	auto buttonBox = new QDialogButtonBox();
 	buttonBox->setAttribute(Qt::WA_TranslucentBackground);
 
-	auto yesButton = new QPushButton(GetString(StringTable::Keys::YES), buttonBox);
+	auto yesButton = new QPushButton(GetStringView(language, StringTableKey::YES).data(), buttonBox);
 	yesButton->setObjectName("confirmButton");
 
-	auto noButton = new QPushButton(GetString(StringTable::Keys::NO), buttonBox);
+	auto noButton = new QPushButton(GetStringView(language, StringTableKey::NO).data(), buttonBox);
 	noButton->setObjectName("confirmButton");
 
 	connect(yesButton, &QPushButton::clicked, [this]([[maybe_unused]] bool checked)
 	{
-		done(QDialog::Accepted);
+		done(Accepted);
 	});
 	connect(noButton, &QPushButton::clicked, [this]([[maybe_unused]] bool checked)
 	{
-		done(QDialog::Rejected);
+		done(Rejected);
 	});
 
 	buttonBox->addButton(yesButton, QDialogButtonBox::ActionRole);
