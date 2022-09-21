@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/ApplicationGuard.hpp"
+#include "Core/Directory.hpp"
 #include "Core/StandardPaths.hpp"
 
 #include "Client/Config.hpp"
