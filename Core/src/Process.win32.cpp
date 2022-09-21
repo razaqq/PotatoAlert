@@ -12,6 +12,11 @@
 
 namespace c = PotatoAlert::Core;
 
+void c::ExitCurrentProcess(uint32_t code)
+{
+	ExitProcess(code);
+}
+
 bool c::CreateNewProcess(std::string_view path, std::string_view args, bool elevated)
 {
 	const char* lpVerb = elevated ? "runas" : "open";
