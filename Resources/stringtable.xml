@@ -4,79 +4,136 @@
     <Key ID="SETTINGS_REPLAYSFOLDER_STATUS">
         <English>Status:</English>
         <Deutsch>Status:</Deutsch>
+        <简体中文>状态:</简体中文>
+        <繁體中文>狀態:</繁體中文>
+        <日本語>状態:</日本語>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_FOLDERS">
         <English>Replays Folder(s):</English>
         <Deutsch>Replays Ordner:</Deutsch>
+        <简体中文>录像文件夹:</简体中文>
+        <繁體中文>錄像文件夾:</繁體中文>
+        <日本語>リプレイフォルダ:</日本語>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_REGION">
         <English>Region:</English>
         <Deutsch>Region:</Deutsch>
+        <简体中文>服务器: </简体中文>
+        <繁體中文>伺服器: </繁體中文>
+        <日本語>サーバー: </日本語>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_GAMEVERSION">
         <English>Game Version:</English>
         <Deutsch>Spielversion:</Deutsch>
+        <简体中文>游戏版本:</简体中文>
+        <繁體中文>遊戲版本:</繁體中文>
+        <日本語>ゲームバージョン:</日本語>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_STEAM">
         <English>Steam:</English>
         <Deutsch>Steam:</Deutsch>
+        <简体中文>Steam:</简体中文>
+        <繁體中文>Steam:</繁體中文>
+        <日本語>Steam:</日本語>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_VERSIONED">
         <English>Versioned Replays:</English>
         <Deutsch>Versioned Replays:</Deutsch>
+        <简体中文>录像是否版本化:</简体中文>
+        <繁體中文>錄像是否版本化:</繁體中文>
+        <日本語>リプレイがバージョン化されたか:</日本語>
     </Key>
 
     <Key ID="SETTINGS_UPDATES">
         <English>Update Notifications</English>
         <Deutsch>Update Benachrichtigungen</Deutsch>
+        <简体中文>更新通知</简体中文>
+        <繁體中文>更新通知</繁體中文>
+        <日本語>更新通知</日本語>
     </Key>
     <Key ID="SETTINGS_MINIMIZETRAY">
         <English>Minimize To Tray On Close</English>
         <Deutsch>In Tray Minimieren</Deutsch>
+        <简体中文>关闭时最小化到托盘</简体中文>
+        <繁體中文>關閉時最小化到托盤</繁體中文>
+        <日本語>閉じるとトレイに最小化</日本語>
     </Key>
     <Key ID="SETTINGS_SAVE_MATCHHISTORY">
         <English>Save Match History</English>
         <Deutsch>Gefechtsverlauf Speichern</Deutsch>
+        <简体中文>保存战斗记录</简体中文>
+        <繁體中文>保存戰鬥記錄</繁體中文>
+        <日本語>戦闘履歴を保存</日本語>
     </Key>
     <Key ID="SETTINGS_GAME_DIRECTORY">
         <English>Game Directory</English>
         <Deutsch>Spiel Verzeichnis</Deutsch>
+        <简体中文>游戏目录</简体中文>
+        <繁體中文>遊戲目錄</繁體中文>
+        <日本語>ゲームディレクトリ</日本語>
     </Key>
     <Key ID="SETTINGS_MANUAL_REPLAYS">
         <English>Override Replays Folder</English>
         <Deutsch>Replays Ordner überschreiben</Deutsch>
+        <简体中文>覆盖录像文件夹</简体中文>
+        <繁體中文>覆蓋錄像文件夾</繁體中文>
+        <日本語>リプレイフォルダを上書き</日本語>
     </Key>
     <Key ID="SETTINGS_MANUAL_REPLAYS_DESC">
         <English>Game Directory setting will be ignored!\nOnly use if auto-detection does not work.</English>
         <Deutsch>Spielverzeichnis Einstellung wird ignoriert!\nNur benutzen falls auto-Erkennung nicht funktioniert.</Deutsch>
+        <简体中文>将忽略游戏目录设置!\n请只在自动检测出错时使用。</简体中文>
+        <繁體中文>將忽略遊戲目錄設置!\n請只在自動檢測出錯時使用。</繁體中文>
+        <日本語>ゲームディレクトリ設定は無視されます!\n自動検出が機能しない場合のみ使ってください。</日本語>
     </Key>
     <Key ID="SETTINGS_STATS_MODE">
         <English>Stats Mode</English>
         <Deutsch>Statistik Modus</Deutsch>
+        <简体中文>数据模式</简体中文>
+        <繁體中文>數據模式</繁體中文>
+        <日本語>データモード</日本語>
     </Key>
     <Key ID="SETTINGS_TEAM_DAMAGE_MODE">
         <English>Team Damage Mode</English>
         <Deutsch>Team Schaden Modus</Deutsch>
+        <简体中文>队伍伤害模式</简体中文>
+        <繁體中文>隊伍傷害模式</繁體中文>
+        <日本語>チームダメージモード</日本語>
     </Key>
     <Key ID="SETTINGS_TEAM_WIN_RATE_MODE">
         <English>Team Winrate Mode</English>
         <Deutsch>Team Winrate Modus</Deutsch>
+        <简体中文>队伍胜率模式</简体中文>
+        <繁體中文>隊伍勝率模式</繁體中文>
+        <日本語>チーム勝率モード</日本語>
     </Key>
     <Key ID="SETTINGS_GA">
         <English>Allow Google Analytics</English>
         <Deutsch>Google Analytics Erlauben</Deutsch>
+        <简体中文>允许使用谷歌分析</简体中文>
+        <繁體中文>允許使用谷歌分析</繁體中文>
+        <日本語>Google Analyticsを許可</日本語>
     </Key>
     <Key ID="SETTINGS_LANGUAGE">
         <English>Language</English>
         <Deutsch>Sprache</Deutsch>
+        <简体中文>语言</简体中文>
+        <繁體中文>語言</繁體中文>
+        <日本語>言語</日本語>
     </Key>
     <Key ID="SETTINGS_SAVE">
         <English>Save</English>
         <Deutsch>Speichern</Deutsch>
+        <简体中文>保存</简体中文>
+        <繁體中文>保存</繁體中文>
+        <日本語>保存</日本語>
     </Key>
     <Key ID="SETTINGS_CANCEL">
         <English>Cancel</English>
         <Deutsch>Abbrechen</Deutsch>
+        <简体中文>取消</简体中文>
+        <繁體中文>取消</繁體中文>
+        <日本語>キャンセル</日本語>
     </Key>
 
 
@@ -84,112 +141,190 @@
     <Key ID="LABEL_WINRATE">
         <English>WR: </English>
         <Deutsch>WR: </Deutsch>
+        <简体中文>胜率: </简体中文>
+        <繁體中文>勝率: </繁體中文>
+        <日本語>勝率: </日本語>
     </Key>
     <Key ID="LABEL_DAMAGE">
         <English>DMG: </English>
         <Deutsch>DMG: </Deutsch>
+        <简体中文>伤害: </简体中文>
+        <繁體中文>傷害: </繁體中文>
+        <日本語>ダメージ: </日本語>
     </Key>
     <Key ID="LABEL_REGION">
         <English>Region: </English>
         <Deutsch>Region: </Deutsch>
+        <简体中文>服务器: </简体中文>
+        <繁體中文>伺服器: </繁體中文>
+        <日本語>サーバー: </日本語>
     </Key>
 
     <Key ID="LABEL_MYTEAM">
         <English>My Team</English>
         <Deutsch>Mein Team</Deutsch>
+        <简体中文>我方队伍</简体中文>
+        <繁體中文>我方隊伍</繁體中文>
+        <日本語>自分のチーム</日本語>
     </Key>
     <Key ID="LABEL_ENEMYTEAM">
         <English>Enemy Team</English>
         <Deutsch>Gegnerteam</Deutsch>
+        <简体中文>敌方队伍</简体中文>
+        <繁體中文>敵方隊伍</繁體中文>
+        <日本語>敵チーム</日本語>
     </Key>
 
     <Key ID="COLUMN_PLAYER">
         <English>Player</English>
         <Deutsch>Spieler</Deutsch>
+        <简体中文>玩家</简体中文>
+        <繁體中文>玩家</繁體中文>
+        <日本語>プレイヤー</日本語>
     </Key>
     <Key ID="COLUMN_SHIP">
         <English>Ship</English>
         <Deutsch>Schiff</Deutsch>
+        <简体中文>战舰</简体中文>
+        <繁體中文>戰艦</繁體中文>
+        <日本語>戦艦</日本語>
     </Key>
     <Key ID="COLUMN_MATCHES">
         <English>Matches</English>
         <Deutsch>Gefechte</Deutsch>
+        <简体中文>场数</简体中文>
+        <繁體中文>場數</繁體中文>
+        <日本語>戦闘数</日本語>
     </Key>
     <Key ID="COLUMN_WINRATE">
         <English>Winrate</English>
         <Deutsch>Winrate</Deutsch>
+        <简体中文>胜率</简体中文>
+        <繁體中文>勝率</繁體中文>
+        <日本語>勝率</日本語>
     </Key>
     <Key ID="COLUMN_AVERAGE_DAMAGE">
         <English>Avg DMG</English>
         <Deutsch>Avg DMG</Deutsch>
+        <简体中文>平均伤害</简体中文>
+        <繁體中文>平均傷害</繁體中文>
+        <日本語>平均ダメージ</日本語>
     </Key>
     <Key ID="COLUMN_MATCHES_SHIP">
         <English>M Ship</English>
         <Deutsch>Gef. Schiff</Deutsch>
+        <简体中文>战舰场数</简体中文>
+        <繁體中文>戰艦場數</繁體中文>
+        <日本語>戦艦戦闘数</日本語>
     </Key>
     <Key ID="COLUMN_WINRATE_SHIP">
         <English>WR Ship</English>
         <Deutsch>WR Schiff</Deutsch>
+        <简体中文>战舰胜率</简体中文>
+        <繁體中文>戰艦勝率</繁體中文>
+        <日本語>戦艦勝率</日本語>
     </Key>
     <Key ID="COLUMN_AVERAGE_DAMAGE_SHIP">
         <English>DMG Ship</English>
         <Deutsch>DMG Schiff</Deutsch>
+        <简体中文>战舰伤害</简体中文>
+        <繁體中文>戰艦傷害</繁體中文>
+        <日本語>戦艦ダメージ</日本語>
     </Key>
 
     <!-- UPDATER -->
     <Key ID="UPDATE_QUESTION">
         <English>There is a new version available. Would you like to update now?</English>
         <Deutsch>Es ist eine neue Version verfügbar, jetzt aktualisieren?</Deutsch>
+        <简体中文>发现新版本，是否立即更新？</简体中文>
+        <繁體中文>發現新版本，是否立即更新？</繁體中文>
+        <日本語>新しいバージョンがあります。今すぐ更新しますか？</日本語>
     </Key>
     <Key ID="YES">
         <English>Yes</English>
         <Deutsch>Ja</Deutsch>
+        <简体中文>是</简体中文>
+        <繁體中文>是</繁體中文>
+        <日本語>はい</日本語>
     </Key>
     <Key ID="NO">
         <English>No</English>
         <Deutsch>Nein</Deutsch>
+        <简体中文>否</简体中文>
+        <繁體中文>否</繁體中文>
+        <日本語>いいえ</日本語>
     </Key>
     <Key ID="OK">
         <English>Ok</English>
         <Deutsch>Ok</Deutsch>
+        <简体中文>确定</简体中文>
+        <繁體中文>確定</繁體中文>
+        <日本語>OK</日本語>
     </Key>
     <Key ID="UPDATE_FAILED">
         <English>Update failed: </English>
         <Deutsch>Das Update ist fehlgeschlagen: </Deutsch>
+        <简体中文>更新失败: </简体中文>
+        <繁體中文>更新失敗: </繁體中文>
+        <日本語>更新に失敗しました: </日本語>
     </Key>
     <Key ID="UPDATE_DOWNLOADING">
         <English>Downloading update, please wait...</English>
         <Deutsch>Update wird heruntergeladen, bitte warten...</Deutsch>
+        <简体中文>正在下载更新，请稍候...</简体中文>
+        <繁體中文>正在下載更新，請稍候...</繁體中文>
+        <日本語>更新をダウンロードしています。少々お待ちください。</日本語>
     </Key>
 
     <!-- MATCH HISTORY-->
     <Key ID="HISTORY_DATE">
         <English>Date</English>
         <Deutsch>Datum</Deutsch>
+        <简体中文>日期</简体中文>
+        <繁體中文>日期</繁體中文>
+        <日本語>日付</日本語>
     </Key>
     <Key ID="HISTORY_MODE">
         <English>Mode</English>
         <Deutsch>Modus</Deutsch>
+        <简体中文>模式</简体中文>
+        <繁體中文>模式</繁體中文>
+        <日本語>モード</日本語>
     </Key>
     <Key ID="HISTORY_MAP">
         <English>Map</English>
         <Deutsch>Karte</Deutsch>
+        <简体中文>地图</简体中文>
+        <繁體中文>地圖</繁體中文>
+        <日本語>マップ</日本語>
     </Key>
     <Key ID="HISTORY_REGION">
         <English>Region</English>
         <Deutsch>Region</Deutsch>
+        <简体中文>服务器</简体中文>
+        <繁體中文>伺服器</繁體中文>
+        <日本語>サーバー</日本語>
     </Key>
     <Key ID="HISTORY_ANALYZE">
         <English>Re-Analyze</English>
         <Deutsch>Reanalysieren</Deutsch>
+        <简体中文>重新分析</简体中文>
+        <繁體中文>重新分析</繁體中文>
+        <日本語>再分析</日本語>
     </Key>
     <Key ID="HISTORY_DELETE">
         <English>Delete</English>
         <Deutsch>Löschen</Deutsch>
+        <简体中文>删除</简体中文>
+        <繁體中文>刪除</繁體中文>
+        <日本語>削除</日本語>
     </Key>
     <Key ID="HISTORY_DELETE_QUESTION">
         <English>Do you really want to delete the selected match?</English>
         <Deutsch>Wirklich das markierte Gefecht löschen?</Deutsch>
+        <简体中文>你确定要删除选中的战斗吗？</简体中文>
+        <繁體中文>你確定要刪除選中的戰鬥嗎？</繁體中文>
+        <日本語>選択した戦闘を削除しますか？</日本語>
     </Key>
 
     <!-- REPLAY SUMMARY -->
