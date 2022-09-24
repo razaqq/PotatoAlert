@@ -58,6 +58,13 @@
         <繁體中文>關閉時最小化到托盤</繁體中文>
         <日本語>閉じるとトレイに最小化</日本語>
     </Key>
+    <Key ID="SETTINGS_SAVE_CSV">
+        <English>Save Matches As CSV</English>
+        <Deutsch>Gefechte Als CSV Speichern</Deutsch>
+        <简体中文>將戰鬥保存為 CSV</简体中文>
+        <繁體中文>将战斗保存为 CSV</繁體中文>
+        <日本語>マッチをCSVとして保存</日本語>
+    </Key>
     <Key ID="SETTINGS_SAVE_MATCHHISTORY">
         <English>Save Match History</English>
         <Deutsch>Gefechtsverlauf Speichern</Deutsch>

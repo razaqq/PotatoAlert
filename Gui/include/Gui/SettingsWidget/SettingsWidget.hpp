@@ -25,6 +25,7 @@ private:
 
 	QLabel* m_updateLabel = new QLabel();
 	QLabel* m_minimizeTrayLabel = new QLabel();
+	QLabel* m_saveMatchCsvLabel = new QLabel();
 	QLabel* m_matchHistoryLabel = new QLabel();
 	QLabel* m_gamePathLabel = new QLabel();
 	QLabel* m_statsModeLabel = new QLabel();
@@ -34,6 +35,7 @@ private:
 
 	SettingsSwitch* m_updates = new SettingsSwitch();
 	SettingsSwitch* m_minimizeTray = new SettingsSwitch();
+	SettingsSwitch* m_saveMatchCsv = new SettingsSwitch();
 	SettingsSwitch* m_matchHistory = new SettingsSwitch();
 	
 	SettingsChoice* m_statsMode;

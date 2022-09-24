@@ -38,6 +38,7 @@ enum class ConfigKey : uint64_t
 	DECL_TYPE(MenuBarLeft,              ConfigType::Bool,          3),
 	DECL_TYPE(UpdateNotifications,      ConfigType::Bool,          4),
 	DECL_TYPE(OverrideReplaysDirectory, ConfigType::Bool,          5),
+	DECL_TYPE(SaveMatchCsv,             ConfigType::Bool,          6),
 	DECL_TYPE(WindowHeight,             ConfigType::Int,           1),
 	DECL_TYPE(WindowWidth,              ConfigType::Int,           2),
 	DECL_TYPE(WindowX,                  ConfigType::Int,           3),

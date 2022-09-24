@@ -1,10 +1,13 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Client/ServiceProvider.hpp"
+#include "Client/StatsParser.hpp"
+
 #include "Core/Singleton.hpp"
 #include "Core/Sqlite.hpp"
+
 #include "ReplayParser/ReplayParser.hpp"
-#include "StatsParser.hpp"
 
 #include <QDir>
 
@@ -18,7 +21,7 @@ namespace PotatoAlert::Client {
 class MatchHistory
 {
 public:
-	MatchHistory();
+	MatchHistory(const ServiceProvider& serviceProvider);
 	~MatchHistory();
 
 	struct Entry
@@ -69,6 +72,8 @@ public:
 	void SetAnalyzeResult(std::string_view hash, const ReplayParser::ReplaySummary& summary) const;
 
 private:
+	const ServiceProvider& m_services;
+
 	bool WriteEntry(const Entry& entry) const;
 	static Entry CreateEntry(const StatsParser::MatchType::InfoType& info, std::string_view arenaInfo, std::string_view json, std::string_view hash);
 

@@ -1,5 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Client/Config.hpp"
 #include "Client/MatchHistory.hpp"
 
 #include "Core/StandardPaths.hpp"
@@ -79,7 +80,7 @@ static MatchHistory::Entry ReadEntry(const SQLite::Statement& statement)
 
 }
 
-MatchHistory::MatchHistory()
+MatchHistory::MatchHistory(const ServiceProvider& serviceProvider) : m_services(serviceProvider)
 {
 	m_db = SQLite::Open(GetDir().filePath("match_history.db").toStdString().c_str(), SQLite::Flags::ReadWrite | SQLite::Flags::Create);
 	if (m_db)
@@ -566,7 +567,8 @@ bool MatchHistory::SaveMatch(const MatchType::InfoType& info, std::string_view a
 	WriteJson(info, arenaInfo, json, hash);
 
 	// save csv to file
-	WriteCsv(csv);
+	if (m_services.Get<Config>().Get<ConfigKey::SaveMatchCsv>())
+		WriteCsv(csv);
 
 	return true;
 }

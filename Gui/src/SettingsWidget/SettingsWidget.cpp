@@ -164,15 +164,23 @@ void SettingsWidget::Init()
 
 	layout->addWidget(new HorizontalLine(centralWidget));
 
-	/* CSV OUTPUT */
-	auto csvLayout = new QHBoxLayout();
+	/* MATCH HISTORY & CSV */
+	auto matchHistoryLayout = new QHBoxLayout();
 	m_matchHistoryLabel->setFixedWidth(LABEL_WIDTH);
 	m_matchHistoryLabel->setFont(labelFont);
 	m_matchHistoryLabel->setFixedWidth(LABEL_WIDTH);
-	csvLayout->addWidget(m_matchHistoryLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
-	csvLayout->addWidget(m_matchHistory, 0, Qt::AlignVCenter | Qt::AlignRight);
+	matchHistoryLayout->addWidget(m_matchHistoryLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+	matchHistoryLayout->addWidget(m_matchHistory, 0, Qt::AlignVCenter | Qt::AlignRight);
+	layout->addLayout(matchHistoryLayout);
+
+	auto csvLayout = new QHBoxLayout();
+	m_saveMatchCsvLabel->setFixedWidth(LABEL_WIDTH);
+	m_saveMatchCsvLabel->setFont(labelFont);
+	m_saveMatchCsvLabel->setFixedWidth(LABEL_WIDTH);
+	csvLayout->addWidget(m_saveMatchCsvLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+	csvLayout->addWidget(m_saveMatchCsv, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(csvLayout);
-	/* CSV OUTPUT */
+	/* MATCH HISTORY & CSV */
 
 	layout->addWidget(new HorizontalLine(centralWidget));
 	
@@ -212,6 +220,7 @@ void SettingsWidget::Load() const
 	m_teamWinRateMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::TeamWinRateMode>()))->setChecked(true);
 	m_language->setCurrentIndex(config.Get<ConfigKey::Language>());
 	m_matchHistory->setChecked(config.Get<ConfigKey::MatchHistory>());
+	m_saveMatchCsv->setChecked(config.Get<ConfigKey::SaveMatchCsv>());
 }
 
 void SettingsWidget::ConnectSignals()
@@ -255,6 +264,7 @@ void SettingsWidget::ConnectSignals()
 	{
 		config.Set<ConfigKey::TeamWinRateMode>(static_cast<Client::TeamStatsMode>(id));
 	});
+	connect(m_saveMatchCsv, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::SaveMatchCsv>(checked); });
 	connect(m_matchHistory, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::MatchHistory>(checked); });
 	connect(m_language, &QComboBox::currentIndexChanged, [this, &config](int id)
 	{
@@ -286,6 +296,7 @@ bool SettingsWidget::eventFilter(QObject* watched, QEvent* event)
 		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
 		m_updateLabel->setText(GetString(lang, StringTableKey::SETTINGS_UPDATES));
 		m_minimizeTrayLabel->setText(GetString(lang, StringTableKey::SETTINGS_MINIMIZETRAY));
+		m_saveMatchCsvLabel->setText(GetString(lang, StringTableKey::SETTINGS_SAVE_CSV));
 		m_matchHistoryLabel->setText(GetString(lang, StringTableKey::SETTINGS_SAVE_MATCHHISTORY));
 		m_gamePathLabel->setText(GetString(lang, StringTableKey::SETTINGS_GAME_DIRECTORY));
 		m_statsModeLabel->setText(GetString(lang, StringTableKey::SETTINGS_STATS_MODE));
