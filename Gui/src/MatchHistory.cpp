@@ -127,6 +127,7 @@ void MatchHistory::Init()
 			{
 				const int id = item->data(Qt::DisplayRole).toInt();
 				m_services.Get<Client::MatchHistory>().DeleteEntry(id);
+				m_entries.erase(id);
 				m_table->removeRow(row);
 			}
 		}
