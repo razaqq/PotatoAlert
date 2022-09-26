@@ -28,6 +28,7 @@
 #include <QFile>
 #include <QEvent>
 
+using PotatoAlert::Client::AppDirectories;
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Client::MatchHistory;
