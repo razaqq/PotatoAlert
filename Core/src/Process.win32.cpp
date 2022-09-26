@@ -4,6 +4,7 @@
 
 #define WIN32_SHOWWINDOW
 #define WIN32_USER
+#define WIN32_MB
 #include "win32.h"
 
 #include <shellapi.h>
@@ -14,6 +15,17 @@ namespace c = PotatoAlert::Core;
 
 void c::ExitCurrentProcess(uint32_t code)
 {
+	ExitProcess(code);
+}
+
+void PotatoAlert::Core::ExitCurrentProcessWithError(uint32_t code)
+{
+	MessageBox(
+		nullptr,
+		L"A critical error has occurred, please view the logs and report the error to the developer.",
+		L"Critical Error",
+		MB_OK | MB_ICONERROR | MB_SETFOREGROUND
+	);
 	ExitProcess(code);
 }
 
