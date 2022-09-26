@@ -45,8 +45,6 @@ public:
 		ReplayParser::ReplaySummary ReplaySummary;
 	};
 
-	static QDir GetDir();
-
 	bool SaveMatch(const StatsParser::MatchType::InfoType& info, std::string_view arenaInfo, std::string_view hash, std::string_view json, std::string_view csv) const;
 	[[nodiscard]] std::optional<StatsParser::MatchType> GetMatchJson(std::string_view hash) const;
 	[[nodiscard]] std::optional<StatsParser::MatchType> GetMatchJson(uint32_t id) const;
@@ -78,7 +76,7 @@ private:
 	static Entry CreateEntry(const StatsParser::MatchType::InfoType& info, std::string_view arenaInfo, std::string_view json, std::string_view hash);
 
 	bool WriteJson(const StatsParser::MatchType::InfoType& info, std::string_view arenaInfo, std::string_view json, std::string_view hash) const;
-	static bool WriteCsv(std::string_view csv);
+	bool WriteCsv(std::string_view csv) const;
 
 	void ApplyDatabaseUpdates() const;
 

@@ -1,6 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Client/ServiceProvider.hpp"
+
 #include "Core/File.hpp"
 #include "Core/Json.hpp"
 
@@ -87,7 +89,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(TeamStatsMode,
 class Config
 {
 public:
-	explicit Config(const fs::path& path, std::string_view fileName);
+	explicit Config(const std::string& filePath);
 	Config(const Config& config) = delete;
 	Config(Config&& config) noexcept = delete;
 	Config& operator=(const Config& config) = delete;
@@ -150,7 +152,7 @@ public:
 private:
 	json m_json;
 	File m_file;
-	fs::path m_filePath;
+	std::string m_filePath;
 	void AddMissingKeys();
 	void ApplyUpdates();
 	bool CreateDefault();

@@ -1,5 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Client/AppDirectories.hpp"
 #include "Client/Config.hpp"
 #include "Client/MatchHistory.hpp"
 #include "Client/PotatoClient.hpp"
@@ -83,33 +84,53 @@ void MainWindow::SwitchTab(MenuEntry i)
 	QWidget* oldWidget = m_activeWidget;
 	switch (i)
 	{
-	case MenuEntry::Table:
-		m_activeWidget = m_statsWidget;
-		break;
-	case MenuEntry::Settings:
-		m_activeWidget = m_settingsWidget;
-		break;
-	case MenuEntry::MatchHistory:
-		m_activeWidget = m_matchHistory;
-		break;
-	case MenuEntry::Discord:
-		QDesktopServices::openUrl(QUrl("https://discord.gg/Ut8t8PA"));
-		return;
-	case MenuEntry::Screenshot:
-		Core::CaptureScreenshot(window());
-		return;
-	case MenuEntry::CSV:
-		QDesktopServices::openUrl(QUrl(Client::MatchHistory::GetDir().absolutePath()));
-		return;
-	case MenuEntry::Log:
-		QDesktopServices::openUrl(QUrl(Core::Log::GetDir().absolutePath()));
-		return;
-	case MenuEntry::Github:
-		QDesktopServices::openUrl(QUrl("https://github.com/razaqq/PotatoAlert"));
-		return;
-	case MenuEntry::About:
-		m_activeWidget = m_aboutWidget;
-		break;
+		case MenuEntry::Table:
+		{
+			m_activeWidget = m_statsWidget;
+			break;
+		}
+		case MenuEntry::Settings:
+		{
+			m_activeWidget = m_settingsWidget;
+			break;
+		}
+		case MenuEntry::MatchHistory:
+		{
+			m_activeWidget = m_matchHistory;
+			break;
+		}
+		case MenuEntry::Discord:
+		{
+			QDesktopServices::openUrl(QUrl("https://discord.gg/Ut8t8PA"));
+			return;
+		}
+		case MenuEntry::Screenshot:
+		{
+			const auto screenshotDir = m_services.Get<Client::AppDirectories>().ScreenshotsDir;
+			Core::CaptureScreenshot(window(), screenshotDir);
+			QDesktopServices::openUrl(QUrl::fromLocalFile(screenshotDir.string().c_str()));
+			return;
+		}
+		case MenuEntry::CSV:
+		{
+			QDesktopServices::openUrl(QUrl::fromLocalFile(m_services.Get<Client::AppDirectories>().MatchesDir.string().c_str()));
+			return;
+		}
+		case MenuEntry::Log:
+		{
+			QDesktopServices::openUrl(QUrl::fromLocalFile(m_services.Get<Client::AppDirectories>().AppDir.string().c_str()));
+			return;
+		}
+		case MenuEntry::Github:
+		{
+			QDesktopServices::openUrl(QUrl("https://github.com/razaqq/PotatoAlert"));
+			return;
+		}
+		case MenuEntry::About:
+		{
+			m_activeWidget = m_aboutWidget;
+			break;
+		}
 	}
 	oldWidget->setVisible(false);
 	m_activeWidget->setVisible(true);

@@ -63,7 +63,7 @@ public:
 			return *static_cast<Service*>(it->second);
 		}
 		LOG_ERROR("Service '{}' didnt exist", typeid(Service).name());
-		Core::ExitCurrentProcess(1);  // TODO
+		Core::ExitCurrentProcessWithError(1);
 	}
 };
 

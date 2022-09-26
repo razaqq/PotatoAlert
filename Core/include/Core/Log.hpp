@@ -10,6 +10,7 @@
 
 #include <QDir>
 
+#include <string>
 #include <memory>
 
 
@@ -18,8 +19,7 @@ namespace PotatoAlert::Core {
 class Log
 {
 public:
-	static void Init();
-	static QDir GetDir();
+	static void Init(std::string_view logFile);
 	static std::shared_ptr<spdlog::logger>& GetLogger() { return s_logger; }
 
 private:

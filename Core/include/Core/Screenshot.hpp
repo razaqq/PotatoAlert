@@ -3,10 +3,11 @@
 
 #include <QWidget>
 
+#include <filesystem>
 
-namespace PotatoAlert::Core
-{
 
-bool CaptureScreenshot(QWidget* window);
+namespace PotatoAlert::Core {
+
+bool CaptureScreenshot(QWidget* window, const std::filesystem::path& dir);
 
 }  // namespace PotatoAlert::Core

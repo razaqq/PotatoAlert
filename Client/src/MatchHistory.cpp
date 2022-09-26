@@ -1,5 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Client/AppDirectories.hpp"
 #include "Client/Config.hpp"
 #include "Client/MatchHistory.hpp"
 
@@ -14,6 +15,7 @@
 #include <QStandardPaths>
 #include <QString>
 
+#include <filesystem>
 #include <format>
 #include <future>
 #include <optional>
@@ -29,15 +31,16 @@ using Client::StatsParser::MatchType;
 using Client::StatsParser::StatsParseResult;
 using Client::MatchHistory;
 namespace sp = Client::StatsParser;
+namespace fs = std::filesystem;
 
 
 static constexpr std::string_view timeFormat = "%Y-%m-%d_%H-%M-%S";
 
 namespace {
 
-static std::string GetFilePath()
+static std::string GetFilePath(const fs::path& dir)
 {
-	return MatchHistory::GetDir().filePath(QString::fromStdString(std::format("match_{}.csv", Time::GetTimeStamp(timeFormat)))).toStdString();
+	return (dir / std::format("match_{}.csv", Time::GetTimeStamp(timeFormat))).string();
 }
 
 static MatchHistory::Entry ReadEntry(const SQLite::Statement& statement)
@@ -82,7 +85,7 @@ static MatchHistory::Entry ReadEntry(const SQLite::Statement& statement)
 
 MatchHistory::MatchHistory(const ServiceProvider& serviceProvider) : m_services(serviceProvider)
 {
-	m_db = SQLite::Open(GetDir().filePath("match_history.db").toStdString().c_str(), SQLite::Flags::ReadWrite | SQLite::Flags::Create);
+	m_db = SQLite::Open((serviceProvider.Get<AppDirectories>().MatchesDir / "match_history.db").string(), SQLite::Flags::ReadWrite | SQLite::Flags::Create);
 	if (m_db)
 	{
 		if (!m_db.Execute(R"(
@@ -125,21 +128,6 @@ MatchHistory::~MatchHistory()
 			LOG_ERROR("Failed to flush buffer for match history database: {}", m_db.GetLastError());
 		m_db.Close();
 	}
-}
-
-QDir MatchHistory::GetDir()
-{
-	const fs::path matchesPath = AppDataPath("PotatoAlert") / "Matches";
-	if (!fs::exists(matchesPath))
-	{
-		LOG_TRACE("Creating match history directory: {}", matchesPath.string());
-		std::error_code ec;
-		if (!fs::create_directories(matchesPath, ec))
-		{
-			LOG_ERROR("Failed to create match history directory: {}", ec.message());
-		}
-	}
-	return QString::fromStdString(matchesPath.string());
 }
 
 MatchHistory::Entry MatchHistory::CreateEntry(const MatchType::InfoType& info, std::string_view arenaInfo, std::string_view json, std::string_view hash)
@@ -537,9 +525,9 @@ std::optional<MatchType> MatchHistory::GetMatchJson(uint32_t id) const
 	}
 }
 
-bool MatchHistory::WriteCsv(std::string_view csv)
+bool MatchHistory::WriteCsv(std::string_view csv) const
 {
-	if (const File file = File::Open(GetFilePath(), File::Flags::Write | File::Flags::Create))
+	if (const File file = File::Open(GetFilePath(m_services.Get<AppDirectories>().MatchesDir), File::Flags::Write | File::Flags::Create))
 	{
 		if (file.WriteString(csv))
 		{

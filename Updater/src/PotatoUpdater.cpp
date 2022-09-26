@@ -1,5 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Client/AppDirectories.hpp"
 #include "Client/Config.hpp"
 #include "Client/ServiceProvider.hpp"
 
@@ -15,16 +16,18 @@
 #include <QFile>
 
 
+using PotatoAlert::Client::AppDirectories;
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::ServiceProvider;
-using PotatoAlert::Core::AppDataPath;
 using PotatoAlert::Updater::Updater;
 
 static int RunMain(int argc, char* argv[])
 {
 	Q_INIT_RESOURCE(PotatoUpdater);
 
-	PotatoAlert::Core::Log::Init();
+	AppDirectories appDirs("PotatoAlert");
+
+	PotatoAlert::Core::Log::Init(appDirs.LogFile);
 	
 	QApplication app(argc, argv);
 
@@ -43,10 +46,8 @@ static int RunMain(int argc, char* argv[])
 	app.setStyleSheet(style);
 
 	ServiceProvider serviceProvider;
-
-	fs::path appDataPath = AppDataPath("PotatoAlert");
-
-	Config config(appDataPath, "config.json");
+	
+	Config config(appDirs.ConfigFile);
 	serviceProvider.Add(config);
 
 	Updater updater;

@@ -52,22 +52,6 @@ static void LogQtMessage(QtMsgType type, const QMessageLogContext& context, cons
 
 }
 
-QDir Log::GetDir()
-{
-	QDir dir = QDir::cleanPath(
-			QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + QDir::separator() + "PotatoAlert");
-	if (!dir.exists())
-	{
-		std::cout << std::format("Creating log directory: {}", dir.absolutePath().toStdString()) << std::endl;
-		if (!dir.mkpath("."))
-		{
-			std::cerr << "Failed to create log directory" << std::endl;
-			QApplication::exit(1);
-		}
-	}
-	return dir;
-}
-
 template<typename ScopedPadder>
 class SourceLocationFlag : public spdlog::custom_flag_formatter
 {
@@ -105,10 +89,8 @@ public:
 	}
 };
 
-void Log::Init()
+void Log::Init(std::string_view logFile)
 {
-	const std::string filePath = GetDir().filePath("PotatoAlert.log").toStdString();
-
 	spdlog::set_error_handler([](const std::string& msg) { spdlog::get("console")->error("*** LOGGER ERROR ***: {}", msg); });
 
 	auto stdoutSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
@@ -124,7 +106,7 @@ void Log::Init()
 	formatter->add_flag<SourceLocationFlag<spdlog::details::scoped_padder>>('S');
 	formatter->set_pattern("[%d-%m-%Y %T] [%=7l] %n [thread %-5t] (%-30!S): %v");
 
-	auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filePath);
+	auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFile.data());
 	fileSink->set_formatter(std::move(formatter));
 	fileSink->set_level(spdlog::level::info);
 

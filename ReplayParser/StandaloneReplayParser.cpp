@@ -1,8 +1,9 @@
 // Copyright 2022 <github.com/razaqq>
 
-#include "ReplayParser/ReplayParser.hpp"
 #include "Core/Log.hpp"
 #include "Core/StandardPaths.hpp"
+
+#include "ReplayParser/ReplayParser.hpp"
 
 
 using namespace PotatoAlert::Core;
@@ -10,7 +11,7 @@ using namespace PotatoAlert::ReplayParser;
 
 int main(int argc, char* argv[])
 {
-	Log::Init();
+	Log::Init((AppDataPath("PotatoAlert") / "StandaloneReplayParser.log").string());
 
 	if (argc != 2)
 	{

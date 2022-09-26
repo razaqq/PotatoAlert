@@ -1,5 +1,6 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Client/AppDirectories.hpp"
 #include "Client/Game.hpp"
 
 #include "Core/File.hpp"
@@ -15,6 +16,7 @@
 #include <QStandardPaths>
 
 #include <filesystem>
+#include <format>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -22,6 +24,7 @@
 
 namespace fs = std::filesystem;
 
+using PotatoAlert::Client::AppDirectories;
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Client::Game::GetGamePath;
@@ -48,8 +51,7 @@ static std::unordered_map<ConfigKey, std::string> g_keyNames =
 	{ ConfigKey::MenuBarLeft,              "menubar_left" }
 };
 
-Config::Config(const fs::path& path, std::string_view fileName)
-	: m_filePath(path / fileName)
+Config::Config(const std::string& filePath) : m_filePath(filePath)
 {
 	g_defaultConfig = {
 		{ g_keyNames[ConfigKey::StatsMode],                StatsMode::Pvp },
@@ -99,7 +101,7 @@ void Config::Load()
 		m_file.Close();
 	}
 
-	m_file = File::Open(m_filePath.string(), File::Flags::Open | File::Flags::Read | File::Flags::Write);
+	m_file = File::Open(m_filePath, File::Flags::Open | File::Flags::Read | File::Flags::Write);
 	if (!m_file)
 	{
 		LOG_ERROR("Failed to open config file: {}", File::LastError());
@@ -180,7 +182,7 @@ bool Config::CreateDefault()
 		m_file.Close();
 	}
 
-	m_file = File::Open(m_filePath.string(), File::Flags::Create | File::Flags::Read | File::Flags::Write);
+	m_file = File::Open(m_filePath, File::Flags::Create | File::Flags::Read | File::Flags::Write);
 	if (!m_file)
 	{
 		LOG_ERROR("Failed to open config file: {}", File::LastError());
