@@ -50,12 +50,19 @@ void NativeWindow::hideEvent(QHideEvent* event)
 {
 	Config& config = m_services.Get<Config>();
 
+	// ignore minimize events
+	if (isMinimized())
+	{
+		return;
+	}
+
 	if (config.Get<ConfigKey::MinimizeTray>())
 	{
 		hide();
 	}
 	else
 	{
+		// if window is not maximized, save geometry
 		if ((windowState() & Qt::WindowMaximized) == 0)
 		{
 			config.Set<ConfigKey::WindowHeight>(height());
