@@ -102,26 +102,26 @@ bool TitleBar::eventFilter(QObject* object, QEvent* event)
 
 void TitleBar::OnBtnMinimizeClicked() const
 {
-	m_parentWindow->setWindowState(Qt::WindowMinimized);
+	m_parentWindow->showMinimized();
 }
 
 void TitleBar::OnBtnMaximizeClicked() const
 {
-	m_parentWindow->setWindowState(Qt::WindowMaximized);
+	m_parentWindow->showMaximized();
 	m_btnMaximize->setVisible(false);
 	m_btnRestore->setVisible(true);
 }
 
 void TitleBar::OnBtnRestoreClicked() const
 {
-	m_parentWindow->setWindowState(Qt::WindowNoState);
+	m_parentWindow->showNormal();
 	m_btnMaximize->setVisible(true);
 	m_btnRestore->setVisible(false);
 }
 
 void TitleBar::mouseDoubleClickEvent([[maybe_unused]] QMouseEvent* event)
 {
-	if (m_parentWindow->windowState() == Qt::WindowMaximized)
+	if (m_parentWindow->isMaximized())
 		OnBtnRestoreClicked();
 	else
 		OnBtnMaximizeClicked();
