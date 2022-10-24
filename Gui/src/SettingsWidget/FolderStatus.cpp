@@ -3,9 +3,10 @@
 #include "Client/Game.hpp"
 #include "Client/StringTable.hpp"
 
-#include "Gui/SettingsWidget/FolderStatus.hpp"
+#include "Core/String.hpp"
 
 #include "Gui/LanguageChangeEvent.hpp"
+#include "Gui/SettingsWidget/FolderStatus.hpp"
 
 #include <QApplication>
 #include <QEvent>
@@ -13,8 +14,6 @@
 #include <QLabel>
 #include <QString>
 #include <QWidget>
-
-#include <sstream>
 
 
 using namespace PotatoAlert::Client::StringTable;
@@ -30,8 +29,9 @@ void FolderStatus::Init()
 {
 	qApp->installEventFilter(this);
 
-	auto gridLayout = new QGridLayout();
+	QGridLayout* gridLayout = new QGridLayout();
 	gridLayout->setContentsMargins(10, 0, 10, 0);
+	gridLayout->setVerticalSpacing(0);
 
 	m_statusLabel->setBuddy(m_statusText);
 	gridLayout->addWidget(m_statusLabel, 0, 0);
@@ -63,29 +63,18 @@ void FolderStatus::Update(const Client::Game::DirectoryStatus& status) const
 	m_region->clear();
 	m_gameVersion->clear();
 
-	m_statusText->setText(QString::fromStdString(status.statusText));
+	m_statusText->setText(status.statusText.c_str());
 	if (status.found)
 	{
-		m_statusText->setStyleSheet("QLabel { color : green; }");
-		m_region->setText(QString::fromStdString(status.region));
-		m_gameVersion->setText(QString::fromStdString(status.gameVersion.ToString()));
+		m_statusText->setStyleSheet("QLabel { color: green; }");
+		m_region->setText(status.region.c_str());
+		m_gameVersion->setText(status.gameVersion.ToString().c_str());
 		status.versionedReplays ? m_versionedReplays->setText("yes") : m_versionedReplays->setText("no");  // TODO: localize
-
-		// create string from replays paths
-		std::stringstream ss;
-		auto beg = status.replaysPath.begin();
-		auto end = status.replaysPath.end();
-		if (beg != end)
-		{
-			ss << *beg;
-			while (++beg != end)
-				ss << "\n" << *beg;
-		}
-		m_replaysFolders->setText(QString::fromStdString(ss.str()));
+		m_replaysFolders->setText(String::Join(status.replaysPath, "\n").c_str());
 	}
 	else
 	{
-		m_statusText->setStyleSheet("QLabel { color : red; }");
+		m_statusText->setStyleSheet("QLabel { color: red; }");
 	}
 }
 
