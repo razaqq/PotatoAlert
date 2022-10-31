@@ -1,6 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Client/Config.hpp"
 #include "Client/PotatoClient.hpp"
+#include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
 
 #include "Gui/StatsWidget/StatsHeader.hpp"
@@ -12,98 +14,82 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include <array>
-#include <variant>
-#include <vector>
 
-
+using PotatoAlert::Client::Config;
+using PotatoAlert::Client::ConfigKey;
+using PotatoAlert::Client::ServiceProvider;
 using PotatoAlert::Gui::StatsWidget;
 
-StatsWidget::StatsWidget(QWidget* parent) : QWidget(parent)
+StatsWidget::StatsWidget(const ServiceProvider& serviceProvider, QWidget* parent) : QWidget(parent), m_services(serviceProvider)
 {
 	Init();
 }
 
 void StatsWidget::Init()
 {
-	setMinimumWidth(1000);
-	auto vLayout = new QVBoxLayout();
-	vLayout->setContentsMargins(0, 0, 0, 10);
-	vLayout->setSpacing(0);
+	// setStyleSheet("border: 1px solid red;");
 
-	vLayout->addWidget(m_header);
+	m_layout->setContentsMargins(0, 0, 0, 10);
+	m_layout->setSpacing(0);
 
-	auto tableLayout = new QHBoxLayout();
-	tableLayout->addWidget(m_leftTable);
-	tableLayout->addWidget(m_rightTable);
-	tableLayout->setSpacing(10);
-	tableLayout->setContentsMargins(10, 0, 10,  0);
-	vLayout->addLayout(tableLayout);
+	AddTables();
 
-	vLayout->addWidget(m_footer);
-
-	setLayout(vLayout);
-
-
-	// add hooks to open wows-numbers link when double clicking cell
-	auto openWowsNumbers = [](int row, const Client::StatsParser::Team& team)
-	{
-		auto wowsNumbers = team.WowsNumbers;
-
-		if (static_cast<size_t>(row) < team.WowsNumbers.size())
-		{
-			const QUrl url(team.WowsNumbers[row]);
-			if (url.isValid())
-				QDesktopServices::openUrl(url);
-		}
-	};
-	connect(m_leftTable, &StatsTable::cellDoubleClicked, [&](int row, [[maybe_unused]] int column)
-	{
-		openWowsNumbers(row, m_lastMatch.Team1);
-	});
-	connect(m_rightTable, &StatsTable::cellDoubleClicked, [&](int row, [[maybe_unused]] int column)
-	{
-		openWowsNumbers(row, m_lastMatch.Team2);
-	});
+	setLayout(m_layout);
 }
 
-void StatsWidget::Update(const MatchType& match)
+void StatsWidget::Update(const MatchType& match) const
 {
-	m_lastMatch = match;
-
-	// update the tables
-	m_leftTable->clearContents();
-	m_rightTable->clearContents();
-
-	auto fillTable = [](QTableWidget* table, const Client::StatsParser::TeamType& team)
-	{
-		int row = 0;
-		for (auto& player : team)
-		{
-			int col = 0;
-			for (auto& field : player)
-			{
-				if (std::holds_alternative<QTableWidgetItem*>(field))
-					table->setItem(row, col, std::get<QTableWidgetItem*>(field));
-				if (std::holds_alternative<QLabel*>(field))
-					table->setCellWidget(row, col, std::get<QLabel*>(field));
-				if (std::holds_alternative<QWidget*>(field))
-					table->setCellWidget(row, col, std::get<QWidget*>(field));
-				col++;
-			}
-			row++;
-		}
-		table->resizeColumnToContents(1);
-	};
-	
-	fillTable(m_leftTable, match.Team1.Table);
-	fillTable(m_rightTable, match.Team2.Table);
-
-	// update the footer
-	m_footer->Update(match);
+	m_team1->Update(match.Team1);
+	m_team2->Update(match.Team2);
 }
 
-void StatsWidget::SetStatus(Status status, std::string_view statusText) const
+void StatsWidget::SetStatus(Client::Status status, std::string_view statusText) const
 {
-	m_header->SetStatus(status, statusText);
+	m_team1->SetStatus(status, statusText);
+}
+
+void StatsWidget::AddTables()
+{
+	switch (m_services.Get<Config>().Get<ConfigKey::TableLayout>())
+	{
+		case Client::TableLayout::Horizontal:
+		{
+			setMinimumSize(1200, 323);
+			m_tableLayout = new QHBoxLayout();
+			m_tableLayout->setContentsMargins(10, 0, 10, 0);
+			m_tableLayout->setSpacing(10);
+
+			m_tableLayout->addWidget(m_team1);
+			m_tableLayout->addWidget(m_team2);
+
+			m_layout->addLayout(m_tableLayout);
+			break;
+		}
+		case Client::TableLayout::Vertical:
+		{
+			setMinimumSize(600, 646);
+			m_tableLayout = new QVBoxLayout();
+			m_tableLayout->setContentsMargins(10, 0, 10, 0);
+			m_tableLayout->setSpacing(10);
+
+			m_tableLayout->addWidget(m_team1);
+			m_tableLayout->addWidget(m_team2);
+
+			m_layout->addLayout(m_tableLayout);
+			break;
+		}
+	}
+}
+
+void StatsWidget::RemoveTables() const
+{
+	m_tableLayout->removeWidget(m_team1);
+	m_tableLayout->removeWidget(m_team2);
+	m_layout->removeItem(m_tableLayout);
+}
+
+void StatsWidget::UpdateTableLayout()
+{
+	RemoveTables();
+	AddTables();
 }

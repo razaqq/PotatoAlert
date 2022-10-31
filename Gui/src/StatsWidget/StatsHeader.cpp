@@ -16,18 +16,17 @@
 #include <QWidget>
 #include <QWindow>
 
-#include <string>
-
 
 using namespace PotatoAlert::Client::StringTable;
-using PotatoAlert::Gui::StatsHeader;
+using PotatoAlert::Gui::StatsHeaderEnemy;
+using PotatoAlert::Gui::StatsHeaderFriendly;
 
-StatsHeader::StatsHeader(QWidget* parent) : QWidget(parent)
+StatsHeaderFriendly::StatsHeaderFriendly(QWidget* parent) : QWidget(parent)
 {
 	Init();
 }
 
-void StatsHeader::Init()
+void StatsHeaderFriendly::Init()
 {
 	qApp->installEventFilter(this);
 
@@ -41,13 +40,8 @@ void StatsHeader::Init()
 	m_statusIcon->setLayout(iconLayout);
 
 	auto layout = new QHBoxLayout();
-	layout->setContentsMargins(10, 0, 10, 0);
+	layout->setContentsMargins(10, 0, 10, 2);
 	layout->setSpacing(10);
-
-	auto leftLayout = new QHBoxLayout();
-	auto rightLayout = new QHBoxLayout();
-
-	const QFont labelFont("Segoe UI", 16, QFont::Bold);
 
 	// status icon and text
 	auto status = new QWidget(this);
@@ -64,42 +58,33 @@ void StatsHeader::Init()
 	statusLayout->addStretch();
 	status->setLayout(statusLayout);
 
-	// team labels
-	m_team1Label->setFont(labelFont);
-	m_team2Label->setFont(labelFont);
+	m_label->setFont(QFont("Segoe UI", 15, QFont::Bold));
 
 	// dummy with same width as status
 	auto dummy = new QWidget();
 	dummy->setFixedWidth(130);
 
 	// add to layouts
-	leftLayout->addWidget(status);
-	leftLayout->addStretch();
-	leftLayout->addWidget(m_team1Label);
-	leftLayout->addStretch();
-	leftLayout->addWidget(dummy);
+	layout->addWidget(status);
+	layout->addStretch();
+	layout->addWidget(m_label, 0, Qt::AlignCenter);
+	layout->addStretch();
+	layout->addWidget(dummy);
 
-	rightLayout->addStretch();
-	rightLayout->addWidget(m_team2Label);
-	rightLayout->addStretch();
-
-	layout->addLayout(leftLayout);
-	layout->addLayout(rightLayout);
 	setLayout(layout);
 }
 
-bool StatsHeader::eventFilter(QObject* watched, QEvent* event)
+bool StatsHeaderFriendly::eventFilter(QObject* watched, QEvent* event)
 {
 	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
 		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
-		m_team1Label->setText(GetString(lang, StringTableKey::LABEL_MYTEAM));
-		m_team2Label->setText(GetString(lang, StringTableKey::LABEL_ENEMYTEAM));
+		m_label->setText(GetString(lang, StringTableKey::LABEL_MYTEAM));
 	}
 	return QWidget::eventFilter(watched, event);
 }
 
-void StatsHeader::SetStatus(Status status, std::string_view text) const
+void StatsHeaderFriendly::SetStatus(Client::Status status, std::string_view text) const
 {
 	m_statusText->setText(text.data());
 	m_loading->setVisible(false);
@@ -107,20 +92,52 @@ void StatsHeader::SetStatus(Status status, std::string_view text) const
 
 	switch (status)
 	{
-		case Status::Ready:
+		case Client::Status::Ready:
 		{
 			m_statusIcon->setPixmap(m_ready);
 			break;
 		}
-		case Status::Loading:
+		case Client::Status::Loading:
 		{
 			m_loading->setVisible(true);
 			break;
 		}
-		case Status::Error:
+		case Client::Status::Error:
 		{
 			m_statusIcon->setPixmap(m_error);
 			break;
 		}
 	}
+}
+
+StatsHeaderEnemy::StatsHeaderEnemy(QWidget* parent)
+{
+	Init();
+}
+
+void StatsHeaderEnemy::Init()
+{
+	qApp->installEventFilter(this);
+
+	QHBoxLayout* layout = new QHBoxLayout();
+	layout->setContentsMargins(10, 0, 10, 2);
+	layout->setSpacing(10);
+
+	m_label->setFont(QFont("Segoe UI", 15, QFont::Bold));
+
+	layout->addStretch();
+	layout->addWidget(m_label, 0, Qt::AlignCenter);
+	layout->addStretch();
+
+	setLayout(layout);
+}
+
+bool StatsHeaderEnemy::eventFilter(QObject* watched, QEvent* event)
+{
+	if (event->type() == LanguageChangeEvent::RegisteredType())
+	{
+		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		m_label->setText(GetString(lang, StringTableKey::LABEL_ENEMYTEAM));
+	}
+	return QWidget::eventFilter(watched, event);
 }

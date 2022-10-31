@@ -148,6 +148,19 @@ void SettingsWidget::Init()
 
 	layout->addWidget(new HorizontalLine(centralWidget));
 
+	/* TABLE LAYOUT */
+	auto tableLayoutLayout = new QHBoxLayout();
+	m_tableLayoutLabel->setFont(labelFont);
+	m_tableLayoutLabel->setFixedWidth(LABEL_WIDTH);
+	tableLayoutLayout->addWidget(m_tableLayoutLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+
+	m_tableLayout = new SettingsChoice(this, { "horizontal", "vertical" });  // TODO: localize
+	tableLayoutLayout->addWidget(m_tableLayout, 0, Qt::AlignVCenter | Qt::AlignRight);
+	layout->addLayout(tableLayoutLayout);
+	/* TABLE LAYOUT */
+
+	layout->addWidget(new HorizontalLine(centralWidget));
+
 	/* LANGUAGE */
 	auto languageLayout = new QHBoxLayout();
 	m_languageLabel->setFont(labelFont);
@@ -218,6 +231,7 @@ void SettingsWidget::Load() const
 	m_statsMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::StatsMode>()))->setChecked(true);
 	m_teamDamageMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::TeamDamageMode>()))->setChecked(true);
 	m_teamWinRateMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::TeamWinRateMode>()))->setChecked(true);
+	m_tableLayout->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::TableLayout>()))->setChecked(true);
 	m_language->setCurrentIndex(config.Get<ConfigKey::Language>());
 	m_matchHistory->setChecked(config.Get<ConfigKey::MatchHistory>());
 	m_saveMatchCsv->setChecked(config.Get<ConfigKey::SaveMatchCsv>());
@@ -264,6 +278,11 @@ void SettingsWidget::ConnectSignals()
 	{
 		config.Set<ConfigKey::TeamWinRateMode>(static_cast<Client::TeamStatsMode>(id));
 	});
+	connect(m_tableLayout->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
+	{
+		config.Set<ConfigKey::TableLayout>(static_cast<Client::TableLayout>(id));
+		emit TableLayoutChanged();
+	});
 	connect(m_saveMatchCsv, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::SaveMatchCsv>(checked); });
 	connect(m_matchHistory, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::MatchHistory>(checked); });
 	connect(m_language, &QComboBox::currentIndexChanged, [this, &config](int id)
@@ -302,6 +321,7 @@ bool SettingsWidget::eventFilter(QObject* watched, QEvent* event)
 		m_statsModeLabel->setText(GetString(lang, StringTableKey::SETTINGS_STATS_MODE));
 		m_teamDamageModeLabel->setText(GetString(lang, StringTableKey::SETTINGS_TEAM_DAMAGE_MODE));
 		m_teamWinRateModeLabel->setText(GetString(lang, StringTableKey::SETTINGS_TEAM_WIN_RATE_MODE));
+		m_tableLayoutLabel->setText(GetString(lang, StringTableKey::SETTINGS_TABLE_LAYOUT));
 		m_languageLabel->setText(GetString(lang, StringTableKey::SETTINGS_LANGUAGE));
 		m_saveButton->setText(GetString(lang, StringTableKey::SETTINGS_SAVE));
 		m_cancelButton->setText(GetString(lang, StringTableKey::SETTINGS_CANCEL));

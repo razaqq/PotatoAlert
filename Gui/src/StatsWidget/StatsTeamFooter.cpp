@@ -34,99 +34,53 @@ void StatsTeamFooter::Init()
 
 	const QFont labelFont = QFont("Segoe UI", 10, QFont::Bold);
 
-	// left side
-	auto leftWidget = new QWidget();
-	auto leftLayout = new QHBoxLayout();
-	leftLayout->setContentsMargins(10, 0, 10, 0);
-	leftLayout->setSpacing(20);
+	layout->setContentsMargins(10, 0, 10, 0);
+	layout->setSpacing(0);
+	
+	for (auto& label : { m_wrLabel, m_wr, m_dmgLabel, m_dmg, m_tag, m_name, m_regionLabel, m_region })
+		label->setFont(labelFont);
 
-	// right side
-	auto rightWidget = new QWidget();
-	auto rightLayout = new QHBoxLayout();
-	rightLayout->setContentsMargins(10, 0, 10, 0);
-	rightLayout->setSpacing(20);
+	layout->addWidget(m_wrLabel, 0, Qt::AlignRight);
+	layout->addWidget(m_wr, 0, Qt::AlignLeft);
 
-	// set font on all labels
-	const std::array labels{
-		std::array{ m_team1WrLabel, m_team1Wr, m_team1DmgLabel, m_team1Dmg, m_team1Tag, m_team1Name, m_team1RegionLabel, m_team1Region },
-		std::array{ m_team2WrLabel, m_team2Wr, m_team2DmgLabel, m_team2Dmg, m_team2Tag, m_team2Name, m_team2RegionLabel, m_team2Region }
-	};
-	for (auto& side : labels)
-		for (auto& label : side)
-			label->setFont(labelFont);
+	layout->addSpacing(20);
 
-	// add labels
-	for (size_t side = 0; side < 2; side++)
-	{
-		for (size_t element = 0; element < 4; element++)
-		{
-			auto w = new QWidget();
-			auto l = new QHBoxLayout();
-			l->setContentsMargins(0, 0, 0, 0);
-			l->setSpacing(0);
+	layout->addWidget(m_dmgLabel, 0, Qt::AlignRight);
+	layout->addWidget(m_dmg, 0, Qt::AlignLeft);
 
-			l->addWidget(labels[side][2*element], 0, Qt::AlignRight);
-			l->addWidget(labels[side][2*element+1], 0, Qt::AlignRight);
+	layout->addStretch();
 
-			w->setLayout(l);
+	layout->addWidget(m_tag, 0, Qt::AlignRight);
+	layout->addWidget(m_name, 0, Qt::AlignLeft);
 
-			if (side == 0)
-			{
-				leftLayout->addWidget(w);
-				if (element == 1 || element == 2)
-					leftLayout->addStretch();
-			}
-			else
-			{
-				rightLayout->addWidget(w);
-				if (element == 1 || element == 2)
-					rightLayout->addStretch();
-			}
-		}
-	}
+	layout->addStretch();
 
-	m_team1RegionLabel->setVisible(false);
-	m_team2RegionLabel->setVisible(false);
+	layout->addWidget(m_regionLabel, 0, Qt::AlignRight);
+	layout->addWidget(m_region, 0, Qt::AlignLeft);
 
-	leftWidget->setLayout(leftLayout);
-	rightWidget->setLayout(rightLayout);
-	layout->addWidget(leftWidget);
-	layout->addWidget(rightWidget);
+	m_regionLabel->setVisible(false);
+
 	setLayout(layout);
 }
 
-void StatsTeamFooter::Update(const MatchType& match) const
+void StatsTeamFooter::Update(const Team& team) const
 {
 	// set average stats per team
-	match.Team1.Winrate.UpdateLabel(m_team1Wr);
-	match.Team1.AvgDmg.UpdateLabel(m_team1Dmg);
-	match.Team2.Winrate.UpdateLabel(m_team2Wr);
-	match.Team2.AvgDmg.UpdateLabel(m_team2Dmg);
+	team.Winrate.UpdateLabel(m_wr);
+	team.AvgDmg.UpdateLabel(m_dmg);
 
 	// set clan battle stuff
-	bool show1 = match.Team1.Clan.Show;
-	if (show1)
+	bool show = team.Clan.Show;
+	if (show)
 	{
-		match.Team1.Clan.Tag.UpdateLabel(m_team1Tag);
-		match.Team1.Clan.Name.UpdateLabel(m_team1Name);
-		match.Team1.Clan.Region.UpdateLabel(m_team1Region);
+		team.Clan.Tag.UpdateLabel(m_tag);
+		team.Clan.Name.UpdateLabel(m_name);
+		team.Clan.Region.UpdateLabel(m_region);
 	}
-	m_team1Tag->setVisible(show1);
-	m_team1Name->setVisible(show1);
-	m_team1Region->setVisible(show1);
-	m_team1RegionLabel->setVisible(show1);
-
-	bool show2 = match.Team1.Clan.Show;
-	if (show2)
-	{
-		match.Team2.Clan.Tag.UpdateLabel(m_team2Tag);
-		match.Team2.Clan.Name.UpdateLabel(m_team2Name);
-		match.Team2.Clan.Region.UpdateLabel(m_team2Region);
-	}
-	m_team2Tag->setVisible(show2);
-	m_team2Name->setVisible(show2);
-	m_team2Region->setVisible(show2);
-	m_team2RegionLabel->setVisible(show2);
+	m_tag->setVisible(show);
+	m_name->setVisible(show);
+	m_region->setVisible(show);
+	m_regionLabel->setVisible(show);
 }
 
 bool StatsTeamFooter::eventFilter(QObject* watched, QEvent* event)
@@ -134,12 +88,9 @@ bool StatsTeamFooter::eventFilter(QObject* watched, QEvent* event)
 	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
 		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
-		m_team1WrLabel->setText(GetString(lang, StringTableKey::LABEL_WINRATE));
-		m_team1DmgLabel->setText(GetString(lang, StringTableKey::LABEL_DAMAGE));
-		m_team1RegionLabel->setText(GetString(lang, StringTableKey::LABEL_REGION));
-		m_team2WrLabel->setText(GetString(lang, StringTableKey::LABEL_WINRATE));
-		m_team2DmgLabel->setText(GetString(lang, StringTableKey::LABEL_DAMAGE));
-		m_team2RegionLabel->setText(GetString(lang, StringTableKey::LABEL_REGION));
+		m_wrLabel->setText(GetString(lang, StringTableKey::LABEL_WINRATE));
+		m_dmgLabel->setText(GetString(lang, StringTableKey::LABEL_DAMAGE));
+		m_regionLabel->setText(GetString(lang, StringTableKey::LABEL_REGION));
 	}
 	return QWidget::eventFilter(watched, event);
 }

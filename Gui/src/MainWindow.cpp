@@ -174,6 +174,8 @@ void MainWindow::ConnectSignals()
 		SwitchTab(MenuEntry::Table);
 		m_menuBar->SetChecked(MenuEntry::Table);
 	});
+
+	connect(m_settingsWidget, &SettingsWidget::TableLayoutChanged, m_statsWidget, &StatsWidget::UpdateTableLayout);
 }
 
 bool MainWindow::ConfirmUpdate()

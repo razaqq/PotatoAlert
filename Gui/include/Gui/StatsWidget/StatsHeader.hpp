@@ -11,27 +11,41 @@
 #include <string>
 
 
-using PotatoAlert::Client::Status;
-
 namespace PotatoAlert::Gui {
 
-class StatsHeader : public QWidget
+class StatsHeaderFriendly : public QWidget
 {
 	Q_OBJECT
+
 private:
 	QLabel* m_statusIcon = new QLabel();
 	QLabel* m_statusText = new QLabel();
 
-	QLabel* m_team1Label = new QLabel();
-	QLabel* m_team2Label = new QLabel();
+	QLabel* m_label = new QLabel();
 	
 	QWidget* m_loading;
 	QPixmap m_ready;
 	QPixmap m_error;
 
 public:
-	explicit StatsHeader(QWidget* parent = nullptr);
-	void SetStatus(Status status, std::string_view text) const;
+	explicit StatsHeaderFriendly(QWidget* parent = nullptr);
+	void SetStatus(Client::Status status, std::string_view text) const;
+	bool eventFilter(QObject* watched, QEvent* event) override;
+
+private:
+	void Init();
+};
+
+
+class StatsHeaderEnemy : public QWidget
+{
+	Q_OBJECT
+
+private:
+	QLabel* m_label = new QLabel();
+
+public:
+	explicit StatsHeaderEnemy(QWidget* parent = nullptr);
 	bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:

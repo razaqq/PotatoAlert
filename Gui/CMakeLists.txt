@@ -30,6 +30,7 @@ target_sources(
     src/StatsWidget/StatsTable.cpp
     src/StatsWidget/StatsTeamFooter.cpp
     src/StatsWidget/StatsWidget.cpp
+    src/StatsWidget/TeamWidget.cpp
 )
 
 # have to add some headers to sources for qt AUTOMOC

@@ -26,7 +26,7 @@ private:
 	QVBoxLayout* m_centralLayout = new QVBoxLayout();
 
 	VerticalMenuBar* m_menuBar = new VerticalMenuBar(this);
-	StatsWidget* m_statsWidget = new StatsWidget(this);
+	StatsWidget* m_statsWidget = new StatsWidget(m_services, this);
 	SettingsWidget* m_settingsWidget = new SettingsWidget(m_services, this);
 	MatchHistory* m_matchHistory = new MatchHistory(m_services, this);
 	ReplaySummary* m_replaySummary = new ReplaySummary(m_services, this);

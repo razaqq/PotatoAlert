@@ -114,6 +114,13 @@
         <繁體中文>隊伍勝率模式</繁體中文>
         <日本語>チーム勝率モード</日本語>
     </Key>
+    <Key ID="SETTINGS_TABLE_LAYOUT">
+        <English>Table Layout</English>
+        <Deutsch>Tabellenlayout</Deutsch>
+        <简体中文>表布局</简体中文>
+        <繁體中文>表佈局</繁體中文>
+        <日本語>テーブル レイアウト</日本語>
+    </Key>
     <Key ID="SETTINGS_GA">
         <English>Allow Google Analytics</English>
         <Deutsch>Google Analytics Erlauben</Deutsch>

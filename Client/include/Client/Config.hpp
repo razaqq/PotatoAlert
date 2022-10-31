@@ -6,7 +6,6 @@
 #include "Core/File.hpp"
 #include "Core/Json.hpp"
 
-#include <QObject>
 #include <QString>
 
 #include <filesystem>
@@ -20,12 +19,13 @@ namespace PotatoAlert::Client {
 
 enum class ConfigType : uint8_t
 {
-	String        = 0,
-	Bool          = 8,
-	Int           = 16,
-	Float         = 24,
-	StatsMode     = 36,
-	TeamStatsMode = 48,
+	String        = 8 * 0,
+	Bool          = 8 * 1,
+	Int           = 8 * 2,
+	Float         = 8 * 3,
+	StatsMode     = 8 * 4,
+	TeamStatsMode = 8 * 5,
+	TableLayout   = 8 * 6,
 };
 
 #define DECL_TYPE(name, type, value) name = static_cast<uint64_t>((value)) << static_cast<uint8_t>((type))
@@ -35,6 +35,7 @@ enum class ConfigKey : uint64_t
 	DECL_TYPE(StatsMode,                ConfigType::StatsMode,     1),
 	DECL_TYPE(TeamDamageMode,           ConfigType::TeamStatsMode, 1),
 	DECL_TYPE(TeamWinRateMode,          ConfigType::TeamStatsMode, 2),
+	DECL_TYPE(TableLayout,              ConfigType::TableLayout,   1),
 	DECL_TYPE(MinimizeTray,             ConfigType::Bool,          1),
 	DECL_TYPE(MatchHistory,             ConfigType::Bool,          2),
 	DECL_TYPE(MenuBarLeft,              ConfigType::Bool,          3),
@@ -63,7 +64,6 @@ enum class StatsMode
 	Ranked,
 	Pve,
 };
-
 NLOHMANN_JSON_SERIALIZE_ENUM(StatsMode,
 {
 	{ StatsMode::Current, "current" },
@@ -78,12 +78,22 @@ enum class TeamStatsMode
 	Average,
 	Median,
 };
-
 NLOHMANN_JSON_SERIALIZE_ENUM(TeamStatsMode,
 {
 	{ TeamStatsMode::Weighted, "weighted" },
 	{ TeamStatsMode::Average,  "average"  },
 	{ TeamStatsMode::Median,   "median"   },
+})
+
+enum class TableLayout
+{
+	Horizontal,
+	Vertical,
+};
+NLOHMANN_JSON_SERIALIZE_ENUM(TableLayout,
+{
+	{ TableLayout::Horizontal, "horizontal" },
+	{ TableLayout::Vertical,   "vertical"   },
 })
 
 class Config
@@ -120,9 +130,11 @@ public:
 	template<ConfigKey Key> requires(IsType(Key, ConfigType::StatsMode))
 	[[nodiscard]] StatsMode Get() const { return BaseGet<Key, StatsMode>(); }
 
-	template<ConfigKey Key>
-	requires(IsType(Key, ConfigType::TeamStatsMode))
+	template<ConfigKey Key> requires(IsType(Key, ConfigType::TeamStatsMode))
 	[[nodiscard]] TeamStatsMode Get() const { return BaseGet<Key, TeamStatsMode>(); }
+
+	template<ConfigKey Key> requires(IsType(Key, ConfigType::TableLayout))
+	[[nodiscard]] TableLayout Get() const { return BaseGet<Key, TableLayout>(); }
 
 	template<ConfigKey Key> requires(IsType(Key, ConfigType::String))
 	[[nodiscard]] std::string Get() const { return BaseGet<Key, std::string>(); }
@@ -138,6 +150,9 @@ public:
 
 	template<ConfigKey Key> requires(IsType(Key, ConfigType::TeamStatsMode))
 	void Set(TeamStatsMode value) { BaseSet<Key>(value); }
+
+	template<ConfigKey Key> requires(IsType(Key, ConfigType::TableLayout))
+	void Set(TableLayout value) { BaseSet<Key>(value); }
 
 	template<ConfigKey Key> requires(IsType(Key, ConfigType::String))
 	void Set(std::string_view value) { BaseSet<Key>(value); }
