@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Log.hpp"
+#include "Preprocessor.hpp"
 
 #include <string>
 
@@ -10,7 +11,7 @@
 #define JSON_CATCH_USER(exception) if (false)
 #define JSON_THROW_USER(exception)                                                                       \
 	{                                                                                                    \
-		LOG_ERROR("Error in {}:{} (function {}) - {}", __FILE__, __LINE__, __PRETTY_FUNCTION__,          \
+		LOG_ERROR("Error in {}:{} (function {}) - {}", __FILE__, __LINE__, PA_FUNC_SIG,                  \
 				  (exception).what());                                                                   \
 		std::abort();                                                                                    \
 	}

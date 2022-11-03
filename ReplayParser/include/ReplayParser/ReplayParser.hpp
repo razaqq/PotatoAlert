@@ -120,7 +120,7 @@ inline std::string_view GetName(RibbonType ribbon)
 	return "Unknown";
 }
 
-inline RibbonType GetParent(RibbonType ribbon)
+inline constexpr RibbonType GetParent(RibbonType ribbon)
 {
 	switch (ribbon)
 	{
@@ -131,6 +131,10 @@ inline RibbonType GetParent(RibbonType ribbon)
 	}
 	RIBBON_TYPES
 #undef X
+		default:
+		{
+			return RibbonType::UnknownRibbon;
+		}
 	}
 }
 

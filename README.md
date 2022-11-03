@@ -34,7 +34,7 @@ If you think you cannot follow this simple rule, then you hereby don't have my p
 ### Windows
 #### Requirements
 - [Qt](https://www.qt.io/) >= 6.3.1
-- [clang](https://clang.llvm.org/) >= 11.0.0
+- [clang](https://clang.llvm.org/) >= 11.0.0 or MSVC
 - [ninja](https://ninja-build.org/) >= 1.10.2
 - [cmake](https://cmake.org/) >= 3.17
 - [Visual Studio 2022](https://visualstudio.microsoft.com)
