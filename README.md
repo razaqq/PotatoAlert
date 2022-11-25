@@ -18,10 +18,9 @@
 - Fetch stats of current match automatically when your game starts
 - Match history to record all played matches
 - Replay parser to extract information from replays automatically (into match history)
-- Compact layout, so should easily fit on your second monitor
-- Stats are colored based on wows-numbers.com, they are always taken from game mode "randoms"
-- Backgrounds are colored by player's overall personal rating
-- Double clicking a player will bring up his wows-numbers.com profile
+- Compact layout (either vertical or horizontal), so should easily fit on your second monitor
+- Stats and backgrounds (overall personal rating) are colored based on wows-numbers.com
+- Double clicking a player will bring open the wows-numbers.com profile
 - Support for all game modes, even clan wars with teams from different servers
 
 ## Warning
