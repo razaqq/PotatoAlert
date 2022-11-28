@@ -112,11 +112,19 @@ public:
 		Statement& operator=(const Statement&) = delete;
 		Statement&& operator=(Statement&&) = delete;
 		
-		[[nodiscard]] bool Bind(int index, int value) const;
-		[[nodiscard]] bool Bind(int index, uint32_t value) const;
-		[[nodiscard]] bool Bind(int index, double value) const;
-		[[nodiscard]] bool Bind(int index, const char* value) const;
-		[[nodiscard]] bool Bind(int index, std::string_view value) const;
+		bool Bind(int index, int value) const;
+		bool Bind(int index, uint32_t value) const;
+		bool Bind(int index, double value) const;
+		bool Bind(int index, const char* value) const;
+		bool Bind(int index, const std::string& value) const;
+		bool Bind(int index, std::string_view value) const;
+
+		bool Bind(std::string_view name, int value) const;
+		bool Bind(std::string_view name, uint32_t value) const;
+		bool Bind(std::string_view name, double value) const;
+		bool Bind(std::string_view name, const char* value) const;
+		bool Bind(std::string_view name, const std::string& value) const;
+		bool Bind(std::string_view name, std::string_view value) const;
 
 		bool GetText(int index, std::string& outStr) const;
 		template<typename T>
@@ -124,15 +132,18 @@ public:
 		template<typename T>
 		bool GetInt64(int index, T& outInt) const;
 		bool GetBool(int index, bool& outBool) const;
+		bool GetDouble(int index, double& outDouble) const;
 
 		void ExecuteStep();
 		[[nodiscard]] bool IsDone() const { return m_done; }
 		[[nodiscard]] bool HasRow() const { return m_hasRow; }
-		
+
+		[[nodiscard]] const SQLite& GetDb() const { return m_db; }
 
 		operator bool() const { return m_valid; }
 
 	private:
+		const SQLite& m_db;
 		uintptr_t m_stmt;
 		bool m_valid;
 		bool m_done = false;

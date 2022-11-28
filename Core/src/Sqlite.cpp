@@ -50,7 +50,7 @@ bool SQLite::RawExecute(Handle handle, std::string_view sql, int (*callback)(voi
 
 // ----------------------------------------------
 
-SQLite::Statement::Statement(const SQLite& db, std::string_view sql)
+SQLite::Statement::Statement(const SQLite& db, std::string_view sql) : m_db(db)
 {
 	sqlite3_stmt* stmt;
 	m_valid = sqlite3_prepare_v2(UnwrapHandle(db.m_handle), sql.data(), -1, &stmt, nullptr) == SQLITE_OK;
@@ -84,9 +84,68 @@ bool SQLite::Statement::Bind(int index, const char* value) const
 	return sqlite3_bind_text(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value, -1, nullptr) == SQLITE_OK;
 }
 
+bool SQLite::Statement::Bind(int index, const std::string& value) const
+{
+	return sqlite3_bind_text(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value.c_str(), -1, nullptr) == SQLITE_OK;
+}
+
 bool SQLite::Statement::Bind(int index, std::string_view value) const
 {
 	return sqlite3_bind_text(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value.data(), -1, nullptr) == SQLITE_OK;
+}
+
+bool SQLite::Statement::Bind(std::string_view name, int value) const
+{
+	if (const int index = sqlite3_bind_parameter_index(reinterpret_cast<sqlite3_stmt*>(m_stmt), name.data()))
+	{
+		return Bind(index, value);
+	}
+	return false;
+}
+
+bool SQLite::Statement::Bind(std::string_view name, uint32_t value) const
+{
+	if (const int index = sqlite3_bind_parameter_index(reinterpret_cast<sqlite3_stmt*>(m_stmt), name.data()))
+	{
+		return Bind(index, value);
+	}
+	return false;
+}
+
+bool SQLite::Statement::Bind(std::string_view name, double value) const
+{
+	if (const int index = sqlite3_bind_parameter_index(reinterpret_cast<sqlite3_stmt*>(m_stmt), name.data()))
+	{
+		return Bind(index, value);
+	}
+	return false;
+}
+
+bool SQLite::Statement::Bind(std::string_view name, const char* value) const
+{
+	if (const int index = sqlite3_bind_parameter_index(reinterpret_cast<sqlite3_stmt*>(m_stmt), name.data()))
+	{
+		return Bind(index, value);
+	}
+	return false;
+}
+
+bool SQLite::Statement::Bind(std::string_view name, const std::string& value) const
+{
+	if (const int index = sqlite3_bind_parameter_index(reinterpret_cast<sqlite3_stmt*>(m_stmt), name.data()))
+	{
+		return Bind(index, value);
+	}
+	return false;
+}
+
+bool SQLite::Statement::Bind(std::string_view name, std::string_view value) const
+{
+	if (const int index = sqlite3_bind_parameter_index(reinterpret_cast<sqlite3_stmt*>(m_stmt), name.data()))
+	{
+		return Bind(index, value);
+	}
+	return false;
 }
 
 void SQLite::Statement::ExecuteStep()
@@ -144,11 +203,11 @@ bool SQLite::Statement::GetInt(int index, T& outInt) const
 	return false;
 }
 template bool SQLite::Statement::GetInt(int, uint8_t&) const;
-template bool SQLite::Statement::GetInt(int, int8_t&) const;
 template bool SQLite::Statement::GetInt(int, uint16_t&) const;
 template bool SQLite::Statement::GetInt(int, uint32_t&) const;
+template bool SQLite::Statement::GetInt(int, int8_t&) const;
+template bool SQLite::Statement::GetInt(int, int16_t&) const;
 template bool SQLite::Statement::GetInt(int, int32_t&) const;
-template bool SQLite::Statement::GetInt(int, int&) const;
 
 template<typename T>
 bool SQLite::Statement::GetInt64(int index, T& outInt) const
@@ -162,7 +221,7 @@ bool SQLite::Statement::GetInt64(int index, T& outInt) const
 	auto stmt = reinterpret_cast<sqlite3_stmt*>(m_stmt);
 	sqlite3_int64 out = sqlite3_column_int64(stmt, index);
 
-	if (out >= std::numeric_limits<uint8_t>::min() && out <= std::numeric_limits<uint8_t>::max())
+	if (out >= std::numeric_limits<T>::min() && out <= std::numeric_limits<T>::max())
 	{
 		outInt = static_cast<T>(out);
 		return true;
@@ -171,11 +230,12 @@ bool SQLite::Statement::GetInt64(int index, T& outInt) const
 	return false;
 }
 template bool SQLite::Statement::GetInt64(int, uint8_t&) const;
-template bool SQLite::Statement::GetInt64(int, int8_t&) const;
 template bool SQLite::Statement::GetInt64(int, uint16_t&) const;
 template bool SQLite::Statement::GetInt64(int, uint32_t&) const;
-template bool SQLite::Statement::GetInt64(int, int32_t&) const;
 template bool SQLite::Statement::GetInt64(int, uint64_t&) const;
+template bool SQLite::Statement::GetInt64(int, int8_t&) const;
+template bool SQLite::Statement::GetInt64(int, int16_t&) const;
+template bool SQLite::Statement::GetInt64(int, int32_t&) const;
 template bool SQLite::Statement::GetInt64(int, int64_t&) const;
 
 bool SQLite::Statement::GetBool(int index, bool& outBool) const
@@ -197,5 +257,17 @@ bool SQLite::Statement::GetBool(int index, bool& outBool) const
 		outBool = true;
 		return true;
 	}
+	return false;
+}
+
+bool SQLite::Statement::GetDouble(int index, double& outDouble) const
+{
+	if (!m_hasRow || index < 0 || index > m_columnCount)
+	{
+		return false;
+	}
+
+	auto stmt = reinterpret_cast<sqlite3_stmt*>(m_stmt);
+	outDouble = sqlite3_column_double(stmt, index);
 	return false;
 }
