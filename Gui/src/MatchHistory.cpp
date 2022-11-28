@@ -1,7 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "Client/MatchHistory.hpp"
-#include "Client/PotatoClient.hpp"
+#include "Client/Config.hpp"
+#include "Client/DatabaseManager.hpp"
+#include "Client/StatsParser.hpp"
 #include "Client/StringTable.hpp"
 
 #include "Gui/MatchHistory.hpp"
@@ -19,7 +20,12 @@
 
 using namespace PotatoAlert::Client::StringTable;
 using namespace PotatoAlert::Core;
-using PotatoAlert::Client::PotatoClient;
+using PotatoAlert::Client::Config;
+using PotatoAlert::Client::DatabaseManager;
+using PotatoAlert::Client::Match;
+using PotatoAlert::Client::SqlResult;
+using PotatoAlert::Client::StatsParser::MatchContext;
+using PotatoAlert::Client::StatsParser::StatsParseResult;
 using PotatoAlert::Gui::MatchHistory;
 
 void MatchHistory::paintEvent(QPaintEvent* _)
@@ -76,7 +82,7 @@ void MatchHistory::Init()
 	m_table->setObjectName("matchHistoryTable");
 	
 	m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	m_table->setSelectionMode(QAbstractItemView::SingleSelection);
+	m_table->setSelectionMode(QAbstractItemView::ExtendedSelection);
 	m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
 	m_table->setFocusPolicy(Qt::NoFocus);
 	m_table->setAlternatingRowColors(false);
@@ -88,47 +94,62 @@ void MatchHistory::Init()
 	m_table->setSortingEnabled(true);
 	m_table->setContentsMargins(0, 0, 0, 0);
 	m_table->setCursor(Qt::PointingHandCursor);
+	m_table->setFocusPolicy(Qt::StrongFocus);
 
 	connect(m_table, &QTableWidget::cellDoubleClicked, [this](int row, int _)
 	{
 		if (QTableWidgetItem* item = m_table->item(row, m_jsonColumn))
 		{
 			const int id = item->data(Qt::DisplayRole).toInt();
-			const auto match = m_services.Get<Client::MatchHistory>().GetMatchJson(id);
+
+			PA_TRY_OR_ELSE(const std::optional<std::string> match, m_services.Get<DatabaseManager>().GetMatchJson(id),
+			{
+				LOG_ERROR("Failed to get match json from database: {}", error);
+				return;
+			});
+
 			if (match.has_value())
 			{
-				emit ReplaySelected(match.value());
+				if (const StatsParseResult res = ParseMatch(match.value(), MatchContext{}); res.Success)
+				{
+					emit ReplaySelected(res.Match);
+				}
 			}
 		}
 	});
 
-	/*
-	connect(m_analyzeButton, &QPushButton::clicked, [this](bool _)
-	{
-		const int row = m_table->currentRow();
-		if (QTableWidgetItem* item = m_table->item(row, 7))
-		{
-			const int id = item->data(Qt::DisplayRole).toInt();
-			Client::MatchHistory::Instance().SetNonAnalyzed(id);
-			// TODO: this is a bit hacky, find a way to trigger a run otherwise
-			PotatoClient::Instance().CheckPath();
-		}
-	});
-	*/
-
 	connect(m_deleteButton, &QPushButton::clicked, [this](bool _)
 	{
-		const int row = m_table->currentRow();
-		if (QTableWidgetItem* item = m_table->item(row, m_jsonColumn))
+		QItemSelectionModel* select = m_table->selectionModel();
+
+		if (select->hasSelection())
 		{
 			int lang = m_services.Get<Config>().Get<Client::ConfigKey::Language>();
 			auto dialog = new QuestionDialog(lang, this, GetString(lang, StringTableKey::HISTORY_DELETE_QUESTION));
 			if (dialog->Run() == QuestionAnswer::Yes)
 			{
-				const int id = item->data(Qt::DisplayRole).toInt();
-				m_services.Get<Client::MatchHistory>().DeleteEntry(id);
-				m_entries.erase(id);
-				m_table->removeRow(row);
+				std::vector<uint32_t> ids{};
+				ids.reserve(select->selectedRows().count());
+
+				// have to sort and remove the rows from high to low
+				QList<QModelIndex> indices = select->selectedRows();
+				std::ranges::sort(indices, [](const QModelIndex& a, const QModelIndex& b)
+				{
+					return a.row() > b.row();
+				});
+
+				for (const QModelIndex& index : indices)
+				{
+					uint32_t id = m_table->item(index.row(), m_jsonColumn)->data(Qt::DisplayRole).toInt();
+					m_table->removeRow(index.row());
+					ids.emplace_back(id);
+					m_entries.erase(id);
+				}
+
+				PA_TRYV_OR_ELSE(m_services.Get<DatabaseManager>().DeleteMatches(ids),
+				{
+					LOG_ERROR("Failed to delete matches from match history: {}", error);
+				});
 			}
 		}
 	});
@@ -190,9 +211,16 @@ void MatchHistory::UpdateAll()
 	m_table->setRowCount(0);
 
 	m_table->setSortingEnabled(false);
-	for (auto& entry : m_services.Get<Client::MatchHistory>().GetEntries())
+
+	PA_TRY_OR_ELSE(const std::vector<Match> matches, m_services.Get<DatabaseManager>().GetMatches(),
 	{
-		AddEntry(entry);
+		LOG_ERROR("Failed to get matches from database: {}", error);
+		return;
+	});
+
+	for (const Match& match : matches)
+	{
+		AddMatch(match);
 	}
 	m_table->sortByColumn(0, Qt::SortOrder::DescendingOrder);
 	m_table->setSortingEnabled(true);
@@ -200,38 +228,42 @@ void MatchHistory::UpdateAll()
 
 void MatchHistory::UpdateLatest()
 {
-	if (auto res = m_services.Get<Client::MatchHistory>().GetLatestEntry())
+	PA_TRY_OR_ELSE(const std::optional<Match> match, m_services.Get<DatabaseManager>().GetLatestMatch(),
 	{
-		const Client::MatchHistory::Entry entry = res.value();
+		LOG_ERROR("Failed to get latest match from database: {}", error);
+		return;
+	});
 
+	if (match.has_value())
+	{
 		// check that we don't have that entry already
-		if (m_entries.empty() || entry.Id > m_entries.rbegin()->first)
+		if (m_entries.empty() || match.value().Id > m_entries.rbegin()->first)
 		{
 			m_table->setSortingEnabled(false);
-			AddEntry(entry);
+			AddMatch(match.value());
 			m_table->sortByColumn(0, Qt::SortOrder::DescendingOrder);
 			m_table->setSortingEnabled(true);
 		}
 	}
 }
 
-void MatchHistory::AddEntry(const Client::MatchHistory::Entry& entry)
+void MatchHistory::AddMatch(const Match& match)
 {
 	m_table->insertRow(m_table->rowCount());
 	const int row = m_table->rowCount() - 1;
 
 	QTableWidgetItem* dateItem = new QTableWidgetItem();
-	const auto date = QDateTime::fromString(QString::fromStdString(entry.Date), "dd.MM.yyyy hh:mm:ss");
+	const auto date = QDateTime::fromString(QString::fromStdString(match.Date), "dd.MM.yyyy hh:mm:ss");
 	dateItem->setData(Qt::DisplayRole, date);
 
 	const std::array fields = {
 		dateItem,
-		new QTableWidgetItem(QString::fromStdString(entry.Ship)),
-		new QTableWidgetItem(QString::fromStdString(entry.Map)),
-		new QTableWidgetItem(QString::fromStdString(entry.MatchGroup)),
-		new QTableWidgetItem(QString::fromStdString(entry.StatsMode)),
-		new QTableWidgetItem(QString::fromStdString(entry.Player)),
-		new QTableWidgetItem(QString::fromStdString(entry.Region))
+		new QTableWidgetItem(QString::fromStdString(match.Ship)),
+		new QTableWidgetItem(QString::fromStdString(match.Map)),
+		new QTableWidgetItem(QString::fromStdString(match.MatchGroup)),
+		new QTableWidgetItem(QString::fromStdString(match.StatsMode)),
+		new QTableWidgetItem(QString::fromStdString(match.Player)),
+		new QTableWidgetItem(QString::fromStdString(match.Region))
 	};
 
 	for (size_t i = 0; i < fields.size(); i++)
@@ -245,24 +277,30 @@ void MatchHistory::AddEntry(const Client::MatchHistory::Entry& entry)
 	// btn->setFlat(true);
 	m_table->setCellWidget(row, m_btnColumn, btn);
 
-	const uint32_t entryId = entry.Id;
-	connect(btn, &QPushButton::clicked, [entryId, this](bool _)
+	const uint32_t matchId = match.Id;
+	connect(btn, &QPushButton::clicked, [matchId, this](bool _)
 	{
-		if (const std::optional<Client::MatchHistory::Entry> entry = m_services.Get<Client::MatchHistory>().GetEntry(entryId))
+		PA_TRY_OR_ELSE(const std::optional<Match> match, m_services.Get<DatabaseManager>().GetMatch(matchId),
 		{
-			emit ReplaySummarySelected(entry.value());
+			LOG_ERROR("Failed to get match with id '{}' from database: {}", matchId, error);
+			return;
+		});
+
+		if (match.has_value())
+		{
+			emit ReplaySummarySelected(match.value());
 		}
 	});
 	
-	m_entries[entry.Id] = GuiEntry{ fields, btn };
+	m_entries[match.Id] = GuiEntry{ fields, btn };
 
 	auto item = new QTableWidgetItem();
-	item->setData(Qt::DisplayRole, entry.Id);
+	item->setData(Qt::DisplayRole, match.Id);
 	m_table->setItem(row, m_jsonColumn, item);
 
-	if (entry.Analyzed)
+	if (match.Analyzed)
 	{
-		SetSummary(entry.Id, entry.ReplaySummary);
+		SetSummary(match.Id, match.ReplaySummary);
 	}
 	else
 	{

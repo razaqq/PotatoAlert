@@ -10,8 +10,8 @@ target_sources(
     PRIVATE
 
     src/Config.cpp
+    src/DatabaseManager.cpp
     src/Game.cpp
-    src/MatchHistory.cpp
     src/PotatoClient.cpp
     src/ReplayAnalyzer.cpp
     src/StatsParser.cpp

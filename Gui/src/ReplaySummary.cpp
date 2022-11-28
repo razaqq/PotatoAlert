@@ -1,7 +1,6 @@
 // Copyright 2022 <github.com/razaqq>
 
 #include "Client/Config.hpp"
-#include "Client/MatchHistory.hpp"
 #include "Client/ServiceProvider.hpp"
 #include "Client/StringTable.hpp"
 
@@ -11,7 +10,6 @@
 
 #include <QApplication>
 #include <QFontDatabase>
-#include <QGraphicsScene>
 #include <QHBoxLayout>
 #include <QPainter>
 
@@ -20,7 +18,7 @@ using PotatoAlert::ReplayParser::AchievementType;
 using PotatoAlert::ReplayParser::RibbonType;
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::ConfigKey;
-using PotatoAlert::Client::MatchHistory;
+using PotatoAlert::Client::Match;
 using PotatoAlert::Gui::ShadowLabel;
 using ReplaySummaryData = PotatoAlert::ReplayParser::ReplaySummary;
 using ReplaySummaryGui = PotatoAlert::Gui::ReplaySummary;
@@ -197,7 +195,7 @@ ReplaySummaryGui::ReplaySummary(const Client::ServiceProvider& serviceProvider, 
 	QFontDatabase::addApplicationFont(":/WarHeliosCondCBold.ttf");
 }
 
-void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
+void ReplaySummaryGui::SetReplaySummary(const Match& match)
 {
 	ClearLayout(layout());
 
@@ -245,12 +243,12 @@ void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
 	vLayout->setContentsMargins(0, 0, 0, 0);
 	vLayout->addStretch();
 
-	if (entry.Analyzed)
+	if (match.Analyzed)
 	{
 		QHBoxLayout* hatLayout = new QHBoxLayout();
 		hatLayout->setObjectName("ReplaySummary_hat");
 
-		const ReplaySummaryData& s = entry.ReplaySummary;
+		const ReplaySummaryData& s = match.ReplaySummary;
 		QLabel* outcomeLabel = nullptr;
 		switch (s.Outcome)
 		{
@@ -275,9 +273,9 @@ void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
 		scenarioInfo->setContentsMargins(0, 0, 0, 0);
 		scenarioInfo->setSpacing(0);
 		ShadowLabel* mapModeLabel = new ShadowLabel(
-				std::format("{} \u23AF  {}", entry.Map, entry.MatchGroup).c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
+			std::format("{} \u23AF  {}", match.Map, match.MatchGroup).c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
 		ShadowLabel* startTimeLabel = new ShadowLabel(GetStringView(lang, StringTableKey::REPLAY_BATTLE_START_TIME), 0, 1, 4, QColor(0, 0, 0, 242));
-		ShadowLabel* startTime = new ShadowLabel(entry.Date.c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
+		ShadowLabel* startTime = new ShadowLabel(match.Date.c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
 		QHBoxLayout* timeLayout = new QHBoxLayout();
 		timeLayout->setContentsMargins(0, 0, 0, 0);
 		timeLayout->setSpacing(5);
@@ -305,24 +303,24 @@ void ReplaySummaryGui::SetReplaySummary(const MatchHistory::Entry& entry)
 		// playerInfo->addWidget(killerShipTier);
 		// playerInfo->addWidget(killerShipName);
 
-		ShadowLabel* playerName = new ShadowLabel(entry.Player.c_str(), 0, 1, 4);
+		ShadowLabel* playerName = new ShadowLabel(match.Player.c_str(), 0, 1, 4);
 		playerName->setObjectName("ReplaySummary_playerInfoLabel");
 		QLabel* shipClass = new QLabel();
-		shipClass->setPixmap(QPixmap(std::format(":/{}.svg", entry.ShipClass).c_str()).scaledToHeight(9, Qt::SmoothTransformation));
+		shipClass->setPixmap(QPixmap(std::format(":/{}.svg", match.ShipClass).c_str()).scaledToHeight(9, Qt::SmoothTransformation));
 
 		ShadowLabel* shipTier = new ShadowLabel("", 0, 1 ,4);
 		shipTier->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 		shipTier->setObjectName("ReplaySummary_playerInfoLabel");
-		if (entry.ShipTier == 11)
+		if (match.ShipTier == 11)
 		{
 			shipTier->setPixmap(QPixmap(":/StarGold.svg").scaledToHeight(13, Qt::SmoothTransformation));
 		}
 		else
 		{
-			shipTier->setText(TierToString(entry.ShipTier).data());
+			shipTier->setText(TierToString(match.ShipTier).data());
 		}
 
-		ShadowLabel* shipName = new ShadowLabel(entry.Ship.c_str(), 0, 1, 4);
+		ShadowLabel* shipName = new ShadowLabel(match.Ship.c_str(), 0, 1, 4);
 		shipName->setObjectName("ReplaySummary_playerInfoLabel");
 		playerInfo->addWidget(playerName);
 		playerInfo->addSpacing(5);

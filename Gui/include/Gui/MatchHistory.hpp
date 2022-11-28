@@ -1,7 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include "Client/MatchHistory.hpp"
+#include "Client/DatabaseManager.hpp"
 #include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
 
@@ -48,11 +48,11 @@ private:
 	void Init();
 	void InitHeaders() const;
 	void paintEvent(QPaintEvent* _) override;
-	void AddEntry(const Client::MatchHistory::Entry& entry);
+	void AddMatch(const Client::Match& match);
 
 signals:
 	void ReplaySelected(const Client::StatsParser::MatchType& match);
-	void ReplaySummarySelected(const Client::MatchHistory::Entry& entry);
+	void ReplaySummarySelected(const Client::Match& match);
 };
 
 }  // namespace PotatoAlert::Gui

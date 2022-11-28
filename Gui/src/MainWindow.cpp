@@ -2,7 +2,6 @@
 
 #include "Client/AppDirectories.hpp"
 #include "Client/Config.hpp"
-#include "Client/MatchHistory.hpp"
 #include "Client/PotatoClient.hpp"
 #include "Client/StringTable.hpp"
 
@@ -161,10 +160,10 @@ void MainWindow::ConnectSignals()
 	});
 
 	// connect(m_matchHistory, &MatchHistory::ReplaySummarySelected, [this](const ReplayParser::ReplaySummary& replaySummary)
-	connect(m_matchHistory, &MatchHistory::ReplaySummarySelected, [this](const Client::MatchHistory::Entry& entry)
+	connect(m_matchHistory, &MatchHistory::ReplaySummarySelected, [this](const Client::Match& match)
 	{
 		m_activeWidget->setVisible(false);
-		m_replaySummary->SetReplaySummary(entry);
+		m_replaySummary->SetReplaySummary(match);
 		m_replaySummary->setVisible(true);
 		m_activeWidget = m_replaySummary;
 	});

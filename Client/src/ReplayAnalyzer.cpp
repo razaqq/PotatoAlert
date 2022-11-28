@@ -1,9 +1,11 @@
 // Copyright 2022 <github.com/razaqq>
 
+#include "Client/DatabaseManager.hpp"
 #include "Client/ReplayAnalyzer.hpp"
 
 #include "Core/File.hpp"
 #include "Core/String.hpp"
+
 #include "GameFileUnpack/GameFileUnpack.hpp"
 
 #include <algorithm>
@@ -54,12 +56,22 @@ void ReplayAnalyzer::AnalyzeReplay(std::string_view path, std::chrono::seconds r
 		if (std::optional<ReplaySummary> res = ReplayParser::AnalyzeReplay(file, m_scriptsSearchPaths))
 		{
 			const ReplaySummary summary = res.value();
-			const MatchHistory& matchHistory = m_services.Get<MatchHistory>();
+			const DatabaseManager& dbm = m_services.Get<DatabaseManager>();
 
-			if (std::optional<MatchHistory::Entry> entry = matchHistory.GetEntry(summary.Hash))
+			PA_TRY_OR_ELSE(const std::optional<Match> match, dbm.GetMatch(summary.Hash),
 			{
-				matchHistory.SetAnalyzeResult(summary.Hash, summary);
-				emit this->ReplaySummaryReady(entry.value().Id, summary);
+				LOG_ERROR("Failed to get match from match history: {}", error);
+				return;
+			});
+
+			if (match)
+			{
+				PA_TRYV_OR_ELSE(dbm.SetMatchReplaySummary(summary.Hash, summary),
+				{
+					LOG_ERROR("Failed to set replay summary for match '{}': {}", summary.Hash, error);
+					return;
+				});
+				emit ReplaySummaryReady(match.value().Id, summary);
 			}
 		}
 	};
@@ -69,11 +81,15 @@ void ReplayAnalyzer::AnalyzeReplay(std::string_view path, std::chrono::seconds r
 
 void ReplayAnalyzer::AnalyzeDirectory(std::string_view directory)
 {
-	const MatchHistory& matchHistory = m_services.Get<MatchHistory>();
+	const DatabaseManager& dbm = m_services.Get<DatabaseManager>();
 
-	auto entries = matchHistory.GetNonAnalyzedMatches();
-	std::ranges::sort(entries,
-	[](const MatchHistory::NonAnalyzedMatch& left, const MatchHistory::NonAnalyzedMatch& right)
+	PA_TRY_OR_ELSE(std::vector<NonAnalyzedMatch> matches, dbm.GetNonAnalyzedMatches(),
+	{
+		LOG_ERROR("Failed to get non-analyzed matches from match history: {}", error);
+		return;
+	});
+
+	std::ranges::sort(matches, [](const NonAnalyzedMatch& left, const NonAnalyzedMatch& right)
 	{
 		return left.ReplayName < right.ReplayName;
 	});
@@ -82,14 +98,13 @@ void ReplayAnalyzer::AnalyzeDirectory(std::string_view directory)
 	{
 		if (entry.is_regular_file() && entry.path().extension() == ".wowsreplay")
 		{
-			auto found = std::ranges::find_if(entries,
-			[&](const MatchHistory::NonAnalyzedMatch& match)
+			auto found = std::ranges::find_if(matches, [&](const NonAnalyzedMatch& match)
 			{
 				const std::string fileName = String::ToLower(entry.path().filename().string());
 				return String::ToLower(match.ReplayName) == fileName;
 			});
 
-			if (found != entries.end())
+			if (found != matches.end())
 			{
 				AnalyzeReplay(entry.path().string());
 			}

@@ -1,19 +1,20 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Client/AppDirectories.hpp"
 #include "Client/Config.hpp"
+#include "Client/DatabaseManager.hpp"
 #include "Client/Game.hpp"
-#include "Client/ReplayAnalyzer.hpp"
-#include "Client/MatchHistory.hpp"
 #include "Client/PotatoClient.hpp"
+#include "Client/ReplayAnalyzer.hpp"
 #include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
 
 #include "Core/Defer.hpp"
-#include "Core/Directory.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
 #include "Core/Sha256.hpp"
 #include "Core/StandardPaths.hpp"
+#include "Core/Time.hpp"
 
 #include <QObject>
 #include <QString>
@@ -32,6 +33,7 @@
 
 
 using PotatoAlert::Client::PotatoClient;
+using PotatoAlert::Client::StatsParser::MatchType;
 using namespace PotatoAlert::Core;
 
 // static constexpr std::string_view g_submitUrl = "http://127.0.0.1:10001/queue/submit";
@@ -166,6 +168,15 @@ struct ServerResponse
 		r.Result = j.at("result").get<json>();
 }
 
+static inline std::string GetReplayName(const MatchType::InfoType& info)
+{
+	const std::vector<std::string> dateSplit = Split(info.DateTime, " ");
+	const std::vector<std::string> date = Split(dateSplit[0], ".");
+	const std::vector<std::string> time = Split(dateSplit[1], ":");
+
+	return std::format("{}{}{}_{}{}{}_{}_{}.wowsreplay", date[2], date[1], date[0], time[0], time[1], time[2], info.ShipIdent, info.Map);
+}
+
 }
 
 void PotatoClient::Init()
@@ -294,6 +305,7 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 							LOG_ERROR("Server says ResponseStatus is completed, but is missing result field");
 							return;
 						}
+
 						LOG_TRACE("Parsing match.");
 						const StatsParser::StatsParseResult res = StatsParser::ParseMatch(serverResponse.Result.value(), matchContext, true);
 						if (!res.Success)
@@ -302,13 +314,71 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 							return;
 						}
 
-						// TODO: this could use some cleanup
-						if (m_services.Get<Config>().Get<ConfigKey::MatchHistory>())
+						const Config& config = m_services.Get<Config>();
+
+						if (config.Get<ConfigKey::MatchHistory>())
 						{
-							if (m_services.Get<MatchHistory>().SaveMatch(
-								res.Match.Info, matchContext.ArenaInfo, m_lastArenaInfoHash, serverResponse.Result.value().dump(), res.Csv.value()))
+							const DatabaseManager& dbm = m_services.Get<DatabaseManager>();
+
+							PA_TRY_OR_ELSE(bool exists, dbm.MatchExists(m_lastArenaInfoHash),
 							{
-								emit MatchHistoryChanged();
+								LOG_ERROR("Failed to check if match exists in database: {}", error);
+								return;
+							});
+
+							if (!exists)
+							{
+								LOG_TRACE("Adding match to match history '{}'", m_lastArenaInfoHash);
+								SqlResult<void> addResult = dbm.AddMatch(
+									Match
+									{
+										.Hash = m_lastArenaInfoHash,
+										.ReplayName = GetReplayName(res.Match.Info),
+										.Date = res.Match.Info.DateTime,
+										.Ship = res.Match.Info.ShipName,
+										.ShipNation = res.Match.Info.ShipNation,
+										.ShipClass = res.Match.Info.ShipClass,
+										.ShipTier = res.Match.Info.ShipTier,
+										.Map = res.Match.Info.Map,
+										.MatchGroup = res.Match.Info.MatchGroup,
+										.StatsMode = res.Match.Info.StatsMode,
+										.Player = res.Match.Info.Player,
+										.Region = res.Match.Info.Region,
+										.Json = serverResponse.Result.value().dump(),
+										.ArenaInfo = matchContext.ArenaInfo,
+										.Analyzed = false,
+										.ReplaySummary = ReplaySummary::FromJson("{}")
+									}
+								);
+
+								if (addResult)
+								{
+									emit MatchHistoryChanged();
+								}
+								else
+								{
+									LOG_ERROR("Failed to add match to database: {}", addResult.error());
+								}
+							}
+						}
+
+						if (config.Get<ConfigKey::SaveMatchCsv>())
+						{
+							const std::string fileName = (m_services.Get<AppDirectories>().MatchesDir / std::format("match_{}.csv", Time::GetTimeStamp("%Y-%m-%d_%H-%M-%S"))).string();
+							if (const File file = File::Open(fileName, File::Flags::Write | File::Flags::Create))
+							{
+								if (file.WriteString(res.Csv))
+								{
+									LOG_TRACE("Wrote match as CSV.");
+								}
+								else
+								{
+									LOG_ERROR("Failed to save match as csv: {}", File::LastError());
+								}
+							}
+							else
+							{
+								LOG_ERROR("Failed to open csv file for writing: {}", File::LastError());
 							}
 						}
 
