@@ -4,6 +4,7 @@
 #include "Core/File.hpp"
 #include "Core/Flags.hpp"
 
+#define _LARGEFILE64_SOURCE 1
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -96,7 +97,7 @@ uint64_t File::RawGetSize(Handle handle)
 	return static_cast<uint64_t>(pos);
 }
 
-template<typename T>
+template<is_byte T>
 bool File::RawRead(Handle handle, std::vector<T>& out, uint64_t size, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
@@ -124,7 +125,7 @@ template bool File::RawRead(Handle, std::vector<std::byte>&, uint64_t, bool);
 template bool File::RawRead(Handle, std::vector<unsigned char>&, uint64_t, bool);
 template bool File::RawRead(Handle, std::vector<char>&, uint64_t, bool);
 
-template<typename T>
+template<is_byte T>
 bool File::RawReadAll(Handle handle, std::vector<T>& out, bool resetFilePointer)
 {
 	if (handle == Handle::Null)
@@ -283,7 +284,7 @@ bool File::RawFlushBuffer(Handle handle)
 	return true;
 }
 
-std::string File::LastError()
+std::string File::RawLastError()
 {
 	int err = errno;
 	switch (err)
