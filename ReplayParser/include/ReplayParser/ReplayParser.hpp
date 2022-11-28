@@ -192,6 +192,7 @@ inline constexpr RibbonType GetParent(RibbonType ribbon)
 	X(Assistant,              4170376112) \
 	X(WillToWin,              4193444784) \
 	X(TacticalExpertise,      4161987504) \
+	X(CombatScout,            3879920560) \
 
 	// X(JollyRogerSilver,    4045595568) \  // TODO
 	// X(JollyRogerBronze,    4045595568) \  // TODO
