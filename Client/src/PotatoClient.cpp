@@ -307,7 +307,7 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 						}
 
 						LOG_TRACE("Parsing match.");
-						const StatsParser::StatsParseResult res = StatsParser::ParseMatch(serverResponse.Result.value(), matchContext, true);
+						const StatsParser::StatsParseResult res = ParseMatch(serverResponse.Result.value(), matchContext);
 						if (!res.Success)
 						{
 							emit StatusReady(Status::Error, "JSON Parse Error");

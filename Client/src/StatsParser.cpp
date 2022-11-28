@@ -398,14 +398,13 @@ void pn::Label::UpdateLabel(QLabel* label) const
 	}
 }
 
-StatsParseResult pn::ParseMatch(const json& j, const MatchContext& matchContext, bool parseCsv) noexcept
+StatsParseResult pn::ParseMatch(const json& j, const MatchContext& matchContext) noexcept
 {
 	StatsParseResult result;
 
-	const auto match = j.get<_JSON::Match>();
+	const _JSON::Match match = j.get<_JSON::Match>();
 
-	if (parseCsv)
-		result.Csv = _JSON::GetCSV(match);
+	result.Csv = GetCSV(match);
 
 	_JSON::Ship playerShip;
 
@@ -500,7 +499,7 @@ StatsParseResult pn::ParseMatch(const json& j, const MatchContext& matchContext,
 	return result;
 }
 
-StatsParseResult pn::ParseMatch(const std::string& raw, const MatchContext& matchContext, bool parseCsv) noexcept
+StatsParseResult pn::ParseMatch(const std::string& raw, const MatchContext& matchContext) noexcept
 {
 	json j;
 	sax_no_exception sax(j);
@@ -510,5 +509,5 @@ StatsParseResult pn::ParseMatch(const std::string& raw, const MatchContext& matc
 		return StatsParseResult{};
 	}
 
-	return ParseMatch(j, matchContext, parseCsv);
+	return ParseMatch(j, matchContext);
 }
