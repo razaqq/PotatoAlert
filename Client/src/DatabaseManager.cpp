@@ -15,9 +15,6 @@
 #include <type_traits>
 #include <vector>
 
-#include <QSqlDatabase>
-#include <QSqlQuery>
-
 
 using PotatoAlert::Client::DatabaseManager;
 using PotatoAlert::Client::Match;
