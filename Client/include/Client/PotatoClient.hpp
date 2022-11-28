@@ -61,13 +61,10 @@ private:
 	void LookupResult(const std::string& url, const std::string& authToken, const MatchContext& matchContext);
 
 signals:
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "NotImplementedFunctions"
 	void MatchReady(const StatsParser::MatchType& match);
 	void MatchHistoryChanged();
 	void MatchSummaryChanged(uint32_t id, const ReplaySummary& summary);
 	void StatusReady(Status status, std::string_view statusText);
-#pragma clang diagnostic pop
 };
 
 }  // namespace PotatoAlert::Client
