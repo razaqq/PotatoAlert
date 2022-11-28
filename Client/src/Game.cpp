@@ -11,6 +11,7 @@
 #include <tinyxml2.h>
 
 #include <filesystem>
+#include <ranges>
 #include <regex>
 #include <string>
 #include <vector>
@@ -296,7 +297,7 @@ bool CheckPath(const std::string& selectedPath, DirectoryStatus& status)
 
 
 	// get rid of all replays folders that don't exist
-	status.replaysPath.erase(std::remove_if(status.replaysPath.begin(), status.replaysPath.end(), [](const std::string& p)
+	status.replaysPath.erase(std::ranges::remove_if(status.replaysPath, [](const std::string& p)
 	{
 		if (!fs::exists(p))
 		{
@@ -304,7 +305,7 @@ bool CheckPath(const std::string& selectedPath, DirectoryStatus& status)
 			return true;
 		}
 		return false;
-	}), status.replaysPath.end());
+	}).begin(), status.replaysPath.end());
 
 	status.found = !status.replaysPath.empty();
 	// TODO: localize
