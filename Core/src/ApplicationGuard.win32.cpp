@@ -4,6 +4,9 @@
 
 #include "win32.h"
 
+#include <string>
+
+
 
 using PotatoAlert::Core::ApplicationGuard;
 

@@ -5,6 +5,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <string>
+
 
 using PotatoAlert::Core::ApplicationGuard;
 
