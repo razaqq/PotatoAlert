@@ -3,10 +3,11 @@
 #include "Core/ApplicationGuard.hpp"
 #include "Core/Directory.hpp"
 #include "Core/StandardPaths.hpp"
+#include "Core/Sqlite.hpp"
 
 #include "Client/AppDirectories.hpp"
 #include "Client/Config.hpp"
-#include "Client/MatchHistory.hpp"
+#include "Client/DatabaseManager.hpp"
 #include "Client/ServiceProvider.hpp"
 #include "Client/ReplayAnalyzer.hpp"
 
@@ -28,15 +29,18 @@
 #include <QFile>
 #include <QEvent>
 
+
 using PotatoAlert::Client::AppDirectories;
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::ConfigKey;
-using PotatoAlert::Client::MatchHistory;
+using PotatoAlert::Client::DatabaseManager;
 using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Client::ReplayAnalyzer;
 using PotatoAlert::Client::ServiceProvider;
 using PotatoAlert::Core::ApplicationGuard;
 using PotatoAlert::Core::AppDataPath;
+using PotatoAlert::Core::ExitCurrentProcessWithError;
+using PotatoAlert::Core::SQLite;
 using PotatoAlert::Gui::DarkPalette;
 using PotatoAlert::Gui::LanguageChangeEvent;
 using PotatoAlert::Gui::MainWindow;
@@ -75,8 +79,16 @@ static int RunMain(int argc, char* argv[])
 	PotatoClient client(serviceProvider);
 	serviceProvider.Add(client);
 
-	MatchHistory matchHistory(serviceProvider);
-	serviceProvider.Add(matchHistory);
+	SQLite db = SQLite::Open((appDirs.MatchesDir / "match_history.db").string(), SQLite::Flags::ReadWrite | SQLite::Flags::Create);
+	if (!db)
+	{
+		LOG_ERROR("Failed to open database: {}", db.GetLastError());
+		ExitCurrentProcessWithError(1);
+	}
+
+	DatabaseManager dbm(db);
+	serviceProvider.Add(dbm);
+	auto res = dbm.GetMatches();
 
 	QApplication::setQuitOnLastWindowClosed(false);
 	
