@@ -12,6 +12,8 @@
 #include <QFontDatabase>
 #include <QHBoxLayout>
 #include <QPainter>
+#include <QStyleOption>
+
 
 using namespace PotatoAlert::Client::StringTable;
 using PotatoAlert::ReplayParser::AchievementType;
@@ -202,8 +204,8 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 	int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
 
 	m_background = new Background(
-		std::format(":/{}.jpg", entry.Map).c_str(), 
-		std::format(":/{}.png", entry.ShipNation).c_str()
+		std::format(":/{}.jpg", match.Map).c_str()
+		// std::format(":/{}.png", match.ShipNation).c_str()
 	);
 	m_arWidget = new AspectRatioWidget(nullptr, m_background, 9.0f / 16.0f);
 

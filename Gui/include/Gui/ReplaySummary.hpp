@@ -7,6 +7,7 @@
 #include "Gui/AspectRatioWidget.hpp"
 
 #include <QGraphicsDropShadowEffect>
+#include <QLabel>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QWidget>
@@ -32,13 +33,13 @@ public:
 class Background : public QWidget
 {
 public:
-	explicit Background(const char* map, const char* nationFlag, QWidget* parent = nullptr)
-		: QWidget(parent), m_map(map), m_nationFlag(nationFlag) {}
+	explicit Background(const char* map, QWidget* parent = nullptr)
+		: QWidget(parent), m_map(map) {}  // m_nationFlag(nationFlag) {}
 
-	void SetImages(const QString& map, const QString& nationFlag)
+	void SetImage(const QString& map)  // , const QString& nationFlag)
 	{
 		m_map = map;
-		m_nationFlag = nationFlag;
+		// m_nationFlag = nationFlag;
 		update();
 		repaint();
 	}
@@ -48,15 +49,15 @@ protected:
 	{
 		QPainter painter(this);
 		QPixmap map = QPixmap::fromImage(QImage(m_map));
-		QPixmap flag = QPixmap::fromImage(QImage(m_nationFlag));
+		// QPixmap flag = QPixmap::fromImage(QImage(m_nationFlag));
 		painter.drawPixmap(0, 0, map.scaledToHeight(height(), Qt::SmoothTransformation));
-		painter.drawPixmap(0, 0, flag.scaledToHeight(height(), Qt::SmoothTransformation));
+		// painter.drawPixmap(0, 0, flag.scaledToHeight(height(), Qt::SmoothTransformation));
 		QWidget::paintEvent(event);
 	}
 
 private:
 	QString m_map;
-	QString m_nationFlag;
+	// QString m_nationFlag;
 	static constexpr float m_aspectRatio = 16.0f / 9.0f;
 };
 
