@@ -5,12 +5,8 @@
 #include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
 
-#include "Gui/StatsWidget/StatsHeader.hpp"
 #include "Gui/StatsWidget/StatsWidget.hpp"
 
-#include <QDesktopServices>
-#include <QTableWidgetItem>
-#include <QUrl>
 #include <QVBoxLayout>
 #include <QWidget>
 
