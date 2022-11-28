@@ -147,7 +147,7 @@ bool Updater::UpdateAvailable()
 	connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
 	loop.exec();
 
-	if (reply->error())
+	if (reply->error() != QNetworkReply::NoError)
 	{
 		LOG_ERROR("Network reply for update failed: {}", reply->errorString().toStdString());
 		return false;
