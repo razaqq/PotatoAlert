@@ -53,16 +53,15 @@ inline std::error_code AsErrorCode(const Result<void>& result)
 #define PA_DETAIL_TRY_R \
 	PA_CAT(PA_DETAIL_TRY_r, PA_COUNTER)
 
-#define PA_DETAIL_TRY_INTRO(return, hspec, result, ...)                   \
+#define PA_DETAIL_TRY_INTO(return, hspec, result, ...)                    \
 	hspec result = (__VA_ARGS__);                                         \
 	if (!result)                                                          \
 	{                                                                     \
 		return PA_ERROR(static_cast<decltype(result)&&>(result).error()); \
 	}
 
-
-#define PA_DETAIL_TRY_2(return, hspec, vspec, result, ...)                                                                                    \
-	PA_DETAIL_TRY_INTRO(return, hspec, result, __VA_ARGS__) static_assert(!PA_DETAIL_TRY_IS_VOID(result), "TRY requires a non-void result."); \
+#define PA_DETAIL_TRY_2(return, hspec, vspec, result, ...)                                                                                   \
+	PA_DETAIL_TRY_INTO(return, hspec, result, __VA_ARGS__) static_assert(!PA_DETAIL_TRY_IS_VOID(result), "TRY requires a non-void result."); \
 	auto&& vspec = *static_cast<decltype(result)&&>(result)
 
 #define PA_DETAIL_TRY_1(return, spec, ...) \
@@ -75,8 +74,8 @@ inline std::error_code AsErrorCode(const Result<void>& result)
 	PA_DETAIL_TRY_1(co_return, spec, __VA_ARGS__)
 
 
-#define PA_DETAIL_TRYA_2(return, hspec, left, result, ...)                                                                                        \
-	PA_DETAIL_TRY_INTRO(return, hspec, result, __VA_ARGS__) static_assert(!PA_DETAIL_TRY_IS_VOID(result), "TRYA requires a non-void result."); \
+#define PA_DETAIL_TRYA_2(return, hspec, left, result, ...)                                                                                    \
+	PA_DETAIL_TRY_INTO(return, hspec, result, __VA_ARGS__) static_assert(!PA_DETAIL_TRY_IS_VOID(result), "TRYA requires a non-void result."); \
 	((void)(left = *static_cast<decltype(result)&&>(result)))
 
 #define PA_DETAIL_TRYA_1(return, left, ...) \
@@ -89,8 +88,8 @@ inline std::error_code AsErrorCode(const Result<void>& result)
 	PA_DETAIL_TRYA_1(co_return, left, __VA_ARGS__)
 
 
-#define PA_DETAIL_TRYS_2(return, hspec, vspec, result, ...)                                                                                       \
-	PA_DETAIL_TRY_INTRO(return, hspec, result, __VA_ARGS__) static_assert(!PA_DETAIL_TRY_IS_VOID(result), "TRYS requires a non-void result."); \
+#define PA_DETAIL_TRYS_2(return, hspec, vspec, result, ...)                                                                                   \
+	PA_DETAIL_TRY_INTO(return, hspec, result, __VA_ARGS__) static_assert(!PA_DETAIL_TRY_IS_VOID(result), "TRYS requires a non-void result."); \
 	auto&& [PA_EXPAND vspec] = *static_cast<decltype(result)&&>(result)
 
 #define PA_DETAIL_TRYS_1(return, spec, ...) \
@@ -103,8 +102,8 @@ inline std::error_code AsErrorCode(const Result<void>& result)
 	PA_DETAIL_TRYS_1(co_return, spec, __VA_ARGS__)
 
 
-#define PA_DETAIL_TRYV_2(return, hspec, result, ...)                                                                                         \
-	PA_DETAIL_TRY_INTRO(return, hspec, result, __VA_ARGS__) static_assert(PA_DETAIL_TRY_IS_VOID(result), "TRYV requires a void result."); \
+#define PA_DETAIL_TRYV_2(return, hspec, result, ...)                                                                                     \
+	PA_DETAIL_TRY_INTO(return, hspec, result, __VA_ARGS__) static_assert(PA_DETAIL_TRY_IS_VOID(result), "TRYV requires a void result."); \
 	((void)result)
 
 #define PA_DETAIL_TRYV_1(return, ...) \
@@ -118,7 +117,7 @@ inline std::error_code AsErrorCode(const Result<void>& result)
 
 
 #define PA_DETAIL_TRYD_2(return, hspec, result, ...) \
-	PA_DETAIL_TRY_INTRO(return, hspec, result, __VA_ARGS__)((void)result)
+	PA_DETAIL_TRY_INTO(return, hspec, result, __VA_ARGS__)((void)result)
 
 #define PA_DETAIL_TRYD_1(return, ...) \
 	PA_DETAIL_TRYD_2(return, auto, PA_DETAIL_TRY_R, __VA_ARGS__)
@@ -128,5 +127,35 @@ inline std::error_code AsErrorCode(const Result<void>& result)
 
 #define PA_CO_TRYD(...) \
 	PA_DETAIL_TRYD_1(co_return, __VA_ARGS__)
+
+
+#define PA_DETAIL_TRY_INTO(return, hspec, result, ...)                    \
+	hspec result = (__VA_ARGS__);                                         \
+	if (!result)                                                          \
+	{                                                                     \
+		return PA_ERROR(static_cast<decltype(result)&&>(result).error()); \
+	}
+
+#define PA_DETAIL_TRY_2(return, hspec, vspec, result, ...)                            \
+	PA_DETAIL_TRY_INTO(return, hspec, result, __VA_ARGS__)                            \
+	static_assert(!PA_DETAIL_TRY_IS_VOID(result), "TRY requires a non-void result."); \
+	auto&& vspec = *static_cast<decltype(result)&&>(result)
+
+#define PA_TRY_OR_ELSE(HSpec, Result, ...) \
+	const auto _r = (Result);              \
+	if (!_r)                               \
+	{                                      \
+		auto error = _r.error();           \
+		__VA_ARGS__                        \
+	}                                      \
+	HSpec = _r.value()
+
+#define PA_TRYV_OR_ELSE(Result, ...) \
+	const auto _r = (Result);        \
+	if (!_r)                         \
+	{                                \
+		auto error = _r.error();     \
+		__VA_ARGS__                  \
+	}
 
 }  // namespace PotatoAlert::Core
