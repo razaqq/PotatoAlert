@@ -159,6 +159,51 @@ fn parse_receive_damage_stat(data: &CxxVector<u8>) -> ReceiveDamageStatResult
 #[allow(non_camel_case_types)]
 #[derive(Clone, FromPrimitive)]
 #[repr(i64)]
+enum DataIndex_0_11_11  // version > 0.11.11
+{
+	AccountDbId          = 0x00,  // i64
+	AntiAbuseEnabled     = 0x01,  // bool
+	EntityId             = 0x02,  // i64  // TODO: this is really the avatarId
+	CamoInfo             = 0x03,  // Dict
+	ClanColor            = 0x04,  // i64
+	ClanId               = 0x05,  // i64
+	ClanTag              = 0x06,  // String
+	CrewParams           = 0x07,  // Vec<i64 | List<i64>>
+	DogTag               = 0x08,  // Vec<i64>
+	FragsCount           = 0x09,  // i64
+	FriendlyFireEnabled  = 0x0A,  // bool
+	Id                   = 0x0B,  // i64
+	InvitationsEnabled   = 0x0C,  // bool
+	IsAbuser             = 0x0D,  // bool
+	IsAlive              = 0x0E,  // bool
+	IsBot                = 0x0F,  // bool
+	IsClientLoaded       = 0x10,  // bool
+	IsConnected          = 0x11,  // bool
+	IsHidden             = 0x12,  // bool
+	IsLeaver             = 0x13,  // bool
+	IsPreBattleOwner     = 0x14,  // bool
+	IsTShooter           = 0x15,  // bool
+	KeyTargetMarkers     = 0x16,  // i64
+	KilledBuildingsCount = 0x17,  // i64
+	MaxHealth            = 0x18,  // i64
+	Name                 = 0x19,  // Vec<Byte> -> String
+	PlayerMode           = 0x1A,  // Dict<Vec<Bytes>, Vec<Bytes>>
+	PreBattleIdOnStart   = 0x1B,  // i64
+	PreBattleSign        = 0x1C,  // i64
+	PreBattleId          = 0x1D,  // i64
+	Realm                = 0x1E,  // Vec<Bytes> -> String
+	ShipComponents       = 0x1F,  // Dict<Vec<Bytes>, Vec<Bytes>>
+	ShipConfigDump       = 0x20,  // Vec<byte>
+	ShipId               = 0x21,  // i64
+	ShipParamsId         = 0x22,  // i64
+	SkinId               = 0x23,  // i64
+	TeamId               = 0x24,  // i64
+	TtkStatus            = 0x25,  //  bool
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Clone, FromPrimitive)]
+#[repr(i64)]
 enum DataIndex_0_10_9  // version > 0.10.9
 {
 	AccountDbId          = 0x00,
@@ -360,7 +405,18 @@ fn parse_arena_state_received_players(data: &CxxVector<u8>, version: u32) -> OnA
 
 	type Player = Vec<(i64, Value)>;
 
-	if version >= create_version(0, 10, 9, 0)
+	// let val = serde_pickle::de::value_from_slice(data.as_slice(), DeOptions::default()).unwrap();
+	// let players = serde_pickle::value::from_value::<Vec<Player>>(val).unwrap();
+	// for player in players
+	// {
+	// 	println!("{:?}", player);
+	// }
+
+	if version >= create_version(0, 11, 11, 0)
+	{
+		parse_arena_state!(DataIndex_0_11_11, out_players, data)
+	}
+	else if version >= create_version(0, 10, 9, 0)
 	{
 		parse_arena_state!(DataIndex_0_10_9, out_players, data)
 	}
