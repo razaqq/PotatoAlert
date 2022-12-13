@@ -72,7 +72,8 @@ endif()
 
 find_package(Qt6 COMPONENTS SvgWidgets Widgets REQUIRED)
 
-target_link_libraries(Gui PRIVATE FramelessHelperWidgets Qt6::SvgWidgets Qt6::Widgets)
+target_link_libraries(Gui PRIVATE FramelessHelperWidgets Qt6::SvgWidgets Qt6::WidgetsPrivate)
+target_link_libraries(Gui PUBLIC Qt6::Widgets)
 
 if(WIN32)
     target_link_libraries(Gui PRIVATE Dwmapi Win32 Updater)
