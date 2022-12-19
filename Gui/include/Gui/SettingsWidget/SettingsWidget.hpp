@@ -1,6 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Gui/IconButton.hpp"
 #include "Gui/SettingsWidget/FolderStatus.hpp"
 #include "Gui/SettingsWidget/SettingsChoice.hpp"
 #include "Gui/SettingsWidget/SettingsSwitch.hpp"
@@ -50,7 +51,7 @@ private:
 
 	// game directory selection
 	QLineEdit* m_gamePathEdit = new QLineEdit();
-	QToolButton* m_gamePathButton = new QToolButton();
+	IconButton* m_gamePathButton;
 	FolderStatus* m_folderStatusGui = new FolderStatus(this);
 
 	bool m_forceRun = false;

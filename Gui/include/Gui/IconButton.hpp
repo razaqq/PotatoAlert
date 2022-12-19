@@ -44,7 +44,7 @@ public:
 	}
 
 protected:
-	virtual void leaveEvent(QEvent* event) override
+	void leaveEvent(QEvent* event) override
 	{
 		if (m_showIcons)
 		{
@@ -53,9 +53,9 @@ protected:
 		}
 	}
 
-	virtual void enterEvent(QEnterEvent* event) override
+	void enterEvent(QEnterEvent* event) override
 	{
-		if (m_showIcons)
+		if (m_showIcons && isEnabled())
 		{
 			setIcon(m_hoverIcon);
 			setIconSize(m_iconSize);

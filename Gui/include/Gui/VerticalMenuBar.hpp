@@ -1,6 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Gui/IconButton.hpp"
+
 #include <QButtonGroup>
 #include <QDockWidget>
 #include <QWidget>
