@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Client/Config.hpp"
+#include "Client/DatabaseManager.hpp"
 #include "Client/Game.hpp"
 #include "Client/ReplayAnalyzer.hpp"
 #include "Client/ServiceProvider.hpp"
@@ -62,8 +63,8 @@ private:
 
 signals:
 	void MatchReady(const StatsParser::MatchType& match);
-	void MatchHistoryChanged();
-	void MatchSummaryChanged(uint32_t id, const ReplaySummary& summary);
+	void MatchHistoryNewMatch(const Match& match);
+	void ReplaySummaryChanged(uint32_t id, const ReplaySummary& summary);
 	void StatusReady(Status status, std::string_view statusText);
 };
 

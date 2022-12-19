@@ -4,7 +4,7 @@
 #include "Client/ServiceProvider.hpp"
 
 #include "Gui/AboutWidget.hpp"
-#include "Gui/MatchHistory.hpp"
+#include "Gui/MatchHistory/MatchHistory.hpp"
 #include "Gui/ReplaySummary.hpp"
 #include "Gui/SettingsWidget/SettingsWidget.hpp"
 #include "Gui/StatsWidget/StatsWidget.hpp"

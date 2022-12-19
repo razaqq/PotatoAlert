@@ -12,13 +12,16 @@ target_sources(
     src/AboutWidget.cpp
     src/LanguageChangeEvent.cpp
     src/MainWindow.cpp
-    src/MatchHistory.cpp
     src/NativeWindow.cpp
+    src/Pagination.cpp
     src/Palette.cpp
     src/QuestionDialog.cpp
     src/ReplaySummary.cpp
     src/TitleBar.cpp
     src/VerticalMenuBar.cpp
+
+    src/MatchHistory/MatchHistory.cpp
+    src/MatchHistory/MatchHistoryModel.cpp
 
     src/SettingsWidget/FolderStatus.cpp
     src/SettingsWidget/HorizontalLine.cpp
@@ -38,8 +41,12 @@ target_sources(
     Gui
     PRIVATE
 
-    include/Gui/MatchHistory.hpp
+    include/Gui/MatchHistory/MatchHistory.hpp
+    include/Gui/MatchHistory/MatchHistoryView.hpp
+    include/Gui/MatchHistory/MatchHistoryModel.hpp
+    include/Gui/MatchHistory/ReplaySummaryButtonDelegate.hpp
     include/Gui/NativeWindow.hpp
+    include/Gui/Pagination.hpp
     include/Gui/ReplaySummary.hpp
     include/Gui/SettingsWidget/SettingsChoiceButton.hpp
     include/Gui/SettingsWidget/SettingsSwitch.hpp

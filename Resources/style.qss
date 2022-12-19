@@ -524,19 +524,43 @@ QFrame#hLine
 #matchHistoryTable
 {
   background-color: transparent;
-}
-
-#matchHistoryTable::item::selected
-{
-  selection-background-color: rgba(66, 66, 66, 0);
+  outline: 0;
 }
 
 #matchHistoryTable::item:selected
 {
-  selection-background-color: rgba(66, 66, 66, 0);
+  background-color: rgba(42, 130, 218, 150);
 }
 
 #matchHistoryTable::item:focus
 {
-  selection-background-color: rgba(66, 66, 66, 0);
+  selection-background-color: transparent;
+  background-color: rgba(42, 130, 218, 150);
+  border: 0px;
+}
+
+/* Pagination */
+
+#paginationButton
+{
+  background-color: palette(base);
+  border-radius: 0px;
+  border: 0px;
+}
+
+#paginationButton:hover
+{
+  color: white;
+  background-color: palette(window);
+}
+
+#paginationButton:checked
+{
+  color: white;
+  background-color: palette(highlight);
+}
+
+#paginationButton:disabled
+{
+  background-color: palette(window);
 }

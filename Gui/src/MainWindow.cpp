@@ -9,7 +9,7 @@
 #include "Core/Screenshot.hpp"
 
 #include "Gui/MainWindow.hpp"
-#include "Gui/MatchHistory.hpp"
+#include "Gui/MatchHistory/MatchHistory.hpp"
 #include "Gui/ReplaySummary.hpp"
 #include "Gui/QuestionDialog.hpp"
 #include "Gui/StatsWidget/StatsWidget.hpp"
@@ -144,8 +144,8 @@ void MainWindow::ConnectSignals()
 	connect(&potatoClient, &PotatoClient::StatusReady, m_statsWidget, &StatsWidget::SetStatus);
 	connect(&potatoClient, &PotatoClient::MatchReady, m_statsWidget, &StatsWidget::Update);
 
-	connect(&potatoClient, &PotatoClient::MatchHistoryChanged, m_matchHistory, &MatchHistory::UpdateLatest);
-	connect(&potatoClient, &PotatoClient::MatchSummaryChanged, m_matchHistory, &MatchHistory::SetSummary);
+	connect(&potatoClient, &PotatoClient::MatchHistoryNewMatch, m_matchHistory, &MatchHistory::AddMatch);
+	connect(&potatoClient, &PotatoClient::ReplaySummaryChanged, m_matchHistory, &MatchHistory::SetReplaySummary);
 
 	connect(m_matchHistory, &MatchHistory::ReplaySelected, [this](const MatchType& match)
 	{

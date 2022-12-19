@@ -186,7 +186,7 @@ void PotatoClient::Init()
 	connect(&m_watcher, &DirectoryWatcher::FileChanged, this, &PotatoClient::OnFileChanged);
 	connect(&m_watcher, &DirectoryWatcher::FileChanged, &m_replayAnalyzer, &ReplayAnalyzer::OnFileChanged);
 
-	connect(&m_replayAnalyzer, &ReplayAnalyzer::ReplaySummaryReady, this, &PotatoClient::MatchSummaryChanged);
+	connect(&m_replayAnalyzer, &ReplayAnalyzer::ReplaySummaryReady, this, &PotatoClient::ReplaySummaryChanged);
 
 	TriggerRun();
 }
@@ -329,31 +329,30 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 							if (!exists)
 							{
 								LOG_TRACE("Adding match to match history '{}'", m_lastArenaInfoHash);
-								SqlResult<void> addResult = dbm.AddMatch(
-									Match
-									{
-										.Hash = m_lastArenaInfoHash,
-										.ReplayName = GetReplayName(res.Match.Info),
-										.Date = res.Match.Info.DateTime,
-										.Ship = res.Match.Info.ShipName,
-										.ShipNation = res.Match.Info.ShipNation,
-										.ShipClass = res.Match.Info.ShipClass,
-										.ShipTier = res.Match.Info.ShipTier,
-										.Map = res.Match.Info.Map,
-										.MatchGroup = res.Match.Info.MatchGroup,
-										.StatsMode = res.Match.Info.StatsMode,
-										.Player = res.Match.Info.Player,
-										.Region = res.Match.Info.Region,
-										.Json = serverResponse.Result.value().dump(),
-										.ArenaInfo = matchContext.ArenaInfo,
-										.Analyzed = false,
-										.ReplaySummary = ReplaySummary::FromJson("{}")
-									}
-								);
+								Match match
+								{
+									.Hash = m_lastArenaInfoHash,
+									.ReplayName = GetReplayName(res.Match.Info),
+									.Date = res.Match.Info.DateTime,
+									.Ship = res.Match.Info.ShipName,
+									.ShipNation = res.Match.Info.ShipNation,
+									.ShipClass = res.Match.Info.ShipClass,
+									.ShipTier = res.Match.Info.ShipTier,
+									.Map = res.Match.Info.Map,
+									.MatchGroup = res.Match.Info.MatchGroup,
+									.StatsMode = res.Match.Info.StatsMode,
+									.Player = res.Match.Info.Player,
+									.Region = res.Match.Info.Region,
+									.Json = serverResponse.Result.value().dump(),
+									.ArenaInfo = matchContext.ArenaInfo,
+									.Analyzed = false,
+									.ReplaySummary = ReplaySummary::FromJson("{}")
+								};
 
+								SqlResult<void> addResult = dbm.AddMatch(match);
 								if (addResult)
 								{
-									emit MatchHistoryChanged();
+									emit MatchHistoryNewMatch(match);
 								}
 								else
 								{
