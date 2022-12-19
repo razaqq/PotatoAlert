@@ -138,7 +138,7 @@ bool File::RawRead(Handle handle, std::vector<T>& out, uint64_t size, bool reset
 
 	return ReadFile(UnwrapHandle<HANDLE>(handle), buff, static_cast<DWORD>(size), &dwBytesRead, nullptr);
 }
-template bool File::RawRead(Handle, std::vector<uint8_t>&, uint64_t, bool);
+// template bool File::RawRead(Handle, std::vector<uint8_t>&, uint64_t, bool);
 template bool File::RawRead(Handle, std::vector<int8_t>&, uint64_t, bool);
 template bool File::RawRead(Handle, std::vector<std::byte>&, uint64_t, bool);
 template bool File::RawRead(Handle, std::vector<unsigned char>&, uint64_t, bool);
@@ -165,7 +165,7 @@ bool File::RawReadAll(Handle handle, std::vector<T>& out, bool resetFilePointer)
 
 	return ReadFile(UnwrapHandle<HANDLE>(handle), buff, static_cast<DWORD>(size), &dwBytesRead, nullptr);
 }
-template bool File::RawReadAll(Handle, std::vector<uint8_t>&, bool);
+// template bool File::RawReadAll(Handle, std::vector<uint8_t>&, bool);
 template bool File::RawReadAll(Handle, std::vector<int8_t>&, bool);
 template bool File::RawReadAll(Handle, std::vector<std::byte>&, bool);
 template bool File::RawReadAll(Handle, std::vector<unsigned char>&, bool);
@@ -241,7 +241,7 @@ bool File::RawWrite(Handle handle, std::span<const T> data, bool resetFilePointe
 
 	return true;
 }
-template bool File::RawWrite(Handle, std::span<const uint8_t>, bool);
+// template bool File::RawWrite(Handle, std::span<const uint8_t>, bool);
 template bool File::RawWrite(Handle, std::span<const int8_t>, bool);
 template bool File::RawWrite(Handle, std::span<const std::byte>, bool);
 template bool File::RawWrite(Handle, std::span<const unsigned char>, bool);

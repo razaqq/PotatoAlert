@@ -4,6 +4,8 @@
 #include "Core/FileMapping.hpp"
 
 #include <cassert>
+#include <utility>
+
 #include <win32.h>
 
 
@@ -41,14 +43,14 @@ FileMapping::Handle FileMapping::RawOpen(File::Handle file, Flags flags, uint64_
 {
 	DWORD protect = 0;
 
-	switch (flags & (Flags::Read | Flags::Write))
+	switch (static_cast<uint32_t>(flags & (Flags::Read | Flags::Write)))
 	{
-		case Flags::Read:
+		case static_cast<int>(Flags::Read):
 		{
 			protect = PAGE_READONLY;
 			break;
 		}
-		case Flags::Read | Flags::Write:
+		case static_cast<uint32_t>(Flags::Read | Flags::Write):
 		{
 			protect = PAGE_READWRITE;
 			break;

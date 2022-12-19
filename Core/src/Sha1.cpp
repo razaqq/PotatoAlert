@@ -85,7 +85,7 @@ bool Sha1::ProcessBytes(std::span<T> bytes)
 {
 	return ProcessBlock(bytes);
 }
-template bool Sha1::ProcessBytes(std::span<uint8_t>);
+// template bool Sha1::ProcessBytes(std::span<uint8_t>);
 template bool Sha1::ProcessBytes(std::span<int8_t>);
 template bool Sha1::ProcessBytes(std::span<std::byte>);
 template bool Sha1::ProcessBytes(std::span<unsigned char>);
