@@ -153,6 +153,11 @@ DatabaseManager::DatabaseManager(SQLite& db) : m_db(db)
 	{
 		LOG_ERROR("Failed to create database tables");
 	}
+
+	if (!MigrateTables())
+	{
+		LOG_ERROR("Failed to migrate tables");
+	}
 }
 
 DatabaseManager::~DatabaseManager()
@@ -172,6 +177,12 @@ SqlResult<void> DatabaseManager::CreateTables()
 		return PA_SQL_ERROR("{}", m_db.GetLastError());
 	}
 
+	return {};
+}
+
+SqlResult<void> DatabaseManager::MigrateTables()
+{
+	// TODO: convert the time to YYYY-MM-DD HH:MM:SS
 	return {};
 }
 
