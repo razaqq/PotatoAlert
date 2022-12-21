@@ -170,11 +170,10 @@ size_t rp::TypeSize(const ArgType& type)
 		}
 
 		return Infinity;
-	},
-	type);
+	}, type);
 }
 
-static ArgValue ParsePrimitive(PrimitiveType type, std::span<Byte>& data)
+static ArgValue ParsePrimitive(PrimitiveType type, std::span<const Byte>& data)
 {
 	switch (type.Type)
 	{
@@ -419,7 +418,7 @@ std::string rp::PrintType(const ArgType& type)
 }
 #endif
 
-ArgValue rp::ParseValue(std::span<Byte>& data, const ArgType& type)
+ArgValue rp::ParseValue(std::span<const Byte>& data, const ArgType& type)
 {
 	if (data.empty()) return {};
 

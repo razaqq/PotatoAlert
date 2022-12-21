@@ -121,7 +121,7 @@ typedef std::unordered_map<std::string, ArgType> AliasType;
 
 ArgType ParseType(XMLElement* elem, const AliasType& aliases);
 size_t TypeSize(const ArgType& type);
-ArgValue ParseValue(std::span<Core::Byte>& data, const ArgType& type);
+ArgValue ParseValue(std::span<const Byte>& data, const ArgType& type);
 
 #ifndef NDEBUG
 std::string PrintType(const ArgType& type);
