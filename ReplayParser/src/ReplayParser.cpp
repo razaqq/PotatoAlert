@@ -14,6 +14,7 @@
 #include "ReplayParser/Util.hpp"
 
 #include <optional>
+#include <ranges>
 #include <span>
 #include <string>
 #include <vector>
@@ -152,6 +153,14 @@ ReplayResult<void> Replay::ReadPackets(const std::vector<fs::path>& scriptsSearc
 	do {
 		packets.emplace_back(ParsePacket(out, parser));
 	} while (!out.empty());
+
+	// sort the packets by game time
+	std::ranges::sort(packets, [](const PacketType& a, const PacketType& b)
+	{
+		const Packet& aPacket = std::visit([](const auto& x) -> const Packet& { return x; }, a);
+		const Packet& bPacket = std::visit([](const auto& x) -> const Packet& { return x; }, b);
+		return aPacket.Clock < bPacket.Clock;
+	});
 
 	return {};
 }
