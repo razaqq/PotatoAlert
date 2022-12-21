@@ -48,9 +48,8 @@ private:
 	void AnalyzeReplay(std::string_view path, std::chrono::seconds readDelay = 0s);
 
 	const ServiceProvider& m_services;
-	std::unordered_set<std::string> m_analyzedReplays;
 	Core::ThreadPool m_threadPool;
-	std::vector<std::future<void>> m_futures;
+	std::unordered_map<std::string, std::future<void>> m_futures;
 	std::vector<fs::path> m_scriptsSearchPaths;
 
 signals:

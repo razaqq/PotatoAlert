@@ -76,7 +76,17 @@ void ReplayAnalyzer::AnalyzeReplay(std::string_view path, std::chrono::seconds r
 		}
 	};
 
-	m_futures.emplace_back(m_threadPool.Enqueue(analyze, std::string(path), readDelay));
+	// if this replay was never analyzed or analyzing finished, analyze it
+	// this avoids running multiple analyzes if the game writes to the replay multiple times
+	if (!m_futures.contains(path.data()))
+	{
+		m_futures.emplace(std::string(path), m_threadPool.Enqueue(analyze, std::string(path), readDelay));
+	}
+
+	if (m_futures.at(path.data()).wait_for(0s) == std::future_status::ready)
+	{
+		m_futures.at(path.data()) = m_threadPool.Enqueue(analyze, std::string(path), readDelay);
+	}
 }
 
 void ReplayAnalyzer::AnalyzeDirectory(std::string_view directory)
