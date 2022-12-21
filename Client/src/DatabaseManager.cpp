@@ -186,7 +186,7 @@ SqlResult<void> DatabaseManager::MigrateTables()
 	return {};
 }
 
-SqlResult<void> DatabaseManager::AddMatch(const Match& match) const
+SqlResult<void> DatabaseManager::AddMatch(Match& match) const
 {
 	static constexpr std::string_view insertQuery = "INSERT INTO matches ("
 		PA_DB_COLUMNS(MATCH_FIELDS) ") VALUES (" PA_DB_COLUMNS_VALUES(MATCH_FIELDS) ")";
@@ -207,6 +207,8 @@ SqlResult<void> DatabaseManager::AddMatch(const Match& match) const
 	{
 		return PA_SQL_ERROR("{}", m_db.GetLastError());
 	}
+
+	match.Id = m_db.GetLastRowId();
 
 	return {};
 }

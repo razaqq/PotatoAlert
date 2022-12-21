@@ -40,7 +40,12 @@ bool SQLite::RawFlushBuffer(Handle handle)
 
 std::string SQLite::GetLastError() const
 {
-	return sqlite3_errmsg(UnwrapHandle(this->m_handle));
+	return sqlite3_errmsg(UnwrapHandle(m_handle));
+}
+
+int64_t SQLite::GetLastRowId() const
+{
+	return sqlite3_last_insert_rowid(UnwrapHandle(m_handle));
 }
 
 bool SQLite::RawExecute(Handle handle, std::string_view sql, int (*callback)(void* ctx, int columns, char** columnText, char** columnNames), void* context)

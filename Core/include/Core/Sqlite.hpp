@@ -84,6 +84,7 @@ public:
 	}
 
 	[[nodiscard]] std::string GetLastError() const;
+	[[nodiscard]] int64_t GetLastRowId() const;
 
 	bool Execute(std::string_view sql) const
 	{
