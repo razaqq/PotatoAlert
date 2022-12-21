@@ -11,6 +11,7 @@
 #include "ReplayParser/PacketParser.hpp"
 #include "ReplayParser/Packets.hpp"
 #include "ReplayParser/ReplayParser.hpp"
+#include "ReplayParser/Util.hpp"
 
 #include <optional>
 #include <span>
@@ -21,23 +22,22 @@
 using namespace PotatoAlert::Core;
 using namespace PotatoAlert::ReplayParser;
 namespace rp = PotatoAlert::ReplayParser;
+using PotatoAlert::ReplayParser::ReplayResult;
 
-std::optional<Replay> Replay::FromFile(std::string_view fileName)
+ReplayResult<Replay> Replay::FromFile(std::string_view fileName)
 {
 	PA_PROFILE_FUNCTION();
 
 	File file = File::Open(fileName, File::Flags::Open | File::Flags::Read);
 	if (!file)
 	{
-		LOG_ERROR("Failed to open replay file: {}", file.LastError());
-		return {};
+		return PA_REPLAY_ERROR("Failed to open replay file: {}", file.LastError());
 	}
 
 	Replay replay;
 	if (!file.ReadAll(replay.m_rawData))
 	{
-		LOG_ERROR("Failed to read replay file: {}", file.LastError());
-		return {};
+		return PA_REPLAY_ERROR("Failed to read replay file: {}", file.LastError());
 	}
 	file.Close();
 
@@ -46,22 +46,19 @@ std::optional<Replay> Replay::FromFile(std::string_view fileName)
 	// remove first 8 bytes, no idea what they are, maybe version?
 	if (replay.m_data.size() < 8)
 	{
-		LOG_ERROR("Replay data missing first 8 bytes.");
-		return {};
+		return PA_REPLAY_ERROR("Replay data missing first 8 bytes.");
 	}
 	Take(replay.m_data, 8);
 
 	uint32_t metaSize;
 	if (!TakeInto(replay.m_data, metaSize))
 	{
-		LOG_ERROR("Replay is missing metaSize.");
-		return {};
+		return PA_REPLAY_ERROR("Replay is missing metaSize.");
 	}
 
 	if (replay.m_data.size() < metaSize)
 	{
-		LOG_ERROR("Replay is missing meta info.");
-		return {};
+		return PA_REPLAY_ERROR("Replay is missing meta info.");
 	}
 	replay.metaString.resize(metaSize);
 	std::memcpy(replay.metaString.data(), Take(replay.m_data, metaSize).data(), metaSize);
@@ -70,30 +67,27 @@ std::optional<Replay> Replay::FromFile(std::string_view fileName)
 	sax_no_exception sax(js);
 	if (!json::sax_parse(replay.metaString, &sax))
 	{
-		LOG_ERROR("Failed to parse replay meta as JSON.");
-		return {};
+		return PA_REPLAY_ERROR("Failed to parse replay meta as JSON.");
 	}
 	replay.meta = js.get<ReplayMeta>();
 
 	return replay;
 }
 
-bool Replay::ReadPackets(const std::vector<fs::path>& scriptsSearchPaths)
+ReplayResult<void> Replay::ReadPackets(const std::vector<fs::path>& scriptsSearchPaths)
 {
 	PA_PROFILE_FUNCTION();
 
 	uint32_t uncompressedSize;
 	if (!TakeInto(m_data, uncompressedSize))
 	{
-		LOG_ERROR("Replay is missing uncompressedSize.");
-		return false;
+		return PA_REPLAY_ERROR("Replay is missing uncompressedSize.");
 	}
 
 	uint32_t streamSize;
 	if (!TakeInto(m_data, streamSize))
 	{
-		LOG_ERROR("Replay is missing streamSize.");
-		return false;
+		return PA_REPLAY_ERROR("Replay is missing streamSize.");
 	}
 
 	std::vector<Byte> decrypted{};
@@ -101,11 +95,10 @@ bool Replay::ReadPackets(const std::vector<fs::path>& scriptsSearchPaths)
 
 	if (m_data.size() % Blowfish::BlockSize() != 0)
 	{
-		LOG_ERROR("Replay data is not a multiple of blowfish block size.");
-		return false;
+		return PA_REPLAY_ERROR("Replay data is not a multiple of blowfish block size.");
 	}
 
-	std::array<Byte, 16> key = { 0x29, 0xB7, 0xC9, 0x09, 0x38, 0x3F, 0x84, 0x88, 0xFA, 0x98, 0xEC, 0x4E, 0x13, 0x19, 0x79, 0xFB };
+	constexpr std::array<Byte, 16> key = { 0x29, 0xB7, 0xC9, 0x09, 0x38, 0x3F, 0x84, 0x88, 0xFA, 0x98, 0xEC, 0x4E, 0x13, 0x19, 0x79, 0xFB };
 	const Blowfish blowfish(key);
 
 	Byte prev[8] = { Byte{ 0 } };
@@ -136,11 +129,10 @@ bool Replay::ReadPackets(const std::vector<fs::path>& scriptsSearchPaths)
 	m_rawData.shrink_to_fit();
 	m_data = {};
 
-	auto decompressed = Zlib::Inflate(decrypted);
+	const std::vector<Byte> decompressed = Zlib::Inflate(decrypted);
 	if (decompressed.empty())
 	{
-		LOG_ERROR("Failed to inflate decrypted replay data with zlib.");
-		return false;
+		return PA_REPLAY_ERROR("Failed to inflate decrypted replay data with zlib.");
 	}
 
 	// free memory of decrypted data
@@ -151,7 +143,7 @@ bool Replay::ReadPackets(const std::vector<fs::path>& scriptsSearchPaths)
 
 	if (specs.empty())
 	{
-		return false;
+		return PA_REPLAY_ERROR("Empty entity specs");
 	}
 
 	PacketParser parser{ specs, {} };
@@ -161,24 +153,15 @@ bool Replay::ReadPackets(const std::vector<fs::path>& scriptsSearchPaths)
 		packets.emplace_back(ParsePacket(out, parser));
 	} while (!out.empty());
 
-	return true;
+	return {};
 }
 
-std::optional<ReplaySummary> rp::AnalyzeReplay(std::string_view file, const std::vector<fs::path>& scriptsSearchPaths)
+ReplayResult<ReplaySummary> rp::AnalyzeReplay(std::string_view file, const std::vector<fs::path>& scriptsSearchPaths)
 {
-	if (std::optional<Replay> res = Replay::FromFile(file))
-	{
-		if (res.value().ReadPackets(scriptsSearchPaths))
-		{
-			return res.value().Analyze();
-		}
-		LOG_ERROR("Failed to read packets for replay {}", file);
-	}
-	else
-	{
-		LOG_ERROR("Failed to read replay {}", file);
-	}
-	return {};
+	PA_TRY(replay, Replay::FromFile(file));
+	PA_TRYV(replay.ReadPackets(scriptsSearchPaths));
+	PA_TRY(summary, replay.Analyze());
+	return summary;
 }
 
 bool rp::HasGameScripts(const Version& gameVersion, const std::vector<fs::path>& scriptsSearchPaths)

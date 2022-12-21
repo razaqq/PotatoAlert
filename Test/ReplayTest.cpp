@@ -29,81 +29,60 @@ static std::string GetReplay(std::string_view name)
 	std::exit(1);
 }
 
-static constexpr void ClearMem(Replay& replay)
-{
-	replay.packets.clear();
-	replay.packets.shrink_to_fit();
-
-	replay.specs.clear();
-	replay.specs.shrink_to_fit();
-}
-
 TEST_CASE( "ReplayTest" )
 {
 	const fs::path root = GetModuleRootPath().value() / "ReplayVersions";
 
-	std::optional<Replay> res = Replay::FromFile(GetReplay("20201107_155356_PISC110-Venezia_19_OC_prey.wowsreplay"));
-	REQUIRE(res.has_value());
-	Replay replay = res.value();
-	REQUIRE(replay.meta.Name == "12x12");
-	REQUIRE(replay.meta.DateTime == "07.11.2020 15:53:56");
-	REQUIRE(replay.packets.empty());
-	REQUIRE(replay.ReadPackets({ root }));
-	REQUIRE(replay.packets.size() == 153376);
-	std::optional<ReplaySummary> result = replay.Analyze();
+	ReplayResult<Replay> res = Replay::FromFile(GetReplay("20201107_155356_PISC110-Venezia_19_OC_prey.wowsreplay"));
+	REQUIRE(res);
+	REQUIRE(res->meta.Name == "12x12");
+	REQUIRE(res->meta.DateTime == "07.11.2020 15:53:56");
+	REQUIRE(res->packets.empty());
+	REQUIRE(res->ReadPackets({ root }));
+	REQUIRE(res->packets.size() == 153376);
+	ReplayResult<ReplaySummary> result = res->Analyze();
 	REQUIRE(result);
-	REQUIRE(result.value().Outcome == MatchOutcome::Win);
-	ClearMem(replay);
+	REQUIRE(result->Outcome == MatchOutcome::Win);
 
 	res = Replay::FromFile(GetReplay("20210914_212320_PRSC610-Smolensk_25_sea_hope.wowsreplay"));
-	REQUIRE(res.has_value());
-	Replay replay2 = res.value();
-	REQUIRE(replay2.ReadPackets({ root }));
-	std::optional<ReplaySummary> result2 = replay2.Analyze();
+	REQUIRE(res);
+	REQUIRE(res->ReadPackets({ root }));
+	ReplayResult<ReplaySummary> result2 = res->Analyze();
 	REQUIRE(result2);
-	REQUIRE(result2.value().Outcome == MatchOutcome::Win);
-	ClearMem(replay2);
+	REQUIRE(result2->Outcome == MatchOutcome::Win);
 
 	res = Replay::FromFile(GetReplay("20210913_011502_PASD510-Somers_53_Shoreside.wowsreplay"));
-	REQUIRE(res.has_value());
-	Replay replay3 = res.value();
-	REQUIRE(replay3.ReadPackets({ root }));
-	std::optional<ReplaySummary> result3 = replay3.Analyze();
+	REQUIRE(res);
+	REQUIRE(res->ReadPackets({ root }));
+	ReplayResult<ReplaySummary> result3 = res->Analyze();
 	REQUIRE(result3);
-	REQUIRE(result3.value().Outcome == MatchOutcome::Loss);
-	ClearMem(replay3);
+	REQUIRE(result3->Outcome == MatchOutcome::Loss);
 
 	res = Replay::FromFile(GetReplay("20210912_002554_PRSB110-Sovetskaya-Rossiya_53_Shoreside.wowsreplay"));
-	REQUIRE(res.has_value());
-	Replay replay4 = res.value();
-	REQUIRE(replay4.ReadPackets({ root }));
-	std::optional<ReplaySummary> result4 = replay4.Analyze();
+	REQUIRE(res);
+	REQUIRE(res->ReadPackets({ root }));
+	ReplayResult<ReplaySummary> result4 = res->Analyze();
 	REQUIRE(result4);
-	REQUIRE(result4.value().Outcome == MatchOutcome::Win);
-	ClearMem(replay4);
+	REQUIRE(result4->Outcome == MatchOutcome::Win);
 
 	res = Replay::FromFile(GetReplay("20210915_180756_PRSC610-Smolensk_35_NE_north_winter.wowsreplay"));
-	REQUIRE(res.has_value());
-	Replay replay5 = res.value();
-	REQUIRE(replay5.ReadPackets({ root }));
-	std::optional<ReplaySummary> result5 = replay5.Analyze();
+	REQUIRE(res);
+	REQUIRE(res->ReadPackets({ root }));
+	ReplayResult<ReplaySummary> result5 = res->Analyze();
 	REQUIRE(result5);
-	REQUIRE(result5.value().Outcome == MatchOutcome::Loss);
-	ClearMem(replay5);
+	REQUIRE(result5->Outcome == MatchOutcome::Loss);
 
 	res = Replay::FromFile(GetReplay("20201117_104604_PWSD508-Orkan_50_Gold_harbor.wowsreplay"));
 	REQUIRE(res.has_value());
-	Replay replay6 = res.value();
-	REQUIRE(replay6.ReadPackets({ root }));
-	std::optional<ReplaySummary> result6 = replay6.Analyze();
+	REQUIRE(res->ReadPackets({ root }));
+	ReplayResult<ReplaySummary> result6 = res->Analyze();
 	REQUIRE(result6);
-	REQUIRE(result6.value().Outcome == MatchOutcome::Draw);
+	REQUIRE(result6->Outcome == MatchOutcome::Draw);
 
 	res = Replay::FromFile(GetReplay("20220815_100927_PRSB518-Lenin_19_OC_prey.wowsreplay"));
 	REQUIRE(res.has_value());
-	Replay replay7 = res.value();
-	REQUIRE(replay7.ReadPackets({ root }));
-	std::optional<ReplaySummary> result7 = replay7.Analyze();
+	REQUIRE(res->ReadPackets({ root }));
+	ReplayResult<ReplaySummary> result7 = res->Analyze();
 	REQUIRE(result7);
 	REQUIRE(result7->Outcome == MatchOutcome::Loss);
 	REQUIRE((int)std::round(result7->DamageDealt) == 132976);

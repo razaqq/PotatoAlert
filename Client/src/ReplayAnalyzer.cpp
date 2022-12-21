@@ -17,8 +17,9 @@
 
 using namespace std::chrono_literals;
 using namespace PotatoAlert::Core;
-using PotatoAlert::GameFileUnpack::Unpacker;
 using PotatoAlert::Client::ReplayAnalyzer;
+using PotatoAlert::GameFileUnpack::Unpacker;
+using PotatoAlert::ReplayParser::ReplayResult;
 
 bool ReplayAnalyzer::HasGameScripts(const Version& gameVersion) const
 {
@@ -53,26 +54,29 @@ void ReplayAnalyzer::AnalyzeReplay(std::string_view path, std::chrono::seconds r
 		// this is honestly not ideal, but i don't see another way of fixing it
 		LOG_TRACE("Analyzing replay file {} after {} delay...", file, readDelay);
 		std::this_thread::sleep_for(readDelay);
-		if (std::optional<ReplaySummary> res = ReplayParser::AnalyzeReplay(file, m_scriptsSearchPaths))
-		{
-			const ReplaySummary summary = res.value();
-			const DatabaseManager& dbm = m_services.Get<DatabaseManager>();
 
-			PA_TRY_OR_ELSE(match, dbm.GetMatch(summary.Hash),
+		PA_TRY_OR_ELSE(summary, ReplayParser::AnalyzeReplay(file, m_scriptsSearchPaths),
+		{
+			LOG_ERROR("{}", error);
+			return;
+		});
+
+		const DatabaseManager& dbm = m_services.Get<DatabaseManager>();
+
+		PA_TRY_OR_ELSE(match, dbm.GetMatch(summary.Hash),
+		{
+			LOG_ERROR("Failed to get match from match history: {}", error);
+			return;
+		});
+
+		if (match)
+		{
+			PA_TRYV_OR_ELSE(dbm.SetMatchReplaySummary(summary.Hash, summary),
 			{
-				LOG_ERROR("Failed to get match from match history: {}", error);
+				LOG_ERROR("Failed to set replay summary for match '{}': {}", summary.Hash, error);
 				return;
 			});
-
-			if (match)
-			{
-				PA_TRYV_OR_ELSE(dbm.SetMatchReplaySummary(summary.Hash, summary),
-				{
-					LOG_ERROR("Failed to set replay summary for match '{}': {}", summary.Hash, error);
-					return;
-				});
-				emit ReplaySummaryReady(match.value().Id, summary);
-			}
+			emit ReplaySummaryReady(match.value().Id, summary);
 		}
 	};
 

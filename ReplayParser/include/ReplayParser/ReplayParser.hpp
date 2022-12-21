@@ -2,10 +2,11 @@
 #pragma once
 
 #include "Core/Json.hpp"
-#include "Packets.hpp"
-#include "ReplayMeta.hpp"
 
-#include <optional>
+#include "ReplayParser/Packets.hpp"
+#include "ReplayParser/ReplayMeta.hpp"
+#include "ReplayParser/Util.hpp"
+
 #include <span>
 #include <string>
 #include <vector>
@@ -326,16 +327,16 @@ public:
 	std::vector<PacketType> packets;
 	std::vector<EntitySpec> specs;
 
-	static std::optional<Replay> FromFile(std::string_view fileName);
-	bool ReadPackets(const std::vector<fs::path>& scriptsSearchPaths);
-	[[nodiscard]] std::optional<ReplaySummary> Analyze() const;
+	static ReplayResult<Replay> FromFile(std::string_view fileName);
+	ReplayResult<void> ReadPackets(const std::vector<fs::path>& scriptsSearchPaths);
+	[[nodiscard]] ReplayResult<ReplaySummary> Analyze() const;
 
 private:
 	std::span<Byte> m_data;
 	std::vector<Byte> m_rawData;
 };
 
-std::optional<ReplaySummary> AnalyzeReplay(std::string_view file, const std::vector<fs::path>& scriptsSearchPaths);
+ReplayResult<ReplaySummary> AnalyzeReplay(std::string_view file, const std::vector<fs::path>& scriptsSearchPaths);
 bool HasGameScripts(const Version& gameVersion, const std::vector<fs::path>& scriptsSearchPaths);
 
 }  // namespace PotatoAlert::ReplayParser

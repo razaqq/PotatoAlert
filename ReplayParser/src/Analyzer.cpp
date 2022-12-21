@@ -1,13 +1,14 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/Bytes.hpp"
 #include "Core/Instrumentor.hpp"
 #include "Core/Sha256.hpp"
 
 #include "ReplayAnalyzerRust.hpp"
-#include "Core/Bytes.hpp"
 #include "ReplayParser/GameFiles.hpp"
 #include "ReplayParser/ReplayParser.hpp"
 #include "ReplayParser/Types.hpp"
+#include "ReplayParser/Util.hpp"
 
 #include <any>
 #include <optional>
@@ -19,55 +20,9 @@
 
 using PotatoAlert::Core::Byte;
 using PotatoAlert::ReplayParser::Replay;
+using PotatoAlert::ReplayParser::ReplayResult;
 using namespace PotatoAlert::ReplayParser;
 using namespace PotatoAlert::ReplayAnalyzer;
-
-namespace {
-
-template<typename V>
-const std::type_info& VariantType(const V& v)
-{
-	return std::visit([](auto&& x) -> decltype(auto)
-	{
-		return typeid(x);
-	}, v);
-}
-
-template<typename T>
-static constexpr void VariantGet(const ArgValue& value, auto then)
-{
-	if (const T* Name = std::get_if<T>(&value))
-	{
-		then(*Name);
-	}
-	else
-	{
-		LOG_ERROR("Failed to get type '{}' from ArgValue", typeid(T).name());
-	}
-}
-
-template<typename T>
-static constexpr void VariantGet(const EntityMethodPacket& packet, size_t index, auto then)
-{
-	if (packet.Values.size() <= index)
-	{
-		LOG_ERROR("Index out of range for EntityMethodPacket '{}' (index {}, size {})",
-			packet.MethodName, index, packet.Values.size());
-		return;
-	}
-
-	if (const T* Name = std::get_if<T>(&packet.Values[index]))
-	{
-		then(*Name);
-	}
-	else
-	{
-		LOG_ERROR("ValueType (index {}) for EntityMethodPacket '{}' did not match '{}' and instead was '{}'",
-			index, packet.MethodName, typeid(T).name(), VariantType(packet.Values[index]).name());
-	}
-}
-
-}
 
 enum class DamageFlag : int64_t
 {
@@ -105,7 +60,7 @@ enum class Consumable : int8_t
 	ReserveBattery           = 13,
 };
 
-std::optional<ReplaySummary> Replay::Analyze() const
+ReplayResult<ReplaySummary> Replay::Analyze() const
 {
 	PA_PROFILE_FUNCTION();
 
@@ -127,13 +82,15 @@ std::optional<ReplaySummary> Replay::Analyze() const
 
 	for (const PacketType& pak : packets)
 	{
-		const bool success = std::visit([&replayData, this]<typename Type>(Type&& packet) -> bool
+		const ReplayResult<void> packetResult = std::visit([&replayData, this]<typename Type>(Type&& packet) -> ReplayResult<void>
 		{
 			using T = std::decay_t<Type>;
 
 			if constexpr (std::is_same_v<T, BasePlayerCreatePacket>)
 			{
 				replayData.PlayerEntityId = packet.EntityId;
+
+				return {};
 			}
 
 			if constexpr (std::is_same_v<T, EntityMethodPacket>)
@@ -141,13 +98,13 @@ std::optional<ReplaySummary> Replay::Analyze() const
 				if (packet.MethodName == "onArenaStateReceived")
 				{
 					bool found = false;
-					VariantGet<std::vector<Byte>>(packet, 3, [&replayData, &found, this](const std::vector<Byte>& data)
+					PA_TRYV(VariantGet<std::vector<Byte>>(packet, 3, [&replayData, &found, this](const std::vector<Byte>& data) -> ReplayResult<void>
 					{
 						OnArenaStateReceivedPlayerResult result = ParseArenaStateReceivedPlayers(data, meta.ClientVersionFromExe.GetRaw());
 
 						if (result.IsError)
 						{
-							LOG_ERROR(result.Error.c_str());
+							return PA_REPLAY_ERROR("{}", result.Error.c_str());
 						}
 
 						for (const auto& player : result.Value)
@@ -160,36 +117,43 @@ std::optional<ReplaySummary> Replay::Analyze() const
 								replayData.PlayerShipId = player.ShipId;
 							}
 						}
-					});
+
+						return {};
+					}));
 
 					if (!found)
 					{
-						LOG_ERROR("onArenaStateReceived did not include the player id {} itself", replayData.PlayerEntityId);
-						return false;
+						return PA_REPLAY_ERROR("onArenaStateReceived did not include the player id {} itself", replayData.PlayerEntityId);
 					}
+
+					return {};
 				}
 
 				if (packet.MethodName == "onBattleEnd")
 				{
 					// second arg uint8_t winReason
-					VariantGet<int8_t>(packet, 0, [&replayData](int8_t team)
+					return VariantGet<int8_t>(packet, 0, [&replayData](int8_t team) -> ReplayResult<void>
 					{
 						replayData.winningTeam = team;
+
+						return {};
 					});
 				}
 
 				if (packet.MethodName == "receiveDamageStat")
 				{
 					if (packet.Values.size() != 1)
-						return false;
+					{
+						return PA_REPLAY_ERROR("receiveDamageStat Values were not size 1");
+					}
 
-					VariantGet<std::vector<Byte>>(packet, 0, [&replayData, &packet](const std::vector<Byte>& data)
+					return VariantGet<std::vector<Byte>>(packet, 0, [&replayData, &packet](const std::vector<Byte>& data) -> ReplayResult<void>
 					{
 						ReceiveDamageStatResult result = ParseReceiveDamageStat(data);
 
 						if (result.IsError)
 						{
-							LOG_ERROR(result.Error.c_str());
+							return PA_REPLAY_ERROR("Failed to parse damage stat: {}", result.Error.c_str());
 						}
 
 						for (const ReceiveDamageStat& stat : result.Value)
@@ -216,17 +180,20 @@ std::optional<ReplaySummary> Replay::Analyze() const
 									break;
 							}
 						}
+
+						return {};
 					});
+
 				}
 
 				if (packet.MethodName == "receiveDamagesOnShip")
 				{
 					if (packet.EntityId != replayData.PlayerShipId)
 					{
-						return true;
+						return {};  // just ignore this packet if the ids dont match
 					}
 
-					VariantGet<std::vector<ArgValue>>(packet, 0, [&replayData, &packet](const std::vector<ArgValue>& vec)
+					return VariantGet<std::vector<ArgValue>>(packet, 0, [&replayData, &packet](const std::vector<ArgValue>& vec) -> ReplayResult<void>
 					{
 						for (const ArgValue& elem : vec)
 						{
@@ -242,12 +209,16 @@ std::optional<ReplaySummary> Replay::Analyze() const
 								}
 							});
 						}
+
+						return {};
 					});
+
+					return {};
 				}
 
 				if (packet.MethodName == "onRibbon")
 				{
-					VariantGet<int8_t>(packet, 0, [&replayData](int8_t value)
+					return VariantGet<int8_t>(packet, 0, [&replayData](int8_t value) -> ReplayResult<void>
 					{
 						const RibbonType ribbon = static_cast<RibbonType>(value);
 						if (replayData.Ribbons.contains(ribbon))
@@ -258,13 +229,15 @@ std::optional<ReplaySummary> Replay::Analyze() const
 						{
 							replayData.Ribbons[ribbon] = 1;
 						}
+
+						return {};
 					});
 				}
 
 				if (packet.MethodName == "onAchievementEarned")
 				{
 					bool discard = true;
-					VariantGet<int32_t>(packet, 0, [&replayData, &discard, this](int32_t id)
+					PA_TRYV(VariantGet<int32_t>(packet, 0, [&replayData, &discard, this](int32_t id) -> ReplayResult<void>
 					{
 						// since version 0.11.4 this is a different id
 						if (meta.ClientVersionFromExe >= Version(0, 11, 4))
@@ -281,11 +254,12 @@ std::optional<ReplaySummary> Replay::Analyze() const
 								discard = false;
 							}
 						}
-					});
-					VariantGet<uint32_t>(packet, 1, [&replayData, discard](uint32_t value)
+						return {};
+					}));
+					PA_TRYV(VariantGet<uint32_t>(packet, 1, [&replayData, discard](uint32_t value) -> ReplayResult<void>
 					{
 						if (discard)
-							return;
+							return {};
 						const AchievementType achievement = static_cast<AchievementType>(value);
 						if (replayData.Achievements.contains(achievement))
 						{
@@ -295,7 +269,10 @@ std::optional<ReplaySummary> Replay::Analyze() const
 						{
 							replayData.Achievements[achievement] = 1;
 						}
-					});
+						return {};
+					}));
+
+					return {};
 				}
 			}
 
@@ -308,16 +285,13 @@ std::optional<ReplaySummary> Replay::Analyze() const
 						replayData.playerTeam = team;
 					});
 				}
+
+				return {};
 			}
 
-			return true;
-		}, pak);
-
-		if (!success)
-		{
-			LOG_ERROR("Error while analyzing replay packets");
 			return {};
-		}
+		}, pak);
+		PA_TRYV(packetResult);
 	}
 
 	auto damageDealtValues = std::views::values(replayData.DamageDealt);
@@ -352,8 +326,7 @@ std::optional<ReplaySummary> Replay::Analyze() const
 	std::string hash;
 	if (!Core::Sha256(metaString, hash))
 	{
-		LOG_ERROR("Failed to get SHA256 hash of replay meta");
-		return {};
+		return PA_REPLAY_ERROR("Failed to get SHA256 hash of replay meta");
 	}
 
 	return ReplaySummary
