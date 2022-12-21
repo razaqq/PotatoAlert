@@ -128,22 +128,30 @@ inline std::error_code AsErrorCode(const Result<void>& result)
 #define PA_CO_TRYD(...) \
 	PA_DETAIL_TRYD_1(co_return, __VA_ARGS__)
 
-#define PA_TRY_OR_ELSE(HSpec, Result, ...)                                            \
-	static_assert(!PA_DETAIL_TRY_IS_VOID(Result), "TRY requires a non-void result."); \
-	const auto _r = (Result);                                                         \
-	if (!_r)                                                                          \
-	{                                                                                 \
-		auto error = _r.error();                                                      \
-		__VA_ARGS__                                                                   \
-	}                                                                                 \
-	HSpec = _r.value()
+#define PA_DETAIL_TRY_OR_ELSE(hspec, vspec, result, func, ...)                    \
+	hspec result = (func);                                                        \
+	if (!result)                                                                  \
+	{                                                                             \
+		auto&& error = static_cast<decltype(result)&&>(result).error();           \
+		__VA_ARGS__                                                               \
+	}                                                                             \
+	auto&& vspec = *static_cast<decltype(result)&&>(result)
 
-#define PA_TRYV_OR_ELSE(Result, ...)                                                  \
-	const auto _r = (Result);                                                         \
-	if (!_r)                                                                          \
-	{                                                                                 \
-		auto error = _r.error();                                                      \
-		__VA_ARGS__                                                                   \
-	}
+#define PA_TRY_OR_ELSE(spec, func, ...)                                             \
+	static_assert(!PA_DETAIL_TRY_IS_VOID(func), "TRY requires a non-void result."); \
+	PA_DETAIL_TRY_OR_ELSE(PA_DETAIL_TRY_H(spec), PA_DETAIL_TRY_V(spec), PA_DETAIL_TRY_R, func, __VA_ARGS__)
+
+#define PA_DETAIL_TRYV_OR_ELSE(hspec, result, func, ...)                \
+	hspec result = (func);                                              \
+	if (!result)                                                        \
+	{                                                                   \
+		auto&& error = static_cast<decltype(result)&&>(result).error(); \
+		__VA_ARGS__                                                     \
+	}                                                                   \
+	((void)result)
+
+#define PA_TRYV_OR_ELSE(func, ...)                                              \
+	static_assert(PA_DETAIL_TRY_IS_VOID(func), "TRYV requires a void result."); \
+	PA_DETAIL_TRYV_OR_ELSE(auto, PA_DETAIL_TRY_R, func, __VA_ARGS__)
 
 }  // namespace PotatoAlert::Core

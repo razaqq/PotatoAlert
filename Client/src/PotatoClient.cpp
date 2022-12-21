@@ -320,7 +320,7 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 						{
 							const DatabaseManager& dbm = m_services.Get<DatabaseManager>();
 
-							PA_TRY_OR_ELSE(bool exists, dbm.MatchExists(m_lastArenaInfoHash),
+							PA_TRY_OR_ELSE(exists, dbm.MatchExists(m_lastArenaInfoHash),
 							{
 								LOG_ERROR("Failed to check if match exists in database: {}", error);
 								return;

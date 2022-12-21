@@ -122,7 +122,7 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 					PA_TRYV_OR_ELSE(m_services.Get<DatabaseManager>().DeleteMatch(matchId),
 					{
 						LOG_ERROR("Failed to delete match from match history: {}", error);
-					})
+					});
 				}
 			}
 
@@ -195,7 +195,7 @@ void MatchHistory::LoadMatches() const
 	PA_PROFILE_SCOPE();
 
 	LOG_TRACE("Loading MatchHistory...");
-	PA_TRY_OR_ELSE(const std::vector<Client::Match> matches, m_services.Get<Client::DatabaseManager>().GetMatches(),
+	PA_TRY_OR_ELSE(matches, m_services.Get<Client::DatabaseManager>().GetMatches(),
 	{
 		LOG_ERROR("Failed to get matches from database: {}", error);
 		return;

@@ -58,7 +58,7 @@ void ReplayAnalyzer::AnalyzeReplay(std::string_view path, std::chrono::seconds r
 			const ReplaySummary summary = res.value();
 			const DatabaseManager& dbm = m_services.Get<DatabaseManager>();
 
-			PA_TRY_OR_ELSE(const std::optional<Match> match, dbm.GetMatch(summary.Hash),
+			PA_TRY_OR_ELSE(match, dbm.GetMatch(summary.Hash),
 			{
 				LOG_ERROR("Failed to get match from match history: {}", error);
 				return;
@@ -83,7 +83,7 @@ void ReplayAnalyzer::AnalyzeDirectory(std::string_view directory)
 {
 	const DatabaseManager& dbm = m_services.Get<DatabaseManager>();
 
-	PA_TRY_OR_ELSE(std::vector<NonAnalyzedMatch> matches, dbm.GetNonAnalyzedMatches(),
+	PA_TRY_OR_ELSE(matches, dbm.GetNonAnalyzedMatches(),
 	{
 		LOG_ERROR("Failed to get non-analyzed matches from match history: {}", error);
 		return;
