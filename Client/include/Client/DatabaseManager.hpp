@@ -63,7 +63,8 @@ public:
 	SqlResult<void> CreateTables();
 	SqlResult<void> MigrateTables();
 
-	[[nodiscard]] SqlResult<void> AddMatch(const Match& match) const;
+	// adds the match to db and set the id
+	[[nodiscard]] SqlResult<void> AddMatch(Match& match) const;
 	[[nodiscard]] SqlResult<std::optional<Match>> GetMatch(uint32_t id) const;
 	[[nodiscard]] SqlResult<std::optional<Match>> GetMatch(std::string_view hash) const;
 	[[nodiscard]] SqlResult<std::vector<Match>> GetMatches() const;
