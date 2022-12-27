@@ -62,14 +62,14 @@ enum class StatsMode
 	Current,
 	Pvp,
 	Ranked,
-	Pve,
+	Cooperative,
 };
 NLOHMANN_JSON_SERIALIZE_ENUM(StatsMode,
 {
-	{ StatsMode::Current, "current" },
-	{ StatsMode::Pvp,     "pvp"     },
-	{ StatsMode::Ranked,  "ranked"  },
-	{ StatsMode::Pve,     "pve"     },
+	{ StatsMode::Current,     "current"     },
+	{ StatsMode::Pvp,         "pvp"         },
+	{ StatsMode::Ranked,      "ranked"      },
+	{ StatsMode::Cooperative, "cooperative" },
 })
 
 enum class TeamStatsMode
@@ -99,7 +99,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(TableLayout,
 class Config
 {
 public:
-	explicit Config(const std::string& filePath);
+	explicit Config(std::string filePath);
 	Config(const Config& config) = delete;
 	Config(Config&& config) noexcept = delete;
 	Config& operator=(const Config& config) = delete;

@@ -52,7 +52,7 @@ static std::unordered_map<ConfigKey, std::string> g_keyNames =
 	{ ConfigKey::MenuBarLeft,              "menubar_left" }
 };
 
-Config::Config(const std::string& filePath) : m_filePath(filePath)
+Config::Config(std::string filePath) : m_filePath(std::move(filePath))
 {
 	g_defaultConfig = {
 		{ g_keyNames[ConfigKey::StatsMode],                StatsMode::Pvp },
