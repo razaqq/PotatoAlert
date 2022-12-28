@@ -169,6 +169,7 @@ void SettingsWidget::Init()
 	{
 		m_language->addItem(lang.data());
 	}
+	m_language->setCursor(Qt::PointingHandCursor);
 	languageLayout->addWidget(m_language, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(languageLayout);
 	/* LANGUAGE */
@@ -202,10 +203,12 @@ void SettingsWidget::Init()
 	m_saveButton = new QPushButton();
 	m_saveButton->setFixedWidth(100);
 	m_saveButton->setObjectName("settingsButton");
+	m_saveButton->setCursor(Qt::PointingHandCursor);
 
 	m_cancelButton = new QPushButton();
 	m_cancelButton->setFixedWidth(100);
 	m_cancelButton->setObjectName("settingsButton");
+	m_cancelButton->setCursor(Qt::PointingHandCursor);
 
 	confirmLayout->addStretch();
 	confirmLayout->addWidget(m_saveButton);
