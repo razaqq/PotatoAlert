@@ -158,7 +158,11 @@ struct Ship
 		layout->setSpacing(3);
 
 		QLabel* shipIcon = new QLabel();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 		shipIcon->setPixmap(QIcon(std::format(":/{}.svg", Class).c_str()).pixmap(QSize(18, 9), qApp->devicePixelRatio()));
+#else
+		shipIcon->setPixmap(QIcon(std::format(":/{}.svg", Class).c_str()).pixmap(QSize(18, 9)));
+#endif
 		shipIcon->setStyleSheet("background-color: transparent;");
 		shipIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 		shipIcon->setAlignment(Qt::AlignLeft);
@@ -172,7 +176,11 @@ struct Ship
 		shipTier->setStyleSheet("background-color: transparent;");
 		if (Tier == 11)
 		{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			shipTier->setPixmap(QIcon(":/Star.svg").pixmap(QSize(13, 13), qApp->devicePixelRatio()));
+#else
+			shipTier->setPixmap(QIcon(":/Star.svg").pixmap(QSize(13, 13)));
+#endif
 		}
 		else
 		{

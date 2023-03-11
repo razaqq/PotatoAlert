@@ -77,10 +77,19 @@ if(UNIX)
     )
 endif()
 
-find_package(Qt6 COMPONENTS SvgWidgets Widgets REQUIRED)
+find_package(Qt6 COMPONENTS SvgWidgets Widgets QUIET)
+if (NOT Qt6_FOUND)
+    find_package(Qt5 COMPONENTS Svg Widgets REQUIRED)
+endif()
 
-target_link_libraries(Gui PRIVATE FramelessHelperWidgets Qt6::SvgWidgets Qt6::WidgetsPrivate)
-target_link_libraries(Gui PUBLIC Qt6::Widgets)
+if (Qt6_FOUND)
+    set(QT_SVG_TARGET_NAME "Qt::SvgWidgets")
+else()
+    set(QT_SVG_TARGET_NAME "Qt::Svg")
+endif()
+
+target_link_libraries(Gui PRIVATE FramelessHelperWidgets ${QT_SVG_TARGET_NAME} Qt::WidgetsPrivate)
+target_link_libraries(Gui PUBLIC Qt::Widgets)
 
 if(WIN32)
     target_link_libraries(Gui PRIVATE Dwmapi Win32 Updater)
