@@ -26,6 +26,8 @@
 
 #include "framelesshelperquick_global.h"
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+#include "quickchromepalette.h"
+#include "quickstandardsystembutton_p.h"
 #include <QtQuick/private/qquickrectangle_p.h>
 #include <QtQuickTemplates2/private/qquicklabel_p.h>
 
@@ -35,7 +37,7 @@ QT_END_NAMESPACE
 
 FRAMELESSHELPER_BEGIN_NAMESPACE
 
-class QuickStandardSystemButton;
+class QuickImageItem;
 
 class FRAMELESSHELPER_QUICK_API QuickStandardTitleBar : public QQuickRectangle
 {
@@ -50,8 +52,11 @@ class FRAMELESSHELPER_QUICK_API QuickStandardTitleBar : public QQuickRectangle
     Q_PROPERTY(QuickStandardSystemButton* maximizeButton READ maximizeButton CONSTANT FINAL)
     Q_PROPERTY(QuickStandardSystemButton* closeButton READ closeButton CONSTANT FINAL)
     Q_PROPERTY(bool extended READ isExtended WRITE setExtended NOTIFY extendedChanged FINAL)
-    Q_PROPERTY(bool useAlternativeBackground READ isUsingAlternativeBackground WRITE setUseAlternativeBackground NOTIFY useAlternativeBackgroundChanged FINAL)
     Q_PROPERTY(bool hideWhenClose READ isHideWhenClose WRITE setHideWhenClose NOTIFY hideWhenCloseChanged FINAL)
+    Q_PROPERTY(QuickChromePalette* chromePalette READ chromePalette CONSTANT FINAL)
+    Q_PROPERTY(QSizeF windowIconSize READ windowIconSize WRITE setWindowIconSize NOTIFY windowIconSizeChanged FINAL)
+    Q_PROPERTY(bool windowIconVisible READ windowIconVisible WRITE setWindowIconVisible NOTIFY windowIconVisibleChanged FINAL)
+    Q_PROPERTY(QVariant windowIcon READ windowIcon WRITE setWindowIcon NOTIFY windowIconChanged FINAL)
 
 public:
     explicit QuickStandardTitleBar(QQuickItem *parent = nullptr);
@@ -68,37 +73,56 @@ public:
     Q_NODISCARD bool isExtended() const;
     void setExtended(const bool value);
 
-    Q_NODISCARD bool isUsingAlternativeBackground() const;
-    void setUseAlternativeBackground(const bool value);
-
     Q_NODISCARD bool isHideWhenClose() const;
     void setHideWhenClose(const bool value);
+
+    Q_NODISCARD QuickChromePalette *chromePalette() const;
+
+    Q_NODISCARD QSizeF windowIconSize() const;
+    void setWindowIconSize(const QSizeF &value);
+
+    Q_NODISCARD bool windowIconVisible() const;
+    void setWindowIconVisible(const bool value);
+
+    Q_NODISCARD QVariant windowIcon() const;
+    void setWindowIcon(const QVariant &value);
 
 protected:
     void itemChange(const ItemChange change, const ItemChangeData &value) override;
     Q_NODISCARD bool eventFilter(QObject *object, QEvent *event) override;
+    void classBegin() override;
+    void componentComplete() override;
 
 private Q_SLOTS:
     void updateMaximizeButton();
     void updateTitleLabelText();
     void updateTitleBarColor();
+    void updateChromeButtonColor();
     void clickMinimizeButton();
     void clickMaximizeButton();
     void clickCloseButton();
     void retranslateUi();
+    void updateWindowIcon();
 
 Q_SIGNALS:
     void titleLabelAlignmentChanged();
     void extendedChanged();
-    void useAlternativeBackgroundChanged();
     void hideWhenCloseChanged();
+    void windowIconSizeChanged();
+    void windowIconVisibleChanged();
+    void windowIconChanged();
 
 private:
     void initialize();
     void updateAll();
+    Q_NODISCARD bool mouseEventHandler(QMouseEvent *event);
+    Q_NODISCARD QRect windowIconRect() const;
+    Q_NODISCARD bool isInTitleBarIconArea(const QPoint &pos) const;
+    Q_NODISCARD bool windowIconVisible_real() const;
 
 private:
     Qt::Alignment m_labelAlignment = {};
+    QScopedPointer<QuickImageItem> m_windowIcon;
     QScopedPointer<QQuickLabel> m_windowTitleLabel;
     QScopedPointer<QQuickRow> m_systemButtonsRow;
     QScopedPointer<QuickStandardSystemButton> m_minimizeButton;
@@ -108,11 +132,13 @@ private:
     QMetaObject::Connection m_windowActiveChangeConnection = {};
     QMetaObject::Connection m_windowTitleChangeConnection = {};
     bool m_extended = false;
-    bool m_useAlternativeBackground = false;
     bool m_hideWhenClose = false;
+    QScopedPointer<QuickChromePalette> m_chromePalette;
+    bool m_closeTriggered = false;
 };
 
 FRAMELESSHELPER_END_NAMESPACE
 
+Q_DECLARE_METATYPE(FRAMELESSHELPER_PREPEND_NAMESPACE(QuickStandardTitleBar))
 QML_DECLARE_TYPE(FRAMELESSHELPER_PREPEND_NAMESPACE(QuickStandardTitleBar))
 #endif // (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))

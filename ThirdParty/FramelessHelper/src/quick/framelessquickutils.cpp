@@ -25,8 +25,25 @@
 #include "framelessquickutils.h"
 #include <framelessmanager.h>
 #include <utils.h>
+#ifdef Q_OS_WINDOWS
+#  include <winverhelper_p.h>
+#endif // Q_OS_WINDOWS
 
 FRAMELESSHELPER_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcFramelessQuickUtils, "wangwenx190.framelesshelper.quick.framelessquickutils")
+
+#ifdef FRAMELESSHELPER_QUICK_NO_DEBUG_OUTPUT
+#  define INFO QT_NO_QDEBUG_MACRO()
+#  define DEBUG QT_NO_QDEBUG_MACRO()
+#  define WARNING QT_NO_QDEBUG_MACRO()
+#  define CRITICAL QT_NO_QDEBUG_MACRO()
+#else
+#  define INFO qCInfo(lcFramelessQuickUtils)
+#  define DEBUG qCDebug(lcFramelessQuickUtils)
+#  define WARNING qCWarning(lcFramelessQuickUtils)
+#  define CRITICAL qCCritical(lcFramelessQuickUtils)
+#endif
 
 using namespace Global;
 
@@ -49,8 +66,7 @@ qreal FramelessQuickUtils::titleBarHeight() const
 bool FramelessQuickUtils::frameBorderVisible() const
 {
 #ifdef Q_OS_WINDOWS
-    static const bool isWin11OrGreater = Utils::isWindowsVersionOrGreater(WindowsVersion::_11_21H2);
-    return (Utils::isWindowFrameBorderVisible() && !isWin11OrGreater);
+    return (Utils::isWindowFrameBorderVisible() && !WindowsVersionHelper::isWin11OrGreater());
 #else
     return false;
 #endif
@@ -73,13 +89,13 @@ QuickGlobal::SystemTheme FramelessQuickUtils::systemTheme() const
 QColor FramelessQuickUtils::systemAccentColor() const
 {
 #ifdef Q_OS_WINDOWS
-    return Utils::getDwmColorizationColor();
-#endif
-#ifdef Q_OS_LINUX
+    return Utils::getDwmAccentColor();
+#elif defined(Q_OS_LINUX)
     return Utils::getWmThemeColor();
-#endif
-#ifdef Q_OS_MACOS
+#elif defined(Q_OS_MACOS)
     return Utils::getControlsAccentColor();
+#else
+    return {};
 #endif
 }
 
@@ -121,8 +137,17 @@ QColor FramelessQuickUtils::defaultSystemCloseButtonBackgroundColor() const
 QColor FramelessQuickUtils::getSystemButtonBackgroundColor(const QuickGlobal::SystemButtonType button,
                                                            const QuickGlobal::ButtonState state)
 {
-    return Utils::calculateSystemButtonBackgroundColor(FRAMELESSHELPER_ENUM_QUICK_TO_CORE(SystemButtonType, button),
-                                                       FRAMELESSHELPER_ENUM_QUICK_TO_CORE(ButtonState, state));
+    return Utils::calculateSystemButtonBackgroundColor(
+        FRAMELESSHELPER_ENUM_QUICK_TO_CORE(SystemButtonType, button),
+        FRAMELESSHELPER_ENUM_QUICK_TO_CORE(ButtonState, state));
+}
+
+void FramelessQuickUtils::classBegin()
+{
+}
+
+void FramelessQuickUtils::componentComplete()
+{
 }
 
 FRAMELESSHELPER_END_NAMESPACE
