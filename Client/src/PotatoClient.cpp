@@ -443,6 +443,22 @@ void PotatoClient::HandleReply(QNetworkReply* reply, auto& successHandler)
 		case QNetworkReply::InsecureRedirectError:
 			emit StatusReady(Status::Error, "Insecure Redirect");
 			break;
+		case QNetworkReply::OperationNotImplementedError:
+		{
+			const QString content = QString::fromUtf8(reply->readAll());
+
+			json errorJson;
+			sax_no_exception sax(errorJson);
+			if (!json::sax_parse(content.toUtf8().toStdString(), &sax))
+			{
+				LOG_ERROR("Failed to parse server response as JSON.");
+				emit StatusReady(Status::Error, "JSON Parse Error");
+				return;
+			}
+
+			emit StatusReady(Status::Error, errorJson["error"]);
+			break;
+		}
 		default:
 			emit StatusReady(Status::Error, "Request Error");
 			break;
