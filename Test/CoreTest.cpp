@@ -139,7 +139,7 @@ TEST_CASE( "StringTest" )
 {
 	REQUIRE(String::Trim(" test \n\t") == "test");
 
-	std::string t2 = "test123";
+	constexpr std::string_view t2 = "test123";
 	REQUIRE(String::ToUpper(t2) == "TEST123");
 	REQUIRE(String::ToLower(String::ToUpper(t2)) == t2);
 
@@ -173,16 +173,16 @@ TEST_CASE( "StringTest" )
 	bool o = false;
 	REQUIRE((String::ParseBool("\n\r TRUE \t", o) && o));
 
-	std::string_view text = "this is some text";
+	constexpr std::string_view text = "this is some text";
 	REQUIRE(String::Split(text, " ") == std::vector<std::string>{ "this", "is", "some", "text" });
 	REQUIRE(String::Contains(text, "this"));
 	REQUIRE(!String::Contains(text, "test"));
 	REQUIRE(String::Split(text, "") == std::vector<std::string>{ "this is some text" });
 
-	std::string_view replace = "yes yes no no";
+	constexpr std::string_view replace = "yes yes no no";
 	REQUIRE(String::ReplaceAll(replace, "yes", "no") == "no no no no");
 
-	std::string_view removeTest = "xyzabc";
+	constexpr std::string_view removeTest = "xyzabc";
 	REQUIRE(String::ReplaceAll(removeTest, "xyz", "") == "abc");
 
 	REQUIRE(String::StartsWith("some long text", "some"));
@@ -225,7 +225,7 @@ TEST_CASE("VersionTest")
 
 TEST_CASE( "ZlibTest" )
 {
-	std::string_view string =
+	constexpr std::string_view string =
 			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt "
 			"ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation "
 			"ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in "
