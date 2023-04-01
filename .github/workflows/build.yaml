@@ -4,11 +4,22 @@ on: [push]
 
 jobs:
   build-windows:
+    strategy:
+      matrix:
+        qt-major-version: [6, 5]
+        include:
+          - qt-major-version: 6
+            qt-version: 6.4.2
+            zipfile: PotatoAlert.zip
+          - qt-major-version: 5
+            qt-version: 5.15.8
+            zipfile: PotatoAlert_Qt5_win7.zip
+
     runs-on: windows-2022
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup Visual Studio Shell
       uses: egor-tensin/vs-shell@v2
@@ -25,18 +36,11 @@ jobs:
       with:
         version: 1.10.2
 
-    - name: Cache Qt
-      id: cache-qt
-      uses: actions/cache@v1
-      with:
-        path: ../Qt
-        key: ${{ runner.os }}-QtCache
-
     - name: Install Qt6
-      uses: jurplel/install-qt-action@v2
+      uses: jurplel/install-qt-action@v3
       with:
-        version: 6.4.2
-        cached: ${{ steps.cache-qt.outputs.cache-hit }}
+        version: ${{ matrix.qt-version }}
+        cache: true
 
     - name: CMake Version
       run: cmake --version
@@ -61,20 +65,20 @@ jobs:
 
     - name: Create Release Archive
       run: |
-        7z a -mx9 -r PotatoAlert.zip .\build\bin\*
+        7z a -mx9 -r {{ matrix.zipfile }} .\build\bin\*
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: PotatoAlert
-        path: PotatoAlert.zip
+        path: {{ matrix.zipfile }}
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
         draft: true
-        files: PotatoAlert.zip
+        files: {{ matrix.zipfile }}
 
   build-linux:
     if: ${{ false }}  # disable for now
@@ -82,25 +86,18 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup Ninja
       uses: ashutoshvarma/setup-ninja@master
       with:
         version: 1.10.2
 
-    - name: Cache Qt
-      id: cache-qt
-      uses: actions/cache@v1
-      with:
-        path: ../Qt
-        key: ${{ runner.os }}-QtCache
-
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
       with:
-        version: 5.15.2
-        cached: ${{ steps.cache-qt.outputs.cache-hit }}
+        version: 6.4.2
+        cache: true
 
     - name: Cache LLVM and Clang
       id: cache-llvm
@@ -108,12 +105,12 @@ jobs:
       with:
         path: |
           ./llvm
-        key: llvm-14
+        key: llvm-15
   
     - name: Install LLVM and Clang
       uses: KyleMayes/install-llvm-action@v1
       with:
-        version: "14"
+        version: "15"
         cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
     #- name: Remove other LLVM installs
@@ -153,7 +150,7 @@ jobs:
         7z a -mx9 -r PotatoAlert.zip .\build\bin\*
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: PotatoAlert
         path: PotatoAlert.zip
