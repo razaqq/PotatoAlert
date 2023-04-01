@@ -13,7 +13,7 @@ class BitReader
 public:
 	explicit BitReader(std::span<const Core::Byte>& data);
 	int Get(size_t nBits);
-	static int BitsRequired(int numValues);
+	static int BitsRequired(uint64_t numValues);
 
 	[[nodiscard]] size_t Remaining() const
 	{

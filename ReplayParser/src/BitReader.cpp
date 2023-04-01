@@ -4,6 +4,9 @@
 
 #include "ReplayParser/BitReader.hpp"
 
+#include <bit>
+#include <span>
+
 
 using PotatoAlert::ReplayParser::BitReader;
 
@@ -35,7 +38,7 @@ int BitReader::Get(size_t nBits)
 }
 
 
-int BitReader::BitsRequired(int numValues)
+int BitReader::BitsRequired(uint64_t numValues)
 {
 	if (numValues <= 1)
 	{
@@ -44,25 +47,5 @@ int BitReader::BitsRequired(int numValues)
 	
 	numValues--;
 
-	int nBits;
-	asm(
-		"bsr %1, %%eax"
-		: "=a"(nBits)
-		: "r"(numValues)
-	);
-
-#if 0
-#ifdef _WIN32
-	_asm bsr eax, numValues
-	_asm mov nBits, eax
-#else
-	__asm__(
-			"bsr %1, %%eax"
-			: "=a"(nBits)
-			: "r"(numValues)
-	);
-#endif
-#endif
-
-	return nBits + 1;
+	return std::numeric_limits<decltype(numValues)>::digits - std::countl_zero(numValues);
 }
