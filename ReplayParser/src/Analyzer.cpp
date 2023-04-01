@@ -70,7 +70,7 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 		std::optional<int8_t> winningTeam = std::nullopt;
 		std::optional<int8_t> playerTeam = std::nullopt;
 		int32_t PlayerEntityId;
-		int64_t PlayerAvatarId;
+		// int64_t PlayerAvatarId;
 		int64_t PlayerShipId;
 		int64_t PlayerId;
 		std::unordered_map<DamageType, float> DamageDealt;
@@ -316,24 +316,45 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 	// since 12.0.0
 	if (Meta.ClientVersionFromExe >= Version(12, 0, 0))
 	{
+		if (!m_packetParser.Entities.contains(replayData.PlayerEntityId))
+		{
+			return PA_REPLAY_ERROR("PacketParser has no entity for PlayerEntityId");
+		}
 		const Entity& playerEntity = m_packetParser.Entities.at(replayData.PlayerEntityId);
+		if (!playerEntity.ClientPropertiesValues.contains("privateVehicleState"))
+		{
+			return PA_REPLAY_ERROR("Player entity is missing ClientProperty 'privateVehicleState'");
+		}
 		const ArgValue& privateVehicleState = playerEntity.ClientPropertiesValues.at("privateVehicleState");
 
 		PA_TRYV(VariantGet<std::unordered_map<std::string, ArgValue>>(privateVehicleState, [&replayData](auto& state) -> ReplayResult<void>
 		{
+			if (!state.contains("ribbons"))
+			{
+				return PA_REPLAY_ERROR("privateVehicleState is missing key 'ribbons'");
+			}
 			return VariantGet<std::vector<ArgValue>>(state.at("ribbons"), [&replayData](auto& ribbons) -> ReplayResult<void>
 			{
 				for (const ArgValue& ribbonValue : ribbons)
 				{
 					PA_TRYV(VariantGet<std::unordered_map<std::string, ArgValue>>(ribbonValue, [&replayData](auto& ribbon) -> ReplayResult<void>
 					{
-						RibbonType ribbonType;
+						if (!ribbon.contains("count"))
+						{
+							return PA_REPLAY_ERROR("ribbon is missing key 'count'");
+						}
 						uint32_t ribbonCount;
 						PA_TRYV(VariantGet<uint16_t>(ribbon.at("count"), [&ribbonCount](uint16_t count) -> ReplayResult<void>
 						{
 							ribbonCount = count;
 							return {};
 						}));
+
+						if (!ribbon.contains("ribbonId"))
+						{
+							return PA_REPLAY_ERROR("ribbon is missing key 'ribbonId'");
+						}
+						RibbonType ribbonType;
 						PA_TRYV(VariantGet<int8_t>(ribbon.at("ribbonId"), [&ribbonType](int8_t ribbonId) -> ReplayResult<void>
 						{
 							ribbonType = static_cast<RibbonType>(ribbonId);
