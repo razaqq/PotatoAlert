@@ -52,8 +52,8 @@ using namespace PotatoAlert::Core;
 namespace fs = std::filesystem;
 
 // needs libssl-1_1-x64.dll and libcrypto-1_1-x64.dll from OpenSSL
-static std::string_view g_updateURL = "https://github.com/razaqq/PotatoAlert/releases/latest/download/PotatoAlert.zip";
-static std::string_view g_versionURL = "https://api.github.com/repos/razaqq/PotatoAlert/releases/latest";
+static constexpr std::string_view g_updateURL = "https://github.com/razaqq/PotatoAlert/releases/latest/download/{}";
+static constexpr std::string_view g_versionURL = "https://api.github.com/repos/razaqq/PotatoAlert/releases/latest";
 
 
 namespace {
@@ -221,7 +221,7 @@ void Updater::Run()
 		// Unpack archive
 		LOG_INFO("Extracting archive {} to {}", archive, dest);
 
-		int totalEntries = Zip::Open(archive.c_str(), 0).EntryCount();
+		int totalEntries = Zip::Open(archive, 0).EntryCount();
 		int i = 0;
 		auto onExtract = [dest, &i, totalEntries](const char* fileName) -> int
 		{
@@ -229,7 +229,7 @@ void Updater::Run()
 			return 0;
 		};
 
-		if (!Zip::Extract(archive.c_str(), dest.c_str(), onExtract))
+		if (!Zip::Extract(archive, dest, onExtract))
 		{
 			LOG_ERROR("Failed to Unpack archive.");
 			End(false, true);
@@ -246,7 +246,7 @@ QNetworkReply* Updater::Download()
 	auto manager = new QNetworkAccessManager();
 
 	QNetworkRequest request;
-	request.setUrl(QUrl(std::string(g_updateURL).c_str()));
+	request.setUrl(QUrl(std::format(g_updateURL, UpdateArchiveFile(CurrentEdition)).c_str()));
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 	auto reply = manager->get(request);
 
@@ -293,6 +293,7 @@ void Updater::End(bool success, bool revert)
 		StartMain();
 	}
 	QApplication::exit(0); // exit this process
+	ExitCurrentProcess(0);
 }
 
 // gets info about the elevation state {bool isElevated, bool canElevate}
