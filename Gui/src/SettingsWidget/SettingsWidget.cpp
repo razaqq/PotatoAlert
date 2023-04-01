@@ -286,7 +286,11 @@ void SettingsWidget::ConnectSignals()
 	});
 	connect(m_saveMatchCsv, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::SaveMatchCsv>(checked); });
 	connect(m_matchHistory, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::MatchHistory>(checked); });
+#if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
 	connect(m_language, &QComboBox::currentIndexChanged, [this, &config](int id)
+#else
+	connect(m_language, qOverload<int>(&QComboBox::currentIndexChanged), [this, &config](int id)
+#endif
 	{
 		config.Set<ConfigKey::Language>(id);
 		LanguageChangeEvent event(id);

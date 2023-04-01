@@ -23,8 +23,9 @@
  */
 
 #include "utils.h"
-#include <QtCore/qdebug.h>
-#include <QtCore/qregularexpression.h>
+#include "framelessconfig_p.h"
+#include "framelessmanager.h"
+#include "framelessmanager_p.h"
 #include <QtGui/qwindow.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qguiapplication.h>
@@ -40,6 +41,20 @@
 #include <xcb/xcb.h>
 
 FRAMELESSHELPER_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcUtilsLinux, "wangwenx190.framelesshelper.core.utils.linux")
+
+#ifdef FRAMELESSHELPER_CORE_NO_DEBUG_OUTPUT
+#  define INFO QT_NO_QDEBUG_MACRO()
+#  define DEBUG QT_NO_QDEBUG_MACRO()
+#  define WARNING QT_NO_QDEBUG_MACRO()
+#  define CRITICAL QT_NO_QDEBUG_MACRO()
+#else
+#  define INFO qCInfo(lcUtilsLinux)
+#  define DEBUG qCDebug(lcUtilsLinux)
+#  define WARNING qCWarning(lcUtilsLinux)
+#  define CRITICAL qCCritical(lcUtilsLinux)
+#endif
 
 using namespace Global;
 
@@ -63,7 +78,17 @@ using Display = struct _XDisplay;
 [[maybe_unused]] static constexpr const char GTK_THEME_NAME_ENV_VAR[] = "GTK_THEME";
 [[maybe_unused]] static constexpr const char GTK_THEME_NAME_PROP[] = "gtk-theme-name";
 [[maybe_unused]] static constexpr const char GTK_THEME_PREFER_DARK_PROP[] = "gtk-application-prefer-dark-theme";
-FRAMELESSHELPER_STRING_CONSTANT2(GTK_THEME_DARK_REGEX, "[:-]dark")
+
+FRAMELESSHELPER_STRING_CONSTANT(dark)
+
+FRAMELESSHELPER_BYTEARRAY_CONSTANT(rootwindow)
+FRAMELESSHELPER_BYTEARRAY_CONSTANT(x11screen)
+FRAMELESSHELPER_BYTEARRAY_CONSTANT(apptime)
+FRAMELESSHELPER_BYTEARRAY_CONSTANT(appusertime)
+FRAMELESSHELPER_BYTEARRAY_CONSTANT(gettimestamp)
+FRAMELESSHELPER_BYTEARRAY_CONSTANT(startupid)
+FRAMELESSHELPER_BYTEARRAY_CONSTANT(display)
+FRAMELESSHELPER_BYTEARRAY_CONSTANT(connection)
 
 template<typename T>
 [[nodiscard]] static inline T gtkSetting(const gchar *propertyName)
@@ -89,7 +114,7 @@ template<typename T>
         return {};
     }
     const auto propertyValue = gtkSetting<gchararray>(propertyName);
-    const QString result = QString::fromUtf8(propertyValue);
+    const QString result = QUtf8String(propertyValue);
     g_free(propertyValue);
     return result;
 }
@@ -167,11 +192,11 @@ template<typename T>
     if (!native) {
         return 0;
     }
-    QScreen *scr = ((screen == -1) ?  QGuiApplication::primaryScreen() : x11_findScreenForVirtualDesktop(screen));
+    QScreen *scr = ((screen == -1) ? QGuiApplication::primaryScreen() : x11_findScreenForVirtualDesktop(screen));
     if (!scr) {
         return 0;
     }
-    return static_cast<xcb_window_t>(reinterpret_cast<quintptr>(native->nativeResourceForScreen(QByteArrayLiteral("rootwindow"), scr)));
+    return static_cast<xcb_window_t>(reinterpret_cast<quintptr>(native->nativeResourceForScreen(krootwindow, scr)));
 }
 
 [[maybe_unused]] [[nodiscard]] static inline int x11_appScreen()
@@ -183,7 +208,7 @@ template<typename T>
     if (!native) {
         return 0;
     }
-    return reinterpret_cast<qintptr>(native->nativeResourceForIntegration(QByteArrayLiteral("x11screen")));
+    return reinterpret_cast<qintptr>(native->nativeResourceForIntegration(kx11screen));
 }
 
 [[maybe_unused]] [[nodiscard]] static inline quint32 x11_appTime()
@@ -199,7 +224,7 @@ template<typename T>
     if (!screen) {
         return 0;
     }
-    return static_cast<xcb_timestamp_t>(reinterpret_cast<quintptr>(native->nativeResourceForScreen(QByteArrayLiteral("apptime"), screen)));
+    return static_cast<xcb_timestamp_t>(reinterpret_cast<quintptr>(native->nativeResourceForScreen(kapptime, screen)));
 }
 
 [[maybe_unused]] [[nodiscard]] static inline quint32 x11_appUserTime()
@@ -215,7 +240,7 @@ template<typename T>
     if (!screen) {
         return 0;
     }
-    return static_cast<xcb_timestamp_t>(reinterpret_cast<quintptr>(native->nativeResourceForScreen(QByteArrayLiteral("appusertime"), screen)));
+    return static_cast<xcb_timestamp_t>(reinterpret_cast<quintptr>(native->nativeResourceForScreen(kappusertime, screen)));
 }
 
 [[maybe_unused]] [[nodiscard]] static inline quint32 x11_getTimestamp()
@@ -231,7 +256,7 @@ template<typename T>
     if (!screen) {
         return 0;
     }
-    return static_cast<xcb_timestamp_t>(reinterpret_cast<quintptr>(native->nativeResourceForScreen(QByteArrayLiteral("gettimestamp"), screen)));
+    return static_cast<xcb_timestamp_t>(reinterpret_cast<quintptr>(native->nativeResourceForScreen(kgettimestamp, screen)));
 }
 
 [[maybe_unused]] [[nodiscard]] static inline QByteArray x11_nextStartupId()
@@ -243,7 +268,7 @@ template<typename T>
     if (!native) {
         return {};
     }
-    return static_cast<char *>(native->nativeResourceForIntegration(QByteArrayLiteral("startupid")));
+    return static_cast<char *>(native->nativeResourceForIntegration(kstartupid));
 }
 
 [[maybe_unused]] [[nodiscard]] static inline Display *x11_display()
@@ -263,7 +288,7 @@ template<typename T>
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
     return native->display();
 #else
-    return reinterpret_cast<Display *>(native->nativeResourceForIntegration(QByteArrayLiteral("display")));
+    return reinterpret_cast<Display *>(native->nativeResourceForIntegration(kdisplay));
 #endif
 }
 
@@ -284,7 +309,7 @@ template<typename T>
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
     return native->connection();
 #else
-    return reinterpret_cast<xcb_connection_t *>(native->nativeResourceForIntegration(QByteArrayLiteral("connection")));
+    return reinterpret_cast<xcb_connection_t *>(native->nativeResourceForIntegration(kconnection));
 #endif
 }
 
@@ -325,7 +350,7 @@ static inline void
     }
     xcb_connection_t * const connection = x11_connection();
     Q_ASSERT(connection);
-    static const xcb_atom_t netMoveResize = [connection]() -> xcb_atom_t {
+    static const auto netMoveResize = [connection]() -> xcb_atom_t {
         const xcb_intern_atom_cookie_t cookie = xcb_intern_atom(connection, false,
                              qstrlen(_NET_WM_MOVERESIZE_ATOM_NAME), _NET_WM_MOVERESIZE_ATOM_NAME);
         xcb_intern_atom_reply_t * const reply = xcb_intern_atom_reply(connection, cookie, nullptr);
@@ -355,7 +380,8 @@ static inline void
     xcb_flush(connection);
 }
 
-static inline void sendMouseReleaseEvent(QWindow *window, const QPoint &globalPos)
+[[maybe_unused]] static inline void
+    sendMouseReleaseEvent(QWindow *window, const QPoint &globalPos)
 {
     Q_ASSERT(window);
     if (!window) {
@@ -380,8 +406,12 @@ void Utils::startSystemMove(QWindow *window, const QPoint &globalPos)
     if (!window) {
         return;
     }
+#if (QT_VERSION < QT_VERSION_CHECK(6, 2, 0))
     // Before we start the dragging we need to tell Qt that the mouse is released.
     sendMouseReleaseEvent(window, globalPos);
+#else
+    Q_UNUSED(globalPos);
+#endif
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
     window->startSystemMove();
 #else
@@ -399,8 +429,12 @@ void Utils::startSystemResize(QWindow *window, const Qt::Edges edges, const QPoi
     if (edges == Qt::Edges{}) {
         return;
     }
+#if (QT_VERSION < QT_VERSION_CHECK(6, 2, 0))
     // Before we start the resizing we need to tell Qt that the mouse is released.
     sendMouseReleaseEvent(window, globalPos);
+#else
+    Q_UNUSED(globalPos);
+#endif
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
     window->startSystemResize(edges);
 #else
@@ -440,10 +474,9 @@ bool Utils::shouldAppsUseDarkMode_linux()
         it's mainly used for easy debugging, so it should be possible to use it
         to override any other settings.
     */
-    static const QRegularExpression darkRegex(kGTK_THEME_DARK_REGEX, QRegularExpression::CaseInsensitiveOption);
     const QString envThemeName = qEnvironmentVariable(GTK_THEME_NAME_ENV_VAR);
     if (!envThemeName.isEmpty()) {
-        return darkRegex.match(envThemeName).hasMatch();
+        return envThemeName.contains(kdark, Qt::CaseInsensitive);
     }
 
     /*
@@ -463,10 +496,68 @@ bool Utils::shouldAppsUseDarkMode_linux()
     */
     const QString curThemeName = gtkSetting(GTK_THEME_NAME_PROP);
     if (!curThemeName.isEmpty()) {
-        return darkRegex.match(curThemeName).hasMatch();
+        return curThemeName.contains(kdark, Qt::CaseInsensitive);
     }
 
     return false;
+}
+
+bool Utils::setBlurBehindWindowEnabled(const WId windowId, const BlurMode mode, const QColor &color)
+{
+    Q_UNUSED(windowId);
+    Q_UNUSED(mode);
+    Q_UNUSED(color);
+    return false;
+}
+
+QString Utils::getWallpaperFilePath()
+{
+    // ### TODO
+    return {};
+}
+
+WallpaperAspectStyle Utils::getWallpaperAspectStyle()
+{
+    // ### TODO
+    return WallpaperAspectStyle::Fill;
+}
+
+bool Utils::isBlurBehindWindowSupported()
+{
+    static const auto result = []() -> bool {
+        if (FramelessConfig::instance()->isSet(Option::ForceNonNativeBackgroundBlur)) {
+            return false;
+        }
+        // Currently not supported due to the desktop environments vary too much.
+        return false;
+    }();
+    return result;
+}
+
+static inline void themeChangeNotificationCallback()
+{
+    // Sometimes the FramelessManager instance may be destroyed already.
+    if (FramelessManager * const manager = FramelessManager::instance()) {
+        if (FramelessManagerPrivate * const managerPriv = FramelessManagerPrivate::get(manager)) {
+            managerPriv->notifySystemThemeHasChangedOrNot();
+        }
+    }
+}
+
+void Utils::registerThemeChangeNotification()
+{
+    GtkSettings * const settings = gtk_settings_get_default();
+    Q_ASSERT(settings);
+    if (!settings) {
+        return;
+    }
+    g_signal_connect(settings, "notify::gtk-application-prefer-dark-theme", themeChangeNotificationCallback, nullptr);
+    g_signal_connect(settings, "notify::gtk-theme-name", themeChangeNotificationCallback, nullptr);
+}
+
+QColor Utils::getFrameBorderColor(const bool active)
+{
+    return (active ? getWmThemeColor() : kDefaultDarkGrayColor);
 }
 
 FRAMELESSHELPER_END_NAMESPACE

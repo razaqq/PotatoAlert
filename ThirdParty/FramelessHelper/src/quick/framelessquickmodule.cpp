@@ -25,12 +25,15 @@
 #include "framelessquickmodule.h"
 #include "framelessquickhelper.h"
 #include "framelessquickutils.h"
+#include "quickchromepalette.h"
+#include "quickmicamaterial.h"
+#include "quickimageitem.h"
+#include "quickwindowborder.h"
+#include "framelessquickwindow_p.h"
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+#  include "framelessquickapplicationwindow_p.h"
 #  include "quickstandardsystembutton_p.h"
 #  include "quickstandardtitlebar_p.h"
-#  include "framelessquickwindow_p.h"
-#else // (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-#  include <QtQuick/qquickwindow.h>
 #endif // (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
 
 #ifndef QUICK_URI_SHORT
@@ -47,20 +50,35 @@
 
 FRAMELESSHELPER_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQuickModule, "wangwenx190.framelesshelper.quick.quickmodule")
+
+#ifdef FRAMELESSHELPER_QUICK_NO_DEBUG_OUTPUT
+#  define INFO QT_NO_QDEBUG_MACRO()
+#  define DEBUG QT_NO_QDEBUG_MACRO()
+#  define WARNING QT_NO_QDEBUG_MACRO()
+#  define CRITICAL QT_NO_QDEBUG_MACRO()
+#else
+#  define INFO qCInfo(lcQuickModule)
+#  define DEBUG qCDebug(lcQuickModule)
+#  define WARNING qCWarning(lcQuickModule)
+#  define CRITICAL qCCritical(lcQuickModule)
+#endif
+
 void FramelessHelper::Quick::registerTypes(QQmlEngine *engine)
 {
     Q_ASSERT(engine);
     if (!engine) {
         return;
     }
-    qRegisterMetaType<QuickGlobal::SystemTheme>();
-    qRegisterMetaType<QuickGlobal::SystemButtonType>();
-    qRegisterMetaType<QuickGlobal::ResourceType>();
-    qRegisterMetaType<QuickGlobal::DwmColorizationArea>();
-    qRegisterMetaType<QuickGlobal::Anchor>();
-    qRegisterMetaType<QuickGlobal::ButtonState>();
-    qRegisterMetaType<QuickGlobal::WindowsVersion>();
-    qRegisterMetaType<QuickGlobal::ApplicationType>();
+
+    // In most cases we don't need to register the QML types for multiple times.
+    static bool reg = false;
+    if (reg) {
+        return;
+    }
+    reg = true;
+
+    // @uri org.wangwenx190.FramelessHelper
     qmlRegisterUncreatableType<QuickGlobal>(QUICK_URI_FULL, "FramelessHelperConstants",
         FRAMELESSHELPER_STRING_LITERAL("The FramelessHelperConstants namespace is not creatable, you can only use it to access it's enums."));
     qmlRegisterSingletonType<FramelessQuickUtils>(QUICK_URI_EXPAND("FramelessUtils"),
@@ -69,22 +87,27 @@ void FramelessHelper::Quick::registerTypes(QQmlEngine *engine)
             Q_UNUSED(scriptEngine);
             return new FramelessQuickUtils;
         });
-    qmlRegisterRevision<QWindow, 254>(QUICK_URI_FULL);
-    qmlRegisterRevision<QQuickWindow, 254>(QUICK_URI_FULL);
-    qmlRegisterRevision<QQuickItem, 254>(QUICK_URI_FULL);
+    qmlRegisterAnonymousType<QuickChromePalette>(QUICK_URI_SHORT);
+
     qmlRegisterType<FramelessQuickHelper>(QUICK_URI_EXPAND("FramelessHelper"));
+    qmlRegisterType<FramelessQuickWindow>(QUICK_URI_EXPAND("FramelessWindow"));
+    qmlRegisterType<QuickMicaMaterial>(QUICK_URI_EXPAND("MicaMaterial"));
+    qmlRegisterType<QuickImageItem>(QUICK_URI_EXPAND("ImageItem"));
+    qmlRegisterType<QuickWindowBorder>(QUICK_URI_EXPAND("WindowBorder"));
+
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    qmlRegisterType<FramelessQuickApplicationWindow>(QUICK_URI_EXPAND("FramelessApplicationWindow"));
     qmlRegisterType<QuickStandardSystemButton>(QUICK_URI_EXPAND("StandardSystemButton"));
     qmlRegisterType<QuickStandardTitleBar>(QUICK_URI_EXPAND("StandardTitleBar"));
-    qmlRegisterType<FramelessQuickWindow>(QUICK_URI_EXPAND("FramelessWindow"));
-#else // (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+#else // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+    qmlRegisterTypeNotAvailable(QUICK_URI_EXPAND("FramelessApplicationWindow"),
+        FRAMELESSHELPER_STRING_LITERAL("FramelessApplicationWindow is not available until Qt6."));
     qmlRegisterTypeNotAvailable(QUICK_URI_EXPAND("StandardSystemButton"),
         FRAMELESSHELPER_STRING_LITERAL("StandardSystemButton is not available until Qt6."));
     qmlRegisterTypeNotAvailable(QUICK_URI_EXPAND("StandardTitleBar"),
         FRAMELESSHELPER_STRING_LITERAL("StandardTitleBar is not available until Qt6."));
-    qmlRegisterTypeNotAvailable(QUICK_URI_EXPAND("FramelessWindow"),
-        FRAMELESSHELPER_STRING_LITERAL("FramelessWindow is not available until Qt6."));
 #endif // (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+
     qmlRegisterModule(QUICK_URI_FULL);
 }
 
