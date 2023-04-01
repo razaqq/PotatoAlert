@@ -5,6 +5,7 @@
 
 #include "ReplayParser/BitReader.hpp"
 #include "ReplayParser/NestedProperty.hpp"
+#include "ReplayParser/Result.hpp"
 #include "ReplayParser/Types.hpp"
 #include "ReplayParser/Variant.hpp"
 
@@ -155,18 +156,18 @@ ReplayResult<PropertyNesting> rp::GetNestedPropertyPath(bool isSlice, const ArgT
 			const FixedDictProperty& prop = arg.Properties[propIndex];
 
 			const ArgValue* newArgValue;
-			PA_TRYV(VariantGet<std::unordered_map<std::string, ArgValue>>(*argValue, [&prop, &newArgValue, &arg](const auto& value) -> ReplayResult<void>
+
+			ReplayResult<void> setRes = VariantGet<std::unordered_map<std::string, ArgValue>>(*argValue, [&prop, &newArgValue, &arg](const auto& value) -> ReplayResult<void>
 			{
 				if (value.contains(prop.Name))
 				{
 					newArgValue = &value.at(prop.Name);
 					return {};
 				}
-				else
-				{
-					return PA_REPLAY_ERROR("Nested Property Path did not contain property named ''", prop.Name);
-				}
-			}));
+				return PA_REPLAY_ERROR("Nested Property Path did not contain property named ''", prop.Name);
+			});
+			if (!setRes)
+				return ReplayResult<PropertyNesting>{ Core::ResultError, ReplayError(setRes.error()) };
 			argValue = const_cast<ArgValue*>(newArgValue);
 
 			const ArgType newType = *arg.Properties[propIndex].Type;
