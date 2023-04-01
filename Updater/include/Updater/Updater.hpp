@@ -13,6 +13,36 @@ namespace fs = std::filesystem;
 
 namespace PotatoAlert::Updater {
 
+enum class Edition
+{
+	Qt6_Windows10,
+	Qt5_Windows7,
+	Linux
+};
+
+#if WIN32 && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	static constexpr Edition CurrentEdition = Edition::Qt6_Windows10;
+#elif WIN32
+	static constexpr Edition CurrentEdition = Edition::Qt5_Windows7;
+#else
+	static constexpr Edition CurrentEdition = Edition::Linux;
+#endif
+
+static constexpr std::string_view UpdateArchiveFile(Edition edition)
+{
+	switch (edition)
+	{
+		case Edition::Qt6_Windows10:
+			return "PotatoAlert.zip";
+		case Edition::Qt5_Windows7:
+			return "PotatoAlert_win7.zip";
+		case Edition::Linux:
+			return "PotatoAlert_linux.zip";
+		default:
+			return "";
+	}
+}
+
 class Updater : public QWidget
 {
 	Q_OBJECT
@@ -44,7 +74,7 @@ private:
 	// functions for paths
 	static fs::path UpdateDest() { return fs::absolute(fs::current_path()); }
 	static fs::path BackupDest() { return fs::path(fs::temp_directory_path() / "PotatoAlertBackup"); }
-	static fs::path UpdateArchive() { return fs::path(fs::temp_directory_path() / "PotatoAlert.zip"); }
+	static fs::path UpdateArchive() { return fs::path(fs::temp_directory_path() / UpdateArchiveFile(CurrentEdition)); }
 
 	struct ElevationInfo
 	{
