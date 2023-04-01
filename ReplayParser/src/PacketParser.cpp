@@ -61,6 +61,10 @@ PacketType rp::ParsePacket(std::span<const Byte>& data, PacketParser& parser)
 			return VariantCast<PacketType>(ParseCellPlayerCreatePacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::EntityMethod):
 			return VariantCast<PacketType>(ParseEntityMethodPacket(raw, parser, clock)); 
+		case static_cast<uint32_t>(PacketBaseType::EntityProperty):
+			return VariantCast<PacketType>(ParseEntityPropertyPacket(raw, parser, clock)); 
+		case static_cast<uint32_t>(PacketBaseType::NestedPropertyUpdate):
+			return VariantCast<PacketType>(ParseNestedPropertyUpdatePacket(raw, parser, clock));
 
 #ifndef NDEBUG
 		case static_cast<uint32_t>(PacketBaseType::Version):
@@ -71,14 +75,10 @@ PacketType rp::ParsePacket(std::span<const Byte>& data, PacketParser& parser)
 			return VariantCast<PacketType>(ParseEntityEnterPacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::EntityLeave):
 			return VariantCast<PacketType>(ParseEntityLeavePacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::EntityProperty):
-			return VariantCast<PacketType>(ParseEntityPropertyPacket(raw, parser, clock)); 
 		case static_cast<uint32_t>(PacketBaseType::PlayerPosition):
 			return VariantCast<PacketType>(ParsePlayerPositionPacketPacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::PlayerEntity):
 			return VariantCast<PacketType>(ParsePlayerEntityPacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::NestedPropertyUpdate):
-			return VariantCast<PacketType>(ParseNestedPropertyUpdatePacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::PlayerOrientation):
 			return VariantCast<PacketType>(ParsePlayerOrientationPacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::Camera):
