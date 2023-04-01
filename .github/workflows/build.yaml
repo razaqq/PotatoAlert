@@ -14,7 +14,7 @@ jobs:
             zipfile: PotatoAlert.zip
           - qt-major-version: 5
             qt-version: 5.15.2
-            zipfile: PotatoAlert_Qt5_win7.zip
+            zipfile: PotatoAlert_win7.zip
 
     runs-on: windows-2022
 
