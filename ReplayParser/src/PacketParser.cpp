@@ -5,7 +5,6 @@
 
 #include "ReplayParser/BitReader.hpp"
 #include "ReplayParser/PacketParser.hpp"
-#include "ReplayParser/PropertyTree.hpp"
 
 #include <optional>
 #include <span>
