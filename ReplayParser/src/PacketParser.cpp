@@ -3,7 +3,9 @@
 #include "Core/Bytes.hpp"
 #include "Core/Log.hpp"
 
+#include "ReplayParser/BitReader.hpp"
 #include "ReplayParser/PacketParser.hpp"
+#include "ReplayParser/PropertyTree.hpp"
 
 #include <optional>
 #include <span>
@@ -19,6 +21,8 @@ using PotatoAlert::Core::Take;
 using PotatoAlert::Core::TakeInto;
 using PotatoAlert::Core::TakeString;
 
+namespace {
+
 template<typename R, typename T>
 static R VariantCast(T&& t)
 {
@@ -27,6 +31,8 @@ static R VariantCast(T&& t)
 		return { std::forward<T0>(val) };
 	}, std::forward<T>(t));
 }
+
+}  // namespace
 
 PacketType rp::ParsePacket(std::span<const Byte>& data, PacketParser& parser)
 {
@@ -59,33 +65,33 @@ PacketType rp::ParsePacket(std::span<const Byte>& data, PacketParser& parser)
 
 #ifndef NDEBUG
 		case static_cast<uint32_t>(PacketBaseType::Version):
-			return VariantCast<PacketType>(ParseVersionPacket(raw, clock));
+			return VariantCast<PacketType>(ParseVersionPacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::EntityControl):
-			return VariantCast<PacketType>(ParseEntityControlPacket(raw, clock));
+			return VariantCast<PacketType>(ParseEntityControlPacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::EntityEnter):
-			return VariantCast<PacketType>(ParseEntityEnterPacket(raw, clock));
+			return VariantCast<PacketType>(ParseEntityEnterPacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::EntityLeave):
-			return VariantCast<PacketType>(ParseEntityLeavePacket(raw, clock));
+			return VariantCast<PacketType>(ParseEntityLeavePacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::EntityProperty):
 			return VariantCast<PacketType>(ParseEntityPropertyPacket(raw, parser, clock)); 
 		case static_cast<uint32_t>(PacketBaseType::PlayerPosition):
-			return VariantCast<PacketType>(ParsePlayerPositionPacketPacket(raw, clock));
+			return VariantCast<PacketType>(ParsePlayerPositionPacketPacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::PlayerEntity):
-			return VariantCast<PacketType>(ParsePlayerEntityPacket(raw, clock));
+			return VariantCast<PacketType>(ParsePlayerEntityPacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::NestedPropertyUpdate):
 			return VariantCast<PacketType>(ParseNestedPropertyUpdatePacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::PlayerOrientation):
-			return VariantCast<PacketType>(ParsePlayerOrientationPacket(raw, clock));
+			return VariantCast<PacketType>(ParsePlayerOrientationPacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::Camera):
-			return VariantCast<PacketType>(ParseCameraPacket(raw, clock));
+			return VariantCast<PacketType>(ParseCameraPacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::Map):
-			return VariantCast<PacketType>(ParseMapPacket(raw, clock));
+			return VariantCast<PacketType>(ParseMapPacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::CameraFreeLook):
-			return VariantCast<PacketType>(ParseCameraFreeLookPacket(raw, clock));
+			return VariantCast<PacketType>(ParseCameraFreeLookPacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::CameraMode):
-			return VariantCast<PacketType>(ParseCameraModePacket(raw, clock));
+			return VariantCast<PacketType>(ParseCameraModePacket(raw, parser, clock));
 		case static_cast<uint32_t>(PacketBaseType::CruiseState):
-			return VariantCast<PacketType>(ParseCruiseStatePacket(raw, clock));
+			return VariantCast<PacketType>(ParseCruiseStatePacket(raw, parser, clock));
 #endif  // NDEBUG
 
 #if 0
@@ -226,16 +232,16 @@ std::variant<EntityMethodPacket, InvalidPacket> rp::ParseEntityMethodPacket(std:
 	}
 	const EntitySpec& spec = parser.Specs[specId];
 
-	if (packet.MethodId >= spec.clientMethods.size())
+	if (packet.MethodId >= spec.ClientMethods.size())
 	{
 		LOG_ERROR("Invalid methodId {} for EntityMethodPacket", packet.MethodId);
 		return InvalidPacket{};
 	}
-	const Method& method = spec.clientMethods[packet.MethodId];
-	packet.MethodName = method.name;
+	const Method& method = spec.ClientMethods[packet.MethodId];
+	packet.MethodName = method.Name;
 
-	packet.Values.reserve(method.args.size());
-	for (const ArgType& argType : method.args)
+	packet.Values.reserve(method.Args.size());
+	for (const ArgType& argType : method.Args)
 	{
 		if (std::optional<ArgValue> value = ParseValue(data, argType))
 		{
@@ -248,6 +254,7 @@ std::variant<EntityMethodPacket, InvalidPacket> rp::ParseEntityMethodPacket(std:
 		}
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
@@ -278,7 +285,7 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 
 	if (parser.Entities.contains(packet.EntityId))
 	{
-		// LOG_ERROR("Entity {} already exists for EntityCreatePacket", packet.entityId);
+		// LOG_TRACE("Entity {} already exists for EntityCreatePacket", packet.EntityId);
 		// return InvalidPacket{};
 	}
 
@@ -308,20 +315,26 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 	const EntitySpec& spec = parser.Specs[specId];
 
 	packet.Values.reserve(propertyCount);
+
+	std::unordered_map<std::string, ArgValue> clientPropertyValues;
+	clientPropertyValues.reserve(propertyCount);
+
 	for (uint8_t i = 0; i < propertyCount; i++)
 	{
 		uint8_t propertyId;
 		if (!TakeInto(data, propertyId))
 		{
+			LOG_ERROR("Failed to get propertyId for EntityCreatePacket, not enough data");
 			return InvalidPacket{};
 		}
-		if (propertyId < spec.properties.size())
+		if (propertyId < spec.ClientProperties.size())
 		{
-			const auto& [name, type, flag] = spec.properties[propertyId];
+			const auto& [name, type, flag] = spec.ClientProperties[propertyId].get();
 
 			if (std::optional<ArgValue> value = ParseValue(data, type))
 			{
 				packet.Values[name] = value.value();
+				clientPropertyValues.insert_or_assign(name, value.value());
 			}
 			else
 			{
@@ -331,20 +344,18 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 		}
 		else
 		{
-			LOG_ERROR("Failed to get propertyId for EntityCreatePacket");
+			LOG_ERROR("Failed to get propertyId for EntityCreatePacket, out of bounds");
 			return InvalidPacket{};
 		}
 	}
 
-	auto v = packet.Values | std::views::values;
-	const std::vector<ArgValue> values{ v.begin(), v.end() };
-	parser.Entities.emplace(packet.EntityId, Entity{ packet.EntityType, values });
+	parser.Entities.insert_or_assign(packet.EntityId, Entity{ packet.EntityType, spec, {}, clientPropertyValues });
 
-	// LOG_TRACE("Creating Entity {} with {} properties", packet.entityId, packet.values.size());
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	EntityPropertyPacket packet;
 	packet.Clock = clock;
@@ -386,16 +397,25 @@ std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(
 	}
 	const EntitySpec& spec = parser.Specs[specId];
 
-	if (packet.MethodId >= spec.properties.size())
+	if (packet.MethodId >= spec.ClientProperties.size())
 	{
 		LOG_ERROR("Invalid methodId {} for EntityPropertyPacket", packet.MethodId);
 		return InvalidPacket{};
 	}
-	const Property& property = spec.properties[packet.MethodId];
+	const Property& property = spec.ClientProperties[packet.MethodId];
+	packet.PropertyName = property.Name;
 
-	if (std::optional<ArgValue> value = ParseValue(data, property.type))
+	if (!parser.Entities.contains(packet.EntityId))
+	{
+		LOG_ERROR("Entity {} does not exist for EntityPropertyPacket", packet.EntityId);
+		return InvalidPacket{};
+	}
+	Entity& entity = parser.Entities.at(packet.EntityId);
+
+	if (std::optional<ArgValue> value = ParseValue(data, property.Type))
 	{
 		packet.Value = value.value();
+		entity.ClientPropertiesValues.insert_or_assign(property.Name, value.value());
 	}
 	else
 	{
@@ -403,6 +423,7 @@ std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(
 		return InvalidPacket{};
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
@@ -431,15 +452,35 @@ std::variant<BasePlayerCreatePacket, InvalidPacket> rp::ParseBasePlayerCreatePac
 	}
 	const EntitySpec& spec = parser.Specs[specId];
 
-	parser.Entities.emplace(packet.EntityId, Entity{ packet.EntityType, {} });  // TODO: parse the state
+	const size_t propertyCount = spec.BaseProperties.size();
+	std::unordered_map<std::string, ArgValue> basePropertyValues;
+	basePropertyValues.reserve(propertyCount);
+
+	for (uint8_t i = 0; i < propertyCount; i++)
+	{
+		const auto& [name, type, flag] = spec.BaseProperties[i].get();
+
+		if (std::optional<ArgValue> value = ParseValue(data, type))
+		{
+			basePropertyValues.emplace(name, value.value());
+		}
+		else
+		{
+			LOG_ERROR("Failed to parse value for EntityCreatePacket");
+			return InvalidPacket{};
+		}
+	}
+
+	parser.Entities.emplace(packet.EntityId, Entity{ packet.EntityType, spec, basePropertyValues, {} });  // TODO: parse the state
 
 	std::span<const Byte> state = Take(data, data.size());
 	packet.Data = { state.begin(), state.end() };
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	CellPlayerCreatePacket packet;
 	packet.Type = PacketBaseType::CellPlayerCreate;
@@ -488,12 +529,19 @@ std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePac
 	}
 	const EntitySpec& spec = parser.Specs[specId];
 
-	packet.Values.reserve(spec.internalProperties.size());
-	for (const Property& property : spec.internalProperties)
+	if (!parser.Entities.contains(packet.EntityId))
 	{
-		if (std::optional<ArgValue> value = ParseValue(data, property.type))
+		LOG_WARN("CellPlayerCreatePacket created non-existing entity {}", packet.EntityId);
+		parser.Entities.emplace(packet.EntityId, Entity{ entityType, spec, {} });
+	}
+
+	packet.Values.reserve(spec.ClientPropertiesInternal.size());
+	for (auto property : spec.ClientPropertiesInternal)
+	{
+		if (std::optional<ArgValue> value = ParseValue(data, property.get().Type))
 		{
-			packet.Values[property.name] = value.value();
+			packet.Values[property.get().Name] = value.value();
+			parser.Entities.at(packet.EntityId).ClientPropertiesValues.emplace(property.get().Name, value.value());
 		}
 		else
 		{
@@ -510,10 +558,11 @@ std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePac
 		LOG_WARN("CellPlayerCreatePacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<EntityControlPacket, InvalidPacket> rp::ParseEntityControlPacket(std::span<const Byte>& data, float clock)
+std::variant<EntityControlPacket, InvalidPacket> rp::ParseEntityControlPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	EntityControlPacket packet;
 	packet.Type = PacketBaseType::EntityControl;
@@ -535,10 +584,11 @@ std::variant<EntityControlPacket, InvalidPacket> rp::ParseEntityControlPacket(st
 		LOG_WARN("EntityControlPacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<EntityEnterPacket, InvalidPacket> rp::ParseEntityEnterPacket(std::span<const Byte>& data, float clock)
+std::variant<EntityEnterPacket, InvalidPacket> rp::ParseEntityEnterPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	EntityEnterPacket packet;
 	packet.Type = PacketBaseType::EntityEnter;
@@ -562,10 +612,11 @@ std::variant<EntityEnterPacket, InvalidPacket> rp::ParseEntityEnterPacket(std::s
 		LOG_WARN("EntityEnterPacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<EntityLeavePacket, InvalidPacket> rp::ParseEntityLeavePacket(std::span<const Byte>& data, float clock)
+std::variant<EntityLeavePacket, InvalidPacket> rp::ParseEntityLeavePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	EntityLeavePacket packet;
 	packet.Type = PacketBaseType::EntityLeave;
@@ -582,6 +633,7 @@ std::variant<EntityLeavePacket, InvalidPacket> rp::ParseEntityLeavePacket(std::s
 		LOG_WARN("EntityLeavePacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
@@ -614,19 +666,64 @@ std::variant<NestedPropertyUpdatePacket, InvalidPacket> rp::ParseNestedPropertyU
 		return InvalidPacket{};
 	}
 
-	Take(data, size);
+	std::span<const Byte> payload = Take(data, size);
 
-	// TODO
+	if (!parser.Entities.contains(packet.EntityId))
+	{
+		LOG_ERROR("Entity {} does not exist for EntityPropertyPacket", packet.EntityId);
+		return InvalidPacket{};
+	}
+	packet.Entity = &parser.Entities.at(packet.EntityId);
+	const EntitySpec& spec = packet.Entity->Spec;
+
+	BitReader bitReader(payload);
+	const int cont = bitReader.Get(1);
+#ifndef NDEBUG
+	assert(cont == 1);
+#else
+	if (cont != 1)
+	{
+		LOG_ERROR("Invalid first bit {:#04x} in NestedPropertyUpdatePacket payload", cont);
+		return InvalidPacket{};
+	}
+#endif
+
+	const int propIndex = bitReader.Get(BitReader::BitsRequired(static_cast<int>(spec.ClientProperties.size())));
+	if (propIndex >= spec.ClientProperties.size())
+	{
+		LOG_ERROR("Property index out of range ({}) for spec in NestedPropertyUpdatePacket", propIndex);
+		return InvalidPacket{};
+	}
+
+	const Property& prop = spec.ClientProperties[propIndex].get();
+
+	packet.PropertyIndex = propIndex;
+	packet.PropertyName = prop.Name;
+
+	if (!packet.Entity->ClientPropertiesValues.contains(prop.Name))
+	{
+		LOG_ERROR("Entity is missing property value for '{}' in NestedPropertyUpdatePacket", prop.Name);
+		return InvalidPacket{};
+	}
+
+	ReplayResult<PropertyNesting> nesting = GetNestedPropertyPath(isSlice, prop.Type, &packet.Entity->ClientPropertiesValues[prop.Name], bitReader);
+	if (!nesting)
+	{
+		LOG_ERROR(nesting.error());
+		return InvalidPacket{};
+	}
+	packet.Nesting = nesting.value();
 
 	if (!data.empty())
 	{
 		LOG_WARN("NestedPropertyUpdatePacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<PlayerOrientationPacket, InvalidPacket> rp::ParsePlayerOrientationPacket(std::span<const Byte>& data, float clock)
+std::variant<PlayerOrientationPacket, InvalidPacket> rp::ParsePlayerOrientationPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	PlayerOrientationPacket packet;
 	packet.Type = PacketBaseType::PlayerOrientation;
@@ -652,10 +749,11 @@ std::variant<PlayerOrientationPacket, InvalidPacket> rp::ParsePlayerOrientationP
 		LOG_WARN("PlayerOrientationPacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<PlayerPositionPacket, InvalidPacket> rp::ParsePlayerPositionPacketPacket(std::span<const Byte>& data, float clock)
+std::variant<PlayerPositionPacket, InvalidPacket> rp::ParsePlayerPositionPacketPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	PlayerPositionPacket packet;
 	packet.Type = PacketBaseType::PlayerOrientation;
@@ -685,10 +783,11 @@ std::variant<PlayerPositionPacket, InvalidPacket> rp::ParsePlayerPositionPacketP
 		LOG_WARN("PlayerPositionPacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<CameraPacket, InvalidPacket> rp::ParseCameraPacket(std::span<const Byte>& data, float clock)
+std::variant<CameraPacket, InvalidPacket> rp::ParseCameraPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	CameraPacket packet;
 	packet.Type = PacketBaseType::Camera;
@@ -725,10 +824,11 @@ std::variant<CameraPacket, InvalidPacket> rp::ParseCameraPacket(std::span<const 
 		LOG_WARN("CameraPacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<MapPacket, InvalidPacket> rp::ParseMapPacket(std::span<const Byte>& data, float clock)
+std::variant<MapPacket, InvalidPacket> rp::ParseMapPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	MapPacket packet;
 	packet.Type = PacketBaseType::Map;
@@ -766,10 +866,11 @@ std::variant<MapPacket, InvalidPacket> rp::ParseMapPacket(std::span<const Byte>&
 		LOG_WARN("MapPacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<VersionPacket, InvalidPacket> rp::ParseVersionPacket(std::span<const Byte>& data, float clock)
+std::variant<VersionPacket, InvalidPacket> rp::ParseVersionPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	VersionPacket packet;
 	packet.Type = PacketBaseType::Version;
@@ -793,10 +894,11 @@ std::variant<VersionPacket, InvalidPacket> rp::ParseVersionPacket(std::span<cons
 		LOG_WARN("VersionPacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<PlayerEntityPacket, InvalidPacket> rp::ParsePlayerEntityPacket(std::span<const Byte>& data, float clock)
+std::variant<PlayerEntityPacket, InvalidPacket> rp::ParsePlayerEntityPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	PlayerEntityPacket packet;
 	packet.Type = PacketBaseType::PlayerEntity;
@@ -816,10 +918,11 @@ std::variant<PlayerEntityPacket, InvalidPacket> rp::ParsePlayerEntityPacket(std:
 		LOG_WARN("PlayerEntityPacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<CameraModePacket, InvalidPacket> rp::ParseCameraModePacket(std::span<const Byte>& data, float clock)
+std::variant<CameraModePacket, InvalidPacket> rp::ParseCameraModePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	CameraModePacket packet;
 	packet.Type = PacketBaseType::CameraMode;
@@ -839,10 +942,11 @@ std::variant<CameraModePacket, InvalidPacket> rp::ParseCameraModePacket(std::spa
 		LOG_WARN("CameraModePacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<CruiseStatePacket, InvalidPacket> rp::ParseCruiseStatePacket(std::span<const Byte>& data, float clock)
+std::variant<CruiseStatePacket, InvalidPacket> rp::ParseCruiseStatePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	CruiseStatePacket packet;
 	packet.Type = PacketBaseType::CruiseState;
@@ -865,10 +969,11 @@ std::variant<CruiseStatePacket, InvalidPacket> rp::ParseCruiseStatePacket(std::s
 		LOG_WARN("CruiseStatePacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<CameraFreeLookPacket, InvalidPacket> rp::ParseCameraFreeLookPacket(std::span<const Byte>& data, float clock)
+std::variant<CameraFreeLookPacket, InvalidPacket> rp::ParseCameraFreeLookPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	CameraFreeLookPacket packet;
 	packet.Type = PacketBaseType::CameraFreeLook;
@@ -888,5 +993,6 @@ std::variant<CameraFreeLookPacket, InvalidPacket> rp::ParseCameraFreeLookPacket(
 		LOG_WARN("CameraFreeLookPacket had {} bytes remaining after parsing", data.size());
 	}
 
+	parser.Callbacks.Invoke(packet);
 	return packet;
 }

@@ -7,8 +7,9 @@
 #include "ReplayAnalyzerRust.hpp"
 #include "ReplayParser/GameFiles.hpp"
 #include "ReplayParser/ReplayParser.hpp"
+#include "ReplayParser/Result.hpp"
 #include "ReplayParser/Types.hpp"
-#include "ReplayParser/Util.hpp"
+#include "ReplayParser/Variant.hpp"
 
 #include <any>
 #include <optional>
@@ -80,7 +81,7 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 		std::unordered_map<AchievementType, uint32_t> Achievements;
 	} replayData;
 
-	for (const PacketType& pak : packets)
+	for (const PacketType& pak : Packets)
 	{
 		const ReplayResult<void> packetResult = std::visit([&replayData, this]<typename Type>(Type&& packet) -> ReplayResult<void>
 		{
@@ -100,7 +101,7 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 					bool found = false;
 					PA_TRYV(VariantGet<std::vector<Byte>>(packet, 3, [&replayData, &found, this](const std::vector<Byte>& data) -> ReplayResult<void>
 					{
-						OnArenaStateReceivedPlayerResult result = ParseArenaStateReceivedPlayers(data, meta.ClientVersionFromExe.GetRaw());
+						OnArenaStateReceivedPlayerResult result = ParseArenaStateReceivedPlayers(data, Meta.ClientVersionFromExe.GetRaw());
 
 						if (result.IsError)
 						{
@@ -197,16 +198,18 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 					{
 						for (const ArgValue& elem : vec)
 						{
-							VariantGet<std::unordered_map<std::string, ArgValue>>(elem, [&replayData, &packet](const std::unordered_map<std::string, ArgValue>& dict)
+							VariantGet<std::unordered_map<std::string, ArgValue>>(elem, [&replayData, &packet](const std::unordered_map<std::string, ArgValue>& dict) -> ReplayResult<void>
 							{
 								// other field is 'vehicleID' int32_t of the aggressor
 								if (dict.contains("damage"))
 								{
-									VariantGet<float>(dict.at("damage"), [&replayData](float damage)
+									VariantGet<float>(dict.at("damage"), [&replayData](float damage) -> ReplayResult<void>
 									{
 										replayData.DamageTaken += damage;
+										return {};
 									});
 								}
+								return {};
 							});
 						}
 
@@ -216,22 +219,26 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 					return {};
 				}
 
-				if (packet.MethodName == "onRibbon")
+				// until 12.0.0, since then its an EntityProperty
+				if (Meta.ClientVersionFromExe < Version(12, 0, 0))
 				{
-					return VariantGet<int8_t>(packet, 0, [&replayData](int8_t value) -> ReplayResult<void>
+					if (packet.MethodName == "onRibbon")
 					{
-						const RibbonType ribbon = static_cast<RibbonType>(value);
-						if (replayData.Ribbons.contains(ribbon))
+						return VariantGet<int8_t>(packet, 0, [&replayData](int8_t value) -> ReplayResult<void>
 						{
-							replayData.Ribbons[ribbon] += 1;
-						}
-						else
-						{
-							replayData.Ribbons[ribbon] = 1;
-						}
+							const RibbonType ribbon = static_cast<RibbonType>(value);
+							if (replayData.Ribbons.contains(ribbon))
+							{
+								replayData.Ribbons[ribbon] += 1;
+							}
+							else
+							{
+								replayData.Ribbons[ribbon] = 1;
+							}
 
-						return {};
-					});
+							return {};
+						});
+					}
 				}
 
 				if (packet.MethodName == "onAchievementEarned")
@@ -240,7 +247,7 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 					PA_TRYV(VariantGet<int32_t>(packet, 0, [&replayData, &discard, this](int32_t id) -> ReplayResult<void>
 					{
 						// since version 0.11.4 this is a different id
-						if (meta.ClientVersionFromExe >= Version(0, 11, 4))
+						if (Meta.ClientVersionFromExe >= Version(0, 11, 4))
 						{
 							if (id == replayData.PlayerId)
 							{
@@ -280,9 +287,10 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 			{
 				if (packet.Values.contains("teamId"))
 				{
-					VariantGet<int8_t>(packet.Values.at("teamId"), [&replayData](int8_t team)
+					VariantGet<int8_t>(packet.Values.at("teamId"), [&replayData](int8_t team) -> ReplayResult<void>
 					{
 						replayData.playerTeam = team;
+						return {};
 					});
 				}
 
@@ -305,6 +313,41 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 
 	MatchOutcome outcome;
 
+	// since 12.0.0
+	if (Meta.ClientVersionFromExe >= Version(12, 0, 0))
+	{
+		const Entity& playerEntity = m_packetParser.Entities.at(replayData.PlayerEntityId);
+		const ArgValue& privateVehicleState = playerEntity.ClientPropertiesValues.at("privateVehicleState");
+
+		PA_TRYV(VariantGet<std::unordered_map<std::string, ArgValue>>(privateVehicleState, [&replayData](auto& state) -> ReplayResult<void>
+		{
+			return VariantGet<std::vector<ArgValue>>(state.at("ribbons"), [&replayData](auto& ribbons) -> ReplayResult<void>
+			{
+				for (const ArgValue& ribbonValue : ribbons)
+				{
+					PA_TRYV(VariantGet<std::unordered_map<std::string, ArgValue>>(ribbonValue, [&replayData](auto& ribbon) -> ReplayResult<void>
+					{
+						RibbonType ribbonType;
+						uint32_t ribbonCount;
+						PA_TRYV(VariantGet<uint16_t>(ribbon.at("count"), [&ribbonCount](uint16_t count) -> ReplayResult<void>
+						{
+							ribbonCount = count;
+							return {};
+						}));
+						PA_TRYV(VariantGet<int8_t>(ribbon.at("ribbonId"), [&ribbonType](int8_t ribbonId) -> ReplayResult<void>
+						{
+							ribbonType = static_cast<RibbonType>(ribbonId);
+							return {};
+						}));
+						replayData.Ribbons.emplace(ribbonType, ribbonCount);
+						return {};
+					}));
+				}
+				return {};
+			});
+		}));
+	}
+
 	if (!replayData.playerTeam || !replayData.winningTeam)
 	{
 		LOG_TRACE("Failed to determine match outcome, PT {} WT {}", replayData.playerTeam.has_value(), replayData.winningTeam.has_value());
@@ -324,7 +367,7 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 	}
 
 	std::string hash;
-	if (!Core::Sha256(metaString, hash))
+	if (!Core::Sha256(MetaString, hash))
 	{
 		return PA_REPLAY_ERROR("Failed to get SHA256 hash of replay meta");
 	}

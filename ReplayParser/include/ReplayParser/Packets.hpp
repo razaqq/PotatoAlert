@@ -3,10 +3,12 @@
 
 #include "Core/Bytes.hpp"
 #include "Core/Math.hpp"
-#include "GameFiles.hpp"
-#include "Types.hpp"
+#include "Core/Preprocessor.hpp"
 
-#include <span>
+#include "ReplayParser/GameFiles.hpp"
+#include "ReplayParser/NestedProperty.hpp"
+#include "ReplayParser/Types.hpp"
+
 #include <string>
 #include <variant>
 #include <vector>
@@ -202,6 +204,7 @@ struct EntityPropertyPacket : Packet
 {
 	TypeEntityId EntityId;
 	TypeMethodId MethodId;
+	std::string PropertyName;
 	ArgValue Value;
 };
 
@@ -223,6 +226,8 @@ struct PlayerPositionPacket : Packet
 	bool IsError;
 };
 
+struct Entity;  // forward declare for PacketParser.hpp
+
 /*
  * https://github.com/Monstrofil/replays_unpack/blob/parser2.0/docs/packets/0x22.md
  */
@@ -230,6 +235,9 @@ struct NestedPropertyUpdatePacket : Packet
 {
 	TypeEntityId EntityId;
 	std::string PropertyName;
+	int PropertyIndex;
+	PropertyNesting Nesting;
+	Entity* Entity;
 };
 
 struct MapPacket : Packet
@@ -280,12 +288,30 @@ struct CameraModePacket : Packet
 	uint32_t Mode;
 };
 
+#define PA_RP_PACKETS(X)          \
+	X(BasePlayerCreatePacket)     \
+	X(CellPlayerCreatePacket)     \
+	X(EntityControlPacket)        \
+	X(EntityEnterPacket)          \
+	X(EntityLeavePacket)          \
+	X(EntityCreatePacket)         \
+	X(EntityMethodPacket)         \
+	X(EntityPropertyPacket)       \
+	X(PlayerPositionPacket)       \
+	X(PlayerOrientationPacket)    \
+	X(MapPacket)                  \
+	X(NestedPropertyUpdatePacket) \
+	X(VersionPacket)              \
+	X(CameraPacket)               \
+	X(PlayerEntityPacket)         \
+	X(UnknownPacket)              \
+	X(InvalidPacket)              \
+	X(CruiseStatePacket)          \
+	X(CameraFreeLookPacket)       \
+	X(CameraModePacket)
+
 typedef std::variant<
-	BasePlayerCreatePacket, CellPlayerCreatePacket, EntityControlPacket, EntityEnterPacket,
-	EntityLeavePacket, EntityCreatePacket, EntityMethodPacket, EntityPropertyPacket,
-	PlayerPositionPacket, PlayerOrientationPacket, MapPacket, NestedPropertyUpdatePacket,
-	VersionPacket, CameraPacket, PlayerEntityPacket, UnknownPacket, InvalidPacket,
-	CruiseStatePacket, CameraFreeLookPacket, CameraModePacket
+		PA_CHAIN_COMMA(PA_RP_PACKETS())
 > PacketType;
 
 }  // namespace PotatoAlert::ReplayParser

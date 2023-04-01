@@ -1,5 +1,7 @@
 option(PA_BUILD_STANDALONE_REPLAYPARSER OFF)
 
+include(packaging)
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_subdirectory(Analyzer)
@@ -10,8 +12,10 @@ target_sources(
     PRIVATE
 
     src/Analyzer.cpp
+    src/BitReader.cpp
     src/Entity.cpp
     src/GameFiles.cpp
+    src/NestedProperty.cpp
     src/PacketParser.cpp
     src/ReplayParser.cpp
     src/Types.cpp

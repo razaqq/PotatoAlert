@@ -3,29 +3,27 @@
 
 #include <Core/Result.hpp>
 
+#include "ReplayParser/Packets.hpp"
+#include "ReplayParser/Result.hpp"
 #include "ReplayParser/Types.hpp"
 
 #include <expected>
 #include <format>
+#include <string>
 
 
 namespace PotatoAlert::ReplayParser {
 
-using ReplayError = std::string;
 template<typename T>
-using ReplayResult = Core::Result<T, ReplayError>;
-#define PA_REPLAY_ERROR(...) (::std::unexpected(::PotatoAlert::ReplayParser::ReplayError(std::format(__VA_ARGS__))))
-
-template<typename T>
-inline constexpr void VariantGet(const ArgValue& value, auto&& then)
+inline constexpr ReplayResult<void> VariantGet(const ArgValue& value, auto&& then)
 {
-	if (const T* Name = std::get_if<T>(&value))
+	if (const T* v = std::get_if<T>(&value))
 	{
-		then(*Name);
+		return then(*v);
 	}
 	else
 	{
-		LOG_ERROR("Failed to get type '{}' from ArgValue", typeid(T).name());
+		return PA_REPLAY_ERROR("Failed to get type '{}' from ArgValue", typeid(T).name());
 	}
 }
 
@@ -47,9 +45,9 @@ static constexpr ReplayResult<void> VariantGet(const EntityMethodPacket& packet,
 				  packet.MethodName, index, packet.Values.size());
 	}
 
-	if (const T* Name = std::get_if<T>(&packet.Values[index]))
+	if (const T* v = std::get_if<T>(&packet.Values[index]))
 	{
-		return then(*Name);
+		return then(*v);
 	}
 	else
 	{

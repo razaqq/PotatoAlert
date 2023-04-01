@@ -4,8 +4,9 @@
 #include "Core/Json.hpp"
 
 #include "ReplayParser/Packets.hpp"
+#include "ReplayParser/PacketParser.hpp"
 #include "ReplayParser/ReplayMeta.hpp"
-#include "ReplayParser/Util.hpp"
+#include "ReplayParser/Result.hpp"
 
 #include <span>
 #include <string>
@@ -322,16 +323,23 @@ struct ReplaySummary
 class Replay
 {
 public:
-	std::string metaString;
-	ReplayMeta meta;
-	std::vector<PacketType> packets;
-	std::vector<EntitySpec> specs;
+	std::string MetaString;
+	ReplayMeta Meta;
+	std::vector<PacketType> Packets;
+	std::vector<EntitySpec> Specs;
 
 	static ReplayResult<Replay> FromFile(std::string_view fileName);
 	ReplayResult<void> ReadPackets(const std::vector<fs::path>& scriptsSearchPaths);
 	[[nodiscard]] ReplayResult<ReplaySummary> Analyze() const;
 
+	template<typename P>
+	void AddPacketCallback(std::function<void(const P&)> callback)
+	{
+		m_packetParser.Callbacks.Add(callback);
+	}
+
 private:
+	PacketParser m_packetParser;
 	std::span<Byte> m_data;
 	std::vector<Byte> m_rawData;
 };

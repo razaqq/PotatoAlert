@@ -2,7 +2,8 @@
 #pragma once
 
 #include "Core/String.hpp"
-#include "Types.hpp"
+
+#include "ReplayParser/Types.hpp"
 
 #include <filesystem>
 #include <string>
@@ -16,16 +17,28 @@ namespace PotatoAlert::ReplayParser {
 
 enum class Flag
 {
-	AllClients,
-	CellPublicAndOwn,
-	OwnClient,
-	BaseAndClient,
-	Base,
-	CellPrivate,
-	CellPublic,
-	OtherClients,
-	Unknown,
+	AllClients       = 1 << 0,
+	CellPublicAndOwn = 1 << 1,
+	OwnClient        = 1 << 2,
+	BaseAndClient    = 1 << 3,
+	Base             = 1 << 4,
+	CellPrivate      = 1 << 5,
+	CellPublic       = 1 << 6,
+	OtherClients     = 1 << 7,
+	Unknown          = 1 << 8,
 };
+
+inline constexpr Flag operator|(Flag a, Flag b)
+{
+	using UT = std::underlying_type_t<Flag>;
+	return static_cast<Flag>(static_cast<UT>(a) | static_cast<UT>(b));
+}
+
+inline constexpr bool operator&(Flag a, Flag b)
+{
+	using UT = std::underlying_type_t<Flag>;
+	return static_cast<UT>(a) & static_cast<UT>(b);
+}
 
 inline Flag ParseFlag(const std::string& str)
 {
@@ -49,40 +62,40 @@ inline Flag ParseFlag(const std::string& str)
 
 struct Property
 {
-	std::string name;
-	ArgType type;
-	Flag flag;
+	std::string Name;
+	ArgType Type;
+	Flag Flag;
 };
 
 struct Method
 {
-	std::string name;
-	size_t varLengthHeaderSize;
-	std::vector<ArgType> args = {};
+	std::string Name;
+	size_t VarLengthHeaderSize;
+	std::vector<ArgType> Args = {};
 
 	[[nodiscard]] size_t SortSize() const
 	{
 		size_t size = 0;
-		for (const auto& arg : this->args)
+		for (const auto& arg : Args)
 		{
 			size += TypeSize(arg);
 		}
 
 		if (size >= Infinity)
 		{
-			return Infinity + this->varLengthHeaderSize;
+			return Infinity + VarLengthHeaderSize;
 		}
-		return size + this->varLengthHeaderSize;
+		return size + VarLengthHeaderSize;
 	}
 };
 
 struct DefFile
 {
-	std::vector<Method> baseMethods = {};
-	std::vector<Method> cellMethods = {};
-	std::vector<Method> clientMethods = {};
-	std::vector<Property> properties = {};
-	std::vector<std::string> implements = {};
+	std::vector<Method> BaseMethods = {};
+	std::vector<Method> CellMethods = {};
+	std::vector<Method> ClientMethods = {};
+	std::vector<Property> Properties = {};
+	std::vector<std::string> Implements = {};
 };
 
 DefFile ParseDef(std::string_view file, const AliasType& aliases);

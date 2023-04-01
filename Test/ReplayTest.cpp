@@ -104,10 +104,15 @@ TEST_CASE( "ReplayGameFileTest" )
 
 	const std::vector<EntitySpec> spec = ParseScripts(Version(0, 10, 8, 0), { root });
 	REQUIRE(spec.size() == 13);
-	REQUIRE(spec[0].properties.size() == 17);
-	REQUIRE(spec[0].baseMethods.size() == 33);
-	REQUIRE(spec[0].cellMethods.size() == 56);
-	REQUIRE(spec[0].clientMethods.size() == 153);
-	REQUIRE(spec[0].internalProperties.size() == 16);
-	REQUIRE(spec[0].name == "Avatar");
+	REQUIRE(spec[0].Name == "Avatar");
+	REQUIRE(spec[0].ClientProperties.size() == 17);
+	REQUIRE(spec[0].BaseMethods.size() == 33);
+	REQUIRE(spec[0].CellMethods.size() == 56);
+	REQUIRE(spec[0].ClientMethods.size() == 153);
+	REQUIRE(spec[0].AllProperties.size() == 20);
+	REQUIRE(spec[0].ClientProperties.size() == 17);
+	REQUIRE(spec[0].ClientPropertiesInternal.size() == 16);
+	REQUIRE(spec[0].CellProperties.size() == 3);
+	REQUIRE(spec[0].BaseProperties.size() == 1);
+	REQUIRE(spec[0].Name == "Avatar");
 }

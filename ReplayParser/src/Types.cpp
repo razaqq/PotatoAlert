@@ -360,6 +360,8 @@ static ArgValue ParsePrimitive(PrimitiveType type, std::span<const Byte>& data)
 			break;
 		}
 	}
+
+	LOG_ERROR("Failed to parse ArgValue into PrimitiveType {}, only had {} bytes ({})", type.Type, data.size(), Core::FormatBytes(data));
 	return {};
 }
 
@@ -481,9 +483,68 @@ ArgValue rp::ParseValue(std::span<const Byte>& data, const ArgType& type)
 		else if constexpr (std::is_same_v<T, TupleType>)
 		{
 			// TODO: parse this
-			LOG_ERROR("TupleType encountered");
+			LOG_ERROR("TupleType encountered in ParseValue");
 			return {};
 		}
 		return {};
+	}, type);
+}
+
+ArgValue rp::GetDefaultValue(const ArgType& type)
+{
+	return std::visit([](auto&& t) -> ArgValue
+	{
+		using T = std::decay_t<decltype(t)>;
+		if constexpr (std::is_same_v<T, PrimitiveType>)
+		{
+			switch (t.Type)
+			{
+				case BasicType::Uint8:
+					return (uint8_t)0;
+				case BasicType::Uint16:
+					return (uint16_t)0;
+				case BasicType::Uint32:
+					return (uint32_t)0;
+				case BasicType::Uint64:
+					return (uint64_t)0;
+				case BasicType::Int8:
+					return (int8_t)0;
+				case BasicType::Int16:
+					return (int16_t)0;
+				case BasicType::Int32:
+					return (int32_t)0;
+				case BasicType::Int64:
+					return (int64_t)0;
+				case BasicType::Float32:
+					return (float)0.0f;
+				case BasicType::Float64:
+					return (double)0.0;
+				case BasicType::Vector2:
+					return Vec2{ 0, 0 };
+				case BasicType::Vector3:
+					return Vec3{ 0, 0, 0 };
+				case BasicType::String:
+					return std::string("");
+				case BasicType::UnicodeString:
+					return std::string("");
+				case BasicType::Blob:
+					return std::vector<Byte>{};
+			}
+		}
+		else if constexpr (std::is_same_v<T, ArrayType>)
+		{
+			return std::vector<ArgValue>{};
+		}
+		else if constexpr (std::is_same_v<T, FixedDictType>)
+		{
+			return std::unordered_map<std::string, ArgValue>{};
+		}
+		else if constexpr (std::is_same_v<T, TupleType>)
+		{
+			LOG_ERROR("TupleType encountered in GetDefault");
+			return {};
+		}
+
+		return ArgValue{};
 	}, type);
 }

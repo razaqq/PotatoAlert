@@ -105,27 +105,27 @@ DefFile rp::ParseDef(std::string_view file, const AliasType& aliases)
 
 	if (XMLElement* baseMethodElem = root->FirstChildElement("BaseMethods"))
 	{
-		defFile.baseMethods = ParseMethodList(baseMethodElem, aliases);
+		defFile.BaseMethods = ParseMethodList(baseMethodElem, aliases);
 	}
 
 	if (XMLElement* cellMethodsElem = root->FirstChildElement("CellMethods"))
 	{
-		defFile.cellMethods = ParseMethodList(cellMethodsElem, aliases);
+		defFile.CellMethods = ParseMethodList(cellMethodsElem, aliases);
 	}
 
 	if (XMLElement* clientMethodsElem = root->FirstChildElement("ClientMethods"))
 	{
-		defFile.clientMethods = ParseMethodList(clientMethodsElem, aliases);
+		defFile.ClientMethods = ParseMethodList(clientMethodsElem, aliases);
 	}
 
 	if (XMLElement* propertiesElem = root->FirstChildElement("Properties"))
 	{
-		defFile.properties = ParseProperties(propertiesElem, aliases);
+		defFile.Properties = ParseProperties(propertiesElem, aliases);
 	}
 
 	if (XMLElement* implementsElem = root->FirstChildElement("Implements"))
 	{
-		defFile.implements = ParseImplements(implementsElem);
+		defFile.Implements = ParseImplements(implementsElem);
 	}
 
 	return defFile;
@@ -137,15 +137,15 @@ DefFile rp::MergeDefs(const std::vector<DefFile>& defs)
 
 	for (const DefFile& def : defs)
 	{
-		defFile.baseMethods.insert(defFile.baseMethods.end(), def.baseMethods.begin(), def.baseMethods.end());
-		defFile.cellMethods.insert(defFile.cellMethods.end(), def.cellMethods.begin(), def.cellMethods.end());
-		defFile.clientMethods.insert(defFile.clientMethods.end(), def.clientMethods.begin(), def.clientMethods.end());
-		defFile.properties.insert(defFile.properties.end(), def.properties.begin(), def.properties.end());
+		defFile.BaseMethods.insert(defFile.BaseMethods.end(), def.BaseMethods.begin(), def.BaseMethods.end());
+		defFile.CellMethods.insert(defFile.CellMethods.end(), def.CellMethods.begin(), def.CellMethods.end());
+		defFile.ClientMethods.insert(defFile.ClientMethods.end(), def.ClientMethods.begin(), def.ClientMethods.end());
+		defFile.Properties.insert(defFile.Properties.end(), def.Properties.begin(), def.Properties.end());
 
 #ifndef NDEBUG
-		assert(defFile.implements.empty());
+		assert(defFile.Implements.empty());
 #else
-		if (!defFile.implements.empty())
+		if (!defFile.Implements.empty())
 		{
 			LOG_ERROR("DefFile implements is not empty");
 		}
@@ -157,7 +157,7 @@ DefFile rp::MergeDefs(const std::vector<DefFile>& defs)
 
 void rp::ParseInterfaces(const fs::path& root, const AliasType& aliases, const DefFile& def, std::vector<DefFile>& out)
 {
-	for (const std::string& imp : def.implements)
+	for (const std::string& imp : def.Implements)
 	{
 		out.emplace_back(ParseDef((root / std::format("{}.def", imp)).string(), aliases));
 		ParseInterfaces(root, aliases, out.back(), out);

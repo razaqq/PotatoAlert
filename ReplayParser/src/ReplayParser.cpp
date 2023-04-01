@@ -11,7 +11,7 @@
 #include "ReplayParser/PacketParser.hpp"
 #include "ReplayParser/Packets.hpp"
 #include "ReplayParser/ReplayParser.hpp"
-#include "ReplayParser/Util.hpp"
+#include "ReplayParser/Result.hpp"
 
 #include <optional>
 #include <ranges>
@@ -61,16 +61,16 @@ ReplayResult<Replay> Replay::FromFile(std::string_view fileName)
 	{
 		return PA_REPLAY_ERROR("Replay is missing meta info.");
 	}
-	replay.metaString.resize(metaSize);
-	std::memcpy(replay.metaString.data(), Take(replay.m_data, metaSize).data(), metaSize);
+	replay.MetaString.resize(metaSize);
+	std::memcpy(replay.MetaString.data(), Take(replay.m_data, metaSize).data(), metaSize);
 
 	json js;
 	sax_no_exception sax(js);
-	if (!json::sax_parse(replay.metaString, &sax))
+	if (!json::sax_parse(replay.MetaString, &sax))
 	{
 		return PA_REPLAY_ERROR("Failed to parse replay meta as JSON.");
 	}
-	replay.meta = js.get<ReplayMeta>();
+	replay.Meta = js.get<ReplayMeta>();
 
 	return replay;
 }
@@ -140,22 +140,22 @@ ReplayResult<void> Replay::ReadPackets(const std::vector<fs::path>& scriptsSearc
 	decrypted.clear();
 	decrypted.shrink_to_fit();
 
-	specs = ParseScripts(meta.ClientVersionFromExe, scriptsSearchPaths);
+	Specs = ParseScripts(Meta.ClientVersionFromExe, scriptsSearchPaths);
 
-	if (specs.empty())
+	if (Specs.empty())
 	{
 		return PA_REPLAY_ERROR("Empty entity specs");
 	}
 
-	PacketParser parser{ specs, {} };
+	m_packetParser.Specs = Specs;
 
 	std::span out{ decompressed };
 	do {
-		packets.emplace_back(ParsePacket(out, parser));
+		Packets.emplace_back(ParsePacket(out, m_packetParser));
 	} while (!out.empty());
 
 	// sort the packets by game time
-	std::ranges::sort(packets, [](const PacketType& a, const PacketType& b)
+	std::ranges::sort(Packets, [](const PacketType& a, const PacketType& b)
 	{
 		const Packet& aPacket = std::visit([](const auto& x) -> const Packet& { return x; }, a);
 		const Packet& bPacket = std::visit([](const auto& x) -> const Packet& { return x; }, b);

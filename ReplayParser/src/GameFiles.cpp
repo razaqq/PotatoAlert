@@ -10,6 +10,7 @@
 #include <tinyxml2.h>
 
 #include <format>
+#include <functional>
 #include <optional>
 #include <ranges>
 #include <string>
@@ -107,25 +108,38 @@ std::vector<EntitySpec> rp::ParseScripts(const Version& version, const std::vect
 
 			DefFile merged = MergeDefs(interfaces);
 
-			std::vector<Property> internalProperties;
-			std::vector<Property> properties;
-			for (const Property& prop : merged.properties)
+			// std::ranges::stable_sort(merged.Properties, [](const Property& a, const Property& b) -> bool { return TypeSize(a.Type) < TypeSize(b.Type); });
+			std::ranges::stable_sort(merged.ClientMethods, [](const Method& a, const Method& b) -> bool { return a.SortSize() < b.SortSize(); });
+
+			std::vector<std::reference_wrapper<const Property>> clientPropertiesInternal;
+			std::vector<std::reference_wrapper<const Property>> clientProperties;
+			std::vector<std::reference_wrapper<const Property>> cellProperties;
+			std::vector<std::reference_wrapper<const Property>> baseProperties;
+			for (const Property& prop : merged.Properties)
 			{
-				if (prop.flag == Flag::AllClients || prop.flag == Flag::OtherClients || prop.flag == Flag::OwnClient || prop.flag == Flag::CellPublicAndOwn)
+				if (prop.Flag & (Flag::AllClients | Flag::OtherClients | Flag::OwnClient | Flag::CellPublicAndOwn | Flag::BaseAndClient))
 				{
-					internalProperties.push_back(prop);
+					clientProperties.emplace_back(prop);
 				}
 
-				if (prop.flag == Flag::AllClients || prop.flag == Flag::OtherClients || prop.flag == Flag::OwnClient || prop.flag == Flag::CellPublicAndOwn || prop.flag == Flag::BaseAndClient)
+				if (prop.Flag & (Flag::AllClients | Flag::OtherClients | Flag::OwnClient | Flag::CellPublicAndOwn))
 				{
-					properties.push_back(prop);
+					clientPropertiesInternal.emplace_back(prop);
+				}
+
+				if (prop.Flag & (Flag::CellPublicAndOwn | Flag::CellPublic))
+				{
+					cellProperties.emplace_back(prop);
+				}
+
+				if (prop.Flag & Flag::BaseAndClient)
+				{
+					baseProperties.emplace_back(prop);
 				}
 			}
 
-			std::ranges::stable_sort(properties, [](const Property& a, const Property& b) -> bool { return TypeSize(a.type) < TypeSize(b.type); });
-			std::ranges::stable_sort(merged.clientMethods, [](const Method& a, const Method& b) -> bool { return a.SortSize() < b.SortSize(); });
-
-			specs.emplace_back(EntitySpec{ entityName, std::move(merged.baseMethods), std::move(merged.cellMethods), std::move(merged.clientMethods), properties, internalProperties });
+			std::ranges::stable_sort(clientProperties, [](const Property& a, const Property& b) -> bool { return TypeSize(a.Type) < TypeSize(b.Type); });
+			specs.emplace_back(EntitySpec{ entityName, std::move(merged.BaseMethods), std::move(merged.CellMethods), std::move(merged.ClientMethods), std::move(merged.Properties), clientProperties, clientPropertiesInternal, cellProperties, baseProperties });
 		}
 	}
 	else
