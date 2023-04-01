@@ -466,7 +466,7 @@ bool Updater::StartMain(std::string_view args)
 
 void Updater::WaitForOtherProcessExit()
 {
-	std::optional<DWORD> pid = FindProcessByName(L"PotatoUpdater.exe");
+	std::optional<DWORD> pid = FindProcessByName(TEXT("PotatoUpdater.exe"));
 
 	if (pid && GetCurrentProcessId() != pid.value())
 	{

@@ -25,6 +25,7 @@
 #pragma once
 
 #include <framelesshelpercore_global.h>
+#include <QtQml/qqml.h>
 #if __has_include(<QtQml/qqmlregistration.h>)
 #  include <QtQml/qqmlregistration.h>
 #endif
@@ -32,14 +33,14 @@
 #ifndef FRAMELESSHELPER_QUICK_API
 #  ifdef FRAMELESSHELPER_QUICK_STATIC
 #    define FRAMELESSHELPER_QUICK_API
-#  else
+#  else // FRAMELESSHELPER_QUICK_STATIC
 #    ifdef FRAMELESSHELPER_QUICK_LIBRARY
 #      define FRAMELESSHELPER_QUICK_API Q_DECL_EXPORT
-#    else
+#    else // FRAMELESSHELPER_QUICK_LIBRARY
 #      define FRAMELESSHELPER_QUICK_API Q_DECL_IMPORT
-#    endif
-#  endif
-#endif
+#    endif // FRAMELESSHELPER_QUICK_LIBRARY
+#  endif // FRAMELESSHELPER_QUICK_STATIC
+#endif // FRAMELESSHELPER_QUICK_API
 
 #ifndef FRAMELESSHELPER_QUICK_ENUM_VALUE
 #  define FRAMELESSHELPER_QUICK_ENUM_VALUE(Enum, Value) \
@@ -72,10 +73,25 @@
 
 FRAMELESSHELPER_BEGIN_NAMESPACE
 
-[[maybe_unused]] static constexpr const char FRAMELESSHELPER_QUICK_URI[] = "org.wangwenx190.FramelessHelper";
+Q_DECLARE_LOGGING_CATEGORY(lcQuickGlobal)
 
-struct FRAMELESSHELPER_QUICK_API QuickGlobal
+[[maybe_unused]] inline constexpr const char FRAMELESSHELPER_QUICK_URI[] = "org.wangwenx190.FramelessHelper";
+
+class FRAMELESSHELPER_QUICK_API QuickGlobal : public QObject
 {
+    Q_OBJECT
+    Q_DISABLE_COPY_MOVE(QuickGlobal)
+#ifdef QML_NAMED_ELEMENT
+    QML_NAMED_ELEMENT(FramelessHelperConstants)
+#endif
+#ifdef QML_UNCREATABLE
+    QML_UNCREATABLE("The FramelessHelperConstants namespace is not creatable, you can only use it to access it's enums.")
+#endif
+
+public:
+    explicit QuickGlobal(QObject *parent = nullptr);
+    ~QuickGlobal() override;
+
     enum class SystemTheme
     {
         FRAMELESSHELPER_QUICK_ENUM_VALUE(SystemTheme, Unknown)
@@ -97,34 +113,16 @@ struct FRAMELESSHELPER_QUICK_API QuickGlobal
     };
     Q_ENUM(SystemButtonType)
 
-    enum class ResourceType
-    {
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(ResourceType, Image)
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(ResourceType, Pixmap)
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(ResourceType, Icon)
-    };
-    Q_ENUM(ResourceType)
-
+#ifdef Q_OS_WINDOWS
     enum class DwmColorizationArea
     {
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(DwmColorizationArea, None_)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(DwmColorizationArea, None)
         FRAMELESSHELPER_QUICK_ENUM_VALUE(DwmColorizationArea, StartMenu_TaskBar_ActionCenter)
         FRAMELESSHELPER_QUICK_ENUM_VALUE(DwmColorizationArea, TitleBar_WindowBorder)
         FRAMELESSHELPER_QUICK_ENUM_VALUE(DwmColorizationArea, All)
     };
     Q_ENUM(DwmColorizationArea)
-
-    enum class Anchor
-    {
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(Anchor, Top)
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(Anchor, Bottom)
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(Anchor, Left)
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(Anchor, Right)
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(Anchor, HorizontalCenter)
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(Anchor, VerticalCenter)
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(Anchor, Center)
-    };
-    Q_ENUM(Anchor)
+#endif // Q_OS_WINDOWS
 
     enum class ButtonState
     {
@@ -135,11 +133,13 @@ struct FRAMELESSHELPER_QUICK_API QuickGlobal
     };
     Q_ENUM(ButtonState)
 
+#ifdef Q_OS_WINDOWS
     enum class WindowsVersion
     {
         FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _2000)
         FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _XP)
         FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _XP_64)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _WS_03)
         FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _Vista)
         FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _Vista_SP1)
         FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _Vista_SP2)
@@ -161,26 +161,54 @@ struct FRAMELESSHELPER_QUICK_API QuickGlobal
         FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _10_20H2)
         FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _10_21H1)
         FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _10_21H2)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _10_22H2)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _10)
         FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _11_21H2)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _11_22H2)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, _11)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowsVersion, Latest)
     };
     Q_ENUM(WindowsVersion)
+#endif // Q_OS_WINDOWS
 
-    enum class ApplicationType
+    enum class BlurMode
     {
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(ApplicationType, Widgets)
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(ApplicationType, Quick)
-        FRAMELESSHELPER_QUICK_ENUM_VALUE(ApplicationType, Hybrid)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(BlurMode, Disable)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(BlurMode, Default)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(BlurMode, Windows_Aero)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(BlurMode, Windows_Acrylic)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(BlurMode, Windows_Mica)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(BlurMode, Windows_MicaAlt)
     };
-    Q_ENUM(ApplicationType)
+    Q_ENUM(BlurMode)
 
-private:
-    Q_GADGET
-#ifdef QML_NAMED_ELEMENT
-    QML_NAMED_ELEMENT(FramelessHelper)
-#endif
-#ifdef QML_UNCREATABLE
-    QML_UNCREATABLE("The FramelessHelper namespace is not creatable, you can only use it to access it's enums.")
-#endif
+    enum class WindowEdge : quint32
+    {
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowEdge, Left)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowEdge, Top)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowEdge, Right)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowEdge, Bottom)
+    };
+    Q_ENUM(WindowEdge)
+    Q_DECLARE_FLAGS(WindowEdges, WindowEdge)
+    Q_FLAG(WindowEdges)
+
+    enum class WindowCornerStyle
+    {
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowCornerStyle, Default)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowCornerStyle, Square)
+        FRAMELESSHELPER_QUICK_ENUM_VALUE(WindowCornerStyle, Round)
+    };
+    Q_ENUM(WindowCornerStyle)
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QuickGlobal::WindowEdges)
+
+namespace FramelessHelper::Quick
+{
+FRAMELESSHELPER_QUICK_API void initialize();
+FRAMELESSHELPER_QUICK_API void uninitialize();
+} // namespace FramelessHelper::Quick
 
 FRAMELESSHELPER_END_NAMESPACE
+
+Q_DECLARE_METATYPE2(FRAMELESSHELPER_PREPEND_NAMESPACE(QuickGlobal))

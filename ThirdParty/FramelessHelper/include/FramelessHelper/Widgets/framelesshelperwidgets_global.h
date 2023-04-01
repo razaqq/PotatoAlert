@@ -37,3 +37,15 @@
 #    endif
 #  endif
 #endif
+
+FRAMELESSHELPER_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcWidgetsGlobal)
+
+namespace FramelessHelper::Widgets
+{
+FRAMELESSHELPER_WIDGETS_API void initialize();
+FRAMELESSHELPER_WIDGETS_API void uninitialize();
+} // namespace FramelessHelper::Widgets
+
+FRAMELESSHELPER_END_NAMESPACE

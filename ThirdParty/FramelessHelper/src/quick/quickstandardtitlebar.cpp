@@ -24,10 +24,12 @@
 
 #include "quickstandardtitlebar_p.h"
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+#include "quickimageitem.h"
+#include "framelessquickhelper.h"
 #include "quickstandardsystembutton_p.h"
 #include "framelessquickwindow_p.h"
-#include <framelessmanager.h>
-#include <utils.h>
+#include <QtCore/qtimer.h>
+#include <QtGui/qevent.h>
 #include <QtQuick/private/qquickitem_p.h>
 #include <QtQuick/private/qquickanchors_p.h>
 #include <QtQuick/private/qquickanchors_p_p.h>
@@ -35,6 +37,20 @@
 #include <QtQuickTemplates2/private/qquicktooltip_p.h>
 
 FRAMELESSHELPER_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQuickStandardTitleBar, "wangwenx190.framelesshelper.quick.quickstandardtitlebar")
+
+#ifdef FRAMELESSHELPER_QUICK_NO_DEBUG_OUTPUT
+#  define INFO QT_NO_QDEBUG_MACRO()
+#  define DEBUG QT_NO_QDEBUG_MACRO()
+#  define WARNING QT_NO_QDEBUG_MACRO()
+#  define CRITICAL QT_NO_QDEBUG_MACRO()
+#else
+#  define INFO qCInfo(lcQuickStandardTitleBar)
+#  define DEBUG qCDebug(lcQuickStandardTitleBar)
+#  define WARNING qCWarning(lcQuickStandardTitleBar)
+#  define CRITICAL qCCritical(lcQuickStandardTitleBar)
+#endif
 
 using namespace Global;
 
@@ -74,7 +90,11 @@ void QuickStandardTitleBar::setTitleLabelAlignment(const Qt::Alignment value)
         labelAnchors->setBottomMargin(kDefaultTitleBarContentsMargin);
     }
     if (m_labelAlignment & Qt::AlignLeft) {
-        labelAnchors->setLeft(titleBarPriv->left());
+        if (m_windowIcon->isVisible()) {
+            labelAnchors->setLeft(QQuickItemPrivate::get(m_windowIcon.data())->right());
+        } else {
+            labelAnchors->setLeft(titleBarPriv->left());
+        }
         labelAnchors->setLeftMargin(kDefaultTitleBarContentsMargin);
     }
     if (m_labelAlignment & Qt::AlignRight) {
@@ -129,20 +149,6 @@ void QuickStandardTitleBar::setExtended(const bool value)
     Q_EMIT extendedChanged();
 }
 
-bool QuickStandardTitleBar::isUsingAlternativeBackground() const
-{
-    return m_useAlternativeBackground;
-}
-
-void QuickStandardTitleBar::setUseAlternativeBackground(const bool value)
-{
-    if (m_useAlternativeBackground == value) {
-        return;
-    }
-    m_useAlternativeBackground = value;
-    Q_EMIT useAlternativeBackgroundChanged();
-}
-
 bool QuickStandardTitleBar::isHideWhenClose() const
 {
     return m_hideWhenClose;
@@ -155,6 +161,74 @@ void QuickStandardTitleBar::setHideWhenClose(const bool value)
     }
     m_hideWhenClose = value;
     Q_EMIT hideWhenCloseChanged();
+}
+
+QuickChromePalette *QuickStandardTitleBar::chromePalette() const
+{
+    return m_chromePalette.data();
+}
+
+QSizeF QuickStandardTitleBar::windowIconSize() const
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+    return m_windowIcon->size();
+#else
+    return {m_windowIcon->width(), m_windowIcon->height()};
+#endif
+}
+
+void QuickStandardTitleBar::setWindowIconSize(const QSizeF &value)
+{
+    Q_ASSERT(!value.isEmpty());
+    if (value.isEmpty()) {
+        return;
+    }
+    if (windowIconSize() == value) {
+        return;
+    }
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+    m_windowIcon->setSize(value);
+#else
+    m_windowIcon->setWidth(value.width());
+    m_windowIcon->setHeight(value.height());
+#endif
+}
+
+bool QuickStandardTitleBar::windowIconVisible() const
+{
+    return m_windowIcon->isVisible();
+}
+
+void QuickStandardTitleBar::setWindowIconVisible(const bool value)
+{
+    if (m_windowIcon->isVisible() == value) {
+        return;
+    }
+    m_windowIcon->setVisible(value);
+    QQuickAnchors *labelAnchors = QQuickItemPrivate::get(m_windowTitleLabel.data())->anchors();
+    if (value) {
+        labelAnchors->setLeft(QQuickItemPrivate::get(m_windowIcon.data())->right());
+    } else {
+        labelAnchors->setLeft(QQuickItemPrivate::get(this)->left());
+    }
+    FramelessQuickHelper::get(this)->setHitTestVisible_rect(windowIconRect(), windowIconVisible_real());
+}
+
+QVariant QuickStandardTitleBar::windowIcon() const
+{
+    return m_windowIcon->source();
+}
+
+void QuickStandardTitleBar::setWindowIcon(const QVariant &value)
+{
+    Q_ASSERT(value.isValid());
+    if (!value.isValid()) {
+        return;
+    }
+    if (m_windowIcon->source() == value) {
+        return;
+    }
+    m_windowIcon->setSource(value);
 }
 
 void QuickStandardTitleBar::updateMaximizeButton()
@@ -184,43 +258,45 @@ void QuickStandardTitleBar::updateTitleBarColor()
         return;
     }
     const bool active = w->isActive();
-    const bool dark = Utils::shouldAppsUseDarkMode();
-    const bool colorizedTitleBar = Utils::isTitleBarColorized();
-    QColor backgroundColor = {};
-    QColor foregroundColor = {};
-    if (active) {
-        if (colorizedTitleBar) {
-#ifdef Q_OS_WINDOWS
-            backgroundColor = Utils::getDwmColorizationColor();
-#endif
-#ifdef Q_OS_LINUX
-            backgroundColor = Utils::getWmThemeColor();
-#endif
-#ifdef Q_OS_MACOS
-            backgroundColor = Utils::getControlsAccentColor();
-#endif
-            foregroundColor = kDefaultWhiteColor;
-        } else {
-            if (dark) {
-                backgroundColor = kDefaultBlackColor;
-                foregroundColor = kDefaultWhiteColor;
-            } else {
-                backgroundColor = kDefaultWhiteColor;
-                foregroundColor = kDefaultBlackColor;
-            }
-        }
-    } else {
-        if (dark) {
-            backgroundColor = kDefaultSystemDarkColor;
-        } else {
-            backgroundColor = kDefaultWhiteColor;
-        }
-        foregroundColor = kDefaultDarkGrayColor;
-    }
-    if (!m_useAlternativeBackground) {
-        setColor(backgroundColor);
-    }
+    const QColor backgroundColor = (active ?
+        m_chromePalette->titleBarActiveBackgroundColor() :
+        m_chromePalette->titleBarInactiveBackgroundColor());
+    const QColor foregroundColor = (active ?
+        m_chromePalette->titleBarActiveForegroundColor() :
+        m_chromePalette->titleBarInactiveForegroundColor());
+    setColor(backgroundColor);
     m_windowTitleLabel->setColor(foregroundColor);
+}
+
+void QuickStandardTitleBar::updateChromeButtonColor()
+{
+    const QQuickWindow * const w = window();
+    if (!w) {
+        return;
+    }
+    const QColor activeForeground = m_chromePalette->titleBarActiveForegroundColor();
+    const QColor inactiveForeground = m_chromePalette->titleBarInactiveForegroundColor();
+    const QColor normal = m_chromePalette->chromeButtonNormalColor();
+    const QColor hover = m_chromePalette->chromeButtonHoverColor();
+    const QColor press = m_chromePalette->chromeButtonPressColor();
+    m_minimizeButton->setActiveForegroundColor(activeForeground);
+    m_minimizeButton->setInactiveForegroundColor(inactiveForeground);
+    m_minimizeButton->setNormalColor(normal);
+    m_minimizeButton->setHoverColor(hover);
+    m_minimizeButton->setPressColor(press);
+    m_minimizeButton->updateColor();
+    m_maximizeButton->setActiveForegroundColor(activeForeground);
+    m_maximizeButton->setInactiveForegroundColor(inactiveForeground);
+    m_maximizeButton->setNormalColor(normal);
+    m_maximizeButton->setHoverColor(hover);
+    m_maximizeButton->setPressColor(press);
+    m_maximizeButton->updateColor();
+    m_closeButton->setActiveForegroundColor(activeForeground);
+    m_closeButton->setInactiveForegroundColor(inactiveForeground);
+    m_closeButton->setNormalColor(m_chromePalette->closeButtonNormalColor());
+    m_closeButton->setHoverColor(m_chromePalette->closeButtonHoverColor());
+    m_closeButton->setPressColor(m_chromePalette->closeButtonPressColor());
+    m_closeButton->updateColor();
 }
 
 void QuickStandardTitleBar::clickMinimizeButton()
@@ -276,12 +352,140 @@ void QuickStandardTitleBar::retranslateUi()
     qobject_cast<QQuickToolTipAttached *>(qmlAttachedPropertiesObject<QQuickToolTip>(m_closeButton.data()))->setText(tr("Close"));
 }
 
+void QuickStandardTitleBar::updateWindowIcon()
+{
+    // The user has set an icon explicitly, don't override it.
+    if (m_windowIcon->source().isValid()) {
+        return;
+    }
+    const QIcon icon = (window() ? window()->icon() : QIcon());
+    if (icon.isNull()) {
+        return;
+    }
+    m_windowIcon->setSource(icon);
+}
+
+bool QuickStandardTitleBar::mouseEventHandler(QMouseEvent *event)
+{
+    Q_ASSERT(event);
+    if (!event) {
+        return false;
+    }
+    const Qt::MouseButton button = event->button();
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    const QPoint scenePos = event->scenePosition().toPoint();
+#else
+    const QPoint scenePos = event->windowPos().toPoint();
+#endif
+    const bool interestArea = isInTitleBarIconArea(scenePos);
+    switch (event->type()) {
+    case QEvent::MouseButtonRelease:
+        if (interestArea) {
+            // Sadly the mouse release events are always triggered before the
+            // mouse double click events, and if we intercept the mouse release
+            // events here, we'll never get the double click events afterwards,
+            // so we have to wait for a little bit to make sure the double
+            // click events are handled first, before we actually handle the
+            // mouse release events here.
+            // We need to wait long enough because the time interval between these
+            // events is really really short, if the delay time is not long enough,
+            // we still can't trigger the double click event due to we have handled
+            // the mouse release events here already. But we also can't wait too
+            // long, otherwise the system menu will show up too late, which is not
+            // a good user experience. In my experiments, I found that 150ms is
+            // the minimum value we can use here.
+            // We need a copy of the "scenePos" variable here, otherwise it will
+            // soon fall out of scope when the lambda function actually runs.
+            QTimer::singleShot(150, this, [this, button, scenePos](){
+                // The close event is already triggered, don't try to show the
+                // system menu anymore, otherwise it will prevent our window
+                // from closing.
+                if (m_closeTriggered) {
+                    return;
+                }
+                FramelessQuickHelper::get(this)->showSystemMenu([this, button, &scenePos]() -> QPoint {
+                    if (button == Qt::LeftButton) {
+                        return {0, qRound(height())};
+                    }
+                    return scenePos;
+                }());
+            });
+            // Don't eat this event, we have not handled it yet.
+        }
+        break;
+    case QEvent::MouseButtonDblClick:
+        if (QQuickWindow * const w = window()) {
+            if ((button == Qt::LeftButton) && interestArea) {
+                m_closeTriggered = true;
+                w->close();
+                // Eat this event, we have handled it here.
+                event->accept();
+                return true;
+            }
+        }
+        break;
+    default:
+        break;
+    }
+    return false;
+}
+
+QRect QuickStandardTitleBar::windowIconRect() const
+{
+#if 0
+    const QSizeF size = windowIconSize();
+    const qreal y = ((height() - size.height()) / qreal(2));
+    return QRectF(QPointF(kDefaultTitleBarContentsMargin, y), size).toRect();
+#else
+    return QRectF(QPointF(m_windowIcon->x(), m_windowIcon->y()), windowIconSize()).toRect();
+#endif
+}
+
+bool QuickStandardTitleBar::windowIconVisible_real() const
+{
+    if (m_windowIcon.isNull() || !m_windowIcon->isVisible() || !m_windowIcon->source().isValid()) {
+        return false;
+    }
+    return true;
+}
+
+bool QuickStandardTitleBar::isInTitleBarIconArea(const QPoint &pos) const
+{
+    if (!windowIconVisible_real()) {
+        return false;
+    }
+    return windowIconRect().contains(pos);
+}
+
 void QuickStandardTitleBar::initialize()
 {
+    setSmooth(true);
+    setClip(true);
+    setAntialiasing(true);
+
+    m_chromePalette.reset(new QuickChromePalette(this));
+    connect(m_chromePalette.data(), &ChromePalette::titleBarColorChanged,
+        this, &QuickStandardTitleBar::updateTitleBarColor);
+    connect(m_chromePalette.data(), &ChromePalette::chromeButtonColorChanged,
+        this, &QuickStandardTitleBar::updateChromeButtonColor);
+
     QQuickPen * const b = border();
     b->setWidth(0.0);
     b->setColor(kDefaultTransparentColor);
     setHeight(kDefaultTitleBarHeight);
+
+    const QQuickItemPrivate * const thisPriv = QQuickItemPrivate::get(this);
+
+    m_windowIcon.reset(new QuickImageItem(this));
+    QQuickAnchors * const iconAnchors = QQuickItemPrivate::get(m_windowIcon.data())->anchors();
+    iconAnchors->setLeft(thisPriv->left());
+    iconAnchors->setLeftMargin(kDefaultTitleBarContentsMargin);
+    iconAnchors->setVerticalCenter(thisPriv->verticalCenter());
+    connect(m_windowIcon.data(), &QuickImageItem::visibleChanged, this, &QuickStandardTitleBar::windowIconVisibleChanged);
+    connect(m_windowIcon.data(), &QuickImageItem::sourceChanged, this, &QuickStandardTitleBar::windowIconChanged);
+    // ### TODO: QuickImageItem::sizeChanged()
+    connect(m_windowIcon.data(), &QuickImageItem::widthChanged, this, &QuickStandardTitleBar::windowIconSizeChanged);
+    connect(m_windowIcon.data(), &QuickImageItem::heightChanged, this, &QuickStandardTitleBar::windowIconSizeChanged);
 
     m_windowTitleLabel.reset(new QQuickLabel(this));
     QFont f = m_windowTitleLabel->font();
@@ -290,7 +494,6 @@ void QuickStandardTitleBar::initialize()
 
     m_systemButtonsRow.reset(new QQuickRow(this));
     QQuickAnchors * const rowAnchors = QQuickItemPrivate::get(m_systemButtonsRow.data())->anchors();
-    const QQuickItemPrivate * const thisPriv = QQuickItemPrivate::get(this);
     rowAnchors->setTop(thisPriv->top());
     rowAnchors->setRight(thisPriv->right());
     m_minimizeButton.reset(new QuickStandardSystemButton(QuickGlobal::SystemButtonType::Minimize, m_systemButtonsRow.data()));
@@ -300,8 +503,8 @@ void QuickStandardTitleBar::initialize()
     m_closeButton.reset(new QuickStandardSystemButton(QuickGlobal::SystemButtonType::Close, m_systemButtonsRow.data()));
     connect(m_closeButton.data(), &QuickStandardSystemButton::clicked, this, &QuickStandardTitleBar::clickCloseButton);
 
-    connect(FramelessManager::instance(), &FramelessManager::systemThemeChanged, this, &QuickStandardTitleBar::updateTitleBarColor);
-
+    setWindowIconSize(kDefaultWindowIconSize);
+    setWindowIconVisible(false);
     setTitleLabelAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     retranslateUi();
     updateAll();
@@ -324,26 +527,65 @@ void QuickStandardTitleBar::itemChange(const ItemChange change, const ItemChange
             m_windowTitleChangeConnection = {};
         }
         m_windowStateChangeConnection = connect(value.window, &QQuickWindow::visibilityChanged, this, &QuickStandardTitleBar::updateMaximizeButton);
-        m_windowActiveChangeConnection = connect(value.window, &QQuickWindow::activeChanged, this, &QuickStandardTitleBar::updateTitleBarColor);
+        m_windowActiveChangeConnection = connect(value.window, &QQuickWindow::activeChanged, this, [this](){
+            updateTitleBarColor();
+            updateChromeButtonColor();
+        });
         m_windowTitleChangeConnection = connect(value.window, &QQuickWindow::windowTitleChanged, this, &QuickStandardTitleBar::updateTitleLabelText);
         updateAll();
         value.window->installEventFilter(this);
+        // The window has changed, we need to re-add or re-remove the window icon rect to
+        // the hit test visible whitelist. This is different with Qt Widgets.
+        FramelessQuickHelper::get(this)->setHitTestVisible_rect(windowIconRect(), windowIconVisible_real());
     }
 }
 
 bool QuickStandardTitleBar::eventFilter(QObject *object, QEvent *event)
 {
-    if (event && (event->type() == QEvent::LanguageChange)) {
+    Q_ASSERT(object);
+    Q_ASSERT(event);
+    if (!object || !event) {
+        return false;
+    }
+    if (!object->isWindowType()) {
+        return QQuickRectangle::eventFilter(object, event);
+    }
+    const auto w = qobject_cast<QQuickWindow *>(object);
+    if (w != window()) {
+        return QQuickRectangle::eventFilter(object, event);
+    }
+    const QEvent::Type type = event->type();
+    if (type == QEvent::LanguageChange) {
         retranslateUi();
+        // Don't eat the event here, we need it to keep dispatching to other
+        // objects that may be interested in this event.
+    } else if ((type >= QEvent::MouseButtonPress) && (type <= QEvent::MouseMove)) {
+        const auto mouseEvent = static_cast<QMouseEvent *>(event);
+        if (mouseEventHandler(mouseEvent)) {
+            // We have handled the event already, stop dispatching.
+            return true;
+        }
     }
     return QQuickRectangle::eventFilter(object, event);
 }
 
 void QuickStandardTitleBar::updateAll()
 {
+    updateWindowIcon();
     updateMaximizeButton();
     updateTitleLabelText();
     updateTitleBarColor();
+    updateChromeButtonColor();
+}
+
+void QuickStandardTitleBar::classBegin()
+{
+    QQuickRectangle::classBegin();
+}
+
+void QuickStandardTitleBar::componentComplete()
+{
+    QQuickRectangle::componentComplete();
 }
 
 FRAMELESSHELPER_END_NAMESPACE

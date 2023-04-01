@@ -20,7 +20,7 @@ void c::ExitCurrentProcess(uint32_t code)
 
 void PotatoAlert::Core::ExitCurrentProcessWithError(uint32_t code)
 {
-	MessageBox(
+	MessageBoxW(
 		nullptr,
 		L"A critical error has occurred, please view the logs and report the error to the developer.",
 		L"Critical Error",

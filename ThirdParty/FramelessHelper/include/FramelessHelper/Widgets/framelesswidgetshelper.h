@@ -25,11 +25,15 @@
 #pragma once
 
 #include "framelesshelperwidgets_global.h"
-#include <QtCore/qobject.h>
+#include <QtWidgets/qwidget.h>
 
 FRAMELESSHELPER_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(lcFramelessWidgetsHelper)
+
 class FramelessWidgetsHelperPrivate;
+class MicaMaterial;
+class WindowBorderPainter;
 
 class FRAMELESSHELPER_WIDGETS_API FramelessWidgetsHelper : public QObject
 {
@@ -38,6 +42,9 @@ class FRAMELESSHELPER_WIDGETS_API FramelessWidgetsHelper : public QObject
     Q_DISABLE_COPY_MOVE(FramelessWidgetsHelper)
     Q_PROPERTY(QWidget* titleBarWidget READ titleBarWidget WRITE setTitleBarWidget NOTIFY titleBarWidgetChanged FINAL)
     Q_PROPERTY(bool windowFixedSize READ isWindowFixedSize WRITE setWindowFixedSize NOTIFY windowFixedSizeChanged FINAL)
+    Q_PROPERTY(bool blurBehindWindowEnabled READ isBlurBehindWindowEnabled WRITE setBlurBehindWindowEnabled NOTIFY blurBehindWindowEnabledChanged FINAL)
+    Q_PROPERTY(QWidget* window READ window NOTIFY windowChanged FINAL)
+    Q_PROPERTY(bool extendsContentIntoTitleBar READ isContentExtendedIntoTitleBar WRITE extendsContentIntoTitleBar NOTIFY extendsContentIntoTitleBarChanged FINAL)
 
 public:
     explicit FramelessWidgetsHelper(QObject *parent = nullptr);
@@ -47,13 +54,21 @@ public:
 
     Q_NODISCARD QWidget *titleBarWidget() const;
     Q_NODISCARD bool isWindowFixedSize() const;
+    Q_NODISCARD bool isBlurBehindWindowEnabled() const;
+    Q_NODISCARD QWidget *window() const;
+    Q_NODISCARD bool isContentExtendedIntoTitleBar() const;
+
+    Q_NODISCARD MicaMaterial *micaMaterial() const;
+    Q_NODISCARD WindowBorderPainter *windowBorder() const;
 
 public Q_SLOTS:
-    void extendsContentIntoTitleBar();
+    void extendsContentIntoTitleBar(const bool value = true);
 
     void setTitleBarWidget(QWidget *widget);
     void setSystemButton(QWidget *widget, const Global::SystemButtonType buttonType);
     void setHitTestVisible(QWidget *widget, const bool visible = true);
+    void setHitTestVisible(const QRect &rect, const bool visible = true);
+    void setHitTestVisible(QObject *object, const bool visible = true);
 
     void showSystemMenu(const QPoint &pos);
     void windowStartSystemMove2(const QPoint &pos);
@@ -62,10 +77,14 @@ public Q_SLOTS:
     void moveWindowToDesktopCenter();
     void bringWindowToFront();
     void setWindowFixedSize(const bool value);
+    void setBlurBehindWindowEnabled(const bool value);
 
 Q_SIGNALS:
+    void extendsContentIntoTitleBarChanged();
     void titleBarWidgetChanged();
     void windowFixedSizeChanged();
+    void blurBehindWindowEnabledChanged();
+    void windowChanged();
     void ready();
 
 private:
@@ -73,3 +92,5 @@ private:
 };
 
 FRAMELESSHELPER_END_NAMESPACE
+
+Q_DECLARE_METATYPE2(FRAMELESSHELPER_PREPEND_NAMESPACE(FramelessWidgetsHelper))

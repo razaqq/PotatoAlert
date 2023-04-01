@@ -45,11 +45,14 @@ target_sources(
     include/Client/ReplayAnalyzer.hpp
 )
 
-find_package(Qt6 COMPONENTS Core Network Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Core Network Widgets QUIET)
+if (NOT Qt6_FOUND)
+    find_package(Qt5 COMPONENTS Core Network Widgets REQUIRED)
+endif()
 
 set_target_properties(Client PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 target_link_libraries(Client PRIVATE tinyxml2 Win32)
-target_link_libraries(Client PUBLIC Core GameFileUnpack ReplayParser Qt6::Core Qt6::Network Qt6::Widgets)
+target_link_libraries(Client PUBLIC Core GameFileUnpack ReplayParser Qt::Core Qt::Network Qt::Widgets)
 target_include_directories(Client PUBLIC ${PROJECT_SOURCE_DIR}/Resources include)
 
 if(WIN32)

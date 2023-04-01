@@ -20,7 +20,11 @@ void NativeWindow::RequestFocus()
 	socket.connectToServer(QString(g_sockPath.data()), QLocalSocket::WriteOnly);
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool NativeWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr* result)
+#else
+bool NativeWindow::nativeEvent(const QByteArray& eventType, void* message, long* result)
+#endif
 {
 	if (!g_server.isListening())
 	{
