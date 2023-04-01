@@ -65,20 +65,20 @@ jobs:
 
     - name: Create Release Archive
       run: |
-        7z a -mx9 -r {{ matrix.zipfile }} .\build\bin\*
+        7z a -mx9 -r ${{ matrix.zipfile }} .\build\bin\*
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
         name: PotatoAlert
-        path: {{ matrix.zipfile }}
+        path: ${{ matrix.zipfile }}
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
         draft: true
-        files: {{ matrix.zipfile }}
+        files: ${{ matrix.zipfile }}
 
   build-linux:
     if: ${{ false }}  # disable for now
