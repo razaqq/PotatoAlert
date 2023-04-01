@@ -35,11 +35,11 @@ TEST_CASE( "ReplayTest" )
 
 	ReplayResult<Replay> res = Replay::FromFile(GetReplay("20201107_155356_PISC110-Venezia_19_OC_prey.wowsreplay"));
 	REQUIRE(res);
-	REQUIRE(res->meta.Name == "12x12");
-	REQUIRE(res->meta.DateTime == "07.11.2020 15:53:56");
-	REQUIRE(res->packets.empty());
+	REQUIRE(res->Meta.Name == "12x12");
+	REQUIRE(res->Meta.DateTime == "07.11.2020 15:53:56");
+	REQUIRE(res->Packets.empty());
 	REQUIRE(res->ReadPackets({ root }));
-	REQUIRE(res->packets.size() == 153376);
+	REQUIRE(res->Packets.size() == 153376);
 	ReplayResult<ReplaySummary> result = res->Analyze();
 	REQUIRE(result);
 	REQUIRE(result->Outcome == MatchOutcome::Win);
