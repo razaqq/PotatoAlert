@@ -16,7 +16,15 @@ using PotatoAlert::Core::Version;
 
 namespace PotatoAlert::ReplayParser {
 
-struct VehicleInfoMeta
+enum class Relation : uint32_t
+{
+	Self,
+	Ally,
+	Enemy,
+	Neutral,
+};
+
+struct ArenaInfoVehicle
 {
 	uint64_t ShipId;
 	uint32_t Relation;
@@ -24,7 +32,7 @@ struct VehicleInfoMeta
 	std::string Name;
 };
 
-[[maybe_unused]] static void from_json(const json& j, VehicleInfoMeta& m)
+[[maybe_unused]] static void from_json(const json& j, ArenaInfoVehicle& m)
 {
 	j.at("shipId").get_to(m.ShipId);
 	j.at("relation").get_to(m.Relation);
@@ -37,26 +45,25 @@ struct ReplayMeta
 	std::string MatchGroup;
 	uint32_t GameMode;
 	Version ClientVersionFromExe;
-	uint32_t ScenarioUiCategoryId;
-	std::string MapDisplayName;
-	uint32_t MapId;
 	Version ClientVersionFromXml;
 	std::unordered_map<std::string, std::vector<std::string>> WeatherParams;
-	//mapBorder null;
 	uint32_t Duration;
-	std::string GameLogic;
 	std::string Name;
-	std::string Scenario;
-	uint32_t PlayerId;
-	std::vector<VehicleInfoMeta> Vehicles;
+	std::vector<ArenaInfoVehicle> Vehicles;
 	uint32_t PlayersPerTeam;
 	std::string DateTime;
+	uint32_t MapId;
 	std::string MapName;
+	std::string MapDisplayName;
+	uint32_t PlayerId;
 	std::string PlayerName;
-	uint32_t ScenarioConfigId;
-	uint32_t TeamsCount;
-	std::string Logic;
 	std::string PlayerVehicle;
+	std::string Scenario;
+	uint32_t ScenarioConfigId;
+	uint32_t ScenarioUiCategoryId;
+	uint32_t TeamsCount;
+	std::string EventType;
+	std::string GameType;
 	uint32_t BattleDuration;
 };
 
@@ -77,7 +84,6 @@ static Version ParseClientVersion(std::string_view str)
 	m.ClientVersionFromXml = ParseClientVersion(j.at("clientVersionFromXml").get<std::string>());
 	j.at("weatherParams").get_to(m.WeatherParams);
 	j.at("duration").get_to(m.Duration);
-	j.at("gameLogic").get_to(m.GameLogic);
 	j.at("name").get_to(m.Name);
 	j.at("scenario").get_to(m.Scenario);
 	j.at("playerID").get_to(m.PlayerId);
@@ -88,7 +94,8 @@ static Version ParseClientVersion(std::string_view str)
 	j.at("playerName").get_to(m.PlayerName);
 	j.at("scenarioConfigId").get_to(m.ScenarioConfigId);
 	j.at("teamsCount").get_to(m.TeamsCount);
-	j.at("logic").get_to(m.Logic);
+	j.at("gameType").get_to(m.GameType);
+	j.at("eventType").get_to(m.EventType);
 	j.at("playerVehicle").get_to(m.PlayerVehicle);
 	j.at("battleDuration").get_to(m.BattleDuration);
 }
