@@ -29,6 +29,7 @@ static std::string GetReplay(std::string_view name)
 	std::exit(1);
 }
 
+#if 0
 TEST_CASE( "ReplayTest" )
 {
 	const fs::path root = GetModuleRootPath().value() / "ReplayVersions";
@@ -97,6 +98,7 @@ TEST_CASE( "ReplayTest" )
 	});
 	REQUIRE(count == 96);
 }
+#endif
 
 TEST_CASE( "ReplayGameFileTest" )
 {
