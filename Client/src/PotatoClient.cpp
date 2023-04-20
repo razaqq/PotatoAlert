@@ -541,7 +541,7 @@ DirectoryStatus PotatoClient::CheckPath()
 		m_dirStatus = dirStatus;
 
 		// start watching all replays paths
-		for (const std::string& folder : dirStatus.replaysPath)
+		for (std::string_view folder : dirStatus.replaysPath)
 		{
 			if (!folder.empty())
 			{
