@@ -1,14 +1,17 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/Directory.hpp"
+#include "Core/Process.hpp"
 #include "Core/Result.hpp"
 #include "Core/Version.hpp"
+
 #include "ReplayParser/GameFiles.hpp"
 #include "ReplayParser/ReplayParser.hpp"
 
 #include "catch.hpp"
 
 #include <filesystem>
+#include <numeric>
 #include <optional>
 #include <string>
 #include <vector>
@@ -28,10 +31,9 @@ static std::string GetReplay(std::string_view name)
 		return (fs::path(rootPath.value()).remove_filename() / "replays" / name).string();
 	}
 
-	std::exit(1);
+	PotatoAlert::Core::ExitCurrentProcess(1);
 }
 
-#if 0
 TEST_CASE( "ReplayTest" )
 {
 	const fs::path root = GetModuleRootPath().value() / "ReplayVersions";
@@ -100,7 +102,6 @@ TEST_CASE( "ReplayTest" )
 	});
 	REQUIRE(count == 96);
 }
-#endif
 
 TEST_CASE( "ReplayGameFileTest" )
 {
