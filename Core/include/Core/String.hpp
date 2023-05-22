@@ -7,7 +7,12 @@
 #include <vector>
 
 
-namespace PotatoAlert::Core::String {
+namespace PotatoAlert::Core {
+
+template<typename T>
+concept is_string = std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring>;
+
+namespace String {
 
 std::string Trim(std::string_view str);
 std::string ToUpper(std::string_view str);
@@ -30,5 +35,7 @@ bool ParseNumber(std::string_view str, T& value) requires std::is_integral_v<T> 
 }
 
 bool ParseBool(std::string_view str, bool& value);
+
+}  // namespace String
 
 }  // namespace PotatoAlert::Core::String

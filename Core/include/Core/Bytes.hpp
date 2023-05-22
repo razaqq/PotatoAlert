@@ -1,6 +1,8 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include <Core/String.hpp>
+
 #include <cassert>
 #include <cstring>
 #include <iomanip>
@@ -35,7 +37,7 @@ constexpr std::span<T> Take(std::span<T>& data, size_t n)
 }
 
 template<is_byte TIn, typename TVal>
-static bool TakeInto(std::span<TIn>& data, TVal&& dst)  // requires std::is_fundamental_v<std::decay_t<T>> || std::is_fundamental_v<std::decay_t<std::underlying_type<T>>>
+static bool TakeInto(std::span<TIn>& data, TVal&& dst)  // NOLINT(clang-diagnostic-unused-template)
 {
 	if (data.size() >= sizeof(dst))
 	{
@@ -90,9 +92,6 @@ std::string FormatBytes(const T& data)
 
 	return result.str();
 }
-
-template<typename T>
-concept is_string = std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring>;
 
 template<is_byte TIn, is_string TStr>
 static bool TakeString(std::span<TIn>& data, TStr& str, size_t size)
