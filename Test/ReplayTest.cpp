@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/Directory.hpp"
+#include "Core/Result.hpp"
 #include "Core/Version.hpp"
 #include "ReplayParser/GameFiles.hpp"
 #include "ReplayParser/ReplayParser.hpp"
@@ -14,6 +15,7 @@
 
 
 using PotatoAlert::Core::GetModuleRootPath;
+using PotatoAlert::Core::Result;
 using PotatoAlert::Core::Version;
 using namespace PotatoAlert::ReplayParser;
 namespace fs = std::filesystem;
@@ -21,7 +23,7 @@ namespace fs = std::filesystem;
 
 static std::string GetReplay(std::string_view name)
 {
-	if (std::optional<fs::path> rootPath = GetModuleRootPath())
+	if (Result<fs::path> rootPath = GetModuleRootPath())
 	{
 		return (fs::path(rootPath.value()).remove_filename() / "replays" / name).string();
 	}
