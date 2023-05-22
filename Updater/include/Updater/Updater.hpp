@@ -38,6 +38,8 @@ static constexpr std::string_view UpdateArchiveFile(Edition edition)
 			return "PotatoAlert_win7.zip";
 		case Edition::Linux:
 			return "PotatoAlert_linux.zip";
+		default:
+			return "";
 	}
 }
 
