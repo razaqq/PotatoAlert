@@ -12,6 +12,7 @@
 #include <type_traits>
 #include <span>
 
+
 namespace rp = PotatoAlert::ReplayParser;
 using PotatoAlert::ReplayParser::ArrayType;
 using PotatoAlert::ReplayParser::ArgType;

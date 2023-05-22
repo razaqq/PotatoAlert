@@ -60,12 +60,6 @@ struct UnknownPacket : Packet
 {
 };
 
-struct InvalidPacket : Packet
-{
-	std::string Message;
-	std::vector<Byte> Raw;
-};
-
 /**
  *	This function is called when we get a new player entity.
  *	The data on the stream contains only properties provided by the base.
@@ -305,13 +299,12 @@ struct CameraModePacket : Packet
 	X(CameraPacket)               \
 	X(PlayerEntityPacket)         \
 	X(UnknownPacket)              \
-	X(InvalidPacket)              \
 	X(CruiseStatePacket)          \
 	X(CameraFreeLookPacket)       \
 	X(CameraModePacket)
 
 typedef std::variant<
-		PA_CHAIN_COMMA(PA_RP_PACKETS())
+		PA_CHAIN_COMMA(PA_RP_PACKETS(PA_NOARG))
 > PacketType;
 
 }  // namespace PotatoAlert::ReplayParser

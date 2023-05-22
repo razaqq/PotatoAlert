@@ -5,6 +5,7 @@
 
 #include "ReplayParser/BitReader.hpp"
 #include "ReplayParser/PacketParser.hpp"
+#include "ReplayParser/Result.hpp"
 
 #include <optional>
 #include <span>
@@ -33,17 +34,17 @@ static R VariantCast(T&& t)
 
 }  // namespace
 
-PacketType rp::ParsePacket(std::span<const Byte>& data, PacketParser& parser)
+ReplayResult<PacketType> rp::ParsePacket(std::span<const Byte>& data, PacketParser& parser)
 {
 	uint32_t size;
 	if (!TakeInto(data, size))
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Packet had invalid size {}", data.size());
 	uint32_t type;
 	if (!TakeInto(data, type))
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Packet had invalid size {}", data.size());
 	float clock;
 	if (!TakeInto(data, clock))
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Packet had invalid size {}", data.size());
 
 	auto raw = Take(data, size);
 
@@ -51,46 +52,46 @@ PacketType rp::ParsePacket(std::span<const Byte>& data, PacketParser& parser)
 	size_t rawSize = raw.size();
 #endif
 
-	switch (type)
+	switch (static_cast<PacketBaseType>(type))
 	{
-		case static_cast<uint32_t>(PacketBaseType::EntityCreate):
-			return VariantCast<PacketType>(ParseEntityCreatePacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::BasePlayerCreate):
-			return VariantCast<PacketType>(ParseBasePlayerCreatePacket(raw, parser, clock)); 
-		case static_cast<uint32_t>(PacketBaseType::CellPlayerCreate):
-			return VariantCast<PacketType>(ParseCellPlayerCreatePacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::EntityMethod):
-			return VariantCast<PacketType>(ParseEntityMethodPacket(raw, parser, clock)); 
-		case static_cast<uint32_t>(PacketBaseType::EntityProperty):
-			return VariantCast<PacketType>(ParseEntityPropertyPacket(raw, parser, clock)); 
-		case static_cast<uint32_t>(PacketBaseType::NestedPropertyUpdate):
-			return VariantCast<PacketType>(ParseNestedPropertyUpdatePacket(raw, parser, clock));
+		case PacketBaseType::EntityCreate:
+			return ParseEntityCreatePacket(raw, parser, clock);
+		case PacketBaseType::BasePlayerCreate:
+			return ParseBasePlayerCreatePacket(raw, parser, clock);
+		case PacketBaseType::CellPlayerCreate:
+			return ParseCellPlayerCreatePacket(raw, parser, clock);
+		case PacketBaseType::EntityMethod:
+			return ParseEntityMethodPacket(raw, parser, clock);
+		case PacketBaseType::EntityProperty:
+			return ParseEntityPropertyPacket(raw, parser, clock);
+		case PacketBaseType::NestedPropertyUpdate:
+			return ParseNestedPropertyUpdatePacket(raw, parser, clock);
+		case PacketBaseType::PlayerPosition:
+			return ParsePlayerPositionPacketPacket(raw, parser, clock);
+		case PacketBaseType::PlayerOrientation:
+			return ParsePlayerOrientationPacket(raw, parser, clock);
 
 #ifndef NDEBUG
-		case static_cast<uint32_t>(PacketBaseType::Version):
-			return VariantCast<PacketType>(ParseVersionPacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::EntityControl):
-			return VariantCast<PacketType>(ParseEntityControlPacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::EntityEnter):
-			return VariantCast<PacketType>(ParseEntityEnterPacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::EntityLeave):
-			return VariantCast<PacketType>(ParseEntityLeavePacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::PlayerPosition):
-			return VariantCast<PacketType>(ParsePlayerPositionPacketPacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::PlayerEntity):
-			return VariantCast<PacketType>(ParsePlayerEntityPacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::PlayerOrientation):
-			return VariantCast<PacketType>(ParsePlayerOrientationPacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::Camera):
-			return VariantCast<PacketType>(ParseCameraPacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::Map):
-			return VariantCast<PacketType>(ParseMapPacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::CameraFreeLook):
-			return VariantCast<PacketType>(ParseCameraFreeLookPacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::CameraMode):
-			return VariantCast<PacketType>(ParseCameraModePacket(raw, parser, clock));
-		case static_cast<uint32_t>(PacketBaseType::CruiseState):
-			return VariantCast<PacketType>(ParseCruiseStatePacket(raw, parser, clock));
+		case PacketBaseType::Version:
+			return ParseVersionPacket(raw, parser, clock);
+		case PacketBaseType::EntityControl:
+			return ParseEntityControlPacket(raw, parser, clock);
+		case PacketBaseType::EntityEnter:
+			return ParseEntityEnterPacket(raw, parser, clock);
+		case PacketBaseType::EntityLeave:
+			return ParseEntityLeavePacket(raw, parser, clock);
+		case PacketBaseType::PlayerEntity:
+			return ParsePlayerEntityPacket(raw, parser, clock);
+		case PacketBaseType::Camera:
+			return ParseCameraPacket(raw, parser, clock);
+		case PacketBaseType::Map:
+			return ParseMapPacket(raw, parser, clock);
+		case PacketBaseType::CameraFreeLook:
+			return ParseCameraFreeLookPacket(raw, parser, clock);
+		case PacketBaseType::CameraMode:
+			return ParseCameraModePacket(raw, parser, clock);
+		case PacketBaseType::CruiseState:
+			return ParseCruiseStatePacket(raw, parser, clock);
 #endif  // NDEBUG
 
 #if 0
@@ -189,16 +190,15 @@ PacketType rp::ParsePacket(std::span<const Byte>& data, PacketParser& parser)
 	return UnknownPacket{};
 }
 
-std::variant<EntityMethodPacket, InvalidPacket> rp::ParseEntityMethodPacket(std::span<const Byte>& data, PacketParser& parser, float clock)
+ReplayResult<EntityMethodPacket> rp::ParseEntityMethodPacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	EntityMethodPacket packet;
 	packet.Type = PacketBaseType::EntityMethod;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse EntityMethodPacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse EntityMethodPacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.EntityId))
@@ -212,29 +212,25 @@ std::variant<EntityMethodPacket, InvalidPacket> rp::ParseEntityMethodPacket(std:
 
 	if (data.size() != size)
 	{
-		LOG_ERROR("Invalid payload size on EntityMethodPacket: {} != {}", data.size(), size);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Invalid payload size on EntityMethodPacket: {} != {}", data.size(), size);
 	}
 
 	if (!parser.Entities.contains(packet.EntityId))
 	{
-		LOG_ERROR("Entity {} does not exist for EntityMethodPacket", packet.EntityId);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Entity {} does not exist for EntityMethodPacket", packet.EntityId);
 	}
 	const uint16_t entityType = parser.Entities.at(packet.EntityId).Type;
 
 	const int specId = entityType - 1;
 	if (specId < 0 || specId >= parser.Specs.size())
 	{
-		LOG_ERROR("Missing EntitySpec {} for EntityMethodPacket", specId);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Missing EntitySpec {} for EntityMethodPacket", specId);
 	}
 	const EntitySpec& spec = parser.Specs[specId];
 
 	if (packet.MethodId >= spec.ClientMethods.size())
 	{
-		LOG_ERROR("Invalid methodId {} for EntityMethodPacket", packet.MethodId);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Invalid methodId {} for EntityMethodPacket", packet.MethodId);
 	}
 	const Method& method = spec.ClientMethods[packet.MethodId];
 	packet.MethodName = method.Name;
@@ -248,8 +244,7 @@ std::variant<EntityMethodPacket, InvalidPacket> rp::ParseEntityMethodPacket(std:
 		}
 		else
 		{
-			LOG_ERROR("Failed to parse value for EntityMethodPacket");
-			return InvalidPacket{};
+			return PA_REPLAY_ERROR("Failed to parse value for EntityMethodPacket");
 		}
 	}
 
@@ -257,16 +252,15 @@ std::variant<EntityMethodPacket, InvalidPacket> rp::ParseEntityMethodPacket(std:
 	return packet;
 }
 
-std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
+ReplayResult<EntityCreatePacket> rp::ParseEntityCreatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	EntityCreatePacket packet;
 	packet.Type = PacketBaseType::EntityCreate;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse EntityCreatePacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse EntityCreatePacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.EntityId))
@@ -294,22 +288,19 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 
 	if (data.size() != size)
 	{
-		LOG_ERROR("Invalid payload size on EntityCreatePacket: {} != {}", data.size(), size);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Invalid payload size on EntityCreatePacket: {} != {}", data.size(), size);
 	}
 
 	uint8_t propertyCount = 0;
 	if (!TakeInto(data, propertyCount))
 	{
-		LOG_ERROR("Failed to get property count for EntityCreatePacket");
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to get property count for EntityCreatePacket");
 	}
 
 	const int specId = packet.EntityType - 1;
 	if (specId < 0 || specId >= parser.Specs.size())
 	{
-		LOG_ERROR("Missing EntitySpec {} for EntityCreatePacket", specId);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Missing EntitySpec {} for EntityCreatePacket", specId);
 	}
 	const EntitySpec& spec = parser.Specs[specId];
 
@@ -323,8 +314,7 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 		uint8_t propertyId;
 		if (!TakeInto(data, propertyId))
 		{
-			LOG_ERROR("Failed to get propertyId for EntityCreatePacket, not enough data");
-			return InvalidPacket{};
+			return PA_REPLAY_ERROR("Failed to get propertyId for EntityCreatePacket, not enough data");
 		}
 		if (propertyId < spec.ClientProperties.size())
 		{
@@ -337,14 +327,12 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 			}
 			else
 			{
-				LOG_ERROR("Failed to parse value for EntityCreatePacket");
-				return InvalidPacket{};
+				return PA_REPLAY_ERROR("Failed to parse value for EntityCreatePacket");
 			}
 		}
 		else
 		{
-			LOG_ERROR("Failed to get propertyId for EntityCreatePacket, out of bounds");
-			return InvalidPacket{};
+			return PA_REPLAY_ERROR("Failed to get propertyId for EntityCreatePacket, out of bounds");
 		}
 	}
 
@@ -354,16 +342,15 @@ std::variant<EntityCreatePacket, InvalidPacket> rp::ParseEntityCreatePacket(std:
 	return packet;
 }
 
-std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(std::span<const Byte>& data, PacketParser& parser, float clock)
+ReplayResult<EntityPropertyPacket> rp::ParseEntityPropertyPacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	EntityPropertyPacket packet;
 	packet.Clock = clock;
 	packet.Type = PacketBaseType::EntityProperty;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse EntityPropertyPacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse EntityPropertyPacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.EntityId))
@@ -377,37 +364,32 @@ std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(
 
 	if (data.size() != size)
 	{
-		LOG_ERROR("Invalid payload size on EntityPropertyPacket: {} != {}", data.size(), size);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Invalid payload size on EntityPropertyPacket: {} != {}", data.size(), size);
 	}
 
 	if (!parser.Entities.contains(packet.EntityId))
 	{
-		LOG_ERROR("Entity {} does not exist for EntityPropertyPacket", packet.EntityId);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Entity {} does not exist for EntityPropertyPacket", packet.EntityId);
 	}
 	const uint16_t entityType = parser.Entities.at(packet.EntityId).Type;
 
 	const int specId = entityType - 1;
 	if (specId < 0 || specId >= parser.Specs.size())
 	{
-		LOG_ERROR("Missing EntitySpec {} for EntityPropertyPacket", specId);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Missing EntitySpec {} for EntityPropertyPacket", specId);
 	}
 	const EntitySpec& spec = parser.Specs[specId];
 
 	if (packet.MethodId >= spec.ClientProperties.size())
 	{
-		LOG_ERROR("Invalid methodId {} for EntityPropertyPacket", packet.MethodId);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Invalid methodId {} for EntityPropertyPacket", packet.MethodId);
 	}
 	const Property& property = spec.ClientProperties[packet.MethodId];
 	packet.PropertyName = property.Name;
 
 	if (!parser.Entities.contains(packet.EntityId))
 	{
-		LOG_ERROR("Entity {} does not exist for EntityPropertyPacket", packet.EntityId);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Entity {} does not exist for EntityPropertyPacket", packet.EntityId);
 	}
 	Entity& entity = parser.Entities.at(packet.EntityId);
 
@@ -418,24 +400,22 @@ std::variant<EntityPropertyPacket, InvalidPacket> rp::ParseEntityPropertyPacket(
 	}
 	else
 	{
-		LOG_ERROR("Failed to parse value for EntityPropertyPacket");
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse value for EntityPropertyPacket");
 	}
 
 	parser.Callbacks.Invoke(packet);
 	return packet;
 }
 
-std::variant<BasePlayerCreatePacket, InvalidPacket> rp::ParseBasePlayerCreatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
+ReplayResult<BasePlayerCreatePacket> rp::ParseBasePlayerCreatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	BasePlayerCreatePacket packet;
 	packet.Clock = clock;
 	packet.Type = PacketBaseType::BasePlayerCreate;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse CellPlayerCreatePacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse CellPlayerCreatePacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.EntityId))
@@ -446,8 +426,7 @@ std::variant<BasePlayerCreatePacket, InvalidPacket> rp::ParseBasePlayerCreatePac
 	const int specId = packet.EntityType - 1;
 	if (specId < 0 || specId >= parser.Specs.size())
 	{
-		LOG_ERROR("Missing EntitySpec {} for BasePlayerCreatePacket", specId);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Missing EntitySpec {} for BasePlayerCreatePacket", specId);
 	}
 	const EntitySpec& spec = parser.Specs[specId];
 
@@ -465,8 +444,7 @@ std::variant<BasePlayerCreatePacket, InvalidPacket> rp::ParseBasePlayerCreatePac
 		}
 		else
 		{
-			LOG_ERROR("Failed to parse value for EntityCreatePacket");
-			return InvalidPacket{};
+			return PA_REPLAY_ERROR("Failed to parse value for EntityCreatePacket");
 		}
 	}
 
@@ -479,16 +457,15 @@ std::variant<BasePlayerCreatePacket, InvalidPacket> rp::ParseBasePlayerCreatePac
 	return packet;
 }
 
-std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
+ReplayResult<CellPlayerCreatePacket> rp::ParseCellPlayerCreatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	CellPlayerCreatePacket packet;
 	packet.Type = PacketBaseType::CellPlayerCreate;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse CellPlayerCreatePacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse CellPlayerCreatePacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.EntityId))
@@ -508,14 +485,12 @@ std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePac
 
 	if (data.size() != size)
 	{
-		LOG_ERROR("Invalid payload size on CellPlayerCreatePacket: {} != {}", data.size(), size);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Invalid payload size on CellPlayerCreatePacket: {} != {}", data.size(), size);
 	}
 
 	if (!parser.Entities.contains(packet.EntityId))
 	{
-		LOG_ERROR("Entity {} does not exist for CellPlayerCreatePacket", packet.EntityId);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Entity {} does not exist for CellPlayerCreatePacket", packet.EntityId);
 	}
 
 	const uint16_t entityType = parser.Entities.at(packet.EntityId).Type;
@@ -523,8 +498,7 @@ std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePac
 	const int specId = entityType - 1;
 	if (specId < 0 || specId >= parser.Specs.size())
 	{
-		LOG_ERROR("Missing EntitySpec {} for CellPlayerCreatePacket", specId);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Missing EntitySpec {} for CellPlayerCreatePacket", specId);
 	}
 	const EntitySpec& spec = parser.Specs[specId];
 
@@ -544,8 +518,7 @@ std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePac
 		}
 		else
 		{
-			LOG_ERROR("Failed to parse value for CellPlayerCreatePacket");
-			return InvalidPacket{};
+			return PA_REPLAY_ERROR("Failed to parse value for CellPlayerCreatePacket");
 		}
 	}
 
@@ -561,16 +534,15 @@ std::variant<CellPlayerCreatePacket, InvalidPacket> rp::ParseCellPlayerCreatePac
 	return packet;
 }
 
-std::variant<EntityControlPacket, InvalidPacket> rp::ParseEntityControlPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+ReplayResult<EntityControlPacket> rp::ParseEntityControlPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	EntityControlPacket packet;
 	packet.Type = PacketBaseType::EntityControl;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse EntityControlPacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse EntityControlPacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.EntityId))
@@ -587,16 +559,15 @@ std::variant<EntityControlPacket, InvalidPacket> rp::ParseEntityControlPacket(st
 	return packet;
 }
 
-std::variant<EntityEnterPacket, InvalidPacket> rp::ParseEntityEnterPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+ReplayResult<EntityEnterPacket> rp::ParseEntityEnterPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	EntityEnterPacket packet;
 	packet.Type = PacketBaseType::EntityEnter;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse EntityEnterPacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse EntityEnterPacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.EntityId))
@@ -615,7 +586,7 @@ std::variant<EntityEnterPacket, InvalidPacket> rp::ParseEntityEnterPacket(std::s
 	return packet;
 }
 
-std::variant<EntityLeavePacket, InvalidPacket> rp::ParseEntityLeavePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+ReplayResult<EntityLeavePacket> rp::ParseEntityLeavePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	EntityLeavePacket packet;
 	packet.Type = PacketBaseType::EntityLeave;
@@ -623,8 +594,7 @@ std::variant<EntityLeavePacket, InvalidPacket> rp::ParseEntityLeavePacket(std::s
 
 	if (!TakeInto(data, packet.EntityId))
 	{
-		LOG_ERROR("Failed to parse EntityLeavePacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse EntityLeavePacket: {}", FormatBytes(data));
 	}
 
 	if (!data.empty())
@@ -636,16 +606,15 @@ std::variant<EntityLeavePacket, InvalidPacket> rp::ParseEntityLeavePacket(std::s
 	return packet;
 }
 
-std::variant<NestedPropertyUpdatePacket, InvalidPacket> rp::ParseNestedPropertyUpdatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
+ReplayResult<NestedPropertyUpdatePacket> rp::ParseNestedPropertyUpdatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	NestedPropertyUpdatePacket packet;
 	packet.Type = PacketBaseType::NestedPropertyUpdate;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse NestedPropertyUpdatePacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse NestedPropertyUpdatePacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.EntityId))
@@ -661,37 +630,29 @@ std::variant<NestedPropertyUpdatePacket, InvalidPacket> rp::ParseNestedPropertyU
 
 	if (data.size() != size)
 	{
-		LOG_ERROR("Invalid payload size on NestedPropertyUpdatePacket: {} != {}", data.size(), size);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Invalid payload size on NestedPropertyUpdatePacket: {} != {}", data.size(), size);
 	}
 
 	std::span<const Byte> payload = Take(data, size);
 
 	if (!parser.Entities.contains(packet.EntityId))
 	{
-		LOG_ERROR("Entity {} does not exist for EntityPropertyPacket", packet.EntityId);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Entity {} does not exist for EntityPropertyPacket", packet.EntityId);
 	}
 	packet.Entity = &parser.Entities.at(packet.EntityId);
 	const EntitySpec& spec = packet.Entity->Spec;
 
 	BitReader bitReader(payload);
 	const int cont = bitReader.Get(1);
-#ifndef NDEBUG
-	assert(cont == 1);
-#else
 	if (cont != 1)
 	{
-		LOG_ERROR("Invalid first bit {:#04x} in NestedPropertyUpdatePacket payload", cont);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Invalid first bit {:#04x} in NestedPropertyUpdatePacket payload", cont);
 	}
-#endif
 
 	const int propIndex = bitReader.Get(BitReader::BitsRequired(static_cast<int>(spec.ClientProperties.size())));
 	if (propIndex >= spec.ClientProperties.size())
 	{
-		LOG_ERROR("Property index out of range ({}) for spec in NestedPropertyUpdatePacket", propIndex);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Property index out of range ({}) for spec in NestedPropertyUpdatePacket", propIndex);
 	}
 
 	const Property& prop = spec.ClientProperties[propIndex].get();
@@ -701,17 +662,11 @@ std::variant<NestedPropertyUpdatePacket, InvalidPacket> rp::ParseNestedPropertyU
 
 	if (!packet.Entity->ClientPropertiesValues.contains(prop.Name))
 	{
-		LOG_ERROR("Entity is missing property value for '{}' in NestedPropertyUpdatePacket", prop.Name);
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Entity is missing property value for '{}' in NestedPropertyUpdatePacket", prop.Name);
 	}
 
-	ReplayResult<PropertyNesting> nesting = GetNestedPropertyPath(isSlice, prop.Type, &packet.Entity->ClientPropertiesValues[prop.Name], bitReader);
-	if (!nesting)
-	{
-		LOG_ERROR(nesting.error());
-		return InvalidPacket{};
-	}
-	packet.Nesting = nesting.value();
+	PA_TRY(nesting, GetNestedPropertyPath(isSlice, prop.Type, &packet.Entity->ClientPropertiesValues[prop.Name], bitReader));
+	packet.Nesting = nesting;
 
 	if (!data.empty())
 	{
@@ -722,16 +677,15 @@ std::variant<NestedPropertyUpdatePacket, InvalidPacket> rp::ParseNestedPropertyU
 	return packet;
 }
 
-std::variant<PlayerOrientationPacket, InvalidPacket> rp::ParsePlayerOrientationPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+ReplayResult<PlayerOrientationPacket> rp::ParsePlayerOrientationPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	PlayerOrientationPacket packet;
 	packet.Type = PacketBaseType::PlayerOrientation;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse PlayerOrientationPacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse PlayerOrientationPacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.Pid))
@@ -752,16 +706,15 @@ std::variant<PlayerOrientationPacket, InvalidPacket> rp::ParsePlayerOrientationP
 	return packet;
 }
 
-std::variant<PlayerPositionPacket, InvalidPacket> rp::ParsePlayerPositionPacketPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+ReplayResult<PlayerPositionPacket> rp::ParsePlayerPositionPacketPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	PlayerPositionPacket packet;
 	packet.Type = PacketBaseType::PlayerOrientation;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse PlayerPositionPacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse PlayerPositionPacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.EntityId))
@@ -786,16 +739,15 @@ std::variant<PlayerPositionPacket, InvalidPacket> rp::ParsePlayerPositionPacketP
 	return packet;
 }
 
-std::variant<CameraPacket, InvalidPacket> rp::ParseCameraPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+ReplayResult<CameraPacket> rp::ParseCameraPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	CameraPacket packet;
 	packet.Type = PacketBaseType::Camera;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse CameraPacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse CameraPacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.Unknown))
@@ -827,16 +779,15 @@ std::variant<CameraPacket, InvalidPacket> rp::ParseCameraPacket(std::span<const 
 	return packet;
 }
 
-std::variant<MapPacket, InvalidPacket> rp::ParseMapPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+ReplayResult<MapPacket> rp::ParseMapPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	MapPacket packet;
 	packet.Type = PacketBaseType::Map;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse MapPacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse MapPacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.SpaceId))
@@ -869,16 +820,15 @@ std::variant<MapPacket, InvalidPacket> rp::ParseMapPacket(std::span<const Byte>&
 	return packet;
 }
 
-std::variant<VersionPacket, InvalidPacket> rp::ParseVersionPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+ReplayResult<VersionPacket> rp::ParseVersionPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	VersionPacket packet;
 	packet.Type = PacketBaseType::Version;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse VersionPacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse VersionPacket: {}", FormatBytes(data));
 	};
 
 	uint32_t stringSize;
@@ -897,16 +847,15 @@ std::variant<VersionPacket, InvalidPacket> rp::ParseVersionPacket(std::span<cons
 	return packet;
 }
 
-std::variant<PlayerEntityPacket, InvalidPacket> rp::ParsePlayerEntityPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+ReplayResult<PlayerEntityPacket> rp::ParsePlayerEntityPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	PlayerEntityPacket packet;
 	packet.Type = PacketBaseType::PlayerEntity;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse PlayerEntityPacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse PlayerEntityPacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.EntityId))
@@ -921,16 +870,15 @@ std::variant<PlayerEntityPacket, InvalidPacket> rp::ParsePlayerEntityPacket(std:
 	return packet;
 }
 
-std::variant<CameraModePacket, InvalidPacket> rp::ParseCameraModePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+ReplayResult<CameraModePacket> rp::ParseCameraModePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	CameraModePacket packet;
 	packet.Type = PacketBaseType::CameraMode;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse CameraModePacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse CameraModePacket: {}", FormatBytes(data));
 	};
 
 	if (!TakeInto(data, packet.Mode))
@@ -945,16 +893,15 @@ std::variant<CameraModePacket, InvalidPacket> rp::ParseCameraModePacket(std::spa
 	return packet;
 }
 
-std::variant<CruiseStatePacket, InvalidPacket> rp::ParseCruiseStatePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+ReplayResult<CruiseStatePacket> rp::ParseCruiseStatePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	CruiseStatePacket packet;
 	packet.Type = PacketBaseType::CruiseState;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse CruiseStatePacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse CruiseStatePacket: {}", FormatBytes(data));
 	};
 	
 	if (!TakeInto(data, packet.Key))
@@ -972,16 +919,15 @@ std::variant<CruiseStatePacket, InvalidPacket> rp::ParseCruiseStatePacket(std::s
 	return packet;
 }
 
-std::variant<CameraFreeLookPacket, InvalidPacket> rp::ParseCameraFreeLookPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+ReplayResult<CameraFreeLookPacket> rp::ParseCameraFreeLookPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	CameraFreeLookPacket packet;
 	packet.Type = PacketBaseType::CameraFreeLook;
 	packet.Clock = clock;
 
-	auto err = [data]() -> InvalidPacket
+	auto err = [data]()
 	{
-		LOG_ERROR("Failed to parse CameraFreeLookPacket: {}", FormatBytes(data));
-		return InvalidPacket{};
+		return PA_REPLAY_ERROR("Failed to parse CameraFreeLookPacket: {}", FormatBytes(data));
 	};
 	
 	if (!TakeInto(data, packet.Locked))

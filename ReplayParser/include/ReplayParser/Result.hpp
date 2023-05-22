@@ -12,10 +12,13 @@ namespace PotatoAlert::ReplayParser {
 using ReplayError = std::string;
 template<typename T>
 using ReplayResult = Core::Result<T, ReplayError>;
-#ifdef __INTELLISENSE__
-#define PA_REPLAY_ERROR(...) (std::format(__VA_ARGS__))
-#else
+
+template<class... T>
+inline std::unexpected<ReplayError> MakeReplayError(std::string_view fmt, T&&... args)
+{
+	return std::unexpected(ReplayError(std::format(fmt, args...)));
+}
+
 #define PA_REPLAY_ERROR(...) (::std::unexpected(::PotatoAlert::ReplayParser::ReplayError(std::format(__VA_ARGS__))))
-#endif
 
 }  // namespace PotatoAlert::ReplayParser

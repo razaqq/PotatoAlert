@@ -1,6 +1,8 @@
 // Copyright 2022 <github.com/razaqq>
 #pragma once
 
+#define PA_NOARG
+
 #define PA_EXPAND(...) __VA_ARGS__
 
 #define PA_CAT_1(a, b) a##b
