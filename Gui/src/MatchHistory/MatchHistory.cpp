@@ -140,10 +140,12 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 	connect(m_view, &QTableView::doubleClicked, [this](const QModelIndex& index)
 	{
 		const Client::Match& match = m_model->GetMatch(m_sortFilter->mapToSource(index).row());
-		if (const StatsParseResult res = ParseMatch(match.Json, MatchContext{}); res.Success)
+		PA_TRY_OR_ELSE(res, ParseMatch(match.Json, MatchContext{}),
 		{
-			emit ReplaySelected(res.Match);
-		}
+			LOG_ERROR("Failed to parse match as JSON: {}", error);
+			return;
+		});
+		emit ReplaySelected(res.Match);
 	});
 
 	connect(m_view->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselection)

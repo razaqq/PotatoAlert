@@ -3,6 +3,7 @@
 #include "Client/StatsParser.hpp"
 
 #include "Core/Json.hpp"
+#include "Core/Log.hpp"
 
 #include <QApplication>
 #include <QGraphicsEffect>
@@ -16,8 +17,14 @@
 #include <string>
 #include <vector>
 
+#ifdef _MSC_VER
+	#undef GetObject
+#endif
 
+
+using namespace PotatoAlert;
 using namespace PotatoAlert::Client::StatsParser;
+using PotatoAlert::Core::JsonResult;
 
 namespace {
 
@@ -86,6 +93,20 @@ struct Color
 	}
 };
 
+template<size_t Size>
+static JsonResult<Color> ToColor(const rapidjson::Value& value, std::string_view key)
+{
+	if (!value.HasMember(key.data()))
+		return PA_JSON_ERROR("Json color object has no key '{}'", key);
+
+	std::array<int, Size> color = {};
+	if (!Core::FromJson(value[key.data()], color))
+	{
+		return PA_JSON_ERROR("Failed to get stat color json as array");
+	}
+	return Color(color);
+}
+
 struct Stat
 {
 	std::string string;
@@ -107,10 +128,14 @@ struct Stat
 	}
 };
 
-[[maybe_unused]] static void from_json(const json& j, Stat& s)
+static JsonResult<void> FromJson(const rapidjson::Value& j, std::string_view key, Stat& s)
 {
-	j.at("string").get_to(s.string);
-	s.color = Color(j.at("color").get<std::array<int, 3>>());
+	if (!j.HasMember(key.data()))
+		return PA_JSON_ERROR("Json object for Stat has no key '{}'", key);
+
+	PA_TRYA(s.string, Core::FromJson<std::string>(j[key.data()], "string"));
+	PA_TRYA(s.color, ToColor<3>(j[key.data()], "color"));
+	return {};
 }
 
 struct Clan
@@ -134,12 +159,13 @@ struct Clan
 	}
 };
 
-[[maybe_unused]] static void from_json(const json& j, Clan& c)
+static JsonResult<void> FromJson(const rapidjson::Value& j, Clan& c)
 {
-	j.at("name").get_to(c.name);
-	j.at("tag").get_to(c.tag);
-	c.color = Color(j.at("color").get<std::array<int, 3>>());
-	j.at("region").get_to(c.region);
+	PA_TRYA(c.name, Core::FromJson<std::string>(j, "name"));
+	PA_TRYA(c.tag, Core::FromJson<std::string>(j, "tag"));
+	PA_TRYA(c.color, ToColor<3>(j, "color"));
+	PA_TRYA(c.region, Core::FromJson<std::string>(j, "region"));
+	return {};
 }
 
 struct Ship
@@ -205,13 +231,13 @@ struct Ship
 	}
 };
 
-[[maybe_unused]] static void from_json(const json& j, Ship& s)
+static JsonResult<void> FromJson(const rapidjson::Value& j, Ship& s)
 {
-	j.at("name").get_to(s.Name);
-	j.at("class").get_to(s.Class);
-	j.at("nation").get_to(s.Nation);
-	j.at("tier").get_to(s.Tier);
-	// s.color = Color(j.at("color").get<std::array<int, 3>>());
+	PA_TRYA(s.Name, Core::FromJson<std::string>(j, "name"));
+	PA_TRYA(s.Class, Core::FromJson<std::string>(j, "class"));
+	PA_TRYA(s.Nation, Core::FromJson<std::string>(j, "nation"));
+	PA_TRYA(s.Tier, Core::FromJson<uint8_t>(j, "tier"));
+	return {};
 }
 
 struct Player
@@ -295,23 +321,33 @@ struct Player
 	}
 };
 
-[[maybe_unused]] static void from_json(const json& j, Player& p)
+static JsonResult<void> FromJson(const rapidjson::Value& j, Player& p)
 {
-	if (!j.at("clan").is_null())
-		p.clan = j.at("clan").get<Clan>();
-	j.at("hidden_profile").get_to(p.hiddenPro);
-	j.at("name").get_to(p.name);
-	p.nameColor = Color(j.at("name_color").get<std::array<int, 3>>());
-	if (!j.at("ship").is_null())
-		p.ship = j.at("ship").get<Ship>();
-	j.at("battles").get_to(p.battles);
-	j.at("win_rate").get_to(p.winrate);
-	j.at("avg_dmg").get_to(p.avgDmg);
-	j.at("battles_ship").get_to(p.battlesShip);
-	j.at("win_rate_ship").get_to(p.winrateShip);
-	j.at("avg_dmg_ship").get_to(p.avgDmgShip);
-	p.prColor = Color(j.at("pr_color").get<std::array<int, 4>>());
-	j.at("wows_numbers_link").get_to(p.wowsNumbers);
+	if (j.HasMember("clan") && !j["clan"].IsNull())
+	{
+		Clan clan;
+		PA_TRYV(FromJson(j["clan"], clan));
+		p.clan = clan;
+	}
+	PA_TRYA(p.hiddenPro, Core::FromJson<bool>(j, "hidden_profile"));
+	PA_TRYA(p.name, Core::FromJson<std::string>(j, "name"));
+	PA_TRYA(p.nameColor, ToColor<3>(j, "name_color"));
+	if (j.HasMember("ship") && !j["ship"].IsNull())
+	{
+		Ship ship;
+		PA_TRYV(FromJson(j["ship"], ship));
+		p.ship = ship;
+	}
+	PA_TRYV(FromJson(j, "battles", p.battles));
+	PA_TRYV(FromJson(j, "win_rate", p.winrate));
+	PA_TRYV(FromJson(j, "avg_dmg", p.avgDmg));
+	PA_TRYV(FromJson(j, "battles_ship", p.battlesShip));
+	PA_TRYV(FromJson(j, "win_rate_ship", p.winrateShip));
+	PA_TRYV(FromJson(j, "avg_dmg_ship", p.avgDmgShip));
+	PA_TRYA(p.prColor, ToColor<4>(j, "pr_color"));
+
+	PA_TRYA(p.wowsNumbers, Core::FromJson<std::string>(j, "wows_numbers_link"));
+	return {};
 }
 
 struct Team
@@ -322,12 +358,22 @@ struct Team
 	Stat avgWr;
 };
 
-[[maybe_unused]] static void from_json(const json& j, Team& t)
+static JsonResult<void> FromJson(const rapidjson::Value& j, Team& t)
 {
-	j.at("id").get_to(t.id);
-	j.at("players").get_to(t.players);
-	j.at("avg_dmg").get_to(t.avgDmg);
-	j.at("avg_win_rate").get_to(t.avgWr);
+	PA_TRYV(Core::FromJson(j, "id", t.id));
+
+	const auto playersValue = j["players"].GetArray();
+	t.players.reserve(playersValue.Size());
+	for (const auto& m : playersValue)
+	{
+		Player player;
+		PA_TRYV(FromJson(m, player));
+		t.players.emplace_back(player);
+	}
+	// PA_TRYV(Core::FromJson(j, "players", t.players));
+	PA_TRYV(FromJson(j, "avg_dmg", t.avgDmg));
+	PA_TRYV(FromJson(j, "avg_win_rate", t.avgWr));
+	return {};
 }
 
 struct Match
@@ -339,23 +385,19 @@ struct Match
 	std::string region;
 	std::string map;
 	std::string dateTime;
-	// std::string player;
-	// std::string ship;
-	// std::string shipIdent;
 };
 
-[[maybe_unused]] static void from_json(const json& j, Match& m)
+static JsonResult<void> FromJson(const rapidjson::Value& j, Match& m)
 {
-	j.at("team1").get_to(m.team1);
-	j.at("team2").get_to(m.team2);
-	j.at("match_group").get_to(m.matchGroup);
-	j.at("stats_mode").get_to(m.statsMode);
-	j.at("region").get_to(m.region);
-	j.at("map").get_to(m.map);
-	j.at("date_time").get_to(m.dateTime);
-	// j.at("player").get_to(m.player);
-	// j.at("ship").get_to(m.ship);
-	// j.at("ship_ident").get_to(m.shipIdent);
+	PA_TRYV(FromJson(j["team1"], m.team1));
+	PA_TRYV(FromJson(j["team2"], m.team2));
+	PA_TRYA(m.matchGroup, Core::FromJson<std::string>(j, "match_group"));
+	PA_TRYA(m.statsMode, Core::FromJson<std::string>(j, "stats_mode"));
+	PA_TRYA(m.region, Core::FromJson<std::string>(j, "region"));
+	PA_TRYA(m.map, Core::FromJson<std::string>(j, "map"));
+	PA_TRYA(m.dateTime, Core::FromJson<std::string>(j, "date_time"));
+
+	return {};
 }
 
 static std::string GetCSV(const Match& match)
@@ -391,7 +433,6 @@ static std::string GetCSV(const Match& match)
 
 }  // namespace _JSON
 
-
 namespace pn = PotatoAlert::Client::StatsParser;
 
 void pn::Label::UpdateLabel(QLabel* label) const
@@ -406,16 +447,16 @@ void pn::Label::UpdateLabel(QLabel* label) const
 	}
 }
 
-StatsParseResult pn::ParseMatch(const json& j, const MatchContext& matchContext) noexcept
+JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const MatchContext& matchContext) noexcept
 {
 	StatsParseResult result;
 
-	const _JSON::Match match = j.get<_JSON::Match>();
+	_JSON::Match match;
+	PA_TRYV(FromJson(j, match));
 
 	result.Csv = GetCSV(match);
 
 	_JSON::Ship playerShip;
-
 
 	// parse match stats
 	auto getTeam = [&match, &matchContext, &playerShip](const _JSON::Team& inTeam, Team& outTeam)
@@ -503,19 +544,12 @@ StatsParseResult pn::ParseMatch(const json& j, const MatchContext& matchContext)
 	info.ShipNation = std::move(playerShip.Nation);
 	info.ShipTier = playerShip.Tier;
 
-	result.Success = true;
 	return result;
 }
 
-StatsParseResult pn::ParseMatch(const std::string& raw, const MatchContext& matchContext) noexcept
+JsonResult<StatsParseResult> pn::ParseMatch(const std::string& raw, const MatchContext& matchContext) noexcept
 {
-	json j;
-	sax_no_exception sax(j);
-	if (!json::sax_parse(raw, &sax))
-	{
-		LOG_ERROR("ParseError while parsing server response JSON.");
-		return StatsParseResult{};
-	}
-
-	return ParseMatch(j, matchContext);
+	PA_TRY(j, Core::ParseJson(raw));
+	PA_TRY(match, ParseMatch(j, matchContext));
+	return match;
 }

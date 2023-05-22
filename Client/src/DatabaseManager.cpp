@@ -84,7 +84,9 @@ static inline T ParseValue(const SQLite::Statement& stmt, int index)
 	{
 		if (std::string json; stmt.GetText(index, json))
 		{
-			return ReplaySummary::FromJson(json);
+			ReplaySummary summary;
+			FromJson(json, summary);  // TODO: handle the result
+			return summary;
 		}
 	}
 
@@ -98,9 +100,12 @@ static inline T GetValue(const T& value)
 	return value;
 }
 
-static inline std::string GetValue(const ReplaySummary& value)
+static inline std::string GetValue(const ReplaySummary& summary)
 {
-	return value.ToJson();
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer writer(buffer);
+	ToJson(writer, summary);  // TODO: handle the result
+	return buffer.GetString();
 }
 
 #define BIND_VALUE(Name, Stmt, Value)             \
@@ -562,8 +567,11 @@ SqlResult<void> DatabaseManager::SetMatchReplaySummary(uint32_t id, const Replay
 		return PA_SQL_ERROR("Failed to prepare SQL statement: {}", m_db.GetLastError());
 	}
 	stmt.Bind(":Id", id);
-	const std::string json = replaySummary.ToJson();
-	stmt.Bind(":ReplaySummary", json);
+
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer writer(buffer);
+	PA_TRYV(ToJson(writer, replaySummary));
+	stmt.Bind(":ReplaySummary", buffer.GetString());
 
 	stmt.ExecuteStep();
 	if (!stmt.IsDone())
@@ -585,8 +593,10 @@ SqlResult<void> DatabaseManager::SetMatchReplaySummary(std::string_view hash, co
 		return PA_SQL_ERROR("Failed to prepare SQL statement: {}", m_db.GetLastError());
 	}
 	stmt.Bind(":Hash", hash);
-	const std::string json = replaySummary.ToJson();
-	stmt.Bind(":ReplaySummary", json);
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer writer(buffer);
+	PA_TRYV(ToJson(writer, replaySummary));
+	stmt.Bind(":ReplaySummary", buffer.GetString());
 
 	stmt.ExecuteStep();
 	if (!stmt.IsDone())

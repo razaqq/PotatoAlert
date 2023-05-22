@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Core/Json.hpp"
+#include "Core/Result.hpp"
 #include "Core/String.hpp"
 #include "Core/Version.hpp"
 
@@ -16,14 +17,6 @@ using PotatoAlert::Core::Version;
 
 namespace PotatoAlert::ReplayParser {
 
-enum class Relation : uint32_t
-{
-	Self,
-	Ally,
-	Enemy,
-	Neutral,
-};
-
 struct ArenaInfoVehicle
 {
 	uint64_t ShipId;
@@ -32,12 +25,13 @@ struct ArenaInfoVehicle
 	std::string Name;
 };
 
-[[maybe_unused]] static void from_json(const json& j, ArenaInfoVehicle& m)
+static inline Core::JsonResult<void> FromJson(const rapidjson::Value& j, ArenaInfoVehicle& v)
 {
-	j.at("shipId").get_to(m.ShipId);
-	j.at("relation").get_to(m.Relation);
-	j.at("id").get_to(m.Id);
-	j.at("name").get_to(m.Name);
+	PA_TRYA(v.ShipId, Core::FromJson<uint64_t>(j, "shipId"));
+	PA_TRYA(v.Relation, Core::FromJson<uint64_t>(j, "relation"));
+	PA_TRYA(v.Id, Core::FromJson<uint64_t>(j, "id"));
+	PA_TRYA(v.Name, Core::FromJson<std::string>(j, "name"));
+	return {};
 }
 
 struct ReplayMeta
@@ -46,7 +40,7 @@ struct ReplayMeta
 	uint32_t GameMode;
 	Version ClientVersionFromExe;
 	Version ClientVersionFromXml;
-	std::unordered_map<std::string, std::vector<std::string>> WeatherParams;
+	// std::unordered_map<std::string, std::vector<std::string>> WeatherParams;
 	uint32_t Duration;
 	std::string Name;
 	std::vector<ArenaInfoVehicle> Vehicles;
@@ -62,9 +56,15 @@ struct ReplayMeta
 	uint32_t ScenarioConfigId;
 	uint32_t ScenarioUiCategoryId;
 	uint32_t TeamsCount;
+	uint32_t BattleDuration;
+
+	// only in version < 12.3
+	std::string GameLogic;
+	std::string Logic;
+
+	// only in version >= 12.3
 	std::string EventType;
 	std::string GameType;
-	uint32_t BattleDuration;
 };
 
 static Version ParseClientVersion(std::string_view str)
@@ -73,31 +73,61 @@ static Version ParseClientVersion(std::string_view str)
 	return Version(Join(std::span{ v }.subspan(0, 3), "."));
 }
 
-[[maybe_unused]] static void from_json(const json& j, ReplayMeta& m)
+static Core::JsonResult<void> FromJson(const rapidjson::Value& j, ReplayMeta& m)
 {
-	j.at("matchGroup").get_to(m.MatchGroup);
-	j.at("gameMode").get_to(m.GameMode);
-	m.ClientVersionFromExe = ParseClientVersion(j.at("clientVersionFromExe").get<std::string>());
-	j.at("scenarioUiCategoryId").get_to(m.ScenarioUiCategoryId);
-	j.at("mapDisplayName").get_to(m.MapDisplayName);
-	j.at("mapId").get_to(m.MapId);
-	m.ClientVersionFromXml = ParseClientVersion(j.at("clientVersionFromXml").get<std::string>());
-	j.at("weatherParams").get_to(m.WeatherParams);
-	j.at("duration").get_to(m.Duration);
-	j.at("name").get_to(m.Name);
-	j.at("scenario").get_to(m.Scenario);
-	j.at("playerID").get_to(m.PlayerId);
-	j.at("vehicles").get_to(m.Vehicles);
-	j.at("playersPerTeam").get_to(m.PlayersPerTeam);
-	j.at("dateTime").get_to(m.DateTime);
-	j.at("mapName").get_to(m.MapName);
-	j.at("playerName").get_to(m.PlayerName);
-	j.at("scenarioConfigId").get_to(m.ScenarioConfigId);
-	j.at("teamsCount").get_to(m.TeamsCount);
-	j.at("gameType").get_to(m.GameType);
-	j.at("eventType").get_to(m.EventType);
-	j.at("playerVehicle").get_to(m.PlayerVehicle);
-	j.at("battleDuration").get_to(m.BattleDuration);
+	PA_TRYA(m.MatchGroup, Core::FromJson<std::string>(j, "matchGroup"));
+	PA_TRYA(m.GameMode, Core::FromJson<uint32_t>(j, "gameMode"));
+	PA_TRY(clientVersionFromExe, Core::FromJson<std::string>(j, "clientVersionFromExe"));
+	m.ClientVersionFromExe = ParseClientVersion(clientVersionFromExe);
+	PA_TRY(clientVersionFromXml, Core::FromJson<std::string>(j, "clientVersionFromXml"));
+	m.ClientVersionFromXml = ParseClientVersion(clientVersionFromXml);
+	PA_TRYA(m.ScenarioUiCategoryId, Core::FromJson<uint32_t>(j, "scenarioUiCategoryId"));
+	PA_TRYA(m.MapDisplayName, Core::FromJson<std::string>(j, "mapDisplayName"));
+	PA_TRYA(m.MapId, Core::FromJson<uint32_t>(j, "mapId"));
+
+	// TODO: weather params
+	// Core::FromJson(j["weatherParams"], m.WeatherParams);
+
+	PA_TRYA(m.Duration, Core::FromJson<uint32_t>(j, "duration"));
+	PA_TRYA(m.Name, Core::FromJson<std::string>(j, "name"));
+	PA_TRYA(m.Scenario, Core::FromJson<std::string>(j, "scenario"));
+	PA_TRYA(m.PlayerId, Core::FromJson<uint32_t>(j, "playerID"));
+
+	if (!j.HasMember("vehicles"))
+		return PA_JSON_ERROR("ReplayMeta is missing key 'vehicles'");
+	if (!Core::FromJson(j["vehicles"], m.Vehicles))
+		return PA_JSON_ERROR("Failed to parse ReplayMeta key 'vehicles'");
+
+	PA_TRYA(m.PlayersPerTeam, Core::FromJson<uint32_t>(j, "playersPerTeam"));
+	PA_TRYA(m.DateTime, Core::FromJson<std::string>(j, "dateTime"));
+	PA_TRYA(m.MapName, Core::FromJson<std::string>(j, "mapName"));
+	PA_TRYA(m.PlayerName, Core::FromJson<std::string>(j, "playerName"));
+	PA_TRYA(m.ScenarioConfigId, Core::FromJson<uint32_t>(j, "scenarioConfigId"));
+	PA_TRYA(m.TeamsCount, Core::FromJson<uint32_t>(j, "teamsCount"));
+	PA_TRYA(m.PlayerVehicle, Core::FromJson<std::string>(j, "playerVehicle"));
+	PA_TRYA(m.BattleDuration, Core::FromJson<uint32_t>(j, "battleDuration"));
+
+	if (j.HasMember("logic"))
+	{
+		PA_TRYA(m.Logic, Core::FromJson<std::string>(j, "logic"));
+	}
+
+	if (j.HasMember("gameLogic"))
+	{
+		PA_TRYA(m.GameLogic, Core::FromJson<std::string>(j, "gameLogic"));
+	}
+
+	if (j.HasMember("gameType"))
+	{
+		PA_TRYA(m.GameType, Core::FromJson<std::string>(j, "gameType"));
+	}
+
+	if (j.HasMember("eventType"))
+	{
+		PA_TRYA(m.EventType, Core::FromJson<std::string>(j, "eventType"));
+	}
+
+	return {};
 }
 
 }  // namespace PotatoAlert::ReplayParser

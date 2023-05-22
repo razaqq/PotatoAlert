@@ -1,17 +1,16 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Client/AppDirectories.hpp"
+#include "Client/Config.hpp"
 #include "Client/Game.hpp"
 
 #include "Core/File.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
-
-#include "Client/Config.hpp"
-
+#include "Core/Process.hpp"
+#include "Core/Singleton.hpp"
 #include "Core/StandardPaths.hpp"
 
-#include <QApplication>
 #include <QDir>
 #include <QStandardPaths>
 
@@ -29,8 +28,10 @@ using PotatoAlert::Client::Config;
 using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Client::Game::GetGamePath;
 
-static json g_defaultConfig;
-static std::unordered_map<ConfigKey, std::string> g_keyNames =
+namespace {
+
+static rapidjson::Document g_defaultConfig = rapidjson::Document(rapidjson::kObjectType);
+static std::unordered_map<ConfigKey, std::string_view> g_keyNames =
 {
 	{ ConfigKey::StatsMode,                "stats_mode" },
 	{ ConfigKey::TeamDamageMode,           "team_damage_mode" },
@@ -52,35 +53,37 @@ static std::unordered_map<ConfigKey, std::string> g_keyNames =
 	{ ConfigKey::MenuBarLeft,              "menubar_left" }
 };
 
+}
+
+
 Config::Config(std::string filePath) : m_filePath(std::move(filePath))
 {
-	g_defaultConfig = {
-		{ g_keyNames[ConfigKey::StatsMode],                StatsMode::Pvp },
-		{ g_keyNames[ConfigKey::TeamDamageMode],           TeamStatsMode::Average },
-		{ g_keyNames[ConfigKey::TeamWinRateMode],          TeamStatsMode::Average },
-		{ g_keyNames[ConfigKey::TableLayout],              TableLayout::Horizontal },
-		{ g_keyNames[ConfigKey::UpdateNotifications],      true },
-		{ g_keyNames[ConfigKey::MinimizeTray],             false },
-		{ g_keyNames[ConfigKey::MatchHistory],             true },
-		{ g_keyNames[ConfigKey::SaveMatchCsv],             false },
-		{ g_keyNames[ConfigKey::WindowHeight],             450 },
-		{ g_keyNames[ConfigKey::WindowWidth],              1500 },
-		{ g_keyNames[ConfigKey::WindowX],                  0 },
-		{ g_keyNames[ConfigKey::WindowY],                  0 },
-		{ g_keyNames[ConfigKey::WindowState],              Qt::WindowState::WindowActive },
-		{ g_keyNames[ConfigKey::GameDirectory],            GetGamePath().value_or("") },
-		{ g_keyNames[ConfigKey::OverrideReplaysDirectory], false },
-		{ g_keyNames[ConfigKey::ReplaysDirectory],         "" },
-		{ g_keyNames[ConfigKey::Language],                 0 },
-		{ g_keyNames[ConfigKey::MenuBarLeft],              true }
-	};
+	g_defaultConfig.SetObject();
+	auto a = g_defaultConfig.GetAllocator();
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::StatsMode]), ToJson(StatsMode::Pvp), a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::TeamDamageMode]), ToJson(TeamStatsMode::Average), a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::TeamWinRateMode]), ToJson(TeamStatsMode::Average), a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::TableLayout]), ToJson(TableLayout::Horizontal), a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::UpdateNotifications]), true, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::MinimizeTray]), false, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::MatchHistory]), true, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::SaveMatchCsv]), false, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowHeight]), 450, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowWidth]), 1500, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowX]), 0, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowY]), 0, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowState]), Qt::WindowState::WindowActive, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::GameDirectory]), GetGamePath().value_or(""), a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::ReplaysDirectory]), "", a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::Language]), 0, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::MenuBarLeft]), true, a);
 
 	if (!Exists())
 	{
 		if (!CreateDefault())
 		{
 			LOG_ERROR("Failed to create default config.");
-			QApplication::exit(1);
+			Core::ExitCurrentProcessWithError(1);
 		}
 	}
 	Load();
@@ -107,18 +110,19 @@ void Config::Load()
 	if (!m_file)
 	{
 		LOG_ERROR("Failed to open config file: {}", File::LastError());
-		QApplication::exit(1);
+		Core::ExitCurrentProcessWithError(1);
+		return;
 	}
 
 	std::string str;
 	if (!m_file.ReadAllString(str))
 	{
 		LOG_ERROR("Failed to read config file: {}", File::LastError());
-		QApplication::exit(1);
+		Core::ExitCurrentProcessWithError(1);
+		return;
 	}
 
-	sax_no_exception sax(m_json);
-	if (!json::sax_parse(str, &sax))
+	PA_TRY_OR_ELSE(json, Core::ParseJson(str),
 	{
 		LOG_ERROR("Failed to Parse config as JSON.");
 
@@ -128,8 +132,9 @@ void Config::Load()
 		if (CreateDefault())
 			Load();
 		else
-			QApplication::exit(1);
-	}
+			Core::ExitCurrentProcessWithError(1);
+	});
+	m_json = std::move(json);
 
 	LOG_TRACE("Config loaded.");
 }
@@ -143,7 +148,11 @@ bool Config::Save() const
 		return false;
 	}
 
-	if (!m_file.WriteString(m_json.dump(4)))
+	rapidjson::StringBuffer stringBuffer;
+	rapidjson::PrettyWriter writer(stringBuffer);
+	m_json.Accept(writer);
+
+	if (!m_file.WriteString(std::string_view(stringBuffer.GetString(), stringBuffer.GetSize())))
 	{
 		LOG_ERROR("Failed to write config file: {}", File::LastError());
 		return false;
@@ -190,7 +199,8 @@ bool Config::CreateDefault()
 		LOG_ERROR("Failed to open config file: {}", File::LastError());
 		return false;
 	}
-	m_json = g_defaultConfig;
+
+	m_json.CopyFrom(g_defaultConfig, m_json.GetAllocator());
 
 	bool saved = Save();
 	m_file.Close();
@@ -245,42 +255,35 @@ bool Config::CreateBackup() const
 
 void Config::AddMissingKeys()
 {
-	for (auto it = g_defaultConfig.begin(); it != g_defaultConfig.end(); ++it)
+	for (auto it = g_defaultConfig.MemberBegin(); it != g_defaultConfig.MemberEnd(); ++it)
 	{
-		if (!m_json.contains(it.key()))
+		if (!m_json.HasMember(it->name))
 		{
-			LOG_INFO("Adding missing key '{}' to config.", it.key());
-			m_json[it.key()] = it.value();
+			LOG_INFO("Adding missing key '{}' to config.", it->name.GetString());
+			m_json.AddMember(it->name, it->value, m_json.GetAllocator());
 		}
 	}
 }
 
 void Config::ApplyUpdates()
 {
-	auto removeKey = [&](const std::string_view name)
+	auto renameKey = [&](std::string_view from, std::string_view to)
 	{
-		if (auto it = m_json.find(name); it != m_json.end())
-			m_json.erase(it);
-	};
-	auto renameKey = [&](const std::string& from, const std::string& to)
-	{
-		json::iterator it = m_json.find(from);
-		if (it != m_json.end())
+		if (auto it = m_json.FindMember(from.data()); it != m_json.MemberEnd())
 		{
-			std::swap(m_json[to], it.value());
-			m_json.erase(it);
+			it->name.SetString(to.data(), to.size());
 		}
 	};
 	renameKey("replays_folder", g_keyNames[ConfigKey::ReplaysDirectory]);
 	renameKey("override_replays_folder", g_keyNames[ConfigKey::OverrideReplaysDirectory]);
 	renameKey("game_folder", g_keyNames[ConfigKey::GameDirectory]);
 	renameKey("menubar_leftside", g_keyNames[ConfigKey::MenuBarLeft]);
-	removeKey("api_key");
-	removeKey("use_ga");
-	removeKey("save_csv");
+	m_json.RemoveMember("api_key");
+	m_json.RemoveMember("use_ga");
+	m_json.RemoveMember("save_csv");
 }
 
-std::string& Config::GetKeyName(ConfigKey key)
+std::string_view Config::GetKeyName(ConfigKey key)
 {
 	return g_keyNames[key];
 }

@@ -153,15 +153,19 @@ bool Updater::UpdateAvailable()
 		return false;
 	}
 
-	json j;
-	sax_no_exception sax(j);
-	if (!json::sax_parse(reply->readAll().toStdString(), &sax))
+	PA_TRY_OR_ELSE(json, ParseJson(reply->readAll().toStdString()),
 	{
-		LOG_ERROR("ParseError while parsing github api response as JSON.");
+		LOG_ERROR("Failed to parse github api response as JSON.");
+		return false;
+	});
+
+	if (!json.HasMember("tag_name"))
+	{
+		LOG_ERROR("Github response is missing key 'tag_name'");
 		return false;
 	}
 
-	return Version(j["tag_name"].get<std::string>()) > Version(QApplication::applicationVersion().toStdString());
+	return Version(FromJson<std::string>(json["tag_name"])) > Version(QApplication::applicationVersion().toStdString());
 }
 
 // starts the update process

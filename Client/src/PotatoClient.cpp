@@ -46,21 +46,17 @@ namespace {
 
 struct TempArenaInfoResult
 {
-	bool Exists = true;
-	bool Error = false;
 	std::string Raw;
 	std::string PlayerName;
 	std::string PlayerVehicle;
-	json Json;
+	rapidjson::Document Json;
 	std::string Hash;
 };
 
 // opens and reads a file
-static TempArenaInfoResult ReadArenaInfo(std::string_view filePath)
+static Result<TempArenaInfoResult, std::string> ReadArenaInfo(std::string_view filePath)
 {
 	LOG_TRACE("Reading arena info from: {}", filePath);
-
-	TempArenaInfoResult result;
 
 	using namespace std::chrono_literals;
 
@@ -83,8 +79,7 @@ static TempArenaInfoResult ReadArenaInfo(std::string_view filePath)
 
 	if (!file)
 	{
-		LOG_ERROR("Failed to open arena info file: {}", File::LastError());
-		return { File::Exists(filePath), true, "" };
+		return PA_ERROR(std::format("Failed to open arena info file: {}", File::LastError()));
 	}
 
 	// close the file when the scope ends
@@ -98,7 +93,7 @@ static TempArenaInfoResult ReadArenaInfo(std::string_view filePath)
 		{
 			// we have to assume its not an error, because the game sometimes touches it at the end of a match
 			// when its about to get deleted
-			return { false, false, "" };
+			return TempArenaInfoResult{ "" };
 		}
 
 		// the game has written to the file
@@ -106,30 +101,21 @@ static TempArenaInfoResult ReadArenaInfo(std::string_view filePath)
 		{
 			if (std::string arenaInfo; file.ReadAllString(arenaInfo))
 			{
-				json j;
-				sax_no_exception sax(j);
-				if (!json::sax_parse(arenaInfo, &sax))
-				{
-					LOG_ERROR("Failed to parse arena info file as JSON.");
-					return { true, true, "", "", "" };
-				}
-
-				std::string playerName = j.at("playerName").get<std::string>();
-				std::string playerVehicle = j.at("playerVehicle").get<std::string>();
+				PA_TRY(j, ParseJson(arenaInfo));
+				PA_TRY(playerName, ::FromJson<std::string>(j, "playerName"));
+				PA_TRY(playerVehicle, ::FromJson<std::string>(j, "playerVehicle"));
 
 				std::string hash;
 				Sha256(arenaInfo, hash);
 
-				return { true, false, arenaInfo, playerName, playerVehicle, j, hash };
+				return TempArenaInfoResult{ arenaInfo, playerName, playerVehicle, std::move(j), hash };
 			}
-			LOG_ERROR("Failed to read arena info file: {}", File::LastError());
-			return { true, true, "" };
+			return PA_ERROR(std::format("Failed to read arena info file: {}", File::LastError()));
 		}
 		std::this_thread::sleep_for(100ms);
 		now = std::chrono::high_resolution_clock::now();
 	}
-	LOG_ERROR("Game failed to write arena info within 1 second.");
-	return { File::Exists(filePath), true, "", "", "" };
+	return PA_ERROR(std::format("Game failed to write arena info within 1 second."));
 }
 
 enum RequestStatus
@@ -139,7 +125,7 @@ enum RequestStatus
 	Error,
 };
 
-NLOHMANN_JSON_SERIALIZE_ENUM(RequestStatus,
+PA_JSON_SERIALIZE_ENUM(RequestStatus,
 {
 	{ RequestStatus::InProgress, "in_progress" },
 	{ RequestStatus::Completed, "completed" },
@@ -152,20 +138,34 @@ struct ServerResponse
 	std::optional<std::string> Error;
 	std::optional<std::string> IssuedAt;
 	std::optional<std::string> CompletedAt;
-	std::optional<json> Result;
+	std::optional<rapidjson::Document> Result;
 };
 
-[[maybe_unused]] static void from_json(const json& j, ServerResponse& r)
+[[maybe_unused]] static JsonResult<void> FromJson(rapidjson::Document& j, ServerResponse& r)
 {
-	j.at("status").get_to(r.Status);
-	if (j.contains("error"))
-		r.Error = j.at("error").get<std::string>();
-	if (j.contains("issued_at"))
-		r.IssuedAt = j.at("issued_at").get<std::string>();
-	if (j.contains("completed_at"))
-		r.CompletedAt = j.at("completed_at").get<std::string>();
-	if (j.contains("result"))
-		r.Result = j.at("result").get<json>();
+	if (!j.HasMember("status"))
+		return PA_JSON_ERROR("Server response is missing status");
+	FromJson(j["status"], r.Status);
+	if (j.HasMember("error"))
+	{
+		PA_TRYA(r.Error, PotatoAlert::Core::FromJson<std::string>(j, "error"));
+	}
+	if (j.HasMember("issued_at"))
+	{
+		PA_TRYA(r.IssuedAt, PotatoAlert::Core::FromJson<std::string>(j, "issued_at"));
+	}
+	if (j.HasMember("completed_at"))
+	{
+		PA_TRYA(r.CompletedAt, PotatoAlert::Core::FromJson<std::string>(j, "completed_at"));
+	}
+	if (j.HasMember("result"))
+	{
+		rapidjson::Document d;
+		d.Swap(j["result"]);
+		r.Result = std::move(d);
+	}
+
+	return {};
 }
 
 static inline std::string GetReplayName(const MatchType::InfoType& info)
@@ -238,17 +238,21 @@ void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& ma
 
 			LOG_TRACE("Got submitReply from server with location '{}' and content '{}'", lookupUrl, content.toStdString());
 
-			json submitJson;
-			sax_no_exception sax(submitJson);
-			if (!json::sax_parse(content.toUtf8().toStdString(), &sax))
+			PA_TRY_OR_ELSE(json, ParseJson(content.toUtf8().toStdString()),
 			{
 				LOG_ERROR("Failed to parse server response as JSON.");
 				emit StatusReady(Status::Error, "JSON Parse Error");
 				return;
+			});
+
+			if (!json.HasMember("AuthToken"))
+			{
+				LOG_ERROR("Server response did not include an auth token");
+				emit StatusReady(Status::Error, "Auth Error");
+				return;
 			}
 
-			const std::string authToken = submitJson.at("AuthToken").get<std::string>();
-			LookupResult(lookupUrl, authToken, matchContext);
+			LookupResult(lookupUrl, Core::FromJson<std::string>(json["AuthToken"]), matchContext);
 		};
 		HandleReply(submitReply, handler);
 	});
@@ -277,19 +281,24 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 					return;
 				}
 
-				std::string lookupResponseString = content.toUtf8().toStdString();
+				const std::string lookupResponseString = content.toUtf8().toStdString();
 				LOG_TRACE("Got lookupReply from server with content '{}'", lookupResponseString);
 
-				json lookupJson;
-				sax_no_exception sax(lookupJson);
-				if (!json::sax_parse(lookupResponseString, &sax))
+				PA_TRY_OR_ELSE(json, ParseJson(lookupResponseString),
 				{
 					LOG_ERROR("Failed to parse server response as JSON.");
 					emit StatusReady(Status::Error, "JSON Parse Error");
 					return;
-				}
+				});
 
-				const ServerResponse serverResponse = lookupJson.get<ServerResponse>();
+				ServerResponse serverResponse;
+				PA_TRYV_OR_ELSE(FromJson(json, serverResponse),
+				{
+					LOG_ERROR("Failed to parse json as ServerResponse");
+					emit StatusReady(Status::Error, "JSON Parse Error");
+					return;
+				});
+				
 				switch (serverResponse.Status)
 				{
 					case InProgress:
@@ -307,12 +316,12 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 						}
 
 						LOG_TRACE("Parsing match.");
-						const StatsParser::StatsParseResult res = ParseMatch(serverResponse.Result.value(), matchContext);
-						if (!res.Success)
+						PA_TRY_OR_ELSE(res, ParseMatch(serverResponse.Result.value(), matchContext),
 						{
+							LOG_ERROR("Failed to parse server response as JSON: {}", error);
 							emit StatusReady(Status::Error, "JSON Parse Error");
 							return;
-						}
+						});
 
 						const Config& config = m_services.Get<Config>();
 
@@ -329,6 +338,11 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 							if (!exists)
 							{
 								LOG_TRACE("Adding match to match history '{}'", m_lastArenaInfoHash);
+								
+								rapidjson::StringBuffer buffer;
+								rapidjson::Writer writer(buffer);
+								serverResponse.Result.value().Accept(writer);
+
 								Match match
 								{
 									.Hash = m_lastArenaInfoHash,
@@ -343,10 +357,10 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 									.StatsMode = res.Match.Info.StatsMode,
 									.Player = res.Match.Info.Player,
 									.Region = res.Match.Info.Region,
-									.Json = serverResponse.Result.value().dump(),
+									.Json = buffer.GetString(),
 									.ArenaInfo = matchContext.ArenaInfo,
 									.Analyzed = false,
-									.ReplaySummary = ReplaySummary::FromJson("{}")
+									.ReplaySummary = ReplaySummary{}
 								};
 
 								SqlResult<void> addResult = dbm.AddMatch(match);
@@ -447,16 +461,14 @@ void PotatoClient::HandleReply(QNetworkReply* reply, auto& successHandler)
 		{
 			const QString content = QString::fromUtf8(reply->readAll());
 
-			json errorJson;
-			sax_no_exception sax(errorJson);
-			if (!json::sax_parse(content.toUtf8().toStdString(), &sax))
+			PA_TRY_OR_ELSE(errorJson, ParseJson(content.toUtf8().toStdString()),
 			{
-				LOG_ERROR("Failed to parse server response as JSON.");
+				LOG_ERROR("Failed to parse server error response as JSON.");
 				emit StatusReady(Status::Error, "JSON Parse Error");
 				return;
-			}
+			});
 
-			emit StatusReady(Status::Error, errorJson["error"]);
+			emit StatusReady(Status::Error, Core::FromJson<std::string>(errorJson["error"]));
 			break;
 		}
 		default:
@@ -489,16 +501,14 @@ void PotatoClient::OnFileChanged(const std::string& file)
 		return;
 	}
 
-	// read arena info from file
-	TempArenaInfoResult arenaInfo = ReadArenaInfo(file);
-	if (arenaInfo.Error)
+	PA_TRY_OR_ELSE(arenaInfo, ReadArenaInfo(file),
 	{
-		LOG_ERROR("Failed to read arena info from file.");
+		LOG_ERROR("Failed to read arena info from file: {}", error);
 		emit StatusReady(Status::Error, "Reading ArenaInfo");
 		return;
-	}
+	});
 
-	if (!arenaInfo.Exists)
+	if (!File::Exists(file))
 	{
 		LOG_TRACE("Arena info did not exist when directory changed.");
 		return;
@@ -510,20 +520,24 @@ void PotatoClient::OnFileChanged(const std::string& file)
 	m_lastArenaInfoHash = arenaInfo.Hash;
 
 	// build the request
-	const json request =
-	{
-		{ "Guid", "placeholder123" },
-		{ "Player", arenaInfo.PlayerName },
-		{ "Region", m_dirStatus.region },
-		{ "StatsMode", m_services.Get<Config>().Get<ConfigKey::StatsMode>() },
-		{ "TeamDamageMode", m_services.Get<Config>().Get<ConfigKey::TeamDamageMode>() },
-		{ "TeamWinRateMode", m_services.Get<Config>().Get<ConfigKey::TeamWinRateMode>() },
-		{ "ArenaInfo", arenaInfo.Json }
-	};
+	rapidjson::Document request;
+	request.SetObject();
+	rapidjson::MemoryPoolAllocator<> a = request.GetAllocator();
+	request.AddMember("Guid", "placeholder123", a);
+	request.AddMember("Player", arenaInfo.PlayerName, a);
+	request.AddMember("Region", m_dirStatus.region, a);
+	request.AddMember("StatsMode", ToJson(m_services.Get<Config>().Get<ConfigKey::StatsMode>()), a);
+	request.AddMember("TeamDamageMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamDamageMode>()), a);
+	request.AddMember("TeamWinRateMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamWinRateMode>()), a);
+	request.AddMember("ArenaInfo", arenaInfo.Json, a);
+
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer writer(buffer);
+	request.Accept(writer);
 
 	emit StatusReady(Status::Loading, "Loading");
 
-	SendRequest(request.dump(),
+	SendRequest(buffer.GetString(),
 		MatchContext{arenaInfo.Raw, arenaInfo.PlayerName, arenaInfo.PlayerVehicle});
 }
 

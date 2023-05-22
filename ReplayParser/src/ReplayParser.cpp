@@ -64,13 +64,11 @@ ReplayResult<Replay> Replay::FromFile(std::string_view fileName)
 	replay.MetaString.resize(metaSize);
 	std::memcpy(replay.MetaString.data(), Take(replay.m_data, metaSize).data(), metaSize);
 
-	json js;
-	sax_no_exception sax(js);
-	if (!json::sax_parse(replay.MetaString, &sax))
+	PA_TRY_OR_ELSE(js, Core::ParseJson(replay.MetaString),
 	{
-		return PA_REPLAY_ERROR("Failed to parse replay meta as JSON.");
-	}
-	replay.Meta = js.get<ReplayMeta>();
+		return PA_REPLAY_ERROR("Failed to parse replay meta as JSON: {}", error);
+	});
+	FromJson(js, replay.Meta);
 
 	return replay;
 }
@@ -151,7 +149,8 @@ ReplayResult<void> Replay::ReadPackets(const std::vector<fs::path>& scriptsSearc
 
 	std::span out{ decompressed };
 	do {
-		Packets.emplace_back(ParsePacket(out, m_packetParser));
+		PA_TRY(packet, ParsePacket(out, m_packetParser));
+		Packets.emplace_back(std::move(packet));
 	} while (!out.empty());
 
 	// sort the packets by game time

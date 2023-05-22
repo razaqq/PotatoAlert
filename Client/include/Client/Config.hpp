@@ -26,6 +26,7 @@ enum class ConfigType : uint8_t
 	StatsMode     = 8 * 4,
 	TeamStatsMode = 8 * 5,
 	TableLayout   = 8 * 6,
+	WString       = 8 * 7,
 };
 
 #define DECL_TYPE(name, type, value) name = static_cast<uint64_t>((value)) << static_cast<uint8_t>((type))
@@ -64,7 +65,7 @@ enum class StatsMode
 	Ranked,
 	Cooperative,
 };
-NLOHMANN_JSON_SERIALIZE_ENUM(StatsMode,
+PA_JSON_SERIALIZE_ENUM(StatsMode,
 {
 	{ StatsMode::Current,     "current"     },
 	{ StatsMode::Pvp,         "pvp"         },
@@ -78,7 +79,7 @@ enum class TeamStatsMode
 	Average,
 	Median,
 };
-NLOHMANN_JSON_SERIALIZE_ENUM(TeamStatsMode,
+PA_JSON_SERIALIZE_ENUM(TeamStatsMode,
 {
 	{ TeamStatsMode::Weighted, "weighted" },
 	{ TeamStatsMode::Average,  "average"  },
@@ -90,7 +91,7 @@ enum class TableLayout
 	Horizontal,
 	Vertical,
 };
-NLOHMANN_JSON_SERIALIZE_ENUM(TableLayout,
+PA_JSON_SERIALIZE_ENUM(TableLayout,
 {
 	{ TableLayout::Horizontal, "horizontal" },
 	{ TableLayout::Vertical,   "vertical"   },
@@ -115,15 +116,33 @@ private:
 	[[nodiscard]] T BaseGet() const
 	{
 		// we technically don't have to check, since we check for keys on init
-		if (m_json.contains(GetKeyName(Key)))
-			return m_json.at(GetKeyName(Key)).get<T>();
+		if (m_json.HasMember(GetKeyName(Key).data()))
+		{
+			if constexpr (std::is_enum_v<T>)
+			{
+				T t;
+				FromJson(m_json[GetKeyName(Key).data()], t);
+				return t;
+			}
+			else
+			{
+				return Core::FromJson<T>(m_json[GetKeyName(Key).data()]);
+			}
+		}
 		return {};
 	}
 
 	template<ConfigKey Key, typename T>
 	void BaseSet(T value)
 	{
-		m_json[GetKeyName(Key)] = value;
+		if constexpr (std::is_enum_v<T>)
+		{
+			m_json[GetKeyName(Key).data()] = ToJson(value);
+		}
+		else
+		{
+			m_json[GetKeyName(Key).data()] = Core::ToJson(value);
+		}
 	}
 
 public:
@@ -138,6 +157,9 @@ public:
 
 	template<ConfigKey Key> requires(IsType(Key, ConfigType::String))
 	[[nodiscard]] std::string Get() const { return BaseGet<Key, std::string>(); }
+
+	template<ConfigKey Key> requires(IsType(Key, ConfigType::WString))
+	[[nodiscard]] std::wstring Get() const { return BaseGet<Key, std::wstring>(); }
 
 	template<ConfigKey Key> requires(IsType(Key, ConfigType::Bool))
 	[[nodiscard]] bool Get() const { return BaseGet<Key, bool>(); }
@@ -157,6 +179,9 @@ public:
 	template<ConfigKey Key> requires(IsType(Key, ConfigType::String))
 	void Set(std::string_view value) { BaseSet<Key>(value); }
 
+	template<ConfigKey Key> requires(IsType(Key, ConfigType::WString))
+	void Set(std::wstring_view value) { BaseSet<Key>(value); }
+
 	template<ConfigKey Key> requires(IsType(Key, ConfigType::Bool))
 	void Set(bool value) { BaseSet<Key>(value); }
 
@@ -165,13 +190,13 @@ public:
 
 
 private:
-	json m_json;
+	rapidjson::Document m_json;
 	File m_file;
 	std::string m_filePath;
 	void AddMissingKeys();
 	void ApplyUpdates();
 	bool CreateDefault();
-	[[nodiscard]] static std::string& GetKeyName(ConfigKey key);
+	[[nodiscard]] static std::string_view GetKeyName(ConfigKey key);
 	bool CreateBackup() const;
 	[[nodiscard]] bool Exists() const;
 };

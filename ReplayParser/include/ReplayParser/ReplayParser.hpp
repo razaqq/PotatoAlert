@@ -113,7 +113,7 @@ static const std::unordered_map<RibbonType, std::string_view> g_ribbonNames =
 	RIBBON_TYPES
 #undef X
 };
-NLOHMANN_JSON_SERIALIZE_ENUM_MAP(RibbonType, g_ribbonNames);
+PA_JSON_SERIALIZE_ENUM_MAP(RibbonType, g_ribbonNames);
 
 inline std::string_view GetName(RibbonType ribbon)
 {
@@ -212,7 +212,7 @@ static const std::unordered_map<AchievementType, std::string_view> g_achievement
 	ACHIEVEMENT_TYPES
 #undef X
 };
-NLOHMANN_JSON_SERIALIZE_ENUM_MAP(AchievementType, g_achievementNames);
+PA_JSON_SERIALIZE_ENUM_MAP(AchievementType, g_achievementNames);
 
 inline std::string_view GetName(AchievementType achievement)
 {
@@ -229,7 +229,7 @@ enum class MatchOutcome
 	Draw,
 	Unknown
 };
-NLOHMANN_JSON_SERIALIZE_ENUM(MatchOutcome,
+PA_JSON_SERIALIZE_ENUM(MatchOutcome,
 {
 	{ MatchOutcome::Win, "win" },
 	{ MatchOutcome::Loss, "loss" },
@@ -240,85 +240,77 @@ NLOHMANN_JSON_SERIALIZE_ENUM(MatchOutcome,
 struct ReplaySummary
 {
 	std::string Hash;
-	MatchOutcome Outcome;
-	float DamageDealt;
-	float DamageTaken;
-	float DamageSpotting;
-	float DamagePotential;
-	std::unordered_map<AchievementType, uint32_t> Achievements;
-	std::unordered_map<RibbonType, uint32_t> Ribbons;
-
-	[[nodiscard]] std::string ToJson() const
-	{
-		const json j =
-		{
-			{ "outcome",          Outcome         },
-			{ "damage_dealt",     DamageDealt     },
-			{ "damage_taken",     DamageTaken     },
-			{ "damage_spotting",  DamageSpotting  },
-			{ "damage_potential", DamagePotential },
-			{ "achievements",     Achievements    },
-			{ "ribbons",          Ribbons         },
-		};
-
-		return j.dump();
-	}
-
-	static ReplaySummary FromJson(std::string_view inJson)
-	{
-		json j;
-		sax_no_exception sax(j);
-		if (!json::sax_parse(inJson, &sax))
-		{
-			LOG_ERROR(R"(Failed to parse replay summary as JSON.)");
-			return ReplaySummary{ "", MatchOutcome::Unknown };
-		}
-
-		MatchOutcome outcome = MatchOutcome::Unknown;
-		if (j.contains("outcome"))
-		{
-			outcome = j["outcome"].get<MatchOutcome>();
-		}
-
-		float damageDealt = 0.0f;
-		if (j.contains("damage_dealt"))
-		{
-			damageDealt = j["damage_dealt"].get<float>();
-		}
-
-		float damageTaken = 0.0f;
-		if (j.contains("damage_taken"))
-		{
-			damageTaken = j["damage_taken"].get<float>();
-		}
-
-		float damageSpotting = 0.0f;
-		if (j.contains("damage_spotting"))
-		{
-			damageSpotting = j["damage_spotting"].get<float>();
-		}
-
-		float damagePotential = 0.0f;
-		if (j.contains("damage_potential"))
-		{
-			damagePotential = j["damage_potential"].get<float>();
-		}
-
-		std::unordered_map<AchievementType, uint32_t> achievements;
-		if (j.contains("achievements"))
-		{
-			achievements = j["achievements"].get<std::unordered_map<AchievementType, uint32_t>>();
-		}
-
-		std::unordered_map<RibbonType, uint32_t> ribbons;
-		if (j.contains("ribbons"))
-		{
-			ribbons = j["ribbons"].get<std::unordered_map<RibbonType, uint32_t>>();
-		}
-
-		return ReplaySummary{"", outcome, damageDealt, damageTaken, damageSpotting, damagePotential, achievements, ribbons };
-	}
+	MatchOutcome Outcome = MatchOutcome::Unknown;
+	float DamageDealt = 0.0f;
+	float DamageTaken = 0.0f;
+	float DamageSpotting = 0.0f;
+	float DamagePotential = 0.0f;
+	std::unordered_map<AchievementType, uint32_t> Achievements = {};
+	std::unordered_map<RibbonType, uint32_t> Ribbons = {};
 };
+
+static inline Core::JsonResult<void> ToJson(rapidjson::Writer<rapidjson::StringBuffer>& writer, const ReplaySummary& s)
+{
+	writer.StartObject();
+
+	writer.Key("outcome");
+	if (!ReplayParser::ToJson(writer, s.Outcome))
+		return PA_JSON_ERROR("Failed to write ReplaySummary::Outcome");
+	
+	writer.Key("damage_dealt");
+	writer.Double(s.DamageDealt);
+	writer.Key("damage_taken");
+	writer.Double(s.DamageTaken);
+	writer.Key("damage_spotting");
+	writer.Double(s.DamageSpotting);
+	writer.Key("damage_potential");
+	writer.Double(s.DamagePotential);
+
+	writer.Key("achievements");
+
+	if (!Core::ToJson(writer, s.Achievements))
+		return PA_JSON_ERROR("Failed to write ReplaySummary::Achievements");
+
+	writer.Key("ribbons");
+	if (!Core::ToJson(writer, s.Ribbons))
+		return PA_JSON_ERROR("Failed to write ReplaySummary::Ribbons");
+
+	writer.EndObject();
+
+	return {};
+}
+
+static Core::JsonResult<void> FromJson(std::string_view json, ReplaySummary& s)
+{
+	PA_TRY(j, Core::ParseJson(json));
+
+	if (j.HasMember("outcome"))
+		ReplayParser::FromJson(j["outcome"], s.Outcome);
+	
+	if (j.HasMember("damage_dealt") && j["damage_dealt"].IsFloat())
+		s.DamageDealt = j["damage_dealt"].GetFloat();
+	
+	if (j.HasMember("damage_taken") && j["damage_taken"].IsFloat())
+		s.DamageTaken = j["damage_taken"].GetFloat();
+	
+	if (j.HasMember("damage_spotting") && j["damage_spotting"].IsFloat())
+		s.DamageSpotting = j["damage_spotting"].GetFloat();
+
+	if (j.HasMember("damage_potential") && j["damage_potential"].IsFloat())
+		s.DamagePotential = j["damage_potential"].GetFloat();
+
+	if (j.HasMember("achievements"))
+	{
+		PA_TRYV(Core::FromJson(j["achievements"], s.Achievements));
+	}
+
+	if (j.HasMember("ribbons"))
+	{
+		PA_TRYV(Core::FromJson(j["ribbons"], s.Ribbons));
+	}
+
+	return {};
+}
 
 class Replay
 {

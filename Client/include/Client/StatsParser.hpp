@@ -69,7 +69,6 @@ struct MatchType
 
 struct StatsParseResult
 {
-	bool Success = false;
 	MatchType Match;
 	std::string Csv;
 };
@@ -81,7 +80,7 @@ struct MatchContext
 	std::string ShipIdent;
 };
 
-StatsParseResult ParseMatch(const json& j, const MatchContext& matchContext) noexcept;
-StatsParseResult ParseMatch(const std::string& raw, const MatchContext& matchContext) noexcept;
+Core::JsonResult<StatsParseResult> ParseMatch(const rapidjson::Value& j, const MatchContext& matchContext) noexcept;
+Core::JsonResult<StatsParseResult> ParseMatch(const std::string& raw, const MatchContext& matchContext) noexcept;
 
 }  // namespace PotatoAlert::Client::StatsParser
