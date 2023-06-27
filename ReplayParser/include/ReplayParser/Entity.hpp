@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 
 namespace PotatoAlert::ReplayParser {
 
-enum class Flag
+enum class PropertyFlag
 {
 	AllClients       = 1 << 0,
 	CellPublicAndOwn = 1 << 1,
@@ -28,28 +28,28 @@ enum class Flag
 	Unknown          = 1 << 8,
 };
 
-inline constexpr Flag operator|(Flag a, Flag b)
+inline constexpr PropertyFlag operator|(PropertyFlag a, PropertyFlag b)
 {
-	using UT = std::underlying_type_t<Flag>;
-	return static_cast<Flag>(static_cast<UT>(a) | static_cast<UT>(b));
+	using UT = std::underlying_type_t<PropertyFlag>;
+	return static_cast<PropertyFlag>(static_cast<UT>(a) | static_cast<UT>(b));
 }
 
-inline constexpr bool operator&(Flag a, Flag b)
+inline constexpr bool operator&(PropertyFlag a, PropertyFlag b)
 {
-	using UT = std::underlying_type_t<Flag>;
+	using UT = std::underlying_type_t<PropertyFlag>;
 	return static_cast<UT>(a) & static_cast<UT>(b);
 }
 
-inline Flag ParseFlag(const std::string& str)
+inline PropertyFlag ParseFlag(const std::string& str)
 {
-	static const std::unordered_map<std::string, Flag> flags{
-		{ "ALL_CLIENTS", Flag::AllClients },
-		{ "CELL_PUBLIC_AND_OWN", Flag::CellPublicAndOwn },
-		{ "OWN_CLIENT", Flag::OwnClient },
-		{ "BASE_AND_CLIENT", Flag::BaseAndClient },
-		{ "BASE", Flag::Base },
-		{ "CELL_PRIVATE", Flag::CellPrivate },
-		{ "CELL_PUBLIC", Flag::CellPublic }
+	static const std::unordered_map<std::string, PropertyFlag> flags{
+		{ "ALL_CLIENTS", PropertyFlag::AllClients },
+		{ "CELL_PUBLIC_AND_OWN", PropertyFlag::CellPublicAndOwn },
+		{ "OWN_CLIENT", PropertyFlag::OwnClient },
+		{ "BASE_AND_CLIENT", PropertyFlag::BaseAndClient },
+		{ "BASE", PropertyFlag::Base },
+		{ "CELL_PRIVATE", PropertyFlag::CellPrivate },
+		{ "CELL_PUBLIC", PropertyFlag::CellPublic }
 	};
 
 	if (const auto& lookup = flags.find(Core::String::Trim(Core::String::ToUpper(str))); lookup != flags.end())
@@ -57,14 +57,14 @@ inline Flag ParseFlag(const std::string& str)
 		return lookup->second;
 	}
 
-	return Flag::Unknown;
+	return PropertyFlag::Unknown;
 }
 
 struct Property
 {
 	std::string Name;
 	ArgType Type;
-	Flag Flag;
+	PropertyFlag Flag;
 };
 
 struct Method

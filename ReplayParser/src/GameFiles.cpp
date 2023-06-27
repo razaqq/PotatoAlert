@@ -117,22 +117,22 @@ std::vector<EntitySpec> rp::ParseScripts(const Version& version, const std::vect
 			std::vector<std::reference_wrapper<const Property>> baseProperties;
 			for (const Property& prop : merged.Properties)
 			{
-				if (prop.Flag & (Flag::AllClients | Flag::OtherClients | Flag::OwnClient | Flag::CellPublicAndOwn | Flag::BaseAndClient))
+				if (prop.Flag & (PropertyFlag::AllClients | PropertyFlag::OtherClients | PropertyFlag::OwnClient | PropertyFlag::CellPublicAndOwn | PropertyFlag::BaseAndClient))
 				{
 					clientProperties.emplace_back(prop);
 				}
 
-				if (prop.Flag & (Flag::AllClients | Flag::OtherClients | Flag::OwnClient | Flag::CellPublicAndOwn))
+				if (prop.Flag & (PropertyFlag::AllClients | PropertyFlag::OtherClients | PropertyFlag::OwnClient | PropertyFlag::CellPublicAndOwn))
 				{
 					clientPropertiesInternal.emplace_back(prop);
 				}
 
-				if (prop.Flag & (Flag::CellPublicAndOwn | Flag::CellPublic))
+				if (prop.Flag & (PropertyFlag::CellPublicAndOwn | PropertyFlag::CellPublic))
 				{
 					cellProperties.emplace_back(prop);
 				}
 
-				if (prop.Flag & Flag::BaseAndClient)
+				if (prop.Flag & PropertyFlag::BaseAndClient)
 				{
 					baseProperties.emplace_back(prop);
 				}
