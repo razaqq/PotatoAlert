@@ -128,6 +128,12 @@ ReplayResult<PacketType> rp::ParsePacket(std::span<const Byte>& data, PacketPars
 			TakeInto(raw, unknown);
 			break;
 		}
+		case 0x1D:
+		{
+			uint32_t x;
+			TakeInto(raw, x);
+			break;
+		}
 		case 0x25:
 		{
 			// 10 bytes
@@ -639,8 +645,8 @@ ReplayResult<NestedPropertyUpdatePacket> rp::ParseNestedPropertyUpdatePacket(std
 	{
 		return PA_REPLAY_ERROR("Entity {} does not exist for EntityPropertyPacket", packet.EntityId);
 	}
-	packet.Entity = &parser.Entities.at(packet.EntityId);
-	const EntitySpec& spec = packet.Entity->Spec;
+	packet.EntityPtr = &parser.Entities.at(packet.EntityId);
+	const EntitySpec& spec = packet.EntityPtr->Spec;
 
 	BitReader bitReader(payload);
 	const int cont = bitReader.Get(1);
@@ -660,12 +666,12 @@ ReplayResult<NestedPropertyUpdatePacket> rp::ParseNestedPropertyUpdatePacket(std
 	packet.PropertyIndex = propIndex;
 	packet.PropertyName = prop.Name;
 
-	if (!packet.Entity->ClientPropertiesValues.contains(prop.Name))
+	if (!packet.EntityPtr->ClientPropertiesValues.contains(prop.Name))
 	{
 		return PA_REPLAY_ERROR("Entity is missing property value for '{}' in NestedPropertyUpdatePacket", prop.Name);
 	}
 
-	PA_TRY(nesting, GetNestedPropertyPath(isSlice, prop.Type, &packet.Entity->ClientPropertiesValues[prop.Name], bitReader));
+	PA_TRY(nesting, GetNestedPropertyPath(isSlice, prop.Type, &packet.EntityPtr->ClientPropertiesValues[prop.Name], bitReader));
 	packet.Nesting = nesting;
 
 	if (!data.empty())

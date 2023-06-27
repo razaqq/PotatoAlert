@@ -132,13 +132,16 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 
 				if (packet.MethodName == "onBattleEnd")
 				{
-					// second arg uint8_t winReason
-					return VariantGet<int8_t>(packet, 0, [&replayData](int8_t team) -> ReplayResult<void>
+					if (Meta.ClientVersionFromExe < Version(12, 5, 0))
 					{
-						replayData.winningTeam = team;
+						// second arg uint8_t winReason
+						return VariantGet<int8_t>(packet, 0, [&replayData](int8_t team) -> ReplayResult<void>
+						{
+							replayData.winningTeam = team;
 
-						return {};
-					});
+							return {};
+						});
+					}
 				}
 
 				if (packet.MethodName == "receiveDamageStat")
@@ -184,7 +187,6 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 
 						return {};
 					});
-
 				}
 
 				if (packet.MethodName == "receiveDamagesOnShip")
@@ -366,6 +368,40 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 				}
 				return {};
 			});
+		}));
+	}
+
+	if (Meta.ClientVersionFromExe >= Version(12, 5, 0))
+	{
+		const auto battleLogic = std::ranges::find_if(m_packetParser.Entities | std::views::values, [](const Entity& entity)
+		{
+			return entity.Spec.get().Name == "BattleLogic";
+		});
+
+		if (battleLogic == std::end(m_packetParser.Entities | std::views::values))
+		{
+			return PA_REPLAY_ERROR("No entity with spec BattleLogic");
+		}
+
+		if (!(*battleLogic).ClientPropertiesValues.contains("battleResult"))
+		{
+			return PA_REPLAY_ERROR("Entity BattleLogic is missing 'battleResult'");
+		}
+
+		PA_TRYV(VariantGet<std::unordered_map<std::string, ArgValue>>((*battleLogic).ClientPropertiesValues.at("battleResult"), [&replayData](const auto& map) -> ReplayResult<void>
+		{
+			if (map.contains("winnerTeamId"))
+			{
+				PA_TRYV(VariantGet<int8_t>(map.at("winnerTeamId"), [&replayData](int8_t winnerTeamId) -> ReplayResult<void>
+				{
+					replayData.winningTeam = winnerTeamId;
+					return {};
+				}));
+
+				return {};
+			}
+
+			return PA_REPLAY_ERROR("battleResult did not contain 'winnerTeamId'");
 		}));
 	}
 
