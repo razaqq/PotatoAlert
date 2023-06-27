@@ -159,9 +159,10 @@ DatabaseManager::DatabaseManager(SQLite& db) : m_db(db)
 		LOG_ERROR("Failed to create database tables");
 	}
 
-	if (!MigrateTables())
+	SqlResult<void> migrate = MigrateTables();
+	if (!migrate)
 	{
-		LOG_ERROR("Failed to migrate tables");
+		LOG_ERROR("Failed to migrate tables: {}", migrate.error());
 	}
 }
 
