@@ -74,6 +74,11 @@ public:
 		return SQLite(RawOpen(path, flags));
 	}
 
+	static SQLite Open(std::wstring_view path, Flags flags)
+	{
+		return SQLite(RawOpenW(path, flags));
+	}
+
 	void Close()
 	{
 		RawClose(std::exchange(m_handle, Handle::Null));
@@ -172,6 +177,7 @@ private:
 	Handle m_handle;
 
 	static Handle RawOpen(std::string_view path, Flags flags);
+	static Handle RawOpenW(std::wstring_view path, Flags flags);
 	static void RawClose(Handle handle);
 	static bool RawFlushBuffer(Handle handle);
 	static bool RawExecute(
