@@ -12,20 +12,74 @@ namespace fs = std::filesystem;
 
 std::optional<std::string> PotatoAlert::Client::Game::GetGamePath()
 {
-	HKEY key;
-	if (RegOpenKeyExA(HKEY_CURRENT_USER, R"(SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\WOWS.WW.PRODUCTION)", 0, KEY_READ, &key) == ERROR_SUCCESS)
+	HKEY hKey;
+
+	if (RegOpenKeyExA(HKEY_CURRENT_USER, R"(SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall)", 0, KEY_READ, &hKey) != ERROR_SUCCESS)
 	{
-		unsigned char buffer[MAX_PATH];
-		DWORD bufferSize = sizeof(buffer);
-		if (RegQueryValueExA(key, "InstallLocation", nullptr, nullptr, buffer, &bufferSize) == ERROR_SUCCESS)
+		RegCloseKey(hKey);
+		return {};
+	}
+
+	CHAR achKey[255];
+	DWORD cbName;
+	DWORD cSubKeys = 0;
+	FILETIME ftLastWriteTime;
+
+	if (RegQueryInfoKeyA(hKey, NULL, NULL, NULL, &cSubKeys, NULL, NULL, NULL, NULL, NULL, NULL, &ftLastWriteTime) != ERROR_SUCCESS)
+	{
+		RegCloseKey(hKey);
+		return {};
+	}
+
+	for (DWORD i = 0; i < cSubKeys; i++)
+	{
+		if (RegEnumKeyExA(hKey, i, achKey, &cbName, NULL, NULL, NULL, &ftLastWriteTime) == ERROR_SUCCESS)
 		{
-			const char* gamePathStr = reinterpret_cast<char*>(buffer);
-			const fs::path gamePath(gamePathStr);
-			if (fs::exists(gamePath) && !gamePath.empty())
+			HKEY subKey;
+			if (RegOpenKeyExA(hKey, achKey, 0, KEY_READ, &subKey) == ERROR_SUCCESS)
 			{
-				return gamePathStr;
+				DWORD displayNameSize = MAX_PATH;
+				CHAR displayName[MAX_PATH];
+				if (RegQueryValueExA(subKey, "DisplayName", nullptr, nullptr, (LPBYTE)displayName, &displayNameSize) != ERROR_SUCCESS)
+				{
+					RegCloseKey(subKey);
+					continue;
+				}
+
+				DWORD publisherSize = MAX_PATH;
+				CHAR publisher[MAX_PATH];
+				if (RegQueryValueExA(subKey, "Publisher", nullptr, nullptr, (LPBYTE)publisher, &publisherSize) != ERROR_SUCCESS)
+				{
+					RegCloseKey(subKey);
+					continue;
+				}
+
+				if (strcmp(publisher, "Wargaming.net") == 0 && strcmp(displayName, "World_of_Warships") == 0)
+				{
+					DWORD installLocationSize = MAX_PATH;
+					CHAR installLocation[MAX_PATH];
+					if (RegQueryValueExA(subKey, "InstallLocation", nullptr, nullptr, (LPBYTE)installLocation, &installLocationSize) == ERROR_SUCCESS)
+					{
+						RegCloseKey(hKey);
+						RegCloseKey(subKey);
+						const fs::path gamePath(installLocation);
+						if (fs::exists(gamePath) && !gamePath.empty())
+						{
+							return installLocation;
+						}
+						return std::string(installLocation);
+					}
+					else
+					{
+						RegCloseKey(hKey);
+						RegCloseKey(subKey);
+						return {};
+					}
+				}
 			}
+			RegCloseKey(subKey);
 		}
 	}
+	RegCloseKey(hKey);
 	return {};
 }
