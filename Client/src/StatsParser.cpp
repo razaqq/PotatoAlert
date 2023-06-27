@@ -84,7 +84,7 @@ struct Color
 			return valid(m_r) && valid(m_g) && valid(m_b) && valid(m_a.value());
 	}
 
-	[[nodiscard]] QColor QColor() const
+	[[nodiscard]] QColor GetQColor() const
 	{
 		if (!m_a)
 			return QColor::fromRgb(m_r, m_g, m_b);
@@ -115,7 +115,7 @@ struct Stat
 	[[nodiscard]] QTableWidgetItem* GetField(const QFont& font, const QColor& bg, const QFlags<Qt::AlignmentFlag>& align) const
 	{
 		auto item = new QTableWidgetItem(ToQString(this->string));
-		item->setForeground(this->color.QColor());
+		item->setForeground(this->color.GetQColor());
 		item->setBackground(bg);
 		item->setFont(font);
 		item->setTextAlignment(align);
@@ -124,7 +124,7 @@ struct Stat
 
 	[[nodiscard]] Label GetLabel(const QString& suffix = "") const
 	{
-		return {ToQString(this->string) + suffix, this->color.QColor()};
+		return {ToQString(this->string) + suffix, this->color.GetQColor()};
 	}
 };
 
@@ -147,7 +147,7 @@ struct Clan
 
 	[[nodiscard]] Label GetTagLabel() const
 	{
-		return { "[" + ToQString(this->tag) + "] ", this->color.QColor() };
+		return { "[" + ToQString(this->tag) + "] ", this->color.GetQColor() };
 	}
 	[[nodiscard]] Label GetNameLabel() const
 	{
@@ -263,7 +263,7 @@ struct Player
 		QFont font16("Segoe UI", 1, QFont::Bold);
 		font16.setPixelSize(16);
 
-		QColor bg = this->prColor.QColor();
+		QColor bg = this->prColor.GetQColor();
 		QWidget* shipItem = this->ship ? this->ship->GetField(font13, prColor, Qt::AlignVCenter | Qt::AlignLeft)  : new QWidget();
 		
 		return {
@@ -315,7 +315,7 @@ struct Player
 			label->setFont(font);
 			label->setTextAlignment(Qt::AlignVCenter);
 			if (this->prColor.Valid())
-				label->setBackground(this->prColor.QColor());
+				label->setBackground(this->prColor.GetQColor());
 			return label;
 		}
 	}
