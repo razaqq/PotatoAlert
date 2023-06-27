@@ -100,7 +100,7 @@ PA_JSON_SERIALIZE_ENUM(TableLayout,
 class Config
 {
 public:
-	explicit Config(std::string filePath);
+	explicit Config(std::string_view filePath);
 	Config(const Config& config) = delete;
 	Config(Config&& config) noexcept = delete;
 	Config& operator=(const Config& config) = delete;

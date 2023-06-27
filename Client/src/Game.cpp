@@ -87,7 +87,7 @@ bool GetBinPath(DirectoryStatus& status)
 }
 
 // reads the engine config and sets values
-bool ReadEngineConfig(DirectoryStatus& status, const char* resFolder)
+bool ReadEngineConfig(DirectoryStatus& status, std::string_view resFolder)
 {
 	fs::path engineConfig(status.binPath / fs::path(resFolder) / "engine_config.xml");
 	if (!fs::exists(engineConfig))
@@ -176,7 +176,7 @@ bool ReadEngineConfig(DirectoryStatus& status, const char* resFolder)
 }
 
 // reads game version and region from preferences.xml
-bool ReadPreferences(DirectoryStatus& status, const std::string& basePath)
+bool ReadPreferences(DirectoryStatus& status, std::string_view basePath)
 {
 	// For some reason preferences.xml is not valid xml and so we have to parse it with regex instead of xml
 	std::string preferencesPath = (fs::path(basePath) / "preferences.xml").string();
@@ -251,15 +251,16 @@ void SetReplaysFolder(DirectoryStatus& status)
 	if (status.versionedReplays)
 	{
 		std::vector<std::string> newReplaysPath;
+		newReplaysPath.reserve(status.replaysPath.size());
 		for (auto& path : status.replaysPath)
 		{
-			newReplaysPath.push_back((fs::path(path) / status.gameVersion.ToString()).string());
+			newReplaysPath.emplace_back((fs::path(path) / status.gameVersion.ToString()).string());
 		}
 		status.replaysPath = newReplaysPath;
 	}
 }
 
-bool CheckPath(const std::string& selectedPath, DirectoryStatus& status)
+bool CheckPath(std::string_view selectedPath, DirectoryStatus& status)
 {
 	const fs::path gamePath = fs::path(selectedPath).make_preferred();
 	status.gamePath = gamePath.string();

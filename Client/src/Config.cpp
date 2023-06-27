@@ -56,7 +56,7 @@ static std::unordered_map<ConfigKey, std::string_view> g_keyNames =
 }
 
 
-Config::Config(std::string filePath) : m_filePath(std::move(filePath))
+Config::Config(std::string_view filePath) : m_filePath(filePath)
 {
 	g_defaultConfig.SetObject();
 	auto a = g_defaultConfig.GetAllocator();

@@ -31,10 +31,10 @@ struct DirectoryStatus
 	bool found = false;
 };
 
-bool CheckPath(const std::string& selectedPath, DirectoryStatus& status);
+bool CheckPath(std::string_view selectedPath, DirectoryStatus& status);
 bool GetBinPath(DirectoryStatus& status);
-bool ReadEngineConfig(DirectoryStatus& status, const char* resFolder);
-bool ReadPreferences(DirectoryStatus& status, const std::string& basePath);
+bool ReadEngineConfig(DirectoryStatus& status, std::string_view resFolder);
+bool ReadPreferences(DirectoryStatus& status, std::string_view basePath);
 void SetReplaysFolder(DirectoryStatus& status);
 std::optional<std::string> GetGamePath();
 
