@@ -1,7 +1,8 @@
-// Copyright 2021 <github.com/razaqq>
+﻿// Copyright 2021 <github.com/razaqq>
 
 #include "Core/ApplicationGuard.hpp"
 #include "Core/Directory.hpp"
+#include "Core/Process.hpp"
 #include "Core/StandardPaths.hpp"
 #include "Core/Sqlite.hpp"
 
@@ -39,6 +40,7 @@ using PotatoAlert::Client::ReplayAnalyzer;
 using PotatoAlert::Client::ServiceProvider;
 using PotatoAlert::Core::ApplicationGuard;
 using PotatoAlert::Core::AppDataPath;
+using PotatoAlert::Core::ExitCurrentProcess;
 using PotatoAlert::Core::ExitCurrentProcessWithError;
 using PotatoAlert::Core::SQLite;
 using PotatoAlert::Gui::DarkPalette;
@@ -50,10 +52,10 @@ using PotatoAlert::Updater::Updater;
 static int RunMain(int argc, char* argv[])
 {
 	const ApplicationGuard guard("PotatoAlert");
-	if (guard.OtherInstance())
+	if (guard.ExistsOtherInstance())
 	{
 		NativeWindow::RequestFocus();
-		ExitProcess(0);
+		ExitCurrentProcess(0);
 	}
 
 	Q_INIT_RESOURCE(PotatoAlert);
@@ -62,6 +64,7 @@ static int RunMain(int argc, char* argv[])
 
 	ServiceProvider serviceProvider;
 
+	// AppDirectories appDirs("PotatoAlertХасанпасданм");
 	AppDirectories appDirs("PotatoAlert");
 	serviceProvider.Add(appDirs);
 
@@ -79,7 +82,7 @@ static int RunMain(int argc, char* argv[])
 	PotatoClient client(serviceProvider);
 	serviceProvider.Add(client);
 
-	SQLite db = SQLite::Open((appDirs.MatchesDir / "match_history.db").string(), SQLite::Flags::ReadWrite | SQLite::Flags::Create);
+	SQLite db = SQLite::Open(appDirs.DatabaseFile, SQLite::Flags::ReadWrite | SQLite::Flags::Create);
 	if (!db)
 	{
 		LOG_ERROR("Failed to open database: {}", db.GetLastError());
@@ -116,7 +119,7 @@ static int RunMain(int argc, char* argv[])
 		if (Updater::UpdateAvailable())
 			if (mainWindow->ConfirmUpdate())
 				if (Updater::StartUpdater())
-					ExitProcess(0);
+					ExitCurrentProcess(0);
 
 	if (QApplication::arguments().contains("--changelog"))
 		;  // TODO: add changelog
