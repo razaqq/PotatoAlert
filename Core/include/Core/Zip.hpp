@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include <cstdint>
 #include <functional>
 #include <optional>
 #include <string>

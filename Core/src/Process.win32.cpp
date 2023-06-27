@@ -8,6 +8,8 @@
 #include "win32.h"
 
 #include <shellapi.h>
+
+#include <cstdint>
 #include <string>
 
 

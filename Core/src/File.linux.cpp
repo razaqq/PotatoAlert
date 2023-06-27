@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 

@@ -14,7 +14,6 @@
 #include <ranges>
 #include <string>
 
-
 using namespace std::chrono_literals;
 using namespace PotatoAlert::Core;
 using PotatoAlert::Client::ReplayAnalyzer;

@@ -10,11 +10,8 @@
 #pragma warning(pop)
 
 #include <QApplication>
-#include <QDir>
-#include <QStandardPaths>
 #include <QString>
 
-#include <iostream>
 #include <memory>
 #include <vector>
 

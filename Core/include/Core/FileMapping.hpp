@@ -4,6 +4,7 @@
 #include "Core/File.hpp"
 #include "Core/Flags.hpp"
 
+#include <cstdint>
 #include <string>
 #include <utility>
 

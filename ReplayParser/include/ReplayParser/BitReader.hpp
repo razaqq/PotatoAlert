@@ -3,6 +3,7 @@
 
 #include "Core/Bytes.hpp"
 
+#include <cstdint>
 #include <span>
 
 

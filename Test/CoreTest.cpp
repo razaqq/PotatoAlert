@@ -12,7 +12,10 @@
 #include "catch.hpp"
 
 #include <algorithm>
+#include <array>
+#include <string>
 #include <span>
+#include <ranges>
 #include <vector>
 
 

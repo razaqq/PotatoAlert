@@ -16,9 +16,10 @@
 #include "Core/StandardPaths.hpp"
 #include "Core/Time.hpp"
 
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QObject>
 #include <QString>
-#include <QTableWidgetItem>
 #include <QTimer>
 #include <QUrl>
 
@@ -26,8 +27,6 @@
 #include <filesystem>
 #include <format>
 #include <optional>
-#include <qnetworkreply.h>
-#include <qthread.h>
 #include <string>
 #include <thread>
 

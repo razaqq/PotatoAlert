@@ -3,6 +3,7 @@
 
 #include "Flags.hpp"
 
+#include <cstdint>
 #include <string>
 #include <utility>
 

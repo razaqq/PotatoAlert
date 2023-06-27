@@ -3,7 +3,11 @@
 #include "Gui/NativeWindow.hpp"
 
 #define WIN32_USER
+#define WIN32_WINMESSAGES
+#define WIN32_MSG
 #include "win32.h"
+
+#include <winuser.h>
 
 
 UINT WM_SHOWME = RegisterWindowMessageA("WM_SHOWME");

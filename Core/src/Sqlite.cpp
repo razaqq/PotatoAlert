@@ -4,7 +4,10 @@
 
 #include "sqlite3.h"
 
+#include <cstdint>
+#include <limits>
 #include <string>
+#include <type_traits>
 
 
 using PotatoAlert::Core::SQLite;

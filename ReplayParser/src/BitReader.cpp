@@ -5,6 +5,8 @@
 #include "ReplayParser/BitReader.hpp"
 
 #include <bit>
+#include <cstdint>
+#include <limits>
 #include <span>
 
 

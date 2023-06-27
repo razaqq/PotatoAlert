@@ -1,6 +1,7 @@
 // Copyright 2022 <github.com/razaqq>
 
 #include "Core/Log.hpp"
+#include "Core/Result.hpp"
 #include "Core/StandardPaths.hpp"
 
 #include "ReplayParser/ReplayParser.hpp"

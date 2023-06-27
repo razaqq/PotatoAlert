@@ -3,9 +3,10 @@
 #include "Core/File.hpp"
 #include "Core/FileMapping.hpp"
 
-#include <cassert>
 #include <sys/mman.h>
 #include <unistd.h>
+
+#include <cstdint>
 
 
 using PotatoAlert::Core::File;
