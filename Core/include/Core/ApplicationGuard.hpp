@@ -18,7 +18,7 @@ public:
 	explicit ApplicationGuard(std::string name);
 	~ApplicationGuard();
 	bool Reset();
-	bool OtherInstance() const;
+	bool ExistsOtherInstance() const;
 
 private:
 	std::string m_name;

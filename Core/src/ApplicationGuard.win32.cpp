@@ -43,7 +43,7 @@ bool ApplicationGuard::Reset()
 	return false;
 }
 
-bool ApplicationGuard::OtherInstance() const
+bool ApplicationGuard::ExistsOtherInstance() const
 {
 	return WaitForSingleObject(UnwrapHandle<HANDLE>(m_handle), 0) == WAIT_TIMEOUT;
 }

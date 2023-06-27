@@ -48,7 +48,7 @@ bool ApplicationGuard::Reset()
 	return true;
 }
 
-bool ApplicationGuard::OtherInstance() const
+bool ApplicationGuard::ExistsOtherInstance() const
 {
 	if (!lockf(UnwrapHandle<int>(m_handle), F_TLOCK, 0))
 		return false;
