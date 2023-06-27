@@ -23,6 +23,7 @@ using PotatoAlert::Core::Version;
 using namespace PotatoAlert::ReplayParser;
 namespace fs = std::filesystem;
 
+namespace {
 
 static std::string GetReplay(std::string_view name)
 {
@@ -32,6 +33,8 @@ static std::string GetReplay(std::string_view name)
 	}
 
 	PotatoAlert::Core::ExitCurrentProcess(1);
+}
+
 }
 
 TEST_CASE( "ReplayTest" )
