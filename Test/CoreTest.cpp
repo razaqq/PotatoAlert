@@ -73,7 +73,7 @@ TEST_CASE( "BlowFishDecryptTest" )
 
 TEST_CASE( "MutexTest" )
 {
-	const std::string SemName = "TEST_SEMAPHORE";
+	constexpr std::string_view SemName = "TEST_SEMAPHORE";
 	// delete mutex in case of a previous failed run
 	Semaphore::Remove(SemName);
 
@@ -95,6 +95,8 @@ TEST_CASE( "MutexTest" )
 	REQUIRE(sem1.IsLocked());
 	REQUIRE(sem1.Close());
 	REQUIRE_FALSE(sem1.IsOpen());
+
+	REQUIRE(Semaphore::Remove(SemName));
 
 	Semaphore sem2 = Semaphore::Create(SemName, 0);
 	REQUIRE(sem2);
