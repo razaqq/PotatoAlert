@@ -17,13 +17,13 @@ namespace {
 template<typename T>
 static constexpr T CreateHandle(int handle)
 {
-	return static_cast<T>(reinterpret_cast<uintptr_t>(handle) + 1);
+	return static_cast<T>(static_cast<uintptr_t>(handle) + 1);
 }
 
 template<typename T>
 static constexpr T UnwrapHandle(FileMapping::Handle handle)
 {
-	return reinterpret_cast<T>(static_cast<uintptr_t>(handle) - 1);
+	return static_cast<T>(static_cast<uintptr_t>(handle) - 1);
 }
 
 template<typename T>
