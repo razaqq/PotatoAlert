@@ -231,7 +231,7 @@ struct NestedPropertyUpdatePacket : Packet
 	std::string PropertyName;
 	int PropertyIndex;
 	PropertyNesting Nesting;
-	Entity* Entity;
+	Entity* EntityPtr;
 };
 
 struct MapPacket : Packet
