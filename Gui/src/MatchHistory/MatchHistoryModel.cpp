@@ -63,7 +63,7 @@ QVariant MatchHistoryModel::data(const QModelIndex& index, int role) const
 		{
 			if (index.column() == 0)
 			{
-				return GetMatchTime(m_matches[index.row()]);
+				return static_cast<qulonglong>(GetMatchTime(m_matches[index.row()]));
 			}
 			return QVariant();
 		}
