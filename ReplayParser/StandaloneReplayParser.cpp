@@ -15,7 +15,12 @@ int main(int argc, char* argv[])
 {
 	Log::Init((AppDataPath("PotatoAlert") / "StandaloneReplayParser.log").string());
 
-	auto err = []()
+	auto section = [](std::string_view title = "")
+	{
+		LOG_INFO("{:-^21}", title);
+	};
+
+	auto err = []() -> int
 	{
 		printf("Press any key to continue...\n");
 		getchar();
@@ -34,9 +39,9 @@ int main(int argc, char* argv[])
 		return err();
 	});
 
-	PA_TRYV_OR_ELSE(replay.ReadPackets({ AppDataPath("PotatoAlert") / "ReplayVersions" }),
+	PA_TRYV_OR_ELSE(replay.ReadPackets((AppDataPath("PotatoAlert") / "ReplayVersions").string()),
 	{
-		LOG_ERROR( error);
+		LOG_ERROR(error);
 		return err();
 	});
 
@@ -46,18 +51,35 @@ int main(int argc, char* argv[])
 		return err();
 	});
 
-	LOG_INFO("DamageDealt: {} DamagePotential: {} DamageSpotting: {} DamageTaken: {}", summary.DamageDealt, summary.DamagePotential, summary.DamageSpotting, summary.DamageTaken);
-	// LOG_INFO("---- DAMAGE  ----");
-	// for (const auto& [type, dmg] : s.DamageDealt)
-	// {
-	// 	LOG_INFO("    {}: {}", GetName(type), dmg);
-	// }
-	LOG_INFO("---- RIBBONS ----");
+	section("GENERAL");
+	LOG_INFO("DamageDealt:     {}", summary.DamageDealt);
+	LOG_INFO("DamagePotential: {}", summary.DamagePotential);
+	LOG_INFO("DamageSpotting:  {}", summary.DamageSpotting);
+	LOG_INFO("DamageTaken:     {}", summary.DamageTaken);
+
+	constexpr auto toString = [](MatchOutcome outcome) -> std::string_view
+	{
+		switch (outcome)
+		{
+			case MatchOutcome::Win:
+				return "Win";
+			case MatchOutcome::Loss:
+				return "Loss";
+			case MatchOutcome::Draw:
+				return "Draw";
+			case MatchOutcome::Unknown:
+				return "Unknown";
+		}
+	};
+	LOG_INFO("Outcome: {}", toString(summary.Outcome));
+
+	section("RIBBONS");
 	for (const auto& [ribbon, count] : summary.Ribbons)
 	{
 		LOG_INFO("    {}: {}", GetName(ribbon), count);
 	}
-	LOG_INFO("---- ACHIEVEMENTS ----");
+
+	section("ACHIEVEMENTS");
 	for (const auto& [achievement, count] : summary.Achievements)
 	{
 		LOG_INFO("    {}: {}", GetName(achievement), count);
