@@ -25,11 +25,12 @@ struct AppDirectories
 		ReplayVersionsDir = (AppDir / "ReplayVersions").make_preferred();
 		ConfigFile = (AppDir / "config.json").string();
 		LogFile = (AppDir / std::format("{}.log", AppName)).string();
+		DatabaseFile = (MatchesDir / "match_history.db").string();
 
 		auto createDir = [](const fs::path& dir) -> Result<void>
 		{
 			std::error_code ec;
-			bool exists = fs::exists(dir, ec);
+			const bool exists = fs::exists(dir, ec);
 			if (ec)
 				return PA_ERROR(ec);
 
@@ -47,7 +48,7 @@ struct AppDirectories
 		if (!(Result))                                                                                      \
 		{                                                                                                   \
 			LOG_ERROR("Failed to create app dir {}, reason: '{}'", MatchesDir, (Result).error().message()); \
-			Core::ExitCurrentProcessWithError((Result).error().value());                               \
+			Core::ExitCurrentProcessWithError((Result).error().value());                                    \
 		}
 
 		Result<void> result = createDir(MatchesDir);
@@ -68,6 +69,7 @@ struct AppDirectories
 	fs::path ReplayVersionsDir;
 	std::string ConfigFile;
 	std::string LogFile;
+	std::string DatabaseFile;
 };
 
 }  // namespace PotatoAlert::Client
