@@ -51,6 +51,8 @@ set_target_properties(PotatoAlert
 include(packaging)
 if(WIN32)
     windeployqt(PotatoAlert)
-    ssllibraries(PotatoAlert)
+    if (NOT Qt6_FOUND)  # only need ssl libs on qt5, not qt6
+        ssllibraries(PotatoAlert)
+    endif()
 endif()
 # makeinstaller(PotatoAlert)

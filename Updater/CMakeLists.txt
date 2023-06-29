@@ -58,4 +58,6 @@ add_custom_command(
 
 include(packaging)
 windeployqt(PotatoUpdater)
-ssllibraries(PotatoUpdater)
+if (NOT Qt6_FOUND)  # only need ssl libs on qt5, not qt6
+    ssllibraries(PotatoUpdater)
+endif()

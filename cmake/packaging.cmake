@@ -40,18 +40,6 @@ endfunction()
 
 # OpenSSL DLLs
 function(ssllibraries target)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        set(SSL_DLLS
-                "${PROJECT_SOURCE_DIR}/ThirdParty/ssl/lib/libssl-1_1-x64.dll"
-                "${PROJECT_SOURCE_DIR}/ThirdParty/ssl/lib/libcrypto-1_1-x64.dll"
-                )
-    elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-        set(SSL_DLLS
-                "${PROJECT_SOURCE_DIR}/ThirdParty/ssl/lib/libssl-1_1.dll"
-                "${PROJECT_SOURCE_DIR}/ThirdParty/ssl/lib/libcrypto-1_1.dll"
-                )
-    endif()
-
     add_custom_command(TARGET ${target} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${SSL_DLLS}
             $<TARGET_FILE_DIR:${target}>
