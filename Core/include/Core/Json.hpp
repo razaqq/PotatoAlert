@@ -343,6 +343,9 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& j, std::unordere
 template<is_deserializable Value, size_t Size>
 static inline bool FromJson(const rapidjson::Value& j, std::array<Value, Size>& arr)
 {
+	if (!j.IsArray())
+		return false;
+
 	const auto value = j.GetArray();
 	size_t count = value.Size();
 	if (count > arr.size())
@@ -368,6 +371,9 @@ static inline bool FromJson(const rapidjson::Value& j, std::array<Value, Size>& 
 template<is_deserializable Value>
 static inline bool FromJson(const rapidjson::Value& j, std::vector<Value>& vec)
 {
+	if (!j.IsArray())
+		return false;
+
 	const auto value = j.GetArray();
 	size_t size = value.Size();
 	vec.reserve(size);
@@ -404,6 +410,9 @@ template<is_deserializable_vec T>
 static inline bool FromJson(const rapidjson::Value& j, T& vec)
 {
 	using ValueType = typename T::value_type;
+
+	if (!j.IsObject())
+		return false;
 
 	const auto obj = j.GetObject();
 	vec.reserve(obj.MemberCount());
@@ -511,17 +520,22 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 									   });                                                                  \
 		return ::PotatoAlert::Core::ToRef((it != std::end(m) ? it : std::begin(m))->second);                \
 	}                                                                                                       \
-	inline void FromJson(const rapidjson::Value& j, ENUM_TYPE& e)                                           \
+	inline bool FromJson(const rapidjson::Value& j, ENUM_TYPE& e)                                           \
 	{                                                                                                       \
 		static_assert(std::is_enum_v<ENUM_TYPE>, #ENUM_TYPE " must be an enum!");                           \
 		static const std::pair<ENUM_TYPE, std::string_view> m[] = __VA_ARGS__;                              \
+		if (!j.IsString())                                                                                  \
+			return false;                                                                                   \
 		std::string_view key = j.GetString();                                                               \
 		auto it = std::ranges::find_if(m,                                                                   \
 									   [key](const std::pair<ENUM_TYPE, std::string_view>& ej_pair) -> bool \
 									   {                                                                    \
 										   return ej_pair.second == key;                                    \
 									   });                                                                  \
-		e = (it != std::end(m) ? it : std::begin(m))->first;                                                \
+		if (it == std::end(m))                                                                              \
+			return false;                                                                                   \
+		e = it->first;                                                                                      \
+		return true;                                                                                        \
 	}
 
 #define PA_JSON_SERIALIZE_ENUM_PAIRS(ENUM_TYPE, PAIRS)                                                          \
@@ -536,16 +550,21 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 									   });                                                                      \
 		return ::PotatoAlert::Core::ToJson(writer, ((it != std::end(PAIRS)) ? it : std::begin(PAIRS))->second); \
 	}                                                                                                           \
-	inline void FromJson(const rapidjson::Value& j, ENUM_TYPE& e)                                               \
+	inline bool FromJson(const rapidjson::Value& j, ENUM_TYPE& e)                                               \
 	{                                                                                                           \
 		static_assert(std::is_enum_v<ENUM_TYPE>, #ENUM_TYPE " must be an enum!");                               \
+		if (!j.IsString())                                                                                      \
+			return false;                                                                                       \
 		std::string_view key = j.GetString();                                                                   \
 		auto it = std::ranges::find_if(PAIRS,                                                                   \
 									   [key](const std::pair<ENUM_TYPE, std::string_view>& ej_pair) -> bool     \
 									   {                                                                        \
 										   return ej_pair.second == key;                                        \
 									   });                                                                      \
-		e = (it != std::end(PAIRS) ? it : std::begin(PAIRS))->first;                                            \
+		if (it == std::end(PAIRS))                                                                              \
+			return false;                                                                                       \
+		e = it->first;                                                                                          \
+		return true;                                                                                            \
 	}
 
 #define PA_JSON_SERIALIZE_ENUM_MAP(ENUM_TYPE, MAP)                                                          \
@@ -562,16 +581,21 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 			return ::PotatoAlert::Core::ToJson(writer, (MAP).begin()->second);                              \
 		}                                                                                                   \
 	}                                                                                                       \
-	inline void FromJson(const rapidjson::Value& j, ENUM_TYPE& e)                                           \
+	inline bool FromJson(const rapidjson::Value& j, ENUM_TYPE& e)                                           \
 	{                                                                                                       \
 		static_assert(std::is_enum_v<ENUM_TYPE>, #ENUM_TYPE " must be an enum!");                           \
+		if (!j.IsString())                                                                                  \
+			return false;                                                                                   \
 		std::string_view key = j.GetString();                                                               \
 		auto it = std::ranges::find_if(MAP,                                                                 \
 									   [key](const std::pair<ENUM_TYPE, std::string_view>& ej_pair) -> bool \
 									   {                                                                    \
 										   return ej_pair.second == key;                                    \
 									   });                                                                  \
-		e = (it != std::end(MAP) ? it : std::begin(MAP))->first;                                            \
+		if (it == std::end(MAP))                                                                            \
+			return false;                                                                                   \
+		e = it->first;                                                                                      \
+		return true;                                                                                        \
 	}
 
 }  // namespace PotatoAlert::Core

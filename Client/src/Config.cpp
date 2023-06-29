@@ -47,7 +47,6 @@ static std::unordered_map<ConfigKey, std::string_view> g_keyNames =
 	{ ConfigKey::WindowY,                  "window_y" },
 	{ ConfigKey::WindowState,              "window_state" },
 	{ ConfigKey::GameDirectory,            "game_directory" },
-	{ ConfigKey::OverrideReplaysDirectory, "override_replays_directory" },
 	{ ConfigKey::ReplaysDirectory,         "replays_directory" },
 	{ ConfigKey::Language,                 "language" },
 	{ ConfigKey::MenuBarLeft,              "menubar_left" }
@@ -88,7 +87,6 @@ Config::Config(std::string_view filePath) : m_filePath(filePath)
 	}
 	Load();
 	ApplyUpdates();
-	AddMissingKeys();
 }
 
 Config::~Config()
@@ -130,11 +128,16 @@ void Config::Load()
 		CreateBackup();
 
 		if (CreateDefault())
-			Load();
+			return Load();
 		else
 			Core::ExitCurrentProcessWithError(1);
 	});
+
 	m_json = std::move(json);
+
+	AddMissingKeys();
+	CheckTypes();
+	CheckEnums();
 
 	LOG_TRACE("Config loaded.");
 }
@@ -151,7 +154,7 @@ bool Config::Save() const
 	rapidjson::StringBuffer stringBuffer;
 	rapidjson::PrettyWriter writer(stringBuffer);
 	m_json.Accept(writer);
-
+	
 	if (!m_file.WriteString(std::string_view(stringBuffer.GetString(), stringBuffer.GetSize())))
 	{
 		LOG_ERROR("Failed to write config file: {}", File::LastError());
@@ -265,6 +268,73 @@ void Config::AddMissingKeys()
 	}
 }
 
+void Config::CheckTypes()
+{
+	for (const auto [key, name] : g_keyNames)
+	{
+		if (!g_defaultConfig.HasMember(name.data()))
+			continue;
+
+		if (IsType(key, ConfigType::String) && !m_json[name.data()].IsString()
+			|| IsType(key, ConfigType::Bool) && !m_json[name.data()].IsBool()
+			|| IsType(key, ConfigType::Int) && !m_json[name.data()].IsInt()
+			|| IsType(key, ConfigType::Float) && !m_json[name.data()].IsFloat()
+			|| IsType(key, ConfigType::WString) && !m_json[name.data()].IsString()
+			|| IsType(key, ConfigType::StatsMode) && !m_json[name.data()].IsString()
+			|| IsType(key, ConfigType::TableLayout) && !m_json[name.data()].IsString()
+			|| IsType(key, ConfigType::TeamStatsMode) && !m_json[name.data()].IsString())
+		{
+			LOG_WARN("Config key '{}' was not of expected type, setting to default value", name);
+			m_json[name.data()] = g_defaultConfig[name.data()];
+		}
+	}
+}
+
+void Config::CheckEnums()
+{
+	for (const auto [key, name] : g_keyNames)
+	{
+		if (!g_defaultConfig.HasMember(name.data()))
+			continue;
+
+		if (IsType(key, ConfigType::StatsMode))
+		{
+			StatsMode statsMode;
+			if (!FromJson(m_json[name.data()], statsMode))
+			{
+				LOG_WARN("Invalid enum value in config for key '{}', setting to default", name.data());
+				SetDefault(key);
+			}
+		}
+
+		if (IsType(key, ConfigType::TeamStatsMode))
+		{
+			TeamStatsMode teamStatsMode;
+			if (!FromJson(m_json[name.data()], teamStatsMode))
+			{
+				LOG_WARN("Invalid enum value in config for key '{}', setting to default", name.data());
+				SetDefault(key);
+			}
+		}
+
+		if (IsType(key, ConfigType::TableLayout))
+		{
+			TableLayout tableLayout;
+			if (!FromJson(m_json[name.data()], tableLayout))
+			{
+				LOG_WARN("Invalid enum value in config for key '{}', setting to default", name.data());
+				SetDefault(key);
+			}
+		}
+	}
+}
+
+void Config::SetDefault(ConfigKey key)
+{
+	const std::string_view name = GetKeyName(key);
+	m_json[name.data()] = g_defaultConfig[name.data()];
+}
+
 void Config::ApplyUpdates()
 {
 	auto renameKey = [&](std::string_view from, std::string_view to)
@@ -275,7 +345,6 @@ void Config::ApplyUpdates()
 		}
 	};
 	renameKey("replays_folder", g_keyNames[ConfigKey::ReplaysDirectory]);
-	renameKey("override_replays_folder", g_keyNames[ConfigKey::OverrideReplaysDirectory]);
 	renameKey("game_folder", g_keyNames[ConfigKey::GameDirectory]);
 	renameKey("menubar_leftside", g_keyNames[ConfigKey::MenuBarLeft]);
 	m_json.RemoveMember("api_key");
