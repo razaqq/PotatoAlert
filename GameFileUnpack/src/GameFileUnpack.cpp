@@ -244,7 +244,7 @@ bool Unpacker::ExtractFile(const FileRecord& fileRecord, std::string_view dst) c
 				const std::string filePath = (fs::path(dst) / fileRecord.Path).string();
 
 				// check if data is compressed and inflate
-				std::span data{ static_cast<Byte*>(dataPtr), fileSize };
+				std::span data{ static_cast<const Byte*>(dataPtr), fileSize };
 				if (fileRecord.Size != fileRecord.UncompressedSize)
 				{
 					std::vector<Byte> inflated = Core::Zlib::Inflate(

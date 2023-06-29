@@ -65,7 +65,6 @@ static std::vector<Property> ParseProperties(XMLElement* elem, const AliasType& 
 		XMLElement* typeElem = propElem->FirstChildElement("Type");
 		if (flagElem && typeElem)
 		{
-			const char* name = propElem->Name();
 			properties.emplace_back(Property{ propElem->Name(), ParseType(typeElem, aliases), ParseFlag(flagElem->GetText()) });
 		}
 	}
