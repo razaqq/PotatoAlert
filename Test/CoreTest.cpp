@@ -1,5 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/ByteReader.hpp"
 #include "Core/Blowfish.hpp"
 #include "Core/Directory.hpp"
 #include "Core/Semaphore.hpp"
@@ -41,6 +42,68 @@ static std::array<Byte, sizeof...(Ts)> FromHex(Ts&&... args) noexcept
 	return { static_cast<TByte>(std::forward<Ts>(args))... };
 }
 
+}
+
+TEST_CASE( "ByteReaderTest" )
+{
+	std::vector<Byte> data = FromString<Byte>("The quick brown fox jumps over the lazy dog");
+	ByteReader<Byte> reader(data);
+	
+	REQUIRE(reader.Position() == 0);
+	REQUIRE(data.size() == reader.Size());
+	auto b1 = reader.ReadByte();
+	REQUIRE((b1 && b1.value() == (Byte)'T'));
+	REQUIRE(data.size()-1 == reader.Size());
+	REQUIRE(!reader.Empty());
+	
+	REQUIRE(reader.Position() == 1);
+	REQUIRE(reader.Capacity() == data.size());
+
+	REQUIRE(reader.Seek(SeekOrigin::Current, 1));
+	REQUIRE(reader.Position() == 2);
+
+	REQUIRE_FALSE(reader.Seek(SeekOrigin::Current, 50));
+	REQUIRE(reader.Position() == 2);
+
+	REQUIRE(reader.Seek(SeekOrigin::Start, 12));
+	REQUIRE(reader.Position() == 12);
+
+	REQUIRE_FALSE(reader.Seek(SeekOrigin::End, 1));
+	REQUIRE(reader.Position() == 12);
+
+	REQUIRE(reader.Seek(SeekOrigin::End, -1));
+	REQUIRE(reader.Position() == reader.Capacity() - 1);
+
+	REQUIRE(reader.Seek(SeekOrigin::Current, -1));
+	REQUIRE(reader.Position() == reader.Capacity() - 2);
+
+	std::string out;
+	REQUIRE(reader.ReadToString(out, reader.Size()));
+	REQUIRE(out == "og");
+
+	reader.Consume(999);
+	REQUIRE(reader.Position() == reader.Capacity());
+	REQUIRE(reader.Empty());
+
+	reader.Unconsume(999);
+	REQUIRE(!reader.Empty());
+	REQUIRE(reader.Position() == 0);
+
+	std::vector<Byte> data2;
+	REQUIRE(reader.ReadToEnd(data2) == data.size());
+	REQUIRE(data == data2);
+
+	REQUIRE(reader.Seek(SeekOrigin::Start, 0));
+
+	uint32_t x;
+	REQUIRE(reader.ReadTo(x));
+	REQUIRE(x == 543516756);
+	REQUIRE(reader.Position() == 4);
+	REQUIRE(reader.Size() == reader.Capacity() - 4);
+
+	REQUIRE(reader.Seek(SeekOrigin::End, -3));
+	uint32_t y;
+	REQUIRE_FALSE(reader.ReadTo(y));
 }
 
 TEST_CASE( "BlowFishEncryptTest" )
@@ -200,7 +263,7 @@ TEST_CASE( "StringTest" )
 	REQUIRE(String::EndsWith("text", ""));
 }
 
-TEST_CASE("VersionTest")
+TEST_CASE( "VersionTest" )
 {
 	REQUIRE(Version("3.7.8.0") == Version("3.7.8.0"));
 	REQUIRE(Version("3.7.8.0") == Version("3.7.8"));
@@ -226,7 +289,6 @@ TEST_CASE("VersionTest")
 	REQUIRE_FALSE(Version("0.11.7.0") < Version("0.10.9.0"));
 	REQUIRE_FALSE(Version("0.11.7.0") == Version("0.10.9.0"));
 }
-
 
 TEST_CASE( "ZlibTest" )
 {
