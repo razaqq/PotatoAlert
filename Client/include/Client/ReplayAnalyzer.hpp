@@ -19,6 +19,7 @@
 using namespace std::chrono_literals;
 namespace fs = std::filesystem;
 using PotatoAlert::ReplayParser::ReplaySummary;
+using PotatoAlert::ReplayParser::ReplayResult;
 
 // these have to be declared, because ReplaySummaryReady will be emitted from
 // another thread and the connection type will therefore be QueuedConnection
@@ -32,8 +33,8 @@ class ReplayAnalyzer : public QObject
 	Q_OBJECT
 
 public:
-	ReplayAnalyzer(const ServiceProvider& serviceProvider, std::vector<fs::path> scriptsSearchPaths)
-		: m_services(serviceProvider), m_scriptsSearchPaths(std::move(scriptsSearchPaths))
+	ReplayAnalyzer(const ServiceProvider& serviceProvider, std::string_view gameFilePath)
+		: m_services(serviceProvider), m_gameFilePath(gameFilePath)
 	{
 		qRegisterMetaType<uint32_t>("uint32_t");
 		qRegisterMetaType<ReplaySummary>("ReplaySummary");
@@ -41,8 +42,8 @@ public:
 
 	void AnalyzeDirectory(std::string_view directory);
 	void OnFileChanged(const std::string& file);
-	bool HasGameScripts(const Version& gameVersion) const;
-	static bool UnpackGameScripts(std::string_view dst, std::string_view pkgPath, std::string_view idxPath);
+	bool HasGameFiles(const Version& gameVersion) const;
+	static ReplayResult<void> UnpackGameFiles(std::string_view dst, std::string_view pkgPath, std::string_view idxPath);
 
 private:
 	void AnalyzeReplay(std::string_view path, std::chrono::seconds readDelay = 0s);
@@ -50,7 +51,7 @@ private:
 	const ServiceProvider& m_services;
 	Core::ThreadPool m_threadPool;
 	std::unordered_map<std::string, std::future<void>> m_futures;
-	std::vector<fs::path> m_scriptsSearchPaths;
+	std::string m_gameFilePath;
 
 signals:
 	void ReplaySummaryReady(uint32_t id, const ReplaySummary& summary) const;

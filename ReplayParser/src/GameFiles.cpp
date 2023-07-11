@@ -48,24 +48,13 @@ static std::optional<std::unordered_map<std::string, ArgType>> ParseAliases(cons
 	return aliases;
 }
 
-std::vector<EntitySpec> rp::ParseScripts(const Version& version, const std::vector<fs::path>& searchPaths)
+std::vector<EntitySpec> rp::ParseScripts(const Version& version, std::string_view gameFilePath)
 {
 	// this is a shit way of doing this, but thanks to wg its also the only way
 	const std::string scriptVersion = version.ToString(".", true);
 
-	fs::path versionDir;
-	bool found = false;
-	for (const fs::path& path : searchPaths)
-	{
-		versionDir = path / scriptVersion / "scripts";
-		if (fs::exists(versionDir))
-		{
-			found = true;
-			break;
-		}
-	}
-
-	if (!found)
+	fs::path versionDir = fs::path(gameFilePath) / scriptVersion / "scripts";
+	if (!fs::exists(versionDir))
 	{
 		LOG_ERROR("Game scripts for version {} not found.", scriptVersion);
 		return {};

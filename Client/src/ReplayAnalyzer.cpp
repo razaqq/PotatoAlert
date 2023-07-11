@@ -8,6 +8,8 @@
 
 #include "GameFileUnpack/GameFileUnpack.hpp"
 
+#include "ReplayParser/ReplayParser.hpp"
+
 #include <algorithm>
 #include <chrono>
 #include <optional>
@@ -20,20 +22,20 @@ using PotatoAlert::Client::ReplayAnalyzer;
 using PotatoAlert::GameFileUnpack::Unpacker;
 using PotatoAlert::ReplayParser::ReplayResult;
 
-bool ReplayAnalyzer::HasGameScripts(const Version& gameVersion) const
+bool ReplayAnalyzer::HasGameFiles(const Version& gameVersion) const
 {
-	return ReplayParser::HasGameScripts(gameVersion, m_scriptsSearchPaths);
+	return ReplayParser::HasGameScripts(gameVersion, m_gameFilePath);
+	// &&MinimapRenderer::HasGameParams(gameVersion, m_gameFilePath);
 }
 
-bool ReplayAnalyzer::UnpackGameScripts(std::string_view dst, std::string_view pkgPath, std::string_view idxPath)
+ReplayResult<void> ReplayAnalyzer::UnpackGameFiles(std::string_view dst, std::string_view pkgPath, std::string_view idxPath)
 {
 	const Unpacker unpacker(pkgPath, idxPath);
 	if (!unpacker.Extract("scripts/", dst))
-	{
-		LOG_ERROR("Failed to unpack game files");
-		return false;
-	}
-	return true;
+		return PA_REPLAY_ERROR("Failed to unpack game scripts");
+	if (!unpacker.Extract("content/GameParams.data", dst))
+		return PA_REPLAY_ERROR("Failed to unpack game params");
+	return {};
 }
 
 void ReplayAnalyzer::OnFileChanged(const std::string& file)
@@ -54,7 +56,7 @@ void ReplayAnalyzer::AnalyzeReplay(std::string_view path, std::chrono::seconds r
 		LOG_TRACE("Analyzing replay file {} after {} delay...", file, readDelay);
 		std::this_thread::sleep_for(readDelay);
 
-		PA_TRY_OR_ELSE(summary, ReplayParser::AnalyzeReplay(file, m_scriptsSearchPaths),
+		PA_TRY_OR_ELSE(summary, ReplayParser::AnalyzeReplay(file, m_gameFilePath),
 		{
 			LOG_ERROR("{}", error);
 			return;

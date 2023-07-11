@@ -3,6 +3,7 @@
 #include "Core/Blowfish.hpp"
 #include "Core/Bytes.hpp"
 #include "Core/File.hpp"
+#include "Core/FileMapping.hpp"
 #include "Core/Instrumentor.hpp"
 #include "Core/Json.hpp"
 #include "Core/Zlib.hpp"
@@ -25,24 +26,29 @@ using namespace PotatoAlert::ReplayParser;
 namespace rp = PotatoAlert::ReplayParser;
 using PotatoAlert::ReplayParser::ReplayResult;
 
-ReplayResult<Replay> Replay::FromFile(std::string_view fileName)
+ReplayResult<Replay> Replay::FromFile(std::string_view filePath, std::string_view gameFilePath)
 {
 	PA_PROFILE_FUNCTION();
 
-	File file = File::Open(fileName, File::Flags::Open | File::Flags::Read);
+	File file = File::Open(filePath, File::Flags::Open | File::Flags::Read);
 	if (!file)
 	{
 		return PA_REPLAY_ERROR("Failed to open replay file: {}", file.LastError());
 	}
 
-	Replay replay;
-	if (!file.ReadAll(replay.m_rawData))
-	{
-		return PA_REPLAY_ERROR("Failed to read replay file: {}", file.LastError());
-	}
-	file.Close();
+	const uint64_t fileSize = file.Size();
 
-	replay.m_data = std::span(replay.m_rawData);
+	FileMapping fileMapping = FileMapping::Open(file, FileMapping::Flags::Read, fileSize);
+	if (!fileMapping)
+	{
+		return PA_REPLAY_ERROR("Failed to map replay file: {}", fileMapping.LastError());
+	}
+
+	void* mapping = fileMapping.Map(FileMapping::Flags::Read, 0, fileSize);
+	std::span<const Byte> data{ static_cast<const Byte*>(mapping), fileSize };
+
+	Replay replay;
+	replay.m_data = data;
 
 	// remove first 8 bytes, no idea what they are, maybe version?
 	if (replay.m_data.size() < 8)
@@ -70,43 +76,37 @@ ReplayResult<Replay> Replay::FromFile(std::string_view fileName)
 	});
 	FromJson(js, replay.Meta);
 
-	return replay;
-}
-
-ReplayResult<void> Replay::ReadPackets(const std::vector<fs::path>& scriptsSearchPaths)
-{
-	PA_PROFILE_FUNCTION();
-
+	// Read packets
 	uint32_t uncompressedSize;
-	if (!TakeInto(m_data, uncompressedSize))
+	if (!TakeInto(replay.m_data, uncompressedSize))
 	{
 		return PA_REPLAY_ERROR("Replay is missing uncompressedSize.");
 	}
 
 	uint32_t streamSize;
-	if (!TakeInto(m_data, streamSize))
+	if (!TakeInto(replay.m_data, streamSize))
 	{
 		return PA_REPLAY_ERROR("Replay is missing streamSize.");
 	}
 
-	std::vector<Byte> decrypted{};
-	decrypted.resize(m_data.size(), Byte{ 0 });
-
-	if (m_data.size() % Blowfish::BlockSize() != 0)
+	if (replay.m_data.size() % Blowfish::BlockSize() != 0)
 	{
 		return PA_REPLAY_ERROR("Replay data is not a multiple of blowfish block size.");
 	}
+
+	std::vector<Byte> decrypted{};
+	decrypted.resize(replay.m_data.size(), Byte{ 0 });
 
 	constexpr std::array<Byte, 16> key = { 0x29, 0xB7, 0xC9, 0x09, 0x38, 0x3F, 0x84, 0x88, 0xFA, 0x98, 0xEC, 0x4E, 0x13, 0x19, 0x79, 0xFB };
 	const Blowfish blowfish(key);
 
 	Byte prev[8] = { Byte{ 0 } };
-	for (size_t i = 0; i < m_data.size() / Blowfish::BlockSize(); i++)
+	for (size_t i = 0; i < replay.m_data.size() / Blowfish::BlockSize(); i++)
 	{
 		const size_t offset = i * Blowfish::BlockSize();
 
 		uint32_t block[2];
-		std::memcpy(block, m_data.data() + offset, sizeof(block));
+		std::memcpy(block, replay.m_data.data() + offset, sizeof(block));
 
 		Blowfish::ReverseByteOrder(block[0]);
 		Blowfish::ReverseByteOrder(block[1]);
@@ -123,11 +123,6 @@ ReplayResult<void> Replay::ReadPackets(const std::vector<fs::path>& scriptsSearc
 		}
 	}
 
-	// free memory of raw data
-	m_rawData.clear();
-	m_rawData.shrink_to_fit();
-	m_data = {};
-
 	const std::vector<Byte> decompressed = Zlib::Inflate(decrypted);
 	if (decompressed.empty())
 	{
@@ -138,41 +133,40 @@ ReplayResult<void> Replay::ReadPackets(const std::vector<fs::path>& scriptsSearc
 	decrypted.clear();
 	decrypted.shrink_to_fit();
 
-	Specs = ParseScripts(Meta.ClientVersionFromExe, scriptsSearchPaths);
+	replay.Specs = ParseScripts(replay.Meta.ClientVersionFromExe, gameFilePath);
 
-	if (Specs.empty())
+	if (replay.Specs.empty())
 	{
 		return PA_REPLAY_ERROR("Empty entity specs");
 	}
 
-	m_packetParser.Specs = Specs;
+	replay.m_packetParser.Specs = replay.Specs;
 
 	std::span out{ decompressed };
 	do {
-		PA_TRY(packet, ParsePacket(out, m_packetParser));
-		Packets.emplace_back(std::move(packet));
+		PA_TRY(packet, ParsePacket(out, replay.m_packetParser));
+		replay.Packets.emplace_back(std::move(packet));
 	} while (!out.empty());
 
 	// sort the packets by game time
-	std::ranges::sort(Packets, [](const PacketType& a, const PacketType& b)
+	std::ranges::sort(replay.Packets, [](const PacketType& a, const PacketType& b)
 	{
 		const Packet& aPacket = std::visit([](const auto& x) -> const Packet& { return x; }, a);
 		const Packet& bPacket = std::visit([](const auto& x) -> const Packet& { return x; }, b);
 		return aPacket.Clock < bPacket.Clock;
 	});
 
-	return {};
+	return replay;
 }
 
-ReplayResult<ReplaySummary> rp::AnalyzeReplay(std::string_view file, const std::vector<fs::path>& scriptsSearchPaths)
+ReplayResult<ReplaySummary> rp::AnalyzeReplay(std::string_view file, std::string_view gameFilePath)
 {
-	PA_TRY(replay, Replay::FromFile(file));
-	PA_TRYV(replay.ReadPackets(scriptsSearchPaths));
+	PA_TRY(replay, Replay::FromFile(file, gameFilePath));
 	PA_TRY(summary, replay.Analyze());
 	return summary;
 }
 
-bool rp::HasGameScripts(const Version& gameVersion, const std::vector<fs::path>& scriptsSearchPaths)
+bool rp::HasGameScripts(const Version& gameVersion, std::string_view gameFilePath)
 {
-	return !ParseScripts(gameVersion, scriptsSearchPaths).empty();
+	return !ParseScripts(gameVersion, gameFilePath).empty();
 }

@@ -22,7 +22,7 @@ struct AppDirectories
 		AppDir = Core::AppDataPath(appName).make_preferred();
 		MatchesDir = (AppDir / "Matches").make_preferred();
 		ScreenshotsDir = (AppDir / "Screenshots").make_preferred();
-		ReplayVersionsDir = (AppDir / "ReplayVersions").make_preferred();
+		ReplayVersionsDir = (AppDir / "ReplayVersions").string();
 		ConfigFile = (AppDir / "config.json").string();
 		LogFile = (AppDir / std::format("{}.log", AppName)).string();
 		DatabaseFile = (MatchesDir / "match_history.db").string();
@@ -66,7 +66,7 @@ struct AppDirectories
 
 	fs::path MatchesDir;
 	fs::path ScreenshotsDir;
-	fs::path ReplayVersionsDir;
+	std::string ReplayVersionsDir;
 	std::string ConfigFile;
 	std::string LogFile;
 	std::string DatabaseFile;

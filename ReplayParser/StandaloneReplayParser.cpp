@@ -33,13 +33,7 @@ int main(int argc, char* argv[])
 		return err();
 	}
 
-	PA_TRY_OR_ELSE(replay, Replay::FromFile(argv[1]),
-	{
-		LOG_ERROR(error);
-		return err();
-	});
-
-	PA_TRYV_OR_ELSE(replay.ReadPackets((AppDataPath("PotatoAlert") / "ReplayVersions").string()),
+	PA_TRY_OR_ELSE(replay, Replay::FromFile(argv[1], (AppDataPath("PotatoAlert") / "ReplayVersions").string()),
 	{
 		LOG_ERROR(error);
 		return err();

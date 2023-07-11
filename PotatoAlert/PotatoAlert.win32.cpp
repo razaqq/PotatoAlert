@@ -73,10 +73,7 @@ static int RunMain(int argc, char* argv[])
 	Config config(appDirs.ConfigFile);
 	serviceProvider.Add(config);
 
-	ReplayAnalyzer replayAnalyzer(serviceProvider, {
-		PotatoAlert::Core::GetModuleRootPath().value() / "ReplayVersions",
-		appDirs.ReplayVersionsDir
-	});
+	ReplayAnalyzer replayAnalyzer(serviceProvider, appDirs.ReplayVersionsDir);
 	serviceProvider.Add(replayAnalyzer);
 
 	PotatoClient client(serviceProvider);
