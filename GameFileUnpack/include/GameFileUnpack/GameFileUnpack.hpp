@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <filesystem>
 #include <optional>
 #include <span>
 #include <string>
@@ -87,14 +88,16 @@ private:
 class Unpacker
 {
 public:
+	Unpacker(const std::filesystem::path& pkgPath, const std::filesystem::path& idxPath);
 	Unpacker(std::string_view pkgPath, std::string_view idxPath);
+	bool Extract(std::string_view node, const std::filesystem::path& dst) const;
 	bool Extract(std::string_view node, std::string_view dst) const;
 
 private:
 	DirectoryTree m_directoryTree;
-	std::string m_pkgPath;
+	std::filesystem::path m_pkgPath;
 
-	bool ExtractFile(const FileRecord& fileRecord, std::string_view dst) const;
+	bool ExtractFile(const FileRecord& fileRecord, const std::filesystem::path& dst) const;
 };
 
 }  // namespace PotatoAlert::GameFileUnpack

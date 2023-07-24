@@ -25,11 +25,11 @@ namespace fs = std::filesystem;
 
 namespace {
 
-static std::string GetReplay(std::string_view name)
+static fs::path GetReplay(std::string_view name)
 {
 	if (Result<fs::path> rootPath = GetModuleRootPath())
 	{
-		return (fs::path(rootPath.value()).remove_filename() / "replays" / name).string();
+		return rootPath.value().remove_filename() / "replays" / name;
 	}
 
 	PotatoAlert::Core::ExitCurrentProcess(1);
@@ -39,7 +39,7 @@ static std::string GetReplay(std::string_view name)
 
 TEST_CASE( "ReplayTest" )
 {
-	const std::string gameFilePath = (GetModuleRootPath().value() / "ReplayVersions").string();
+	const fs::path gameFilePath = GetModuleRootPath().value() / "ReplayVersions";
 
 	ReplayResult<Replay> res = Replay::FromFile(GetReplay("20201107_155356_PISC110-Venezia_19_OC_prey.wowsreplay"), gameFilePath);
 	REQUIRE(res);
@@ -100,7 +100,7 @@ TEST_CASE( "ReplayTest" )
 
 TEST_CASE( "ReplayGameFileTest" )
 {
-	const std::string gameFilePath = (GetModuleRootPath().value() / "ReplayVersions").string();
+	const fs::path gameFilePath = GetModuleRootPath().value() / "ReplayVersions";
 
 	const std::vector<EntitySpec> spec = ParseScripts(Version(0, 10, 8, 0), gameFilePath);
 	REQUIRE(spec.size() == 13);
@@ -116,3 +116,4 @@ TEST_CASE( "ReplayGameFileTest" )
 	REQUIRE(spec[0].BaseProperties.size() == 1);
 	REQUIRE(spec[0].Name == "Avatar");
 }
+

@@ -1,6 +1,10 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#if WIN32
+	#define SPDLOG_WCHAR_FILENAMES
+#endif
+#define SPDLOG_USE_STD_FORMAT
 #define SPDLOG_NO_EXCEPTIONS
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #pragma warning(push, 0)
@@ -10,6 +14,7 @@
 
 #include <QDir>
 
+#include <filesystem>
 #include <string>
 #include <memory>
 
@@ -19,7 +24,7 @@ namespace PotatoAlert::Core {
 class Log
 {
 public:
-	static void Init(std::string_view logFile);
+	static void Init(const std::filesystem::path& logFile);
 	static std::shared_ptr<spdlog::logger>& GetLogger() { return s_logger; }
 
 private:

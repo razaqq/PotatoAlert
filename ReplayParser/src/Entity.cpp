@@ -1,12 +1,12 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/Encoding.hpp"
 #include "Core/Log.hpp"
 #include "Core/String.hpp"
+#include "Core/Xml.hpp"
 
 #include "ReplayParser/Entity.hpp"
 #include "ReplayParser/Types.hpp"
-
-#include <tinyxml2.h>
 
 #include <filesystem>
 #include <format>
@@ -84,14 +84,15 @@ static std::vector<std::string> ParseImplements(XMLElement* elem)
 	return implements;
 }
 
-DefFile rp::ParseDef(std::string_view file, const AliasType& aliases)
+DefFile rp::ParseDef(const fs::path& file, const AliasType& aliases)
 {
 	DefFile defFile;
 
 	XMLDocument doc;
-	if (doc.LoadFile(file.data()) != XML_SUCCESS)
+	Core::XmlResult<void> res = Core::LoadXml(doc, file);
+	if (!res)
 	{
-		LOG_ERROR("Failed to open entity definition file ({}): {}.", file, doc.ErrorStr());
+		LOG_ERROR("Failed to open entity definition file ({}): {}.", Core::PathToUtf8(file).value(), res.error());
 		return defFile;
 	}
 
@@ -158,7 +159,7 @@ void rp::ParseInterfaces(const fs::path& root, const AliasType& aliases, const D
 {
 	for (const std::string& imp : def.Implements)
 	{
-		out.emplace_back(ParseDef((root / std::format("{}.def", imp)).string(), aliases));
+		out.emplace_back(ParseDef(root / std::format("{}.def", imp), aliases));
 		ParseInterfaces(root, aliases, out.back(), out);
 	}
 }

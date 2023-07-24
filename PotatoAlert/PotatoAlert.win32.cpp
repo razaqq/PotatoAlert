@@ -64,7 +64,6 @@ static int RunMain(int argc, char* argv[])
 
 	ServiceProvider serviceProvider;
 
-	// AppDirectories appDirs("PotatoAlertХасанпасданм");
 	AppDirectories appDirs("PotatoAlert");
 	serviceProvider.Add(appDirs);
 

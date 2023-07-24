@@ -1,13 +1,13 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/Directory.hpp"
+#include "Core/Encoding.hpp"
 #include "Core/File.hpp"
 #include "Core/Log.hpp"
+#include "Core/Xml.hpp"
 
 #include "ReplayParser/Entity.hpp"
 #include "ReplayParser/GameFiles.hpp"
-
-#include <tinyxml2.h>
 
 #include <format>
 #include <functional>
@@ -19,16 +19,20 @@
 
 namespace rp = PotatoAlert::ReplayParser;
 using PotatoAlert::Core::File;
+using PotatoAlert::Core::PathToUtf8;
+using PotatoAlert::Core::LoadXml;
 using PotatoAlert::Core::Version;
+using PotatoAlert::Core::XmlResult;
 using namespace PotatoAlert::ReplayParser;
 using namespace tinyxml2;
 
-static std::optional<std::unordered_map<std::string, ArgType>> ParseAliases(const std::string& path)
+static std::optional<std::unordered_map<std::string, ArgType>> ParseAliases(const fs::path& path)
 {
 	XMLDocument doc;
-	if (doc.LoadFile(path.c_str()) != XML_SUCCESS)
+	XmlResult<void> res = LoadXml(doc, path);
+	if (!res)
 	{
-		LOG_ERROR("Failed to open alias.xml ({}): {}.", path, doc.ErrorStr());
+		LOG_ERROR("Failed to open alias.xml ({}): {}.", PathToUtf8(path).value(), res.error());
 		return {};
 	}
 
@@ -48,19 +52,19 @@ static std::optional<std::unordered_map<std::string, ArgType>> ParseAliases(cons
 	return aliases;
 }
 
-std::vector<EntitySpec> rp::ParseScripts(const Version& version, std::string_view gameFilePath)
+std::vector<EntitySpec> rp::ParseScripts(const Version& version, const fs::path& gameFilePath)
 {
 	// this is a shit way of doing this, but thanks to wg its also the only way
 	const std::string scriptVersion = version.ToString(".", true);
 
-	fs::path versionDir = fs::path(gameFilePath) / scriptVersion / "scripts";
+	fs::path versionDir = gameFilePath / scriptVersion / "scripts";
 	if (!fs::exists(versionDir))
 	{
 		LOG_ERROR("Game scripts for version {} not found.", scriptVersion);
 		return {};
 	}
 
-	auto aliasResult = ParseAliases((versionDir / "entity_defs" / "alias.xml").string());
+	auto aliasResult = ParseAliases(versionDir / "entity_defs" / "alias.xml");
 	if (!aliasResult)
 	{
 		LOG_ERROR("Failed to parse aliases");
@@ -69,13 +73,13 @@ std::vector<EntitySpec> rp::ParseScripts(const Version& version, std::string_vie
 	AliasType aliases = aliasResult.value();
 
 	XMLDocument doc;
-	std::string entitiesPath((versionDir / "entities.xml").string());
-	if (doc.LoadFile(entitiesPath.c_str()) != XML_SUCCESS)
+	const fs::path entitiesPath(versionDir / "entities.xml");
+	if (!LoadXml(doc, entitiesPath))
 	{
-		LOG_ERROR("Failed to open entities.xml ({}): {}.", entitiesPath, doc.ErrorStr());
+		LOG_ERROR("Failed to open entities.xml ({}): {}.", Core::PathToUtf8(entitiesPath).value(), doc.ErrorStr());
 		return {};
 	}
-
+	
 	XMLNode* root = doc.FirstChild();
 	if (root == nullptr)
 	{
@@ -89,7 +93,7 @@ std::vector<EntitySpec> rp::ParseScripts(const Version& version, std::string_vie
 		for (XMLElement* entityElem = clientServerEntries->FirstChildElement(); entityElem != nullptr; entityElem = entityElem->NextSiblingElement())
 		{
 			std::string entityName = Core::String::Trim(entityElem->Name());
-			DefFile defFile = ParseDef((versionDir / "entity_defs" / std::format("{}.def", entityName)).string(), aliases);
+			DefFile defFile = ParseDef(versionDir / "entity_defs" / std::format("{}.def", entityName), aliases);
 			std::vector<DefFile> interfaces;
 
 			ParseInterfaces((versionDir / "entity_defs" / "interfaces"), aliases, defFile, interfaces);

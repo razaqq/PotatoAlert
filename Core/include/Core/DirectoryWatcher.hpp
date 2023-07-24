@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QString>
 
+#include <filesystem>
 #include <string>
 #include <unordered_map>
 
@@ -18,6 +19,7 @@ class DirectoryWatcher : public QObject
 public:
 	DirectoryWatcher();
 	void WatchDirectory(std::string_view dir);
+	void WatchDirectory(const std::filesystem::path& dir);
 	void ClearDirectories();
 	void ForceDirectoryChanged();
 	void ForceFileChanged(std::string_view file);
@@ -28,8 +30,8 @@ private:
 	std::unordered_map<QString, QDateTime> m_lastModified;
 
 signals:
-	void DirectoryChanged(const std::string& directory);
-	void FileChanged(const std::string& file);
+	void DirectoryChanged(const std::filesystem::path& directory);
+	void FileChanged(const std::filesystem::path& file);
 };
 
 }  // namespace PotatoAlert::Core

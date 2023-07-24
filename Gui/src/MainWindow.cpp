@@ -107,17 +107,17 @@ void MainWindow::SwitchTab(MenuEntry i)
 		{
 			const auto screenshotDir = m_services.Get<Client::AppDirectories>().ScreenshotsDir;
 			Core::CaptureScreenshot(window(), screenshotDir);
-			QDesktopServices::openUrl(QUrl::fromLocalFile(screenshotDir.string().c_str()));
+			QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(screenshotDir).absolutePath()));
 			return;
 		}
 		case MenuEntry::CSV:
 		{
-			QDesktopServices::openUrl(QUrl::fromLocalFile(m_services.Get<Client::AppDirectories>().MatchesDir.string().c_str()));
+			QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(m_services.Get<Client::AppDirectories>().MatchesDir).absolutePath()));
 			return;
 		}
 		case MenuEntry::Log:
 		{
-			QDesktopServices::openUrl(QUrl::fromLocalFile(m_services.Get<Client::AppDirectories>().AppDir.string().c_str()));
+			QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(m_services.Get<Client::AppDirectories>().AppDir).absolutePath()));
 			return;
 		}
 		case MenuEntry::Github:

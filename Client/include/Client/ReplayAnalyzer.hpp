@@ -33,25 +33,26 @@ class ReplayAnalyzer : public QObject
 	Q_OBJECT
 
 public:
-	ReplayAnalyzer(const ServiceProvider& serviceProvider, std::string_view gameFilePath)
+	ReplayAnalyzer(const ServiceProvider& serviceProvider, const fs::path& gameFilePath)
 		: m_services(serviceProvider), m_gameFilePath(gameFilePath)
 	{
 		qRegisterMetaType<uint32_t>("uint32_t");
 		qRegisterMetaType<ReplaySummary>("ReplaySummary");
 	}
 
-	void AnalyzeDirectory(std::string_view directory);
-	void OnFileChanged(const std::string& file);
+	void AnalyzeDirectory(const std::filesystem::path& directory);
+	void OnFileChanged(const std::filesystem::path& file);
 	bool HasGameFiles(const Version& gameVersion) const;
+	static ReplayResult<void> UnpackGameFiles(const std::filesystem::path& dst, const std::filesystem::path& pkgPath, const std::filesystem::path& idxPath);
 	static ReplayResult<void> UnpackGameFiles(std::string_view dst, std::string_view pkgPath, std::string_view idxPath);
 
 private:
-	void AnalyzeReplay(std::string_view path, std::chrono::seconds readDelay = 0s);
+	void AnalyzeReplay(const std::filesystem::path& path, std::chrono::seconds readDelay = 0s);
 
 	const ServiceProvider& m_services;
 	Core::ThreadPool m_threadPool;
-	std::unordered_map<std::string, std::future<void>> m_futures;
-	std::string m_gameFilePath;
+	std::unordered_map<std::filesystem::path::string_type, std::future<void>> m_futures;
+	fs::path m_gameFilePath;
 
 signals:
 	void ReplaySummaryReady(uint32_t id, const ReplaySummary& summary) const;

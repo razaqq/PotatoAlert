@@ -17,6 +17,7 @@
 #include <QString>
 #include <QNetworkReply>
 
+#include <filesystem>
 #include <string>
 
 
@@ -56,7 +57,7 @@ public:
 	DirectoryStatus CheckPath();
 
 private:
-	void OnFileChanged(const std::string& file);
+	void OnFileChanged(const std::filesystem::path& file);
 	void SendRequest(std::string_view request, MatchContext&& matchContext);
 	void HandleReply(QNetworkReply* reply, auto& successHandler);
 	void LookupResult(const std::string& url, const std::string& authToken, const MatchContext& matchContext);

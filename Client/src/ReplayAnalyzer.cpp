@@ -3,6 +3,7 @@
 #include "Client/DatabaseManager.hpp"
 #include "Client/ReplayAnalyzer.hpp"
 
+#include "Core/Encoding.hpp"
 #include "Core/File.hpp"
 #include "Core/String.hpp"
 
@@ -12,9 +13,13 @@
 
 #include <algorithm>
 #include <chrono>
+#include <filesystem>
 #include <optional>
 #include <ranges>
 #include <string>
+
+
+namespace fs = std::filesystem;
 
 using namespace std::chrono_literals;
 using namespace PotatoAlert::Core;
@@ -28,6 +33,16 @@ bool ReplayAnalyzer::HasGameFiles(const Version& gameVersion) const
 	// &&MinimapRenderer::HasGameParams(gameVersion, m_gameFilePath);
 }
 
+ReplayResult<void> ReplayAnalyzer::UnpackGameFiles(const fs::path& dst, const fs::path& pkgPath, const fs::path& idxPath)
+{
+	const Unpacker unpacker(pkgPath, idxPath);
+	if (!unpacker.Extract("scripts/", dst))
+		return PA_REPLAY_ERROR("Failed to unpack game scripts");
+	if (!unpacker.Extract("content/GameParams.data", dst))
+		return PA_REPLAY_ERROR("Failed to unpack game params");
+	return {};
+}
+
 ReplayResult<void> ReplayAnalyzer::UnpackGameFiles(std::string_view dst, std::string_view pkgPath, std::string_view idxPath)
 {
 	const Unpacker unpacker(pkgPath, idxPath);
@@ -38,22 +53,22 @@ ReplayResult<void> ReplayAnalyzer::UnpackGameFiles(std::string_view dst, std::st
 	return {};
 }
 
-void ReplayAnalyzer::OnFileChanged(const std::string& file)
+void ReplayAnalyzer::OnFileChanged(const std::filesystem::path& file)
 {
-	if (String::EndsWith(file, ".wowsreplay") && File::Exists(file) &&
-		fs::path(file).filename().string() != "temp.wowsreplay")
+	if (file.extension() == fs::path(".wowsreplay") && File::Exists(file) &&
+		file.filename() != fs::path("temp.wowsreplay"))
 	{
 		LOG_TRACE("Replay file {} changed", file);
 		AnalyzeReplay(file, 3s);
 	}
 }
 
-void ReplayAnalyzer::AnalyzeReplay(std::string_view path, std::chrono::seconds readDelay)
+void ReplayAnalyzer::AnalyzeReplay(const fs::path& path, std::chrono::seconds readDelay)
 {
-	auto analyze = [this](std::string_view file, std::chrono::seconds readDelay) -> void
+	auto analyze = [this](const fs::path& file, std::chrono::seconds readDelay) -> void
 	{
 		// this is honestly not ideal, but i don't see another way of fixing it
-		LOG_TRACE("Analyzing replay file {} after {} delay...", file, readDelay);
+		LOG_TRACE("Analyzing replay file {} after {} delay...", Core::PathToUtf8(file).value(), readDelay);
 		std::this_thread::sleep_for(readDelay);
 
 		PA_TRY_OR_ELSE(summary, ReplayParser::AnalyzeReplay(file, m_gameFilePath),
@@ -83,18 +98,18 @@ void ReplayAnalyzer::AnalyzeReplay(std::string_view path, std::chrono::seconds r
 
 	// if this replay was never analyzed or analyzing finished, analyze it
 	// this avoids running multiple analyzes if the game writes to the replay multiple times
-	if (!m_futures.contains(path.data()))
+	if (!m_futures.contains(path.native()))
 	{
-		m_futures.emplace(std::string(path), m_threadPool.Enqueue(analyze, std::string(path), readDelay));
+		m_futures.emplace(path.native(), m_threadPool.Enqueue(analyze, path, readDelay));
 	}
 
-	if (m_futures.at(path.data()).wait_for(0s) == std::future_status::ready)
+	if (m_futures.at(path.native()).wait_for(0s) == std::future_status::ready)
 	{
-		m_futures.at(path.data()) = m_threadPool.Enqueue(analyze, std::string(path), readDelay);
+		m_futures.at(path.native()) = m_threadPool.Enqueue(analyze, path, readDelay);
 	}
 }
 
-void ReplayAnalyzer::AnalyzeDirectory(std::string_view directory)
+void ReplayAnalyzer::AnalyzeDirectory(const fs::path& directory)
 {
 	const DatabaseManager& dbm = m_services.Get<DatabaseManager>();
 
@@ -109,7 +124,7 @@ void ReplayAnalyzer::AnalyzeDirectory(std::string_view directory)
 		return left.ReplayName < right.ReplayName;
 	});
 
-	for (const auto& entry : fs::recursive_directory_iterator(fs::path(directory)))
+	for (const auto& entry : fs::recursive_directory_iterator(directory))
 	{
 		if (entry.is_regular_file() && entry.path().extension() == ".wowsreplay")
 		{
@@ -121,7 +136,7 @@ void ReplayAnalyzer::AnalyzeDirectory(std::string_view directory)
 
 			if (found != matches.end())
 			{
-				AnalyzeReplay(entry.path().string());
+				AnalyzeReplay(entry.path());
 			}
 		}
 	}

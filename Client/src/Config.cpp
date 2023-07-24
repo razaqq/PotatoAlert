@@ -4,6 +4,7 @@
 #include "Client/Config.hpp"
 #include "Client/Game.hpp"
 
+#include "Core/Encoding.hpp"
 #include "Core/File.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
@@ -23,7 +24,6 @@
 
 namespace fs = std::filesystem;
 
-using PotatoAlert::Client::AppDirectories;
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Client::Game::GetGamePath;
@@ -47,7 +47,6 @@ static std::unordered_map<ConfigKey, std::string_view> g_keyNames =
 	{ ConfigKey::WindowY,                  "window_y" },
 	{ ConfigKey::WindowState,              "window_state" },
 	{ ConfigKey::GameDirectory,            "game_directory" },
-	{ ConfigKey::ReplaysDirectory,         "replays_directory" },
 	{ ConfigKey::Language,                 "language" },
 	{ ConfigKey::MenuBarLeft,              "menubar_left" }
 };
@@ -55,7 +54,7 @@ static std::unordered_map<ConfigKey, std::string_view> g_keyNames =
 }
 
 
-Config::Config(std::string_view filePath) : m_filePath(filePath)
+Config::Config(const fs::path& filePath) : m_filePath(filePath)
 {
 	g_defaultConfig.SetObject();
 	auto a = g_defaultConfig.GetAllocator();
@@ -72,8 +71,13 @@ Config::Config(std::string_view filePath) : m_filePath(filePath)
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowX]), 0, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowY]), 0, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowState]), Qt::WindowState::WindowActive, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::GameDirectory]), GetGamePath().value_or(""), a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::ReplaysDirectory]), "", a);
+	std::string gamePathStr = "";
+	if (const std::optional<fs::path> gamePath = GetGamePath())
+	{
+		if (Result<std::string> path = Core::PathToUtf8(gamePath.value()))
+			gamePathStr = path.value();
+	}
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::GameDirectory]), gamePathStr, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::Language]), 0, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::MenuBarLeft]), true, a);
 
@@ -279,7 +283,7 @@ void Config::CheckTypes()
 			|| IsType(key, ConfigType::Bool) && !m_json[name.data()].IsBool()
 			|| IsType(key, ConfigType::Int) && !m_json[name.data()].IsInt()
 			|| IsType(key, ConfigType::Float) && !m_json[name.data()].IsFloat()
-			|| IsType(key, ConfigType::WString) && !m_json[name.data()].IsString()
+			|| IsType(key, ConfigType::Path) && !m_json[name.data()].IsString()
 			|| IsType(key, ConfigType::StatsMode) && !m_json[name.data()].IsString()
 			|| IsType(key, ConfigType::TableLayout) && !m_json[name.data()].IsString()
 			|| IsType(key, ConfigType::TeamStatsMode) && !m_json[name.data()].IsString())
@@ -344,7 +348,6 @@ void Config::ApplyUpdates()
 			it->name.SetString(to.data(), to.size());
 		}
 	};
-	renameKey("replays_folder", g_keyNames[ConfigKey::ReplaysDirectory]);
 	renameKey("game_folder", g_keyNames[ConfigKey::GameDirectory]);
 	renameKey("menubar_leftside", g_keyNames[ConfigKey::MenuBarLeft]);
 	m_json.RemoveMember("api_key");

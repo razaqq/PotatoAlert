@@ -3,11 +3,10 @@
 
 #include "Core/Bytes.hpp"
 #include "Core/Math.hpp"
-
-#include <memory>
-#include <tinyxml2.h>
+#include "Core/Xml.hpp"
 
 #include <any>
+#include <memory>
 #include <optional>
 #include <span>
 #include <string>

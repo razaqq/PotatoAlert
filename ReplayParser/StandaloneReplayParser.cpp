@@ -13,7 +13,7 @@ using PotatoAlert::ReplayParser::ReplayResult;
 
 int main(int argc, char* argv[])
 {
-	Log::Init((AppDataPath("PotatoAlert") / "StandaloneReplayParser.log").string());
+	Log::Init(AppDataPath("PotatoAlert") / "StandaloneReplayParser.log");
 
 	auto section = [](std::string_view title = "")
 	{
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 		return err();
 	}
 
-	PA_TRY_OR_ELSE(replay, Replay::FromFile(argv[1], (AppDataPath("PotatoAlert") / "ReplayVersions").string()),
+	PA_TRY_OR_ELSE(replay, Replay::FromFile(argv[1], (AppDataPath("PotatoAlert") / "ReplayVersions")),
 	{
 		LOG_ERROR(error);
 		return err();

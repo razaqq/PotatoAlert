@@ -53,9 +53,9 @@ struct TempArenaInfoResult
 };
 
 // opens and reads a file
-static Result<TempArenaInfoResult, std::string> ReadArenaInfo(std::string_view filePath)
+static Result<TempArenaInfoResult, std::string> ReadArenaInfo(const fs::path& filePath)
 {
-	LOG_TRACE("Reading arena info from: {}", filePath);
+	LOG_TRACE("Reading arena info from: {}", PathToUtf8(filePath).value());
 
 	using namespace std::chrono_literals;
 
@@ -376,7 +376,7 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 
 						if (config.Get<ConfigKey::SaveMatchCsv>())
 						{
-							const std::string fileName = (m_services.Get<AppDirectories>().MatchesDir / std::format("match_{}.csv", Time::GetTimeStamp("%Y-%m-%d_%H-%M-%S"))).string();
+							const fs::path fileName = m_services.Get<AppDirectories>().MatchesDir / std::format("match_{}.csv", Time::GetTimeStamp("%Y-%m-%d_%H-%M-%S"));
 							if (const File file = File::Open(fileName, File::Flags::Write | File::Flags::Create))
 							{
 								if (file.WriteString(res.Csv))
@@ -491,11 +491,11 @@ void PotatoClient::ForceRun()
 }
 
 // triggered whenever a file gets modified in a replays path
-void PotatoClient::OnFileChanged(const std::string& file)
+void PotatoClient::OnFileChanged(const std::filesystem::path& file)
 {
 	LOG_TRACE("Directory changed.");
 
-	if (fs::path(file).filename() != "tempArenaInfo.json" || !File::Exists(file))
+	if (file.filename() != fs::path("tempArenaInfo.json") || !File::Exists(file))
 	{
 		return;
 	}
@@ -547,14 +547,18 @@ DirectoryStatus PotatoClient::CheckPath()
 
 	m_watcher.ClearDirectories();
 
-	const std::string gamePath = m_services.Get<Config>().Get<ConfigKey::GameDirectory>();
+	Result<fs::path> gamePath = m_services.Get<Config>().Get<ConfigKey::GameDirectory>();
+	if (!gamePath)
+	{
+		return dirStatus;
+	}
 
-	if (Game::CheckPath(gamePath, dirStatus))
+	if (Game::CheckPath(gamePath.value(), dirStatus))
 	{
 		m_dirStatus = dirStatus;
 
 		// start watching all replays paths
-		for (std::string_view folder : dirStatus.replaysPath)
+		for (const fs::path& folder : dirStatus.replaysPath)
 		{
 			if (!folder.empty())
 			{
@@ -567,8 +571,8 @@ DirectoryStatus PotatoClient::CheckPath()
 		if (!m_replayAnalyzer.HasGameFiles(dirStatus.gameVersion))
 		{
 			LOG_INFO("Missing game files for version {} detected, trying to unpack...", gameVersion);
-			const std::string dst = (AppDataPath("PotatoAlert") / "ReplayVersions" / gameVersion).string();
-			if (!ReplayAnalyzer::UnpackGameFiles(dst, dirStatus.pkgPath.string(), dirStatus.idxPath.string()))
+			const fs::path dst = AppDataPath("PotatoAlert") / "ReplayVersions" / gameVersion;
+			if (!ReplayAnalyzer::UnpackGameFiles(dst, dirStatus.pkgPath, dirStatus.idxPath))
 			{
 				LOG_ERROR("Failed to unpack game files for version: {}", gameVersion);
 			}
@@ -576,7 +580,7 @@ DirectoryStatus PotatoClient::CheckPath()
 		LOG_INFO("Game files for version {} found", gameVersion);
 
 		// lets check the entire game folder, replays might be hiding everywhere
-		m_replayAnalyzer.AnalyzeDirectory(gamePath);
+		m_replayAnalyzer.AnalyzeDirectory(gamePath.value());
 
 		TriggerRun();
 	}

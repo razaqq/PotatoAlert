@@ -3,12 +3,12 @@
 #include "Client/Config.hpp"
 #include "Client/Game.hpp"
 
+#include "Core/Encoding.hpp"
 #include "Core/File.hpp"
 #include "Core/Log.hpp"
 #include "Core/String.hpp"
 #include "Core/Version.hpp"
-
-#include <tinyxml2.h>
+#include "Core/Xml.hpp"
 
 #include <filesystem>
 #include <ranges>
@@ -27,10 +27,10 @@ bool GetBinPath(DirectoryStatus& status)
 {
 	// get newest folder version inside /bin folder
 
-	const fs::path binPath = fs::path(status.gamePath) / "bin";
+	const fs::path binPath = status.gamePath / "bin";
 	if (!fs::exists(binPath))
 	{
-		LOG_ERROR("Bin folder does not exist: {}", binPath.string());
+		LOG_ERROR("Bin folder does not exist: {}", Core::PathToUtf8(binPath).value());
 		return false;
 	}
 
@@ -40,16 +40,16 @@ bool GetBinPath(DirectoryStatus& status)
 		if (!entry.is_directory())
 			continue;
 
-		const fs::path exe = (entry.path() / "bin32" / "WorldOfWarships32.exe");
+		const fs::path exe = entry.path() / "bin32" / "WorldOfWarships32.exe";
 		if (!fs::exists(exe))
 		{
 			continue;
 		}
 
 		Version version;
-		if (!File::GetVersion(exe.string(), version) || !version)
+		if (!File::GetVersion(exe, version) || !version)
 		{
-			LOG_ERROR("Failed to read version info from file: {} - {}", exe.string(), File::LastError());
+			LOG_ERROR("Failed to read version info from file: {} - {}", Core::PathToUtf8(exe).value(), File::LastError());
 			continue;
 		}
 
@@ -87,20 +87,20 @@ bool GetBinPath(DirectoryStatus& status)
 }
 
 // reads the engine config and sets values
-bool ReadEngineConfig(DirectoryStatus& status, std::string_view resFolder)
+bool ReadEngineConfig(DirectoryStatus& status, const fs::path& resFolder)
 {
-	fs::path engineConfig(status.binPath / fs::path(resFolder) / "engine_config.xml");
+	fs::path engineConfig(status.binPath / resFolder / "engine_config.xml");
 	if (!fs::exists(engineConfig))
 	{
-		LOG_TRACE("No engine_config.xml in path: {}", resFolder);
+		LOG_TRACE("No engine_config.xml in path: {}", PathToUtf8(resFolder).value());
 		return false;
 	}
 
 	tinyxml2::XMLDocument doc;
-	tinyxml2::XMLError err = doc.LoadFile(engineConfig.string().c_str());
-	if (err != tinyxml2::XML_SUCCESS)
+	XmlResult<void> res = LoadXml(doc, engineConfig);
+	if (!res)
 	{
-		LOG_TRACE("Failed to open engine_config.xml for reading.");
+		LOG_TRACE("Failed to load engine_config.xml: {}", res.error());
 		return false;
 	}
 
@@ -176,14 +176,14 @@ bool ReadEngineConfig(DirectoryStatus& status, std::string_view resFolder)
 }
 
 // reads game version and region from preferences.xml
-bool ReadPreferences(DirectoryStatus& status, std::string_view basePath)
+bool ReadPreferences(DirectoryStatus& status, const fs::path& basePath)
 {
 	// For some reason preferences.xml is not valid xml and so we have to parse it with regex instead of xml
-	std::string preferencesPath = (fs::path(basePath) / "preferences.xml").string();
+	const fs::path preferencesPath = fs::path(basePath) / "preferences.xml";
 
-	if (!fs::exists(fs::path(preferencesPath)))
+	if (!fs::exists(preferencesPath))
 	{
-		LOG_TRACE("Cannot find preferences.xml for reading in path: {}", preferencesPath);
+		LOG_TRACE("Cannot find preferences.xml for reading in path: {}", Core::PathToUtf8(preferencesPath).value());
 		return false;
 	}
 
@@ -239,41 +239,40 @@ void SetReplaysFolder(DirectoryStatus& status)
 {
 	if (status.replaysPathBase == "cwd")
 	{
-		status.replaysPath = {(fs::path(status.gamePath) / status.replaysDirPath).string()};
+		status.replaysPath = { fs::path(status.gamePath) / status.replaysDirPath };
 	}
 	else if (status.replaysPathBase == "exe_path")
 	{
 		status.replaysPath = {
-				(status.binPath / "bin32" / status.replaysDirPath).string(),
-				(status.binPath / "bin64" / status.replaysDirPath).string()
+			status.binPath / "bin32" / status.replaysDirPath,
+			status.binPath / "bin64" / status.replaysDirPath
 		};
 	}
 	if (status.versionedReplays)
 	{
-		std::vector<std::string> newReplaysPath;
+		std::vector<fs::path> newReplaysPath;
 		newReplaysPath.reserve(status.replaysPath.size());
 		for (auto& path : status.replaysPath)
 		{
-			newReplaysPath.emplace_back((fs::path(path) / status.gameVersion.ToString()).string());
+			newReplaysPath.emplace_back(path / status.gameVersion.ToString());
 		}
 		status.replaysPath = newReplaysPath;
 	}
 }
 
-bool CheckPath(std::string_view selectedPath, DirectoryStatus& status)
+bool CheckPath(const fs::path& selectedPath, DirectoryStatus& status)
 {
-	const fs::path gamePath = fs::path(selectedPath).make_preferred();
-	status.gamePath = gamePath.string();
-
+	status.gamePath = selectedPath;
+	
 	// check that the game path exists
 	std::error_code ec;
-	bool exists = fs::exists(gamePath, ec);
+	bool exists = fs::exists(status.gamePath, ec);
 	if (ec)
 	{
 		LOG_ERROR("Failed to check if game path exists: {}", ec.message());
 		return false;
 	}
-	if (gamePath.empty() || !exists)
+	if (status.gamePath.empty() || !exists)
 		return false;
 
 	ReadPreferences(status, status.gamePath);
@@ -284,25 +283,23 @@ bool CheckPath(std::string_view selectedPath, DirectoryStatus& status)
 	}
 
 	status.idxPath = status.binPath / "idx";
-	status.pkgPath = gamePath / "res_packages";
+	status.pkgPath = status.gamePath / "res_packages";
 
-	if (!ReadEngineConfig(status, "res"))
+	if (!ReadEngineConfig(status, fs::path("res")))
 	{
 		status.statusText = "Failed to read engine config";
 		return false;
 	}
 
-	const std::string resModsFolder = fs::path(fs::path(status.binPath) / "res_mods").string();
-	ReadEngineConfig(status, resModsFolder.c_str());
+	ReadEngineConfig(status, status.binPath / "res_mods");
 	SetReplaysFolder(status);
 
-
 	// get rid of all replays folders that don't exist
-	status.replaysPath.erase(std::ranges::remove_if(status.replaysPath, [](const std::string& p)
+	status.replaysPath.erase(std::ranges::remove_if(status.replaysPath, [](const fs::path& p)
 	{
 		if (!fs::exists(p))
 		{
-			LOG_TRACE("Removing replays folder {}, because it doesn't exist.", p);
+			LOG_TRACE("Removing replays folder {}, because it doesn't exist.", PathToUtf8(p).value());
 			return true;
 		}
 		return false;

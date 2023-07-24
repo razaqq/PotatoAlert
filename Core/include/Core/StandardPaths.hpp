@@ -8,6 +8,7 @@
 #include <QStandardPaths>
 
 #include <filesystem>
+#include <string>
 
 
 namespace fs = std::filesystem;
@@ -16,30 +17,25 @@ namespace PotatoAlert::Core {
 
 inline fs::path AppDataPath(std::string_view appName)
 {
-	fs::path appData = fs::path(
-			QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
-					.append(QDir::separator())
-					.append(appName.data())
-					.toStdString());
+	const QDir appData = QDir(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
+		.append(QDir::separator())
+		.append(appName.data()));
 
-	std::error_code ec;
-	bool exists = fs::exists(appData, ec);
-	if (ec)
+	if (!appData.exists())
 	{
-		LOG_ERROR("Failed to check for appdata path: {}", ec.message());
-		QApplication::exit(1);
-	}
-
-	if (!exists)
-	{
-		fs::create_directories(appData, ec);
-		if (ec)
+		if (!appData.mkpath("."))
 		{
-			LOG_ERROR("Failed to create appdata path: {}", ec.message());
+			LOG_ERROR("Failed to create appdata path");
 			QApplication::exit(1);
 		}
 	}
-	return appData;
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	return appData.filesystemAbsolutePath();
+#else
+	const QString abs = appData.absolutePath();
+	return { reinterpret_cast<const char16_t*>(abs.cbegin()), reinterpret_cast<const char16_t*>(abs.cend()) };
+#endif
 }
 
 }  // namespace PotatoAlert::Core

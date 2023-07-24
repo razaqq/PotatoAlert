@@ -228,7 +228,7 @@ void SettingsWidget::Load() const
 
 	m_updates->setChecked(config.Get<ConfigKey::UpdateNotifications>());
 	m_minimizeTray->setChecked(config.Get<ConfigKey::MinimizeTray>());
-	m_gamePathEdit->setText(QString::fromStdString(config.Get<ConfigKey::GameDirectory>()));
+	m_gamePathEdit->setText(QDir(config.Get<ConfigKey::GameDirectory>()).absolutePath());
 	m_statsMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::StatsMode>()))->setChecked(true);
 	m_teamDamageMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::TeamDamageMode>()))->setChecked(true);
 	m_teamWinRateMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::TeamWinRateMode>()))->setChecked(true);
@@ -302,7 +302,7 @@ void SettingsWidget::ConnectSignals()
 		if (dir != "")
 		{
 			m_gamePathEdit->setText(dir);
-			config.Set<ConfigKey::GameDirectory>(dir.toStdString());
+			config.Set<ConfigKey::GameDirectory>(QDir(dir).filesystemAbsolutePath());
 			CheckPath();
 		}
 	});

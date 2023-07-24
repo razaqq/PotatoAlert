@@ -14,6 +14,7 @@
 #include "ReplayParser/ReplayParser.hpp"
 #include "ReplayParser/Result.hpp"
 
+#include <filesystem>
 #include <optional>
 #include <ranges>
 #include <span>
@@ -21,12 +22,19 @@
 #include <vector>
 
 
+namespace fs = std::filesystem;
+
 using namespace PotatoAlert::Core;
 using namespace PotatoAlert::ReplayParser;
 namespace rp = PotatoAlert::ReplayParser;
 using PotatoAlert::ReplayParser::ReplayResult;
 
 ReplayResult<Replay> Replay::FromFile(std::string_view filePath, std::string_view gameFilePath)
+{
+	return FromFile(filePath, gameFilePath);
+}
+
+ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& gameFilePath)
 {
 	PA_PROFILE_FUNCTION();
 
@@ -159,14 +167,14 @@ ReplayResult<Replay> Replay::FromFile(std::string_view filePath, std::string_vie
 	return replay;
 }
 
-ReplayResult<ReplaySummary> rp::AnalyzeReplay(std::string_view file, std::string_view gameFilePath)
+ReplayResult<ReplaySummary> rp::AnalyzeReplay(const fs::path& file, const fs::path& gameFilePath)
 {
 	PA_TRY(replay, Replay::FromFile(file, gameFilePath));
 	PA_TRY(summary, replay.Analyze());
 	return summary;
 }
 
-bool rp::HasGameScripts(const Version& gameVersion, std::string_view gameFilePath)
+bool rp::HasGameScripts(const Version& gameVersion, const fs::path& gameFilePath)
 {
 	return !ParseScripts(gameVersion, gameFilePath).empty();
 }

@@ -7,11 +7,13 @@
 #include <QFileInfo>
 #include <QFileSystemWatcher>
 
+#include <filesystem>
 #include <string>
 #include <unordered_set>
 
 
 using PotatoAlert::Core::DirectoryWatcher;
+namespace fs = std::filesystem;
 
 DirectoryWatcher::DirectoryWatcher()
 {
@@ -26,6 +28,19 @@ void DirectoryWatcher::ClearDirectories()
 {
 	if (!m_watcher.directories().isEmpty())
 		m_watcher.removePaths(m_watcher.directories());
+}
+
+void DirectoryWatcher::WatchDirectory(const std::filesystem::path& dir)
+{
+	const QDir directory(dir);
+	m_watcher.addPath(directory.absolutePath());
+
+	const QFileInfoList watchedList = directory.entryInfoList(QDir::NoDotAndDotDot | QDir::Files);
+
+	for (const QFileInfo& fileInfo : watchedList)
+	{
+		m_lastModified[fileInfo.absoluteFilePath()] = fileInfo.lastModified();
+	}
 }
 
 void DirectoryWatcher::WatchDirectory(std::string_view dir)
@@ -54,7 +69,7 @@ void DirectoryWatcher::ForceFileChanged(std::string_view file)
 {
 	for (const QString& dir : m_watcher.directories())
 	{
-		emit FileChanged((dir + QDir::separator() + file.data()).toStdString());
+		emit FileChanged(QDir(dir + QDir::separator() + file.data()).filesystemAbsolutePath());
 	}
 }
 
@@ -78,7 +93,7 @@ void DirectoryWatcher::OnDirectoryChanged(const QString& path)
 		if (!contains || contains && m_lastModified[filePath] < lastModified)
 		{
 			m_lastModified[filePath] = lastModified;
-			emit FileChanged(filePath.toStdString());
+			emit FileChanged(QDir(filePath).filesystemAbsolutePath());
 		}
 
 		if (missing.contains(filePath))
@@ -90,6 +105,6 @@ void DirectoryWatcher::OnDirectoryChanged(const QString& path)
 	for (const QString& file : missing)
 	{
 		m_lastModified.erase(file);
-		emit FileChanged(file.toStdString());
+		emit FileChanged(QDir(file).filesystemAbsolutePath());
 	}
 }

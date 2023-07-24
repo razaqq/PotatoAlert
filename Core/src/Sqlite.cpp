@@ -5,6 +5,7 @@
 #include "sqlite3.h"
 
 #include <cstdint>
+#include <filesystem>
 #include <limits>
 #include <string>
 #include <type_traits>
@@ -31,11 +32,11 @@ SQLite::Handle SQLite::RawOpen(std::string_view path, Flags flags)
 		return Handle::Null;
 }
 
-SQLite::Handle SQLite::RawOpenW(std::wstring_view path, Flags flags)
+SQLite::Handle SQLite::RawOpen(const std::filesystem::path& path, Flags flags)
 {
 	sqlite3* db;
-	
-	if (sqlite3_open16(path.data(), &db) == SQLITE_OK)
+	// TODO: this works but is very bad, please fix
+	if (sqlite3_open_v2((const char*)path.u8string().c_str(), &db, static_cast<int>(flags), nullptr) == SQLITE_OK)
 		return CreateHandle(db);
 	else
 		return Handle::Null;

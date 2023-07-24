@@ -8,6 +8,7 @@
 #include "ReplayParser/ReplayMeta.hpp"
 #include "ReplayParser/Result.hpp"
 
+#include <filesystem>
 #include <span>
 #include <string>
 #include <vector>
@@ -321,6 +322,7 @@ public:
 	std::vector<EntitySpec> Specs;
 
 	static ReplayResult<Replay> FromFile(std::string_view filePath, std::string_view gameFilePath);
+	static ReplayResult<Replay> FromFile(const std::filesystem::path& filePath, const std::filesystem::path& gameFilePath);
 	[[nodiscard]] ReplayResult<ReplaySummary> Analyze() const;
 
 	template<typename P>
@@ -334,7 +336,7 @@ private:
 	std::span<const Byte> m_data;
 };
 
-ReplayResult<ReplaySummary> AnalyzeReplay(std::string_view file, std::string_view gameFilePath);
-bool HasGameScripts(const Version& gameVersion, std::string_view gameFilePath);
+ReplayResult<ReplaySummary> AnalyzeReplay(const std::filesystem::path& file, const std::filesystem::path& gameFilePath);
+bool HasGameScripts(const Version& gameVersion, const fs::path& gameFilePath);
 
 }  // namespace PotatoAlert::ReplayParser

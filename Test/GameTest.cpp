@@ -47,22 +47,22 @@ TEST_CASE( "GameTest_CheckPathTest" )
 	DirectoryStatus f1;
 	REQUIRE( CheckPath(GetGamePath(Test::nsnv).string(), f1) );
 	REQUIRE( f1.gamePath == GetGamePath(Test::nsnv) );
-	REQUIRE( f1.replaysPath == std::vector<std::string>{ (GetGamePath(Test::nsnv) / "replays").string() } );
+	REQUIRE( f1.replaysPath == std::vector<fs::path>{ GetGamePath(Test::nsnv) / "replays" } );
 
 	DirectoryStatus f2;
 	REQUIRE( CheckPath(GetGamePath(Test::nsv).string(), f2) );
-	REQUIRE( f2.replaysPath == std::vector<std::string>{ (GetGamePath(Test::nsv) / "replays" / "0.9.4.0").string()} );
+	REQUIRE(f2.replaysPath == std::vector<fs::path>{ GetGamePath(Test::nsv) / "replays" / "0.9.4.0" });
 
 	DirectoryStatus f3;
 	REQUIRE( CheckPath(GetGamePath(Test::snvexe).string(), f3) );
-	REQUIRE( f3.replaysPath == std::vector<std::string>{
-		(GetGamePath(Test::snvexe) / "bin" / "1427460" / "bin32" / "replays").string(),
-		(GetGamePath(Test::snvexe) / "bin" / "1427460" / "bin64" / "replays").string()
+	REQUIRE(f3.replaysPath == std::vector<fs::path>{
+		GetGamePath(Test::snvexe) / "bin" / "1427460" / "bin32" / "replays",
+		GetGamePath(Test::snvexe) / "bin" / "1427460" / "bin64" / "replays"
 	});
 
 	DirectoryStatus f4;
 	REQUIRE(CheckPath(GetGamePath(Test::svcwd).string(), f4));
-	REQUIRE(f4.replaysPath == std::vector<std::string>{(GetGamePath(Test::svcwd) / "replays" / "0.9.4.0").string()});
+	REQUIRE(f4.replaysPath == std::vector<fs::path>{ GetGamePath(Test::svcwd) / "replays" / "0.9.4.0" });
 }
 
 TEST_CASE( "GameTest_ReadPreferencesTest" )
@@ -85,12 +85,12 @@ TEST_CASE( "GameTest_GetResFolderPathTest" )
 			"", false
 	};
 	REQUIRE(GetBinPath(status));
-	REQUIRE(status.binPath == (GetGamePath(Test::nsnv) / "bin" / "2666186").string() );
+	REQUIRE(status.binPath == GetGamePath(Test::nsnv) / "bin" / "2666186");
 
 	status.gamePath = GetGamePath(Test::snvexe).string();
 	REQUIRE(GetBinPath(status));
 	REQUIRE(status.directoryVersion == "1427460");
-	REQUIRE(status.binPath == (GetGamePath(Test::snvexe) / "bin" / "1427460").string());
+	REQUIRE(status.binPath == GetGamePath(Test::snvexe) / "bin" / "1427460");
 }
 
 TEST_CASE( "GameTest_ReadEngineConfigTest" )
@@ -128,7 +128,7 @@ TEST_CASE( "GameTest_SetReplaysFolderTest" )
 			{}, "eu", false
 	};
 	SetReplaysFolder(f1);
-	REQUIRE( f1.replaysPath == std::vector<std::string>{(GetGamePath(Test::nsnv) / "replays").string()} );
+	REQUIRE(f1.replaysPath == std::vector<fs::path>{ GetGamePath(Test::nsnv) / "replays" });
 
 	DirectoryStatus f2 = {
 			GetGamePath(Test::snvexe).string(),
@@ -136,7 +136,7 @@ TEST_CASE( "GameTest_SetReplaysFolderTest" )
 			{}, "eu", false
 	};
 	SetReplaysFolder(f2);
-	REQUIRE( f2.replaysPath == std::vector<std::string>{(GetGamePath(Test::snvexe) / "replays").string()} );
+	REQUIRE(f2.replaysPath == std::vector<fs::path>{ GetGamePath(Test::snvexe) / "replays" });
 
 	DirectoryStatus f3 = {
 			GetGamePath(Test::snvexe).string(),
@@ -144,9 +144,9 @@ TEST_CASE( "GameTest_SetReplaysFolderTest" )
 			{}, "eu", false
 	};
 	SetReplaysFolder(f3);
-	REQUIRE( f3.replaysPath == std::vector<std::string>{
-		(GetGamePath(Test::snvexe) / "bin" / f3.directoryVersion / "bin32" / "replays").string(),
-		(GetGamePath(Test::snvexe) / "bin" / f3.directoryVersion / "bin64" / "replays").string()
+	REQUIRE(f3.replaysPath == std::vector<fs::path>{
+		GetGamePath(Test::snvexe) / "bin" / f3.directoryVersion / "bin32" / "replays",
+		GetGamePath(Test::snvexe) / "bin" / f3.directoryVersion / "bin64" / "replays"
 	});
 
 	DirectoryStatus f4 = {
@@ -155,8 +155,8 @@ TEST_CASE( "GameTest_SetReplaysFolderTest" )
 			{}, "eu", true
 	};
 	SetReplaysFolder(f4);
-	REQUIRE( f4.replaysPath == std::vector<std::string>{
-			(GetGamePath(Test::svcwd) / "bin" / f4.directoryVersion / "bin32" / "replays" / f4.gameVersion.ToString()).string(),
-			(GetGamePath(Test::svcwd) / "bin" / f4.directoryVersion / "bin64" / "replays" / f4.gameVersion.ToString()).string()
+	REQUIRE(f4.replaysPath == std::vector<fs::path>{
+			GetGamePath(Test::svcwd) / "bin" / f4.directoryVersion / "bin32" / "replays" / f4.gameVersion.ToString(),
+			GetGamePath(Test::svcwd) / "bin" / f4.directoryVersion / "bin64" / "replays" / f4.gameVersion.ToString()
 	});
 }

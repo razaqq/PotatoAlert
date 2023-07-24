@@ -68,9 +68,19 @@ public:
 		return m_handle;
 	}
 
+	static File Open(const std::filesystem::path& path, Flags flags)
+	{
+		return File(RawOpen(path, flags));
+	}
+
 	static File Open(std::string_view path, Flags flags)
 	{
 		return File(RawOpen(path, flags));
+	}
+
+	static File Open(std::wstring_view path, Flags flags)
+	{
+		return File(RawOpenW(path, flags));
 	}
 
 	void Close()
@@ -148,17 +158,22 @@ public:
 		return RawMove(src, dst);
 	}
 
-	static bool Delete(std::string_view fileName)
+	static bool Delete(std::string_view file)
 	{
-		return RawDelete(fileName);
+		return RawDelete(file);
 	}
 
-	static bool Exists(std::string_view fileName)
+	static bool Exists(const std::filesystem::path& file)
 	{
-		return RawExists(fileName);
+		return RawExists(file);
 	}
 
-	static bool GetVersion(std::string_view fileName, Version& outVersion);
+	static bool Exists(std::string_view file)
+	{
+		return RawExists(file);
+	}
+
+	static bool GetVersion(const std::filesystem::path& filePath, Version& outVersion);
 
 	[[nodiscard]] static std::string LastError()
 	{
@@ -201,9 +216,12 @@ private:
 	static bool RawFlushBuffer(Handle handle);
 	static uint64_t RawGetSize(Handle handle);
 	static Handle RawOpen(std::string_view path, Flags flags);
+	static Handle RawOpen(const std::filesystem::path& path, Flags flags);
+	static Handle RawOpenW(std::wstring_view path, Flags flags);
 	static void RawClose(Handle handle);
 	static bool RawMove(std::string_view src, std::string_view dst);
 	static bool RawDelete(std::string_view file);
+	static bool RawExists(const std::filesystem::path& file);
 	static bool RawExists(std::string_view file);
 	static bool RawMoveFilePointer(Handle handle, int64_t offset, FilePointerMoveMethod method);
 	static int64_t RawCurrentFilePointer(Handle handle);

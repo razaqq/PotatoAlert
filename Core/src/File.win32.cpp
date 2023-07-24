@@ -1,14 +1,19 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/Bytes.hpp"
+#include "Core/Encoding.hpp"
 #include "Core/File.hpp"
 #include "Core/Flags.hpp"
 
 #include "win32.h"
 
+#include <filesystem>
 #include <format>
 #include <string>
 #include <vector>
+
+
+namespace fs = std::filesystem;
 
 using namespace PotatoAlert::Core;
 
@@ -26,54 +31,71 @@ static constexpr T UnwrapHandle(File::Handle handle)
 	return reinterpret_cast<T>(static_cast<uintptr_t>(handle) - 1);
 }
 
-}
+struct FileOpenParams
+{
+	DWORD access;
+	DWORD share;
+};
 
-namespace {
+FileOpenParams GetFileOpenParams(File::Flags flags)
+{
+	FileOpenParams params{};
 
-	struct FileOpenParams
+	params.access = 0;
+	params.share = 0;
+
+	if (HasFlag(flags, File::Flags::Read))
 	{
-		DWORD access;
-		DWORD share;
-	};
-
-	FileOpenParams GetFileOpenParams(File::Flags flags)
-	{
-		FileOpenParams params{};
-
-		params.access = 0;
-		params.share = 0;
-
-		if (HasFlag(flags, File::Flags::Read))
-		{
-			params.access |= FILE_GENERIC_READ;
-		}
-
-		if (HasFlag(flags, File::Flags::Write))
-		{
-			params.access |= FILE_GENERIC_WRITE;
-		}
-		else
-		{
-			params.share |= FILE_SHARE_READ;
-		}
-
-		if (HasFlag(flags, File::Flags::Append))
-		{
-			params.access |= FILE_APPEND_DATA;
-		}
-
-		if (HasFlag(flags, File::Flags::Truncate))
-		{
-			params.access |= TRUNCATE_EXISTING;
-		}
-
-		return params;
+		params.access |= FILE_GENERIC_READ;
 	}
+
+	if (HasFlag(flags, File::Flags::Write))
+	{
+		params.access |= FILE_GENERIC_WRITE;
+	}
+	else
+	{
+		params.share |= FILE_SHARE_READ;
+	}
+
+	if (HasFlag(flags, File::Flags::Append))
+	{
+		params.access |= FILE_APPEND_DATA;
+	}
+
+	if (HasFlag(flags, File::Flags::Truncate))
+	{
+		params.access |= TRUNCATE_EXISTING;
+	}
+
+	return params;
+}
 
 } // namespace
 
 
 File::Handle File::RawOpen(std::string_view path, Flags flags)
+{
+	Result<size_t> size = Utf8ToWide(path);
+	if (!size)
+	{
+		return Handle::Null;
+	}
+	std::wstring wPath(size.value(), '\0');
+	if (!Utf8ToWide(path, wPath))
+	{
+		return Handle::Null;
+	}
+
+	return RawOpenW(wPath, flags);
+}
+
+File::Handle File::RawOpen(const fs::path& path, Flags flags)
+{
+	return RawOpenW(path.native(), flags);
+}
+
+File::Handle File::RawOpenW(std::wstring_view path, Flags flags)
 {
 	Flags f = flags & (Flags::Open | Flags::Create | Flags::Truncate);
 
@@ -95,8 +117,7 @@ File::Handle File::RawOpen(std::string_view path, Flags flags)
 	if (HasFlag(flags, Flags::NoBuffer))
 		extraFlags |= FILE_FLAG_NO_BUFFERING;
 
-	std::string pathString(path);
-	HANDLE hFile = CreateFileA(pathString.c_str(), params.access, params.share, nullptr, mode, extraFlags, nullptr);
+	HANDLE hFile = CreateFileW(path.data(), params.access, params.share, nullptr, mode, extraFlags, nullptr);
 
 	if (hFile == INVALID_HANDLE_VALUE)
 	{
@@ -306,21 +327,21 @@ std::string File::RawLastError()
 	return msg;
 }
 
-bool File::GetVersion(std::string_view fileName, Version& outVersion)
+bool File::GetVersion(const fs::path& filePath, Version& outVersion)
 {
-	const DWORD size = GetFileVersionInfoSizeA(fileName.data(), nullptr);
+	const DWORD size = GetFileVersionInfoSizeW(filePath.native().c_str(), nullptr);
 	if (size == 0)
 		return {};
 
 	const std::unique_ptr<char[]> versionInfo(new char[size]);
-	if (!GetFileVersionInfoA(fileName.data(), 0, 255, versionInfo.get()))
+	if (!GetFileVersionInfoW(filePath.native().c_str(), 0, 255, versionInfo.get()))
 	{
 		return false;
 	}
 
 	VS_FIXEDFILEINFO* out;
 	UINT outSize = 0;
-	if (!VerQueryValueA(&versionInfo[0], "\\", reinterpret_cast<LPVOID*>(&out), &outSize) && outSize > 0)
+	if (!VerQueryValueW(&versionInfo[0], L"\\", reinterpret_cast<LPVOID*>(&out), &outSize) && outSize > 0)
 	{
 		return false;
 	}
@@ -342,6 +363,12 @@ bool File::RawMove(std::string_view src, std::string_view dst)
 bool File::RawDelete(std::string_view file)
 {
 	return DeleteFileA(file.data());
+}
+
+bool File::RawExists(const fs::path& file)
+{
+	const DWORD dwAttrib = GetFileAttributesW(file.native().c_str());
+	return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
 bool File::RawExists(std::string_view file)

@@ -12,7 +12,9 @@
 #include <QApplication>
 #include <QString>
 
+#include <filesystem>
 #include <memory>
+#include <string>
 #include <vector>
 
 
@@ -86,9 +88,12 @@ public:
 	}
 };
 
-void Log::Init(std::string_view logFile)
+void Log::Init(const std::filesystem::path& logFile)
 {
-	spdlog::set_error_handler([](const std::string& msg) { spdlog::get("console")->error("*** LOGGER ERROR ***: {}", msg); });
+	spdlog::set_error_handler([](const std::string& msg)
+	{
+		spdlog::get("console")->error("*** LOGGER ERROR ***: {}", msg);
+	});
 
 	auto stdoutSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 	stdoutSink->set_pattern("%^[%T] %n: %v%$");
@@ -103,7 +108,7 @@ void Log::Init(std::string_view logFile)
 	formatter->add_flag<SourceLocationFlag<spdlog::details::scoped_padder>>('S');
 	formatter->set_pattern("[%d-%m-%Y %T] [%=7l] %n [thread %-5t] (%-30!S): %v");
 
-	auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFile.data());
+	const auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFile.native());
 	fileSink->set_formatter(std::move(formatter));
 	fileSink->set_level(spdlog::level::info);
 

@@ -1,13 +1,18 @@
 // Copyright 2022 <github.com/razaqq>
 #pragma once
 
+#include "Core/Encoding.hpp"
 #include "Core/Process.hpp"
 #include "Core/Result.hpp"
 #include "Core/StandardPaths.hpp"
 
 #include <filesystem>
+#include <format>
+#include <iostream>
 #include <string>
 
+
+#include "Core/File.hpp"
 
 namespace fs = std::filesystem;
 using PotatoAlert::Core::Result;
@@ -16,49 +21,21 @@ namespace PotatoAlert::Client {
 
 struct AppDirectories
 {
+public:
 	explicit AppDirectories(std::string_view appName)
 	{
 		AppName = appName;
 		AppDir = Core::AppDataPath(appName).make_preferred();
 		MatchesDir = (AppDir / "Matches").make_preferred();
 		ScreenshotsDir = (AppDir / "Screenshots").make_preferred();
-		ReplayVersionsDir = (AppDir / "ReplayVersions").string();
-		ConfigFile = (AppDir / "config.json").string();
-		LogFile = (AppDir / std::format("{}.log", AppName)).string();
-		DatabaseFile = (MatchesDir / "match_history.db").string();
+		ReplayVersionsDir = (AppDir / "ReplayVersions").make_preferred();
+		ConfigFile = (AppDir / "config.json").make_preferred();
+		LogFile = (AppDir / std::format("{}.log", AppName)).make_preferred();
+		DatabaseFile = (MatchesDir / "match_history.db").make_preferred();
 
-		auto createDir = [](const fs::path& dir) -> Result<void>
-		{
-			std::error_code ec;
-			const bool exists = fs::exists(dir, ec);
-			if (ec)
-				return PA_ERROR(ec);
-
-			if (!exists)
-			{
-				fs::create_directories(dir, ec);
-				if (ec)
-					return PA_ERROR(ec);
-			}
-
-			return {};
-		};
-
-#define CHECK_ERROR(Result)                                                                                 \
-		if (!(Result))                                                                                      \
-		{                                                                                                   \
-			LOG_ERROR("Failed to create app dir {}, reason: '{}'", MatchesDir, (Result).error().message()); \
-			Core::ExitCurrentProcessWithError((Result).error().value());                                    \
-		}
-
-		Result<void> result = createDir(MatchesDir);
-		CHECK_ERROR(result)
-		Result<void> result2 = createDir(ScreenshotsDir);
-		CHECK_ERROR(result2)
-		Result<void> result3 = createDir(ReplayVersionsDir);
-		CHECK_ERROR(result3)
-
-#undef CHECK_ERROR
+		CreateAppDir(MatchesDir);
+		CreateAppDir(ScreenshotsDir);
+		CreateAppDir(ReplayVersionsDir);
 	}
 
 	std::string_view AppName;
@@ -66,10 +43,33 @@ struct AppDirectories
 
 	fs::path MatchesDir;
 	fs::path ScreenshotsDir;
-	std::string ReplayVersionsDir;
-	std::string ConfigFile;
-	std::string LogFile;
-	std::string DatabaseFile;
+	fs::path ReplayVersionsDir;
+	fs::path ConfigFile;
+	fs::path LogFile;
+	fs::path DatabaseFile;
+
+private:
+	static void CreateAppDir(const fs::path& dir)
+	{
+		std::error_code ec;
+		const bool exists = fs::exists(dir, ec);
+		if (ec)
+		{
+			std::cerr << std::format("Failed to check if app dir '{}' exists, reason: '{}'", Core::PathToUtf8(dir).value(), ec.message()) << "\n";
+			Core::ExitCurrentProcessWithError(ec.value());
+		}
+
+		if (!exists)
+		{
+			fs::create_directories(dir, ec);
+			if (ec)
+			{
+				std::cerr << std::format("Failed to create app dir '{}', reason: '{}'", Core::PathToUtf8(dir).value(), ec.message()) << "\n";
+				std::string err = Core::File::LastError();
+				Core::ExitCurrentProcessWithError(ec.value());
+			}
+		}
+	}
 };
 
 }  // namespace PotatoAlert::Client

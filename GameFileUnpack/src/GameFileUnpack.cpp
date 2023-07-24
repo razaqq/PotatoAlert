@@ -9,6 +9,7 @@
 
 #include "GameFileUnpack/GameFileUnpack.hpp"
 
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <span>
@@ -28,6 +29,7 @@ using PotatoAlert::GameFileUnpack::IdxHeader;
 using PotatoAlert::GameFileUnpack::Node;
 using PotatoAlert::GameFileUnpack::FileRecord;
 using PotatoAlert::GameFileUnpack::Unpacker;
+
 namespace fs = std::filesystem;
 
 namespace {
@@ -61,7 +63,7 @@ static bool ReadNullTerminatedString(std::span<Byte> data, int64_t offset, std::
 	return true;
 }
 
-static bool WriteFileData(std::string_view file, std::span<const Byte> data)
+static bool WriteFileData(const fs::path& file, std::span<const Byte> data)
 {
 	// write the data
 	if (File outFile = File::Open(file, File::Flags::Open | File::Flags::Write | File::Flags::Create))
@@ -134,7 +136,7 @@ DirectoryTree::TreeNode& DirectoryTree::CreatePath(std::string_view path)
 	return *current;
 }
 
-Unpacker::Unpacker(std::string_view pkgPath, std::string_view idxPath) : m_pkgPath(pkgPath)
+Unpacker::Unpacker(const fs::path& pkgPath, const fs::path& idxPath) : m_pkgPath(pkgPath)
 {
 	if (!fs::exists(idxPath))
 	{
@@ -146,7 +148,7 @@ Unpacker::Unpacker(std::string_view pkgPath, std::string_view idxPath) : m_pkgPa
 	{
 		if (entry.is_regular_file() && entry.path().extension() == ".idx")
 		{
-			if (File file = File::Open(entry.path().string(), File::Flags::Open | File::Flags::Read))
+			if (File file = File::Open(entry.path(), File::Flags::Open | File::Flags::Read))
 			{
 				if (std::vector<Byte> data; file.ReadAll(data))
 				{
@@ -156,8 +158,7 @@ Unpacker::Unpacker(std::string_view pkgPath, std::string_view idxPath) : m_pkgPa
 						for (const auto& [path, fileRecord] : idxFile.Files)
 						{
 							m_directoryTree.Insert(
-								FileRecord{ idxFile.PkgName, path, fileRecord.Id, fileRecord.Offset, fileRecord.Size, fileRecord.UncompressedSize }
-							);
+									FileRecord{ idxFile.PkgName, path, fileRecord.Id, fileRecord.Offset, fileRecord.Size, fileRecord.UncompressedSize });
 						}
 					}
 					else
@@ -178,7 +179,12 @@ Unpacker::Unpacker(std::string_view pkgPath, std::string_view idxPath) : m_pkgPa
 	}
 }
 
-bool Unpacker::Extract(std::string_view nodeName, std::string_view dst) const
+Unpacker::Unpacker(std::string_view pkgPath, std::string_view idxPath) : m_pkgPath(pkgPath)
+{
+	Unpacker(fs::path(pkgPath), fs::path(idxPath));
+}
+
+bool Unpacker::Extract(std::string_view nodeName, const fs::path& dst) const
 {
 	std::optional<DirectoryTree::TreeNode> nodeResult = m_directoryTree.Find(nodeName);
 	if (!nodeResult)
@@ -212,9 +218,14 @@ bool Unpacker::Extract(std::string_view nodeName, std::string_view dst) const
 	return true;
 }
 
-bool Unpacker::ExtractFile(const FileRecord& fileRecord, std::string_view dst) const
+bool Unpacker::Extract(std::string_view nodeName, std::string_view dst) const
 {
-	if (File inFile = File::Open((fs::path(m_pkgPath) / fileRecord.PkgName).string(), File::Flags::Open | File::Flags::Read))
+	return Extract(nodeName, fs::path(dst));
+}
+
+bool Unpacker::ExtractFile(const FileRecord& fileRecord, const fs::path& dst) const
+{
+	if (File inFile = File::Open(m_pkgPath / fileRecord.PkgName, File::Flags::Open | File::Flags::Read))
 	{
 		uint64_t fileSize = inFile.Size();
 		if (FileMapping mapping = FileMapping::Open(inFile, FileMapping::Flags::Read, fileSize))
@@ -241,7 +252,7 @@ bool Unpacker::ExtractFile(const FileRecord& fileRecord, std::string_view dst) c
 					}
 				}
 
-				const std::string filePath = (fs::path(dst) / fileRecord.Path).string();
+				const fs::path filePath = fs::path(dst) / fileRecord.Path;
 
 				// check if data is compressed and inflate
 				std::span data{ static_cast<const Byte*>(dataPtr), fileSize };

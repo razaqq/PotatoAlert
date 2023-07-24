@@ -1,6 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Core/Result.hpp"
 #include "Core/Version.hpp"
 
 #include <filesystem>
@@ -9,33 +10,31 @@
 #include <vector>
 
 
-namespace fs = std::filesystem;
-
 namespace PotatoAlert::Client::Game {
 
 struct DirectoryStatus
 {
-	std::string gamePath;
+	std::filesystem::path gamePath;
 	Core::Version gameVersion;
-	fs::path binPath;
-	fs::path idxPath;
-	fs::path pkgPath;
+	std::filesystem::path binPath;
+	std::filesystem::path idxPath;
+	std::filesystem::path pkgPath;
 	std::string preferencesPathBase;
 	std::string directoryVersion;
 	std::string replaysPathBase;
-	std::string replaysDirPath;
-	std::vector<std::string> replaysPath;
+	std::filesystem::path replaysDirPath;
+	std::vector<std::filesystem::path> replaysPath;
 	std::string region;
 	bool versionedReplays;
 	std::string statusText = "No Game Directory Set";
 	bool found = false;
 };
 
-bool CheckPath(std::string_view selectedPath, DirectoryStatus& status);
+bool CheckPath(const std::filesystem::path& selectedPath, DirectoryStatus& status);
 bool GetBinPath(DirectoryStatus& status);
-bool ReadEngineConfig(DirectoryStatus& status, std::string_view resFolder);
-bool ReadPreferences(DirectoryStatus& status, std::string_view basePath);
+bool ReadEngineConfig(DirectoryStatus& status, const std::filesystem::path& resFolder);
+bool ReadPreferences(DirectoryStatus& status, const std::filesystem::path& basePath);
 void SetReplaysFolder(DirectoryStatus& status);
-std::optional<std::string> GetGamePath();
+std::optional<std::filesystem::path> GetGamePath();
 
 }  // namespace PotatoAlert::Client::Game

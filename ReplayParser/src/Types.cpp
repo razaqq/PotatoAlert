@@ -3,6 +3,7 @@
 #include "Core/Bytes.hpp"
 #include "Core/Log.hpp"
 #include "Core/String.hpp"
+#include "Core/Xml.hpp"
 
 #include "ReplayParser/Types.hpp"
 
@@ -13,8 +14,6 @@
 #include <type_traits>
 #include <unordered_map>
 #include <variant>
-
-#include <tinyxml2.h>
 
 
 namespace rp = PotatoAlert::ReplayParser;

@@ -98,7 +98,7 @@ struct DefFile
 	std::vector<std::string> Implements = {};
 };
 
-DefFile ParseDef(std::string_view file, const AliasType& aliases);
+DefFile ParseDef(const fs::path& file, const AliasType& aliases);
 DefFile MergeDefs(const std::vector<DefFile>& defs);
 void ParseInterfaces(const fs::path& root, const AliasType& aliases, const DefFile& def, std::vector<DefFile>& out);
 

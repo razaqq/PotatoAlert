@@ -35,7 +35,7 @@ static fs::path GetGameFileRootPath()
 
 static fs::path GetTempDirectory()
 {
-	const fs::path configPath = fs::path(QStandardPaths::writableLocation(QStandardPaths::TempLocation).append("/PotatoAlert").toStdString());
+	const fs::path configPath = QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation).append("/PotatoAlert")).filesystemAbsolutePath();
 
 	if (!fs::exists(configPath))
 	{
@@ -81,7 +81,7 @@ TEST_CASE("GameFileUnpackTest_IdxFileTest")
 	fs::path idxFilePath = GetGameFilePath("vehicles_level6_usa.idx");
 	fs::path pkgFilePath = GetGameFilePath("vehicles_level6_usa_0001.pkg");
 
-	File file = File::Open(idxFilePath.string(), File::Flags::Open | File::Flags::Read);
+	File file = File::Open(idxFilePath, File::Flags::Open | File::Flags::Read);
 	REQUIRE(file);
 	std::vector<Byte> data;
 	REQUIRE(file.ReadAll(data));
@@ -101,11 +101,9 @@ TEST_CASE("GameFileUnpackTest_IdxFileTest")
 
 TEST_CASE("GameFileUnpackTest_UnpackerTest")
 {
-	// Unpacker unpacker(GetGameFileRootPath().string(), GetGameFileRootPath().string());
-	Unpacker unpacker(GetGameFileRootPath().string(), GetGameFileRootPath().string());
-	// Unpacker unpacker(R"(F:\World_of_Warships_Eu\res_packages)", R"(F:\World_of_Warships_Eu\bin\5343985\idx)");
+	Unpacker unpacker(GetGameFileRootPath(), GetGameFileRootPath());
 	REQUIRE(unpacker.Extract(
 		R"(content/gameplay/usa/gun/secondary/textures/AGS206_3in50_MK21_Sub_ao.dds)",
-		GetTempDirectory().string())
+		GetTempDirectory())
 	);
 }

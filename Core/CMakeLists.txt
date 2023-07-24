@@ -38,6 +38,7 @@ if(WIN32)
 
         src/ApplicationGuard.win32.cpp
         src/Directory.win32.cpp
+        src/Encoding.win32.cpp
         src/File.win32.cpp
         src/FileMapping.win32.cpp
         src/Process.win32.cpp
@@ -53,6 +54,7 @@ if(UNIX)
 
         src/ApplicationGuard.linux.cpp
         src/Directory.linux.cpp
+        src/Encoding.linux.cpp
         src/File.linux.cpp
         src/FileMapping.linux.cpp
         src/Semaphore.linux.cpp

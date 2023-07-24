@@ -69,8 +69,17 @@ void FolderStatus::Update(const Client::Game::DirectoryStatus& status) const
 		m_statusText->setStyleSheet("QLabel { color: green; }");
 		m_region->setText(status.region.c_str());
 		m_gameVersion->setText(status.gameVersion.ToString().c_str());
-		status.versionedReplays ? m_versionedReplays->setText("yes") : m_versionedReplays->setText("no");  // TODO: localize
-		m_replaysFolders->setText(String::Join(status.replaysPath, "\n").c_str());
+		status.versionedReplays ?
+			m_versionedReplays->setText(GetString(m_currentLanguage, StringTableKey::YES))
+			: m_versionedReplays->setText(GetString(m_currentLanguage, StringTableKey::NO));
+		QString replaysFolders = "";
+		for (size_t i = 0; i < status.replaysPath.size(); i++)
+		{
+			if (i > 0)
+				replaysFolders += "\n";
+			replaysFolders += status.replaysPath[i].native();
+		}
+		m_replaysFolders->setText(replaysFolders);
 	}
 	else
 	{
@@ -89,6 +98,7 @@ bool FolderStatus::eventFilter(QObject* watched, QEvent* event)
 		m_versionLabel->setText(GetString(lang, StringTableKey::SETTINGS_REPLAYSFOLDER_GAMEVERSION));
 		m_steamLabel->setText(GetString(lang, StringTableKey::SETTINGS_REPLAYSFOLDER_STEAM));
 		m_versionedLabel->setText(GetString(lang, StringTableKey::SETTINGS_REPLAYSFOLDER_VERSIONED));
+		m_currentLanguage = lang;
 	}
 	return QWidget::eventFilter(watched, event);
 }

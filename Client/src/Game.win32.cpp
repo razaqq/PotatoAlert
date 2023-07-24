@@ -2,84 +2,97 @@
 
 #include "Client/Game.hpp"
 
+#include "Core/Defer.hpp"
+#include "Core/Result.hpp"
+
 #include "win32.h"
 
 #include <optional>
 #include <filesystem>
 
 
+using PotatoAlert::Core::MakeDefer;
+using PotatoAlert::Core::Result;
+
 namespace fs = std::filesystem;
 
-std::optional<std::string> PotatoAlert::Client::Game::GetGamePath()
+std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
 {
 	HKEY hKey;
-
-	if (RegOpenKeyExA(HKEY_CURRENT_USER, R"(SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall)", 0, KEY_READ, &hKey) != ERROR_SUCCESS)
+	auto defer = MakeDefer([&hKey]
 	{
 		RegCloseKey(hKey);
+	});
+
+	if (RegOpenKeyExW(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall)", 0, KEY_READ, &hKey) != ERROR_SUCCESS)
+	{
 		return {};
 	}
 
-	CHAR achKey[255];
-	DWORD cbName;
 	DWORD cSubKeys = 0;
-	FILETIME ftLastWriteTime;
+	DWORD cbMaxSubKeyLen = 0;
 
-	if (RegQueryInfoKeyA(hKey, NULL, NULL, NULL, &cSubKeys, NULL, NULL, NULL, NULL, NULL, NULL, &ftLastWriteTime) != ERROR_SUCCESS)
+	if (RegQueryInfoKeyW(hKey, NULL, NULL, NULL, &cSubKeys, &cbMaxSubKeyLen, NULL, NULL, NULL, NULL, NULL, NULL) != ERROR_SUCCESS)
 	{
-		RegCloseKey(hKey);
 		return {};
 	}
+
+	WCHAR subKeyName[cbMaxSubKeyLen + 1];
+	DWORD subKeyNameLength = cbMaxSubKeyLen + 1;
 
 	for (DWORD i = 0; i < cSubKeys; i++)
 	{
-		if (RegEnumKeyExA(hKey, i, achKey, &cbName, NULL, NULL, NULL, &ftLastWriteTime) == ERROR_SUCCESS)
+		if (RegEnumKeyExW(hKey, i, subKeyName, &subKeyNameLength, NULL, NULL, NULL, NULL) == ERROR_SUCCESS)
 		{
 			HKEY subKey;
-			if (RegOpenKeyExA(hKey, achKey, 0, KEY_READ, &subKey) == ERROR_SUCCESS)
+			auto defer2 = MakeDefer([&subKey]
 			{
-				DWORD displayNameSize = MAX_PATH;
-				CHAR displayName[MAX_PATH];
-				if (RegQueryValueExA(subKey, "DisplayName", nullptr, nullptr, (LPBYTE)displayName, &displayNameSize) != ERROR_SUCCESS)
+				RegCloseKey(subKey);
+			});
+
+			if (RegOpenKeyExW(hKey, subKeyName, 0, KEY_READ, &subKey) == ERROR_SUCCESS)
+			{
+				DWORD cbDataDisplayName;
+				if (RegQueryValueExW(subKey, L"DisplayName", NULL, NULL, NULL, &cbDataDisplayName) != ERROR_SUCCESS)
 				{
-					RegCloseKey(subKey);
 					continue;
 				}
 
-				DWORD publisherSize = MAX_PATH;
-				CHAR publisher[MAX_PATH];
-				if (RegQueryValueExA(subKey, "Publisher", nullptr, nullptr, (LPBYTE)publisher, &publisherSize) != ERROR_SUCCESS)
+				WCHAR displayName[cbDataDisplayName];
+				if (RegQueryValueExW(subKey, L"DisplayName", NULL, NULL, (LPBYTE)displayName, &cbDataDisplayName) != ERROR_SUCCESS)
 				{
-					RegCloseKey(subKey);
 					continue;
 				}
 
-				if (strcmp(publisher, "Wargaming.net") == 0 && strcmp(displayName, "World_of_Warships") == 0)
+				DWORD cbDataPublisherName;
+				if (RegQueryValueExW(subKey, L"Publisher", NULL, NULL, NULL, &cbDataPublisherName) != ERROR_SUCCESS)
+				{
+					continue;
+				}
+
+				WCHAR publisher[cbDataPublisherName];
+				if (RegQueryValueExW(subKey, L"Publisher", NULL, NULL, (LPBYTE)publisher, &cbDataPublisherName) != ERROR_SUCCESS)
+				{
+					continue;
+				}
+
+				if (wcscmp(publisher, L"Wargaming.net") == 0 && wcscmp(displayName, L"World_of_Warships") == 0)
 				{
 					DWORD installLocationSize = MAX_PATH;
-					CHAR installLocation[MAX_PATH];
-					if (RegQueryValueExA(subKey, "InstallLocation", nullptr, nullptr, (LPBYTE)installLocation, &installLocationSize) == ERROR_SUCCESS)
+					WCHAR installLocation[MAX_PATH];
+					if (RegQueryValueExW(subKey, TEXT("InstallLocation"), NULL, NULL, (LPBYTE)installLocation, &installLocationSize) == ERROR_SUCCESS)
 					{
-						RegCloseKey(hKey);
-						RegCloseKey(subKey);
 						const fs::path gamePath(installLocation);
 						if (fs::exists(gamePath) && !gamePath.empty())
 						{
-							return installLocation;
+							return gamePath;
 						}
-						return std::string(installLocation);
-					}
-					else
-					{
-						RegCloseKey(hKey);
-						RegCloseKey(subKey);
 						return {};
 					}
+					return {};
 				}
 			}
-			RegCloseKey(subKey);
 		}
 	}
-	RegCloseKey(hKey);
 	return {};
 }

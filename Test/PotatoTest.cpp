@@ -8,6 +8,6 @@ struct test_init
 {
 	test_init()
 	{
-		PotatoAlert::Core::Log::Init((PotatoAlert::Core::AppDataPath("PotatoAlert") / "PotatoTest.log").string());
+		PotatoAlert::Core::Log::Init(PotatoAlert::Core::AppDataPath("PotatoAlert") / "PotatoTest.log");
 	}
 } test_init_instance;
