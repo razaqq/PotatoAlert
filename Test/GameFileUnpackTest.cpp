@@ -35,7 +35,11 @@ static fs::path GetGameFileRootPath()
 
 static fs::path GetTempDirectory()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	const fs::path configPath = QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation).append("/PotatoAlert")).filesystemAbsolutePath();
+#else
+	const fs::path configPath = PotatoAlert::Core::ToFilesystemAbsolutePath(QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation).append("/PotatoAlert")));
+#endif
 
 	if (!fs::exists(configPath))
 	{
