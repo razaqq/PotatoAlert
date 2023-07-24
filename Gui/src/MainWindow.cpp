@@ -5,7 +5,7 @@
 #include "Client/PotatoClient.hpp"
 #include "Client/StringTable.hpp"
 
-#include "Core/Log.hpp"
+#include "Core/Directory.hpp"
 #include "Core/Screenshot.hpp"
 
 #include "Gui/MainWindow.hpp"
@@ -107,17 +107,28 @@ void MainWindow::SwitchTab(MenuEntry i)
 		{
 			const auto screenshotDir = m_services.Get<Client::AppDirectories>().ScreenshotsDir;
 			Core::CaptureScreenshot(window(), screenshotDir);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(screenshotDir).absolutePath()));
+#else
+#endif
 			return;
 		}
 		case MenuEntry::CSV:
 		{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(m_services.Get<Client::AppDirectories>().MatchesDir).absolutePath()));
+#else
+			QDesktopServices::openUrl(QUrl::fromLocalFile(Core::FromFilesystemPath(m_services.Get<Client::AppDirectories>().MatchesDir).absolutePath()));
+#endif
 			return;
 		}
 		case MenuEntry::Log:
 		{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(m_services.Get<Client::AppDirectories>().AppDir).absolutePath()));
+#else
+			QDesktopServices::openUrl(QUrl::fromLocalFile(Core::FromFilesystemPath(m_services.Get<Client::AppDirectories>().AppDir).absolutePath()));
+#endif
 			return;
 		}
 		case MenuEntry::Github:

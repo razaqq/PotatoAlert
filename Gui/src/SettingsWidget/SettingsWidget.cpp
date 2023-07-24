@@ -5,6 +5,8 @@
 #include "Client/ServiceProvider.hpp"
 #include "Client/StringTable.hpp"
 
+#include "Core/Directory.hpp"
+
 #include "Gui/SettingsWidget/FolderStatus.hpp"
 #include "Gui/SettingsWidget/HorizontalLine.hpp"
 #include "Gui/SettingsWidget/SettingsChoice.hpp"
@@ -228,7 +230,11 @@ void SettingsWidget::Load() const
 
 	m_updates->setChecked(config.Get<ConfigKey::UpdateNotifications>());
 	m_minimizeTray->setChecked(config.Get<ConfigKey::MinimizeTray>());
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	m_gamePathEdit->setText(QDir(config.Get<ConfigKey::GameDirectory>()).absolutePath());
+#else
+	m_gamePathEdit->setText(FromFilesystemPath(config.Get<ConfigKey::GameDirectory>()).absolutePath());
+#endif
 	m_statsMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::StatsMode>()))->setChecked(true);
 	m_teamDamageMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::TeamDamageMode>()))->setChecked(true);
 	m_teamWinRateMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::TeamWinRateMode>()))->setChecked(true);
@@ -302,7 +308,11 @@ void SettingsWidget::ConnectSignals()
 		if (dir != "")
 		{
 			m_gamePathEdit->setText(dir);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			config.Set<ConfigKey::GameDirectory>(QDir(dir).filesystemAbsolutePath());
+#else
+			config.Set<ConfigKey::GameDirectory>(ToFilesystemAbsolutePath(QDir(dir)));
+#endif
 			CheckPath();
 		}
 	});

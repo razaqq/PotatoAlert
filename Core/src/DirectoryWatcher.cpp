@@ -1,5 +1,6 @@
 // Copyright 2022 <github.com/razaqq>
 
+#include "Core/Directory.hpp"
 #include "Core/DirectoryWatcher.hpp"
 
 #include <QDateTime>
@@ -14,7 +15,6 @@
 
 
 using PotatoAlert::Core::DirectoryWatcher;
-namespace fs = std::filesystem;
 
 DirectoryWatcher::DirectoryWatcher()
 {
@@ -24,7 +24,6 @@ DirectoryWatcher::DirectoryWatcher()
 	);
 }
 
-
 void DirectoryWatcher::ClearDirectories()
 {
 	if (!m_watcher.directories().isEmpty())
@@ -33,7 +32,11 @@ void DirectoryWatcher::ClearDirectories()
 
 void DirectoryWatcher::WatchDirectory(const std::filesystem::path& dir)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	const QDir directory(dir);
+#else
+	const QDir directory = Core::FromFilesystemPath(dir);
+#endif
 	m_watcher.addPath(directory.absolutePath());
 
 	const QFileInfoList watchedList = directory.entryInfoList(QDir::NoDotAndDotDot | QDir::Files);
@@ -70,7 +73,11 @@ void DirectoryWatcher::ForceFileChanged(std::string_view file)
 {
 	for (const QString& dir : m_watcher.directories())
 	{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 		emit FileChanged(QDir(dir + QDir::separator() + file.data()).filesystemAbsolutePath());
+#else
+		emit FileChanged(ToFilesystemAbsolutePath(dir + QDir::separator() + file.data()));
+#endif
 	}
 }
 
@@ -94,7 +101,11 @@ void DirectoryWatcher::OnDirectoryChanged(const QString& path)
 		if (!contains || contains && m_lastModified[filePath] < lastModified)
 		{
 			m_lastModified[filePath] = lastModified;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			emit FileChanged(QDir(filePath).filesystemAbsolutePath());
+#else
+			emit FileChanged(ToFilesystemAbsolutePath(filePath));
+#endif
 		}
 
 		if (missing.contains(filePath))
@@ -106,6 +117,10 @@ void DirectoryWatcher::OnDirectoryChanged(const QString& path)
 	for (const QString& file : missing)
 	{
 		m_lastModified.erase(file);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 		emit FileChanged(QDir(file).filesystemAbsolutePath());
+#else
+		emit FileChanged(ToFilesystemAbsolutePath(file));
+#endif
 	}
 }
