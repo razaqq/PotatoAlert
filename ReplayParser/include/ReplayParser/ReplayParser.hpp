@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Core/Json.hpp"
+#include "Core/Version.hpp"
 
 #include "ReplayParser/Packets.hpp"
 #include "ReplayParser/PacketParser.hpp"
@@ -337,6 +338,6 @@ private:
 };
 
 ReplayResult<ReplaySummary> AnalyzeReplay(const std::filesystem::path& file, const std::filesystem::path& gameFilePath);
-bool HasGameScripts(const Version& gameVersion, const fs::path& gameFilePath);
+bool HasGameScripts(Version gameVersion, const fs::path& gameFilePath);
 
 }  // namespace PotatoAlert::ReplayParser

@@ -29,6 +29,34 @@ using namespace PotatoAlert::ReplayParser;
 namespace rp = PotatoAlert::ReplayParser;
 using PotatoAlert::ReplayParser::ReplayResult;
 
+template<typename R, typename T>
+concept const_contiguous_range_of =
+		std::ranges::contiguous_range<R const> &&
+		std::same_as<
+				std::remove_cvref_t<T>,
+				std::ranges::range_value_t<R const>>;
+
+namespace std {
+
+template<equality_comparable T, size_t E,
+		 const_contiguous_range_of<T> R>
+bool operator==(span<T, E> lhs, R const& rhs)
+{
+	return ranges::equal(lhs, rhs);
+}
+
+template<three_way_comparable T, size_t E,
+		 const_contiguous_range_of<T> R>
+auto operator<=>(span<T, E> lhs, R const& rhs)
+{
+	return std::lexicographical_compare_three_way(
+			lhs.begin(), lhs.end(),
+			ranges::begin(rhs), ranges::end(rhs));
+}
+
+}  // namespace std
+
+
 ReplayResult<Replay> Replay::FromFile(std::string_view filePath, std::string_view gameFilePath)
 {
 	return FromFile(filePath, gameFilePath);
@@ -58,12 +86,22 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 	Replay replay;
 	replay.m_data = data;
 
-	// remove first 8 bytes, no idea what they are, maybe version?
 	if (replay.m_data.size() < 8)
 	{
-		return PA_REPLAY_ERROR("Replay data missing first 8 bytes.");
+		return PA_REPLAY_ERROR("Replay has invalid length {} < 8.", replay.m_data.size());
 	}
-	Take(replay.m_data, 8);
+
+	constexpr std::array<Byte, 4> sig = { 0x12, 0x32, 0x34, 0x11 };
+	if (Take(replay.m_data, 4) != std::span{ sig })
+	{
+		return PA_REPLAY_ERROR("Replay has invalid file signature.");
+	}
+
+	uint32_t blocksCount;
+	if (!TakeInto(replay.m_data, blocksCount))
+	{
+		return PA_REPLAY_ERROR("Replay is missing blocksCount.");
+	}
 
 	uint32_t metaSize;
 	if (!TakeInto(replay.m_data, metaSize))
@@ -84,17 +122,32 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 	});
 	FromJson(js, replay.Meta);
 
-	// Read packets
-	uint32_t uncompressedSize;
-	if (!TakeInto(replay.m_data, uncompressedSize))
+	for (size_t i = 0; i < blocksCount - 1; i++)
 	{
-		return PA_REPLAY_ERROR("Replay is missing uncompressedSize.");
+		uint32_t blockSize;
+		if (!TakeInto(replay.m_data, blockSize))
+		{
+			return PA_REPLAY_ERROR("Replay is missing blockSize.");
+		}
+		if (blockSize > 0)
+			Take(replay.m_data, blockSize);
+	}
+	
+	uint32_t decompressedSize;
+	if (!TakeInto(replay.m_data, decompressedSize))
+	{
+		return PA_REPLAY_ERROR("Replay is missing decompressedSize.");
 	}
 
 	uint32_t streamSize;
 	if (!TakeInto(replay.m_data, streamSize))
 	{
 		return PA_REPLAY_ERROR("Replay is missing streamSize.");
+	}
+
+	if (replay.m_data.size() != streamSize)
+	{
+		//return PA_REPLAY_ERROR("Replay data != streamSize");
 	}
 
 	if (replay.m_data.size() % Blowfish::BlockSize() != 0)
@@ -137,6 +190,11 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 		return PA_REPLAY_ERROR("Failed to inflate decrypted replay data with zlib.");
 	}
 
+	if (decompressed.size() != decompressedSize)
+	{
+		return PA_REPLAY_ERROR("Replay decompressed data != decompressedSize");
+	}
+
 	// free memory of decrypted data
 	decrypted.clear();
 	decrypted.shrink_to_fit();
@@ -152,7 +210,7 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 
 	std::span out{ decompressed };
 	do {
-		PA_TRY(packet, ParsePacket(out, replay.m_packetParser));
+		PA_TRY(packet, ParsePacket(out, replay.m_packetParser, replay.Meta.ClientVersionFromExe));
 		replay.Packets.emplace_back(std::move(packet));
 	} while (!out.empty());
 
@@ -174,7 +232,7 @@ ReplayResult<ReplaySummary> rp::AnalyzeReplay(const fs::path& file, const fs::pa
 	return summary;
 }
 
-bool rp::HasGameScripts(const Version& gameVersion, const fs::path& gameFilePath)
+bool rp::HasGameScripts(Version gameVersion, const fs::path& gameFilePath)
 {
 	return !ParseScripts(gameVersion, gameFilePath).empty();
 }

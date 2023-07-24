@@ -27,7 +27,7 @@ using PotatoAlert::Client::ReplayAnalyzer;
 using PotatoAlert::GameFileUnpack::Unpacker;
 using PotatoAlert::ReplayParser::ReplayResult;
 
-bool ReplayAnalyzer::HasGameFiles(const Version& gameVersion) const
+bool ReplayAnalyzer::HasGameFiles(Version gameVersion) const
 {
 	return ReplayParser::HasGameScripts(gameVersion, m_gameFilePath);
 	// &&MinimapRenderer::HasGameParams(gameVersion, m_gameFilePath);

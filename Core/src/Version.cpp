@@ -56,49 +56,6 @@ void Version::Parse(std::string_view str)
 	}
 }
 
-bool Version::operator==(const Version& other) const
-{
-	if (m_success != other.m_success)
-		return false;
-
-	return m_version == other.m_version;
-}
-
-bool Version::operator!=(const Version& other) const
-{
-	return !(*this == other);
-}
-
-bool Version::operator>(const Version& other) const
-{
-	if (!this->m_success)
-		return false;
-	if (!other.m_success)
-		return true;
-
-	return this->m_version > other.m_version;
-}
-
-bool Version::operator<(const Version& other) const
-{
-	if (!other.m_success)
-		return false;
-	if (!this->m_success)
-		return true;
-
-	return this->m_version < other.m_version;
-}
-
-bool Version::operator<=(const Version& other) const
-{
-	return !(*this > other);
-}
-
-bool Version::operator>=(const Version& other) const
-{
-	return !(*this < other);
-}
-
 std::string Version::ToString(std::string_view del, bool includeBuild) const
 {
 	if (includeBuild)

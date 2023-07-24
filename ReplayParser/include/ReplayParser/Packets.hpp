@@ -27,27 +27,28 @@ typedef int32_t TypeVehicleId;
 typedef int32_t TypeMethodId;
 typedef uint16_t TypeEntityType;
 
-enum class PacketBaseType : uint32_t
+enum class PacketBaseType
 {
-	BasePlayerCreate     = 0x00,
-	CellPlayerCreate     = 0x01,
-	EntityControl        = 0x02,
-	EntityEnter          = 0x03,
-	EntityLeave          = 0x04,
-	EntityCreate         = 0x05,
-	EntityProperty       = 0x07,
-	EntityMethod         = 0x08,
-	PlayerPosition       = 0x0A,
-	Version              = 0x16,
-	PlayerEntity         = 0x20,
-	NestedPropertyUpdate = 0x22,
-	// Chat              = 0x23,
-	Camera               = 0x24,
-	CameraMode           = 0x26,
-	Map                  = 0x27,
-	PlayerOrientation    = 0x2B,
-	CameraFreeLook       = 0x2E,
-	CruiseState          = 0x31,
+	BasePlayerCreate,
+	CellPlayerCreate,
+	EntityControl,
+	EntityEnter,
+	EntityLeave,
+	EntityCreate,
+	EntityProperty,
+	EntityMethod,
+	PlayerPosition,
+	Version,
+	PlayerEntity,
+	NestedPropertyUpdate,
+	// Chat,
+	Camera,
+	CameraMode,
+	Map,
+	PlayerOrientation,
+	CameraFreeLook,
+	CruiseState,
+	Result,
 };
 
 struct Packet
@@ -282,6 +283,11 @@ struct CameraModePacket : Packet
 	uint32_t Mode;
 };
 
+struct ResultPacket : Packet
+{
+	std::string Result;
+};
+
 #define PA_RP_PACKETS(X)          \
 	X(BasePlayerCreatePacket)     \
 	X(CellPlayerCreatePacket)     \
@@ -301,7 +307,8 @@ struct CameraModePacket : Packet
 	X(UnknownPacket)              \
 	X(CruiseStatePacket)          \
 	X(CameraFreeLookPacket)       \
-	X(CameraModePacket)
+	X(CameraModePacket)           \
+	X(ResultPacket)
 
 typedef std::variant<
 		PA_CHAIN_COMMA(PA_RP_PACKETS(PA_NOARG))

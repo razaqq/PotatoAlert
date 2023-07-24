@@ -18,12 +18,49 @@ public:
 	explicit Version(std::string_view versionString);
 
 	explicit operator bool() const { return m_success; }
-	bool operator==(const Version& other) const;
-	bool operator!=(const Version& other) const;
-	bool operator>(const Version& other) const;
-	bool operator<(const Version& other) const;
-	bool operator>=(const Version& other) const;
-	bool operator<=(const Version& other) const;
+
+	constexpr bool operator==(const Version& other) const
+	{
+		if (m_success != other.m_success)
+			return false;
+
+		return m_version == other.m_version;
+	}
+
+	constexpr bool operator!=(const Version& other) const
+	{
+		return !(*this == other);
+	}
+
+	constexpr bool operator>(const Version& other) const
+	{
+		if (!m_success)
+			return false;
+		if (!other.m_success)
+			return true;
+
+		return m_version > other.m_version;
+	}
+
+	constexpr bool operator<(const Version& other) const
+	{
+		if (!other.m_success)
+			return false;
+		if (!m_success)
+			return true;
+
+		return m_version < other.m_version;
+	}
+
+	constexpr bool operator<=(const Version& other) const
+	{
+		return !(*this > other);
+	}
+
+	constexpr bool operator>=(const Version& other) const
+	{
+		return !(*this < other);
+	}
 
 	[[nodiscard]] uint8_t Major() const
 	{

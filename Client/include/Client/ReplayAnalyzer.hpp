@@ -42,7 +42,7 @@ public:
 
 	void AnalyzeDirectory(const std::filesystem::path& directory);
 	void OnFileChanged(const std::filesystem::path& file);
-	bool HasGameFiles(const Version& gameVersion) const;
+	bool HasGameFiles(Version gameVersion) const;
 	static ReplayResult<void> UnpackGameFiles(const std::filesystem::path& dst, const std::filesystem::path& pkgPath, const std::filesystem::path& idxPath);
 	static ReplayResult<void> UnpackGameFiles(std::string_view dst, std::string_view pkgPath, std::string_view idxPath);
 

@@ -80,6 +80,7 @@ TEST_CASE( "ReplayTest" )
 	REQUIRE(result6);
 	REQUIRE(result6->Outcome == MatchOutcome::Draw);
 
+	// 0.11.7
 	res = Replay::FromFile(GetReplay("20220815_100927_PRSB518-Lenin_19_OC_prey.wowsreplay"), gameFilePath);
 	REQUIRE(res.has_value());
 	ReplayResult<ReplaySummary> result7 = res->Analyze();
@@ -96,6 +97,18 @@ TEST_CASE( "ReplayTest" )
 		return current + ribbon.second;
 	});
 	REQUIRE(count == 96);
+
+	// 12.6
+	res = Replay::FromFile(GetReplay("20230723_181537_PWSD207-Grom_42_Neighbors.wowsreplay"), gameFilePath);
+	REQUIRE(res.has_value());
+	ReplayResult<ReplaySummary> result8 = res->Analyze();
+	REQUIRE(result8);
+	REQUIRE(result8->Outcome == MatchOutcome::Loss);
+	REQUIRE((int)std::round(result8->DamageDealt) == 136864);
+	REQUIRE((int)std::round(result8->DamageTaken) == 16603);
+	REQUIRE((int)std::round(result8->DamageSpotting) == 5382);
+	REQUIRE((int)std::round(result8->DamagePotential) == 583300);
+	REQUIRE(result8->Achievements.size() == 2);
 }
 
 TEST_CASE( "ReplayGameFileTest" )
