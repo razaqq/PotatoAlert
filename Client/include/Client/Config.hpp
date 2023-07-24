@@ -17,6 +17,7 @@
 
 namespace fs = std::filesystem;
 using PotatoAlert::Core::File;
+using PotatoAlert::Core::Result;
 
 namespace PotatoAlert::Client {
 
@@ -119,7 +120,7 @@ private:
 		if (m_json.HasMember(GetKeyName(Key).data()))
 		{
 			const std::string raw = Core::FromJson<std::string>(m_json[GetKeyName(Key).data()]);
-			if (Result<std::filesystem::path> res = Core::Utf8ToPath(raw))
+			if (const Result<std::filesystem::path> res = Core::Utf8ToPath(raw))
 				return res.value();
 		}
 		return {};
@@ -148,7 +149,7 @@ private:
 	template<ConfigKey Key> requires(IsType(Key, ConfigType::Path))
 	void BaseSet(const std::filesystem::path& value)
 	{
-		if (Result<std::string> res = Core::PathToUtf8(value))
+		if (const Result<std::string> res = Core::PathToUtf8(value))
 		{
 			m_json[GetKeyName(Key).data()].SetString(res.value(), m_json.GetAllocator());
 		}
