@@ -80,7 +80,7 @@ std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
 				{
 					DWORD installLocationSize = MAX_PATH;
 					WCHAR installLocation[MAX_PATH];
-					if (RegQueryValueExW(subKey, TEXT("InstallLocation"), NULL, NULL, (LPBYTE)installLocation, &installLocationSize) == ERROR_SUCCESS)
+					if (RegQueryValueExW(subKey, L"InstallLocation", NULL, NULL, (LPBYTE)installLocation, &installLocationSize) == ERROR_SUCCESS)
 					{
 						const fs::path gamePath(installLocation);
 						if (fs::exists(gamePath) && !gamePath.empty())
