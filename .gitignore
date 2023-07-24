@@ -7,6 +7,7 @@ cmake_install.cmake
 cmake_uninstall.cmake
 CMakeTestfile.cmake
 CTestTestfile.cmake
+CMakeUserPresets.json
 generated
 
 # CLion
@@ -25,6 +26,7 @@ out/
 .vscode
 .vs
 CMakeSettings.json
+Folder.DotSettings.user
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
