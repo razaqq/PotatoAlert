@@ -8,6 +8,7 @@
 #include <QFileSystemWatcher>
 
 #include <filesystem>
+#include <ranges>
 #include <string>
 #include <unordered_set>
 
@@ -81,7 +82,7 @@ void DirectoryWatcher::OnDirectoryChanged(const QString& path)
 	const QFileInfoList watchedList = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::Files);
 
 	std::unordered_set<QString> missing(m_lastModified.size());
-	for (const auto& [file, modified] : m_lastModified)
+	for (const auto& file : m_lastModified | std::views::keys)
 		missing.insert(file);
 
 	for (const QFileInfo& fileInfo : watchedList)
