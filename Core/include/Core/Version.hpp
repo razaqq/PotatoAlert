@@ -10,7 +10,7 @@ namespace PotatoAlert::Core {
 class Version
 {
 public:
-	explicit Version(uint8_t major = 0u, uint8_t minor = 0u, uint8_t patch = 0u, uint8_t build = 0u)
+	explicit constexpr Version(uint8_t major = 0u, uint8_t minor = 0u, uint8_t patch = 0u, uint8_t build = 0u)
 		: m_success(true), m_version(
 			static_cast<uint32_t>(major << 0x18) | static_cast<uint32_t>(minor << 0x10) |
 			static_cast<uint32_t>(patch << 0x08) | static_cast<uint32_t>(build)
@@ -19,7 +19,7 @@ public:
 
 	explicit operator bool() const { return m_success; }
 
-	constexpr bool operator==(const Version& other) const
+	constexpr bool operator==(Version other) const
 	{
 		if (m_success != other.m_success)
 			return false;
@@ -27,12 +27,12 @@ public:
 		return m_version == other.m_version;
 	}
 
-	constexpr bool operator!=(const Version& other) const
+	constexpr bool operator!=(Version other) const
 	{
 		return !(*this == other);
 	}
 
-	constexpr bool operator>(const Version& other) const
+	constexpr bool operator>(Version other) const
 	{
 		if (!m_success)
 			return false;
@@ -42,7 +42,7 @@ public:
 		return m_version > other.m_version;
 	}
 
-	constexpr bool operator<(const Version& other) const
+	constexpr bool operator<(Version other) const
 	{
 		if (!other.m_success)
 			return false;
@@ -52,12 +52,12 @@ public:
 		return m_version < other.m_version;
 	}
 
-	constexpr bool operator<=(const Version& other) const
+	constexpr bool operator<=(Version other) const
 	{
 		return !(*this > other);
 	}
 
-	constexpr bool operator>=(const Version& other) const
+	constexpr bool operator>=(Version other) const
 	{
 		return !(*this < other);
 	}
