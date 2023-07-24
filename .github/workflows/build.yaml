@@ -10,7 +10,7 @@ jobs:
         qt-major-version: [6, 5]
         include:
           - qt-major-version: 6
-            qt-version: 6.4.2
+            qt-version: 6.6.0
             zipfile: PotatoAlert.zip
           - qt-major-version: 5
             qt-version: 5.15.2
