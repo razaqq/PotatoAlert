@@ -170,11 +170,15 @@ DatabaseManager::~DatabaseManager()
 {
 	if (m_db)
 	{
+		if (!m_db.Execute("VACUUM"))
+		{
+			LOG_ERROR("Failed to VACUUM database: {}", m_db.GetLastError());
+		}
 		m_db.Close();
 	}
 }
 
-SqlResult<void> DatabaseManager::CreateTables()
+SqlResult<void> DatabaseManager::CreateTables() const
 {
 	static constexpr std::string_view createStatement = PA_DB_CREATE_TABLE_WITH_ID(matches, MATCH_FIELDS);
 
@@ -186,7 +190,7 @@ SqlResult<void> DatabaseManager::CreateTables()
 	return {};
 }
 
-SqlResult<void> DatabaseManager::MigrateTables()
+SqlResult<void> DatabaseManager::MigrateTables() const
 {
 	// TODO: convert the time to YYYY-MM-DD HH:MM:SS
 	return {};

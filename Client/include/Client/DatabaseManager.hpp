@@ -60,8 +60,8 @@ public:
 	explicit DatabaseManager(Core::SQLite& db);
 	~DatabaseManager();
 
-	SqlResult<void> CreateTables();
-	SqlResult<void> MigrateTables();
+	SqlResult<void> CreateTables() const;
+	SqlResult<void> MigrateTables() const;
 
 	// adds the match to db and set the id
 	[[nodiscard]] SqlResult<void> AddMatch(Match& match) const;
