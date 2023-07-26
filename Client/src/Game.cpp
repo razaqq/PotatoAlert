@@ -18,7 +18,6 @@
 
 
 using namespace PotatoAlert::Core;
-using PotatoAlert::Client::Game::DirectoryStatus;
 namespace fs = std::filesystem;
 
 namespace PotatoAlert::Client::Game {
@@ -188,7 +187,7 @@ bool ReadPreferences(DirectoryStatus& status, const fs::path& basePath)
 	}
 
 	std::string pref;
-	if (File file = File::Open(preferencesPath, File::Flags::Open | File::Flags::Read); file)
+	if (const File file = File::Open(preferencesPath, File::Flags::Open | File::Flags::Read); file)
 	{
 		if (!file.ReadAllString(pref))
 		{
@@ -203,7 +202,7 @@ bool ReadPreferences(DirectoryStatus& status, const fs::path& basePath)
 	}
 
 	static const std::regex versionRegex(R"regex(<clientVersion>([\s,0-9]*)<\/clientVersion>)regex");
-	static const std::regex regionRegex(R"regex(<active_server>([\sA-Z,0-9]*)<\/active_server>)regex");
+	static const std::regex regionRegex(R"regex(<active_server>(.*)<\/active_server>)regex");
 	std::smatch versionMatch;
 	std::smatch regionMatch;
 
@@ -220,10 +219,59 @@ bool ReadPreferences(DirectoryStatus& status, const fs::path& basePath)
 
 	if (std::regex_search(pref, regionMatch, regionRegex) && regionMatch.size() > 1)
 	{
-		status.region = String::ToLower(String::Trim(regionMatch.str(1)));
-		status.region = std::regex_replace(status.region, std::regex("wows "), "");  // remove 'WOWS '
-		status.region = std::regex_replace(status.region, std::regex("cis"), "ru");  // cis server to ru
-		status.region = std::regex_replace(status.region, std::regex("360"), "china");  // 360 to china
+		std::string region = String::ToLower(String::Trim(regionMatch.str(1)));
+		if (region.starts_with("&#"))
+		{
+			std::string_view r(region);
+			std::string out;
+			out.reserve(2 * region.size());
+			while (true)
+			{
+				if (r.size() >= 2 && r[0] == '&' && region[1] == '#')
+				{
+					const size_t j = r.find_first_not_of("0123456789", 2);
+					if (j == std::string_view::npos)
+					{
+						return false;
+					}
+
+					if (r[j] != ';')
+					{
+						return false;
+					}
+
+					unsigned char c;
+					if (!String::ParseNumber(r.substr(2, j - 2), c))
+					{
+						return false;
+					}
+					out.push_back(static_cast<char>(c));
+
+					r = r.substr(j+1);
+				}
+				else if (!r.empty())
+				{
+					out.push_back(r[0]);
+					r = r.substr(1);
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			if (out == "\u041C\u0418\u0420 \u041A\u041E\u0420\u0410\u0411\u041B\u0415\u0419")
+			{
+				status.region = "ru";
+			}
+		}
+		else
+		{
+			region = std::regex_replace(region, std::regex("wows "), "");  // remove 'WOWS '
+			region = std::regex_replace(region, std::regex("cis"), "ru");  // cis server to ru
+			region = std::regex_replace(region, std::regex("360"), "china");  // 360 to china
+			status.region = region;
+		}
 	}
 	else
 	{
