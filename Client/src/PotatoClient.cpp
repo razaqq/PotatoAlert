@@ -518,6 +518,13 @@ void PotatoClient::OnFileChanged(const std::filesystem::path& file)
 		return;
 	m_lastArenaInfoHash = arenaInfo.Hash;
 
+	if (m_dirStatus.region.empty())
+	{
+		LOG_ERROR("No region set in DirectoryStatus");
+		emit StatusReady(Status::Error, "No Region Set");
+		return;
+	}
+
 	// build the request
 	rapidjson::Document request;
 	request.SetObject();
