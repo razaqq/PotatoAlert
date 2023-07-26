@@ -34,8 +34,6 @@ namespace fs = std::filesystem;
 
 namespace {
 
-static constexpr char g_sep = static_cast<char>(fs::path::preferred_separator);
-
 static bool ReadNullTerminatedString(std::span<Byte> data, int64_t offset, std::string& out)
 {
 	size_t length = 0;
