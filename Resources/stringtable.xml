@@ -334,8 +334,8 @@
         <日本語>削除</日本語>
     </Key>
     <Key ID="HISTORY_DELETE_QUESTION">
-        <English>Do you really want to delete the selected match?</English>
-        <Deutsch>Wirklich das markierte Gefecht löschen?</Deutsch>
+        <English>Do you really want to delete the selected matches?</English>
+        <Deutsch>Wirklich die markierten Gefecht löschen?</Deutsch>
         <简体中文>你确定要删除选中的战斗吗？</简体中文>
         <繁體中文>你確定要刪除選中的戰鬥嗎？</繁體中文>
         <日本語>選択した戦闘を削除しますか？</日本語>
