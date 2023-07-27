@@ -32,13 +32,35 @@ public:
 
 	Sha1& Process(std::string_view s);
 
-	operator std::string();
+	explicit operator std::string();
 	std::string GetHash();
 
 	void Reset();
 	
 	template<is_byte T>
-	bool ProcessByte(T byte);
+	bool ProcessByte(const T byte)
+	{
+		ProcessByteImpl(byte);
+
+		if (m_bitCountLow < 0xFFFFFFF8)
+		{
+			m_bitCountLow += 8;
+		}
+		else
+		{
+			m_bitCountLow = 0;
+
+			if (m_bitCountHigh <= 0xFFFFFFFE)
+			{
+				++m_bitCountHigh;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		return true;
+	}
 	
 	template<is_byte T>
 	bool ProcessBytes(std::span<T> bytes)
@@ -64,8 +86,18 @@ public:
 
 private:
 	void ProcessBlock();
+
 	template<is_byte T>
-	void ProcessByteImpl(T byte);
+	void ProcessByteImpl(const T byte)
+	{
+		m_block[m_blockByteIndex++] = static_cast<Byte>(byte);
+
+		if (m_blockByteIndex == 64)
+		{
+			m_blockByteIndex = 0;
+			ProcessBlock();
+		}
+	}
 
 	Byte m_block[64] = {};
 	DigestType m_h;

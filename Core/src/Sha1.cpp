@@ -56,7 +56,7 @@ std::string Sha1::GetHash()
 	return buf.str();
 }
 
-inline void Sha1::GetDigest(DigestType& digest)
+void Sha1::GetDigest(DigestType& digest)
 {
 	// append the bit '1' to the message
 	ProcessByteImpl(Byte{ 0x80 });
@@ -105,7 +105,7 @@ inline void Sha1::GetDigest(DigestType& digest)
 	digest[4] = m_h[4];
 }
 
-inline void Sha1::ProcessBlock()
+void Sha1::ProcessBlock()
 {
 	uint32_t w[80];
 
@@ -167,16 +167,4 @@ inline void Sha1::ProcessBlock()
 	m_h[2] += c;
 	m_h[3] += d;
 	m_h[4] += e;
-}
-
-template<is_byte T>
-inline void Sha1::ProcessByteImpl(const T byte)
-{
-	m_block[m_blockByteIndex++] = static_cast<Byte>(byte);
-
-	if (m_blockByteIndex == 64)
-	{
-		m_blockByteIndex = 0;
-		ProcessBlock();
-	}
 }
