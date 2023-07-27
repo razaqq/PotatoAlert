@@ -56,6 +56,9 @@ struct StringWrap
 {
 	std::string Str;
 
+	explicit StringWrap(const std::string& str) : Str(str) {}
+	explicit StringWrap(std::string&& str) noexcept : Str(str) {}
+
 	~StringWrap()
 	{
 		
@@ -66,6 +69,7 @@ template<>
 struct fmt::formatter<StringWrap, wchar_t>
 {
 	[[maybe_unused]] static constexpr auto parse(const basic_format_parse_context<wchar_t>& ctx)
+		-> basic_format_parse_context<wchar_t>::iterator
 	{
 		return ctx.begin();
 	}
@@ -81,5 +85,20 @@ struct fmt::formatter<StringWrap, wchar_t>
 			}
 		}
 		return format_to(ctx.out(), L"<STRING-ERROR>");
+	}
+};
+
+template<>
+struct fmt::formatter<StringWrap>
+{
+	[[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx)
+			-> format_parse_context::iterator
+	{
+		return ctx.begin();
+	}
+
+	auto format(const StringWrap& val, format_context& ctx) const -> format_context::iterator
+	{
+		return fmt::format_to(ctx.out(), "{}", val.Str);
 	}
 };
