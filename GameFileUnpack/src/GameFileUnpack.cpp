@@ -64,18 +64,18 @@ static bool ReadNullTerminatedString(std::span<Byte> data, int64_t offset, std::
 static bool WriteFileData(const fs::path& file, std::span<const Byte> data)
 {
 	// write the data
-	if (File outFile = File::Open(file, File::Flags::Open | File::Flags::Write | File::Flags::Create))
+	if (const File outFile = File::Open(file, File::Flags::Open | File::Flags::Write | File::Flags::Create))
 	{
 		if (!outFile.Write(data))
 		{
-			LOG_ERROR("Failed to write data to outfile {} - {}", file, File::LastError());
+			LOG_ERROR(STR("Failed to write data to outfile {} - {}"), file, StringWrap(File::LastError()));
 			return false;
 		}
 		return true;
 	}
 	else
 	{
-		LOG_ERROR("Failed to open file for writing {} - {}", file, File::LastError());
+		LOG_ERROR(STR("Failed to open file for writing {} - {}"), file, StringWrap(File::LastError()));
 		return false;
 	}
 }
@@ -103,7 +103,7 @@ std::optional<DirectoryTree::TreeNode> DirectoryTree::Find(std::string_view path
 
 void DirectoryTree::Insert(const FileRecord& fileRecord)
 {
-	if (auto pos = fileRecord.Path.rfind('/'); pos != std::string::npos)
+	if (const size_t pos = fileRecord.Path.rfind('/'); pos != std::string::npos)
 	{
 		TreeNode& node = CreatePath(fileRecord.Path);
 		node.File = fileRecord;
@@ -138,7 +138,7 @@ Unpacker::Unpacker(const fs::path& pkgPath, const fs::path& idxPath) : m_pkgPath
 {
 	if (!fs::exists(idxPath))
 	{
-		LOG_ERROR("IdxPath does not exist: {}", idxPath);
+		LOG_ERROR(STR("IdxPath does not exist: {}"), idxPath);
 		return;
 	}
 
@@ -228,7 +228,7 @@ bool Unpacker::ExtractFile(const FileRecord& fileRecord, const fs::path& dst) co
 		uint64_t fileSize = inFile.Size();
 		if (FileMapping mapping = FileMapping::Open(inFile, FileMapping::Flags::Read, fileSize))
 		{
-			if (void* dataPtr = mapping.Map(FileMapping::Flags::Read, 0, fileSize))
+			if (const void* dataPtr = mapping.Map(FileMapping::Flags::Read, 0, fileSize))
 			{
 				if (fileRecord.Offset + fileRecord.Size > fileSize)
 				{
@@ -238,14 +238,14 @@ bool Unpacker::ExtractFile(const FileRecord& fileRecord, const fs::path& dst) co
 				}
 
 				// create output directories if they don't exist yet
-				fs::path outDir = (fs::path(dst) / fileRecord.Path).remove_filename();
+				const fs::path outDir = (fs::path(dst) / fileRecord.Path).remove_filename();
 				if (!fs::exists(outDir))
 				{
 					std::error_code ec;
 					fs::create_directories(outDir, ec);
 					if (ec)
 					{
-						LOG_ERROR("Failed to create game file scripts directory: {}", ec.message());
+						LOG_ERROR("Failed to create game file scripts directory: {}", ec);
 						return false;
 					}
 				}

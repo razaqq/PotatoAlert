@@ -69,7 +69,7 @@ endif()
 
 set_target_properties(Core PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 target_link_libraries(Core PRIVATE sqlite3 OpenSSL zip ZLIB::ZLIB)
-target_link_libraries(Core PUBLIC Qt::Core Qt::Widgets RapidJson spdlog tinyxml2)
+target_link_libraries(Core PUBLIC Qt::Core Qt::Widgets RapidJson fmt::fmt spdlog tinyxml2)
 target_include_directories(Core PUBLIC include)
 
 if(WIN32)

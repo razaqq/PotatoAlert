@@ -1,13 +1,11 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/Log.hpp"
-#include "Core/String.hpp"
 
-#pragma warning(push, 0)
 #include <spdlog/pattern_formatter.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
-#pragma warning(pop)
+#include <spdlog/spdlog.h>
 
 #include <QApplication>
 #include <QString>
@@ -18,7 +16,6 @@
 #include <vector>
 
 
-using PotatoAlert::Core::String::Split;
 using PotatoAlert::Core::Log;
 
 std::shared_ptr<spdlog::logger> Log::s_logger;

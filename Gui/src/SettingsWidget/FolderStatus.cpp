@@ -77,7 +77,8 @@ void FolderStatus::Update(const Client::Game::DirectoryStatus& status) const
 		{
 			if (i > 0)
 				replaysFolders += "\n";
-			replaysFolders += status.replaysPath[i].native();
+			const std::filesystem::path path = std::filesystem::path(status.replaysPath[i]).make_preferred();
+			replaysFolders += path.native();
 		}
 		m_replaysFolders->setText(replaysFolders);
 	}

@@ -29,7 +29,7 @@ bool GetBinPath(DirectoryStatus& status)
 	const fs::path binPath = status.gamePath / "bin";
 	if (!fs::exists(binPath))
 	{
-		LOG_ERROR("Bin folder does not exist: {}", Core::PathToUtf8(binPath).value());
+		LOG_ERROR(STR("Bin folder does not exist: {}"), binPath);
 		return false;
 	}
 
@@ -48,7 +48,7 @@ bool GetBinPath(DirectoryStatus& status)
 		Version version;
 		if (!File::GetVersion(exe, version) || !version)
 		{
-			LOG_ERROR("Failed to read version info from file: {} - {}", Core::PathToUtf8(exe).value(), File::LastError());
+			LOG_ERROR(STR("Failed to read version info from file: {} - {}"), exe, StringWrap(File::LastError()));
 			continue;
 		}
 
@@ -91,7 +91,7 @@ bool ReadEngineConfig(DirectoryStatus& status, const fs::path& resFolder)
 	fs::path engineConfig(status.binPath / resFolder / "engine_config.xml");
 	if (!fs::exists(engineConfig))
 	{
-		LOG_TRACE("No engine_config.xml in path: {}", PathToUtf8(resFolder).value());
+		LOG_TRACE(STR("No engine_config.xml in path: {}"), resFolder);
 		return false;
 	}
 
@@ -182,7 +182,7 @@ bool ReadPreferences(DirectoryStatus& status, const fs::path& basePath)
 
 	if (!fs::exists(preferencesPath))
 	{
-		LOG_TRACE("Cannot find preferences.xml for reading in path: {}", Core::PathToUtf8(preferencesPath).value());
+		LOG_TRACE(STR("Cannot find preferences.xml for reading in path: {}"), preferencesPath);
 		return false;
 	}
 
@@ -317,7 +317,7 @@ bool CheckPath(const fs::path& selectedPath, DirectoryStatus& status)
 	bool exists = fs::exists(status.gamePath, ec);
 	if (ec)
 	{
-		LOG_ERROR("Failed to check if game path exists: {}", ec.message());
+		LOG_ERROR("Failed to check if game path exists: {}", ec);
 		return false;
 	}
 	if (status.gamePath.empty() || !exists)
@@ -347,7 +347,7 @@ bool CheckPath(const fs::path& selectedPath, DirectoryStatus& status)
 	{
 		if (!fs::exists(p))
 		{
-			LOG_TRACE("Removing replays folder {}, because it doesn't exist.", PathToUtf8(p).value());
+			LOG_TRACE(STR("Removing replays folder {}, because it doesn't exist."), p);
 			return true;
 		}
 		return false;

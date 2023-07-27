@@ -34,4 +34,10 @@ inline std::filesystem::path ToFilesystemAbsolutePath(const QDir& dir)
 }
 #endif
 
+static_assert(
+	std::is_same_v<std::filesystem::path::value_type, char> ||
+	std::is_same_v<std::filesystem::path::value_type, wchar_t>,
+	"Unsupported char type std::filesystem::path::value_type"
+);
+
 }  // namespace PotatoAlert::Core

@@ -8,8 +8,6 @@
 #include "Core/Json.hpp"
 #include "Core/Result.hpp"
 
-#include <QString>
-
 #include <cstdint>
 #include <filesystem>
 #include <string>

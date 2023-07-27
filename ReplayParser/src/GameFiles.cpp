@@ -1,9 +1,9 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/Directory.hpp"
-#include "Core/Encoding.hpp"
 #include "Core/File.hpp"
 #include "Core/Log.hpp"
+#include "Core/String.hpp"
 #include "Core/Xml.hpp"
 
 #include "ReplayParser/Entity.hpp"
@@ -19,7 +19,6 @@
 
 namespace rp = PotatoAlert::ReplayParser;
 using PotatoAlert::Core::File;
-using PotatoAlert::Core::PathToUtf8;
 using PotatoAlert::Core::LoadXml;
 using PotatoAlert::Core::Version;
 using PotatoAlert::Core::XmlResult;
@@ -32,7 +31,7 @@ static std::optional<std::unordered_map<std::string, ArgType>> ParseAliases(cons
 	XmlResult<void> res = LoadXml(doc, path);
 	if (!res)
 	{
-		LOG_ERROR("Failed to open alias.xml ({}): {}.", PathToUtf8(path).value(), res.error());
+		LOG_ERROR(STR("Failed to open alias.xml ({}): {}."), path, StringWrap(res.error()));
 		return {};
 	}
 
@@ -76,7 +75,7 @@ std::vector<EntitySpec> rp::ParseScripts(Version version, const fs::path& gameFi
 	const fs::path entitiesPath(versionDir / "entities.xml");
 	if (!LoadXml(doc, entitiesPath))
 	{
-		LOG_ERROR("Failed to open entities.xml ({}): {}.", Core::PathToUtf8(entitiesPath).value(), doc.ErrorStr());
+		LOG_ERROR(STR("Failed to open entities.xml ({}): {}."), entitiesPath, StringWrap(doc.ErrorStr()));
 		return {};
 	}
 	

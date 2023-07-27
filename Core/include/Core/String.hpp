@@ -1,6 +1,12 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Core/Encoding.hpp"
+#include "Core/Result.hpp"
+
+#include <fmt/xchar.h>
+#include <fmt/format.h>
+
 #include <charconv>
 #include <span>
 #include <string>
@@ -36,6 +42,45 @@ bool ParseNumber(std::string_view str, T& value) requires std::is_integral_v<T> 
 
 bool ParseBool(std::string_view str, bool& value);
 
+#undef STR
+#ifdef WIN32
+	#define STR(String) L##String
+#else
+	#define STR(String) String
+#endif
+
 }  // namespace String
 
 }  // namespace PotatoAlert::Core::String
+
+struct StringWrap
+{
+	std::string Str;
+
+	~StringWrap()
+	{
+		
+	}
+};
+
+template<>
+struct fmt::formatter<StringWrap, wchar_t>
+{
+	[[maybe_unused]] static constexpr auto parse(const basic_format_parse_context<wchar_t>& ctx)
+	{
+		return ctx.begin();
+	}
+
+	auto format(const StringWrap& val, buffer_context<wchar_t>& ctx) const -> buffer_context<wchar_t>::iterator
+	{
+		if (const PotatoAlert::Core::Result<size_t> length = PotatoAlert::Core::Utf8ToWide(val.Str))
+		{
+			std::wstring wStr(length.value(), '\0');
+			if (PotatoAlert::Core::Utf8ToWide(val.Str, wStr))
+			{
+				return format_to(ctx.out(), L"{}", wStr);
+			}
+		}
+		return format_to(ctx.out(), L"<STRING-ERROR>");
+	}
+};

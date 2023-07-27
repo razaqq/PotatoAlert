@@ -1,18 +1,19 @@
 // Copyright 2022 <github.com/razaqq>
 #pragma once
 
-#include "Core/Encoding.hpp"
 #include "Core/Process.hpp"
 #include "Core/Result.hpp"
 #include "Core/StandardPaths.hpp"
+#include "Core/String.hpp"
 
 #include <filesystem>
 #include <format>
 #include <iostream>
 #include <string>
 
+#include <fmt/xchar.h>
+#include <fmt/std.h>
 
-#include "Core/File.hpp"
 
 namespace fs = std::filesystem;
 using PotatoAlert::Core::Result;
@@ -55,7 +56,7 @@ private:
 		const bool exists = fs::exists(dir, ec);
 		if (ec)
 		{
-			std::cerr << std::format("Failed to check if app dir '{}' exists, reason: '{}'", Core::PathToUtf8(dir).value(), ec.message()) << "\n";
+			fmt::println(stderr, STR("Failed to check if app dir '{}' exists, reason: '{}'"), dir, ec);
 			Core::ExitCurrentProcessWithError(ec.value());
 		}
 
@@ -64,8 +65,7 @@ private:
 			fs::create_directories(dir, ec);
 			if (ec)
 			{
-				std::cerr << std::format("Failed to create app dir '{}', reason: '{}'", Core::PathToUtf8(dir).value(), ec.message()) << "\n";
-				std::string err = Core::File::LastError();
+				fmt::println(stderr, STR("Failed to create app dir '{}', reason: '{}'"), dir, ec);
 				Core::ExitCurrentProcessWithError(ec.value());
 			}
 		}

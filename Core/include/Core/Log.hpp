@@ -1,16 +1,31 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include <fmt/format.h>
+#include <fmt/std.h>
+#include <fmt/chrono.h>
+
 #if WIN32
-	#define SPDLOG_WCHAR_FILENAMES
+	#ifndef SPDLOG_WCHAR_TO_UTF8_SUPPORT
+		#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
+	#endif
+	#ifndef SPDLOG_WCHAR_FILENAMES
+		#define SPDLOG_WCHAR_FILENAMES
+	#endif
 #endif
-#define SPDLOG_USE_STD_FORMAT
-#define SPDLOG_NO_EXCEPTIONS
+#ifndef SPDLOG_FMT_EXTERNAL
+	#define SPDLOG_FMT_EXTERNAL
+#endif
+#ifndef SPDLOG_NO_EXCEPTIONS
+	#define SPDLOG_NO_EXCEPTIONS
+#endif
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
-#pragma warning(push, 0)
 #include <spdlog/spdlog.h>
-#include <spdlog/fmt/ostr.h>
-#pragma warning(pop)
+
+#if 0
+#include <fmt/core.h>
+#include <fmt/xchar.h>
+#endif
 
 #include <QDir>
 

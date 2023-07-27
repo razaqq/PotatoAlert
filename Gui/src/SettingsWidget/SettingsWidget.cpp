@@ -231,9 +231,9 @@ void SettingsWidget::Load() const
 	m_updates->setChecked(config.Get<ConfigKey::UpdateNotifications>());
 	m_minimizeTray->setChecked(config.Get<ConfigKey::MinimizeTray>());
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-	m_gamePathEdit->setText(QDir(config.Get<ConfigKey::GameDirectory>()).absolutePath());
+	m_gamePathEdit->setText(QDir(config.Get<ConfigKey::GameDirectory>().make_preferred()).absolutePath());
 #else
-	m_gamePathEdit->setText(FromFilesystemPath(config.Get<ConfigKey::GameDirectory>()).absolutePath());
+	m_gamePathEdit->setText(FromFilesystemPath(config.Get<ConfigKey::GameDirectory>().make_preferred()).absolutePath());
 #endif
 	m_statsMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::StatsMode>()))->setChecked(true);
 	m_teamDamageMode->GetButtonGroup()->button(static_cast<int>(config.Get<ConfigKey::TeamDamageMode>()))->setChecked(true);
@@ -309,9 +309,9 @@ void SettingsWidget::ConnectSignals()
 		{
 			m_gamePathEdit->setText(dir);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-			config.Set<ConfigKey::GameDirectory>(QDir(dir).filesystemAbsolutePath());
+			config.Set<ConfigKey::GameDirectory>(QDir(dir).filesystemAbsolutePath().make_preferred());
 #else
-			config.Set<ConfigKey::GameDirectory>(ToFilesystemAbsolutePath(QDir(dir)));
+			config.Set<ConfigKey::GameDirectory>(ToFilesystemAbsolutePath(QDir(dir)).make_preferred());
 #endif
 			CheckPath();
 		}

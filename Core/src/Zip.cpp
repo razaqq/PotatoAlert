@@ -1,20 +1,25 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/Encoding.hpp"
+#include "Core/Result.hpp"
 #include "Core/Zip.hpp"
 
 #include "zip.h"
 
+#include <filesystem>
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
 
 
 using PotatoAlert::Core::Zip;
+namespace fs = std::filesystem;
 
-typedef struct zip_t* ZIP_HANDLE;
+namespace {
 
 template<typename T>
-static constexpr T CreateHandle(ZIP_HANDLE handle)
+static constexpr T CreateHandle(const zip_t* handle)
 {
 	return static_cast<T>(reinterpret_cast<uintptr_t>(handle));
 }
@@ -25,48 +30,60 @@ static constexpr T UnwrapHandle(Zip::Handle handle)
 	return reinterpret_cast<T>(static_cast<uintptr_t>(handle));
 }
 
-Zip Zip::Open(std::string_view path, int compressionLevel, Mode mode)
+}
+
+Zip Zip::Open(const fs::path& path, int compressionLevel, Mode mode)
 {
-	const std::string pathString(path);
-	ZIP_HANDLE zip = zip_open(pathString.c_str(), compressionLevel, static_cast<char>(mode));
+	const zip_t* zip = nullptr;
+	if constexpr (std::is_same_v<fs::path::value_type, char>)
+	{
+		zip = zip_open(path.string().c_str(), compressionLevel, static_cast<char>(mode));
+	}
+	else
+	{
+		if (const Result<std::string> utf8Path = PathToUtf8(path))
+			zip = zip_open(utf8Path.value().c_str(), compressionLevel, static_cast<char>(mode));
+		else
+			return Zip(Handle::Null);
+	}
 
 	if (zip != nullptr)
 	{
 		return Zip(CreateHandle<Handle>(zip));
 	}
-	return Zip();
+	return Zip(Handle::Null);
 }
 
 void Zip::Close()
 {
-	zip_close(UnwrapHandle<ZIP_HANDLE>(std::exchange(m_handle, Handle::Null)));
+	zip_close(UnwrapHandle<zip_t*>(std::exchange(m_handle, Handle::Null)));
 }
 
 bool Zip::OpenEntry(std::string_view name) const
 {
-	return zip_entry_open(UnwrapHandle<ZIP_HANDLE>(m_handle), std::string(name).c_str()) == 0;
+	return zip_entry_open(UnwrapHandle<zip_t*>(m_handle), name.data()) == 0;
 }
 
 bool Zip::OpenEntry(int index) const
 {
-	return zip_entry_openbyindex(UnwrapHandle<ZIP_HANDLE>(m_handle), index) == 0;
+	return zip_entry_openbyindex(UnwrapHandle<zip_t*>(m_handle), index) == 0;
 }
 
 bool Zip::CloseEntry() const
 {
-	return zip_entry_close(UnwrapHandle<ZIP_HANDLE>(m_handle)) == 0;
+	return zip_entry_close(UnwrapHandle<zip_t*>(m_handle)) == 0;
 }
 
 std::optional<std::string> Zip::EntryName() const
 {
-	if (const char* entryName = zip_entry_name(UnwrapHandle<ZIP_HANDLE>(m_handle)))
-		return std::string(entryName);
+	if (const char* entryName = zip_entry_name(UnwrapHandle<zip_t*>(m_handle)))
+		return entryName;
 	return std::nullopt;
 }
 
 std::optional<int> Zip::EntryIndex() const
 {
-	const int res = zip_entry_index(UnwrapHandle<ZIP_HANDLE>(m_handle));
+	const int res = zip_entry_index(UnwrapHandle<zip_t*>(m_handle));
 	if (res > 0)
 		return res;
 	return std::nullopt;
@@ -74,36 +91,35 @@ std::optional<int> Zip::EntryIndex() const
 
 std::optional<bool> Zip::EntryIsDir() const
 {
-	const int isDir = zip_entry_isdir(UnwrapHandle<ZIP_HANDLE>(m_handle));
+	const int isDir = zip_entry_isdir(UnwrapHandle<zip_t*>(m_handle));
 	if (isDir > 0)
-		return static_cast<bool>(isDir);
+		return isDir == 1;
 	return std::nullopt;
 }
 
 bool Zip::WriteEntry(std::string_view entryName, const std::string& data) const
 {
-	auto zip = UnwrapHandle<ZIP_HANDLE>(m_handle);
-	const std::string entryNameString(entryName);
+	auto zip = UnwrapHandle<zip_t*>(m_handle);
 
-	if (!zip_entry_open(zip, entryNameString.c_str()))
+	if (!zip_entry_open(zip, entryName.data()))
 	{
-		int success = zip_entry_write(zip, data.c_str(), data.size());
+		const int success = zip_entry_write(zip, data.c_str(), data.size());
 		zip_entry_close(zip);
 		return success == 0;
 	}
 	return false;
 }
 
-bool Zip::Create(std::string_view file, const std::vector<std::string_view>& fileNames)
+bool Zip::Create(std::string_view archiveName, std::span<std::string_view> fileNames)
 {
 	std::vector<const char*> arr;
 	arr.reserve(fileNames.size());
 
-	for (auto fileName : fileNames)
+	for (std::string_view fileName : fileNames)
 	{
-		arr.push_back(std::string(fileName).c_str());
+		arr.push_back(fileName.data());
 	}
-	return zip_create(std::string(file).c_str(), &arr[0], arr.size()) == 0;
+	return zip_create(archiveName.data(), arr.data(), arr.size()) == 0;
 }
 
 bool Zip::RawExtract(const char* file, const char* dir, int (*callback)(const char* fileName, void* context), void* context)
@@ -113,10 +129,10 @@ bool Zip::RawExtract(const char* file, const char* dir, int (*callback)(const ch
 
 uint64_t Zip::SizeEntry(std::string_view entryName) const
 {
-	return zip_entry_size(UnwrapHandle<ZIP_HANDLE>(m_handle));
+	return zip_entry_size(UnwrapHandle<zip_t*>(m_handle));
 }
 
 int Zip::EntryCount() const
 {
-	return zip_total_entries(UnwrapHandle<ZIP_HANDLE>(m_handle));
+	return zip_total_entries(UnwrapHandle<zip_t*>(m_handle));
 }

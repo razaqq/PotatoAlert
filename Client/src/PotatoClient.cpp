@@ -13,6 +13,7 @@
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
 #include "Core/Sha256.hpp"
+#include "Core/String.hpp"
 #include "Core/StandardPaths.hpp"
 #include "Core/Time.hpp"
 
@@ -55,7 +56,7 @@ struct TempArenaInfoResult
 // opens and reads a file
 static Result<TempArenaInfoResult, std::string> ReadArenaInfo(const fs::path& filePath)
 {
-	LOG_TRACE("Reading arena info from: {}", PathToUtf8(filePath).value());
+	LOG_TRACE(STR("Reading arena info from: {}"), filePath);
 
 	using namespace std::chrono_literals;
 

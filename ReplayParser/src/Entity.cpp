@@ -92,7 +92,7 @@ DefFile rp::ParseDef(const fs::path& file, const AliasType& aliases)
 	Core::XmlResult<void> res = Core::LoadXml(doc, file);
 	if (!res)
 	{
-		LOG_ERROR("Failed to open entity definition file ({}): {}.", Core::PathToUtf8(file).value(), res.error());
+		LOG_ERROR(STR("Failed to open entity definition file ({}): {}."), file, res.error());
 		return defFile;
 	}
 
