@@ -37,7 +37,7 @@ constexpr std::span<T> Take(std::span<T>& data, size_t n)
 }
 
 template<is_byte TIn, typename TVal>
-static bool TakeInto(std::span<TIn>& data, TVal&& dst)  // NOLINT(clang-diagnostic-unused-template)
+[[maybe_unused]] static bool TakeInto(std::span<TIn>& data, TVal&& dst)  // NOLINT(clang-diagnostic-unused-template)
 {
 	if (data.size() >= sizeof(dst))
 	{
@@ -94,7 +94,7 @@ std::string FormatBytes(const T& data)
 }
 
 template<is_byte TIn, is_string TStr>
-static bool TakeString(std::span<TIn>& data, TStr& str, size_t size)
+[[maybe_unused]] static bool TakeString(std::span<TIn>& data, TStr& str, size_t size)
 {
 	if (data.size() >= size)
 	{
@@ -106,7 +106,7 @@ static bool TakeString(std::span<TIn>& data, TStr& str, size_t size)
 }
 
 template<is_byte TOut, typename... Ts> requires std::conjunction_v<std::is_integral<Ts>...>
-static std::array<TOut, sizeof...(Ts)> MakeBytes(Ts&&... args) noexcept
+[[maybe_unused]] static std::array<TOut, sizeof...(Ts)> MakeBytes(Ts&&... args) noexcept
 {
 	return { TOut(std::forward<Ts>(args))... };
 }

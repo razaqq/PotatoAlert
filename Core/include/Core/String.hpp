@@ -36,8 +36,7 @@ template<typename T>
 bool ParseNumber(std::string_view str, T& value) requires std::is_integral_v<T> || std::is_floating_point_v<T>
 {
 	// static_assert(std::is_integral_v<T> || std::is_floating_point_v<T>, "Type must be numeric");
-	auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), value);
-	return ec == std::errc();
+	return std::from_chars(str.data(), str.data() + str.size(), value).ec == std::errc{};
 }
 
 bool ParseBool(std::string_view str, bool& value);

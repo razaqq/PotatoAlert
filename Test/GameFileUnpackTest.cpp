@@ -49,11 +49,6 @@ static fs::path GetTempDirectory()
 	return configPath;
 }
 
-static fs::path GetTempFilePath(std::string_view fileName)
-{
-	return GetTempDirectory() / fileName;
-}
-
 static fs::path GetGameFilePath(std::string_view fileName)
 {
 	return GetGameFileRootPath() / fileName;

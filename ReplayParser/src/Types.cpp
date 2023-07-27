@@ -360,7 +360,7 @@ static ArgValue ParsePrimitive(PrimitiveType type, std::span<const Byte>& data)
 		}
 	}
 
-	LOG_ERROR("Failed to parse ArgValue into PrimitiveType {}, only had {} bytes ({})", type.Type, data.size(), Core::FormatBytes(data));
+	LOG_ERROR("Failed to parse ArgValue into PrimitiveType {}, only had {} bytes ({})", ToSting(type.Type), data.size(), Core::FormatBytes(data));
 	return {};
 }
 

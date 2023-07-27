@@ -16,7 +16,6 @@
 #include <string>
 
 
-using namespace std::chrono_literals;
 namespace fs = std::filesystem;
 using PotatoAlert::ReplayParser::ReplaySummary;
 using PotatoAlert::ReplayParser::ReplayResult;
@@ -47,7 +46,7 @@ public:
 	static ReplayResult<void> UnpackGameFiles(std::string_view dst, std::string_view pkgPath, std::string_view idxPath);
 
 private:
-	void AnalyzeReplay(const std::filesystem::path& path, std::chrono::seconds readDelay = 0s);
+	void AnalyzeReplay(const std::filesystem::path& path, std::chrono::seconds readDelay = std::chrono::seconds(0));
 
 	const ServiceProvider& m_services;
 	Core::ThreadPool m_threadPool;

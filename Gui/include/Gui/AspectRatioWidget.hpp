@@ -38,11 +38,11 @@ public:
 	}
 
 protected:
-	void resizeEvent(QResizeEvent* event) override
+	void resizeEvent([[maybe_unused]] QResizeEvent* event) override
 	{
-		int w = this->width();
-		int h = this->height();
-		const float ratio = static_cast<float>(h) / w;
+		int w = width();
+		int h = height();
+		const float ratio = static_cast<float>(h) / static_cast<float>(w);
 
 		if (ratio < m_ratio)
 		{

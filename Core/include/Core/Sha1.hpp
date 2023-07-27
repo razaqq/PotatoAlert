@@ -4,8 +4,7 @@
 #include "Core/Bytes.hpp"
 
 #include <cstddef>
-#include <iomanip>
-#include <sstream>
+#include <cstdint>
 #include <span>
 #include <string>
 
@@ -17,7 +16,7 @@ namespace PotatoAlert::Core {
 
 class Sha1
 {
-	typedef unsigned int(DigestType)[5];
+	typedef uint32_t(DigestType)[5];
 
 public:
 	explicit Sha1()
@@ -37,10 +36,15 @@ public:
 	std::string GetHash();
 
 	void Reset();
+	
 	template<is_byte T>
 	bool ProcessByte(T byte);
+	
 	template<is_byte T>
-	bool ProcessBytes(std::span<T> bytes);
+	bool ProcessBytes(std::span<T> bytes)
+	{
+		return ProcessBlock(bytes);
+	}
 
 	template<is_byteRange R>
 	bool ProcessBlock(const R& range)

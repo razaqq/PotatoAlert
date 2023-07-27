@@ -28,8 +28,8 @@ struct ArenaInfoVehicle
 static inline Core::JsonResult<void> FromJson(const rapidjson::Value& j, ArenaInfoVehicle& v)
 {
 	PA_TRYA(v.ShipId, Core::FromJson<uint64_t>(j, "shipId"));
-	PA_TRYA(v.Relation, Core::FromJson<uint64_t>(j, "relation"));
-	PA_TRYA(v.Id, Core::FromJson<uint64_t>(j, "id"));
+	PA_TRYA(v.Relation, Core::FromJson<uint32_t>(j, "relation"));
+	PA_TRYA(v.Id, Core::FromJson<uint32_t>(j, "id"));
 	PA_TRYA(v.Name, Core::FromJson<std::string>(j, "name"));
 	return {};
 }
@@ -73,7 +73,7 @@ static Version ParseClientVersion(std::string_view str)
 	return Version(Join(std::span{ v }.subspan(0, 3), "."));
 }
 
-static Core::JsonResult<void> FromJson(const rapidjson::Value& j, ReplayMeta& m)
+[[maybe_unused]] static Core::JsonResult<void> FromJson(const rapidjson::Value& j, ReplayMeta& m)
 {
 	PA_TRYA(m.MatchGroup, Core::FromJson<std::string>(j, "matchGroup"));
 	PA_TRYA(m.GameMode, Core::FromJson<uint32_t>(j, "gameMode"));

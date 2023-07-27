@@ -56,11 +56,6 @@ private:
 
 	bool m_forceRun = false;
 
-	void Changed(int index)
-	{
-		
-	}
-
 public:
 	explicit SettingsWidget(const Client::ServiceProvider& serviceProvider, QWidget* parent = nullptr);
 	void CheckPath() const;

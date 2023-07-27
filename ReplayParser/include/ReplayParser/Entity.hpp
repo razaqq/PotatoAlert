@@ -42,7 +42,8 @@ inline constexpr bool operator&(PropertyFlag a, PropertyFlag b)
 
 inline PropertyFlag ParseFlag(const std::string& str)
 {
-	static const std::unordered_map<std::string, PropertyFlag> flags{
+	[[clang::no_destroy]] static const std::unordered_map<std::string, PropertyFlag> flags
+	{
 		{ "ALL_CLIENTS", PropertyFlag::AllClients },
 		{ "CELL_PUBLIC_AND_OWN", PropertyFlag::CellPublicAndOwn },
 		{ "OWN_CLIENT", PropertyFlag::OwnClient },

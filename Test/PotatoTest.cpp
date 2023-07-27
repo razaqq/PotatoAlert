@@ -4,7 +4,7 @@
 #include "catch.hpp"
 
 
-struct test_init
+static struct test_init
 {
 	test_init()
 	{

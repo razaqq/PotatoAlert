@@ -46,7 +46,7 @@ enum class DamageType : int64_t
 #undef X
 };
 
-static const std::unordered_map<DamageType, std::string_view> g_damageTypes =
+[[clang::no_destroy]] static const std::unordered_map<DamageType, std::string_view> g_damageTypes =
 {
 #define X(name, value) { DamageType::name, #name },
 	DAMAGE_TYPES
@@ -109,7 +109,7 @@ enum class RibbonType : int8_t
 #undef X
 };
 
-static const std::unordered_map<RibbonType, std::string_view> g_ribbonNames =
+[[clang::no_destroy]] static const std::unordered_map<RibbonType, std::string_view> g_ribbonNames =
 {
 #define X(name, value, parent) { RibbonType::name, #name },
 	RIBBON_TYPES
@@ -135,11 +135,8 @@ inline constexpr RibbonType GetParent(RibbonType ribbon)
 	}
 	RIBBON_TYPES
 #undef X
-		default:
-		{
-			return RibbonType::UnknownRibbon;
-		}
 	}
+	return RibbonType::UnknownRibbon;
 }
 
 #define ACHIEVEMENT_TYPES                 \
@@ -208,7 +205,7 @@ enum class AchievementType : uint32_t
 #undef X
 };
 
-static const std::unordered_map<AchievementType, std::string_view> g_achievementNames =
+[[clang::no_destroy]] static const std::unordered_map<AchievementType, std::string_view> g_achievementNames =
 {
 #define X(name, value) { AchievementType::name, #name },
 	ACHIEVEMENT_TYPES
@@ -282,7 +279,7 @@ static inline Core::JsonResult<void> ToJson(rapidjson::Writer<rapidjson::StringB
 	return {};
 }
 
-static Core::JsonResult<void> FromJson(std::string_view json, ReplaySummary& s)
+[[maybe_unused]] static Core::JsonResult<void> FromJson(std::string_view json, ReplaySummary& s)
 {
 	PA_TRY(j, Core::ParseJson(json));
 

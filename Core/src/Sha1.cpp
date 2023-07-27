@@ -3,6 +3,7 @@
 #include "Core/Bytes.hpp"
 #include "Core/Sha1.hpp"
 
+#include <cstdint>
 #include <span>
 #include <string>
 
@@ -10,7 +11,7 @@
 using namespace PotatoAlert::Core;
 
 // value, steps
-constexpr unsigned int LeftRotate(unsigned int x, size_t n)
+constexpr uint32_t LeftRotate(uint32_t x, size_t n)
 {
 	return (x << n) ^ (x >> (32 - n));
 }
@@ -80,17 +81,6 @@ inline bool Sha1::ProcessByte(const T byte)
 	return true;
 }
 
-template<is_byte T>
-bool Sha1::ProcessBytes(std::span<T> bytes)
-{
-	return ProcessBlock(bytes);
-}
-// template bool Sha1::ProcessBytes(std::span<uint8_t>);
-template bool Sha1::ProcessBytes(std::span<int8_t>);
-template bool Sha1::ProcessBytes(std::span<std::byte>);
-template bool Sha1::ProcessBytes(std::span<unsigned char>);
-template bool Sha1::ProcessBytes(std::span<char>);
-
 inline void Sha1::GetDigest(DigestType& digest)
 {
 	// append the bit '1' to the message
@@ -142,14 +132,14 @@ inline void Sha1::GetDigest(DigestType& digest)
 
 inline void Sha1::ProcessBlock()
 {
-	unsigned int w[80];
+	uint32_t w[80];
 
 	for (size_t i = 0; i < 16; ++i)
 	{
-		w[i] = static_cast<unsigned int>(m_block[i * 4 + 0] << 24);
-		w[i] |= static_cast<unsigned int>(m_block[i * 4 + 1] << 16);
-		w[i] |= static_cast<unsigned int>(m_block[i * 4 + 2] << 8);
-		w[i] |= static_cast<unsigned int>(m_block[i * 4 + 3]);
+		w[i] = static_cast<uint32_t>(m_block[i * 4 + 0] << 24);
+		w[i] |= static_cast<uint32_t>(m_block[i * 4 + 1] << 16);
+		w[i] |= static_cast<uint32_t>(m_block[i * 4 + 2] << 8);
+		w[i] |= static_cast<uint32_t>(m_block[i * 4 + 3]);
 	}
 
 	for (size_t i = 16; i < 80; ++i)
@@ -157,16 +147,16 @@ inline void Sha1::ProcessBlock()
 		w[i] = LeftRotate(w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1);
 	}
 
-	unsigned int a = m_h[0];
-	unsigned int b = m_h[1];
-	unsigned int c = m_h[2];
-	unsigned int d = m_h[3];
-	unsigned int e = m_h[4];
+	uint32_t a = m_h[0];
+	uint32_t b = m_h[1];
+	uint32_t c = m_h[2];
+	uint32_t d = m_h[3];
+	uint32_t e = m_h[4];
 
 	for (size_t i = 0; i < 80; ++i)
 	{
-		unsigned int f;
-		unsigned int k;
+		uint32_t f;
+		uint32_t k;
 
 		if (i < 20)
 		{
@@ -189,7 +179,7 @@ inline void Sha1::ProcessBlock()
 			k = 0xCA62C1D6;
 		}
 
-		const unsigned temp = LeftRotate(a, 5) + f + e + k + w[i];
+		const uint32_t temp = LeftRotate(a, 5) + f + e + k + w[i];
 		e = d;
 		d = c;
 		c = LeftRotate(b, 30);

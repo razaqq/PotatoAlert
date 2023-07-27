@@ -32,8 +32,8 @@ public:
 
 	bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override
 	{
-		bool isValid = sourceParent.isValid();
-		QModelIndex realIndex = mapToSource(sourceParent);
+		// bool isValid = sourceParent.isValid();
+		// QModelIndex realIndex = mapToSource(sourceParent);
 
 		const std::time_t time = sourceModel()->index(sourceRow, filterKeyColumn(), sourceParent).data(Qt::UserRole).value<std::time_t>();
 

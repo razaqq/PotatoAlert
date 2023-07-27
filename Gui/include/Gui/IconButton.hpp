@@ -44,7 +44,7 @@ public:
 	}
 
 protected:
-	void leaveEvent(QEvent* event) override
+	void leaveEvent([[maybe_unused]] QEvent* event) override
 	{
 		if (m_showIcons)
 		{
@@ -54,9 +54,9 @@ protected:
 	}
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-	void enterEvent(QEnterEvent* event) override
+	void enterEvent([[maybe_unused]] QEnterEvent* event) override
 #else
-	void enterEvent(QEvent* event) override
+	void enterEvent([[maybe_unused]] QEvent* event) override
 #endif
 	{
 		if (m_showIcons && isEnabled())

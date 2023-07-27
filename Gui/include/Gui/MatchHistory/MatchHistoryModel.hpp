@@ -22,12 +22,12 @@ class MatchHistoryModel : public QAbstractTableModel
 public:
 	explicit MatchHistoryModel(const Client::ServiceProvider& serviceProvider, QObject* parent = nullptr);
 
-	[[nodiscard]] int columnCount(const QModelIndex& parent) const override
+	[[nodiscard]] int columnCount([[maybe_unused]] const QModelIndex& index) const override
 	{
 		return m_columnCount;
 	}
 
-	[[nodiscard]] int rowCount(const QModelIndex& parent) const override
+	[[nodiscard]] int rowCount([[maybe_unused]] const QModelIndex& index) const override
 	{
 		return static_cast<int>(m_matches.size());
 	}

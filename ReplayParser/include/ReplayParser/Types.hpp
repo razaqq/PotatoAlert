@@ -45,6 +45,29 @@ enum class BasicType
 	Blob,
 };
 
+constexpr std::string_view ToSting(BasicType type)
+{
+	switch (type)
+	{
+		case BasicType::Uint8:  return "Uint8";
+		case BasicType::Uint16:  return "Uint16";
+		case BasicType::Uint32:  return "Uint32";
+		case BasicType::Uint64: return "Uint64";
+		case BasicType::Int8:  return "Int8";
+		case BasicType::Int16:  return "Int16";
+		case BasicType::Int32:  return "Int32";
+		case BasicType::Int64:  return "Int64";
+		case BasicType::Float32:  return "Float32";
+		case BasicType::Float64:  return "Float64";
+		case BasicType::Vector2:  return "Vector2";
+		case BasicType::Vector3:  return "Vector3";
+		case BasicType::String: return "String";
+		case BasicType::UnicodeString: return "UnicodeString";
+		case BasicType::Blob: return "Blob";
+	}
+	return "Unknown";
+}
+
 constexpr size_t PrimitiveSize(BasicType type)
 {
 	switch (type)

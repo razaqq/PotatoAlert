@@ -304,14 +304,14 @@ bool File::RawFlushBuffer(Handle handle)
 
 std::string File::RawLastError()
 {
-	DWORD err = ::GetLastError();
+	const DWORD err = GetLastError();
 	if (err == 0)
 	{
 		return "";
 	}
 
 	LPSTR lpMsgBuf;
-	DWORD size = FormatMessageA(
+	const DWORD size = FormatMessageA(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER |
 		FORMAT_MESSAGE_FROM_SYSTEM |
 		FORMAT_MESSAGE_IGNORE_INSERTS,
