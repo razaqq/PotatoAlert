@@ -9,8 +9,6 @@
 #include <utility>
 
 
-namespace fs = std::filesystem;
-
 namespace PotatoAlert::Updater {
 
 enum class Edition
@@ -20,9 +18,9 @@ enum class Edition
 	Linux
 };
 
-#if WIN32 && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if defined(WIN32) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	static constexpr Edition CurrentEdition = Edition::Qt6_Windows10;
-#elif WIN32
+#elif defined(WIN32)
 	static constexpr Edition CurrentEdition = Edition::Qt5_Windows7;
 #else
 	static constexpr Edition CurrentEdition = Edition::Linux;
@@ -38,9 +36,8 @@ static constexpr std::string_view UpdateArchiveFile(Edition edition)
 			return "PotatoAlert_win7.zip";
 		case Edition::Linux:
 			return "PotatoAlert_linux.zip";
-		default:
-			return "";
 	}
+	return "";
 }
 
 class Updater : public QWidget
@@ -59,6 +56,8 @@ public:
 	static void RemoveTrash();
 
 private:
+	using Path = std::filesystem::path;
+
 	QNetworkReply* Download();
 
 	[[noreturn]] static void End(bool success = true, bool revert = false);
@@ -72,9 +71,9 @@ private:
 	static bool RenameToTrash();
 
 	// functions for paths
-	static fs::path UpdateDest() { return fs::absolute(fs::current_path()); }
-	static fs::path BackupDest() { return fs::path(fs::temp_directory_path() / "PotatoAlertBackup"); }
-	static fs::path UpdateArchive() { return fs::path(fs::temp_directory_path() / UpdateArchiveFile(CurrentEdition)); }
+	static Path UpdateDest() { return std::filesystem::absolute(std::filesystem::current_path()); }
+	static Path BackupDest() { return Path(std::filesystem::temp_directory_path() / "PotatoAlertBackup"); }
+	static Path UpdateArchive() { return Path(std::filesystem::temp_directory_path() / UpdateArchiveFile(CurrentEdition)); }
 
 	struct ElevationInfo
 	{

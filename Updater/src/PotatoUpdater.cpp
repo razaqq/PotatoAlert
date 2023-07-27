@@ -27,7 +27,7 @@ static int RunMain(int argc, char* argv[])
 
 	AppDirectories appDirs("PotatoAlert");
 
-	PotatoAlert::Core::Log::Init(appDirs.LogFile);
+	PotatoAlert::Core::Log::Init(appDirs.AppDir / "PotatoUpdater.log");
 	
 	QApplication app(argc, argv);
 

@@ -1,8 +1,10 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/Encoding.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
 #include "Core/Process.hpp"
+#include "Core/String.hpp"
 #include "Core/Version.hpp"
 #include "Core/Zip.hpp"
 
@@ -195,15 +197,15 @@ void Updater::Run()
 
 		LOG_INFO("Update download successful.");
 
-		const std::string archive = UpdateArchive().string();
-		const std::string dest = UpdateDest().string();
+		const Path archive = UpdateArchive();
+		const Path dest = UpdateDest();
 
-		if (auto file = new QFile(QString::fromStdString(archive)); file->open(QFile::WriteOnly))
+		if (QFile* file = new QFile(archive); file->open(QFile::WriteOnly))
 		{
 			file->write(reply->readAll());
 			file->flush();
 			file->close();
-			LOG_INFO("Update archive saved successfully in {}", Updater::UpdateArchive().string());
+			LOG_INFO(STR("Update archive saved successfully in {}"), Updater::UpdateArchive());
 		}
 		else
 		{
@@ -223,13 +225,20 @@ void Updater::Run()
 		}
 
 		// Unpack archive
-		LOG_INFO("Extracting archive {} to {}", archive, dest);
+		LOG_INFO(STR("Extracting archive {} to {}"), archive, dest);
 
-		int totalEntries = Zip::Open(archive, 0).EntryCount();
+		const Zip zip = Zip::Open(archive, 0);
+		if (!zip)
+		{
+			LOG_ERROR("Failed to open zip file: ");
+			End(false, true);
+		}
+
+		int totalEntries = zip.EntryCount();
 		int i = 0;
 		auto onExtract = [dest, &i, totalEntries](const char* fileName) -> int
 		{
-			LOG_INFO("Extracted: {} ({}/{})", fs::relative(fileName, dest).string(), ++i, totalEntries);
+			LOG_INFO(STR("Extracted: {} ({}/{})"), fs::relative(fileName, dest), ++i, totalEntries);
 			return 0;
 		};
 
@@ -247,7 +256,7 @@ void Updater::Run()
 // downloads the update archive
 QNetworkReply* Updater::Download()
 {
-	auto manager = new QNetworkAccessManager();
+	QNetworkAccessManager* manager = new QNetworkAccessManager();
 
 	QNetworkRequest request;
 	request.setUrl(QUrl(std::format(g_updateURL, UpdateArchiveFile(CurrentEdition)).c_str()));
@@ -324,7 +333,7 @@ bool Updater::CreateBackup()
 	std::error_code ec;
 
 	// check if old backup exists and remove it
-	bool exists = fs::exists(BackupDest(), ec);
+	const bool exists = fs::exists(BackupDest(), ec);
 	if (ec)
 	{
 		LOG_ERROR("Failed to check if backup exists: {}", ec.message());
@@ -401,22 +410,23 @@ bool Updater::RenameToTrash()
 
 	for (auto& p : it)
 	{
-		const std::string ext = p.path().extension().string();
+		Path path = p.path();
 
-		bool regularFile = p.is_regular_file(ec);
+		const bool regularFile = p.is_regular_file(ec);
 		if (ec)
 		{
-			LOG_ERROR("Failed to check if {} is regular file: {}", p.path().string(), ec.message());
+			LOG_ERROR(STR("Failed to check if {} is regular file: {}"), path, ec);
 			return false;
 		}
 
+		const std::string ext = path.extension().string();
 		if (regularFile && (ext == ".dll" || ext == ".exe"))
 		{
-			std::string newName = p.path().string() + ".trash";
-			fs::rename(p, newName, ec);
+			path += Path(".trash");
+			fs::rename(p, path, ec);
 			if (ec)
 			{
-				LOG_ERROR("Failed to rename {} to {}: {}", p.path().string(), newName, ec.message());
+				LOG_ERROR(STR("Failed to rename {} to .trash: {}"), path, ec);
 				return false;
 			}
 		}
@@ -436,23 +446,21 @@ void Updater::RemoveTrash()
 	auto it = fs::recursive_directory_iterator(UpdateDest(), ec);
 	if (ec)
 	{
-		LOG_ERROR("Failed to get directory iterator: {}", ec.message());
+		LOG_ERROR("Failed to get directory iterator: {}", ec);
 		return;
 	}
 
 	for (auto& p : it)
 	{
-		const std::string ext = p.path().extension().string();
-
-		bool regularFile = p.is_regular_file(ec);
+		const bool regularFile = p.is_regular_file(ec);
 		if (ec)
-			LOG_ERROR("Failed to check if {} is regular file: {}", p.path().string(), ec.message());
+			LOG_ERROR(STR("Failed to check if {} is regular file: {}"), p.path(), ec);
 
-		if (regularFile && (ext == ".trash"))
+		if (regularFile && p.path().extension().string() == ".trash")
 		{
 			fs::remove(p, ec);
 			if (ec)
-				LOG_ERROR("Failed to remove file {}: {}", p.path().string(), ec.message());
+				LOG_ERROR(STR("Failed to remove file {}: {}"), p.path(), ec);
 		}
 	}
 }
@@ -475,7 +483,7 @@ void Updater::WaitForOtherProcessExit()
 
 	if (pid && GetCurrentProcessId() != pid.value())
 	{
-		if (HANDLE hHandle = OpenProcess(SYNCHRONIZE, false, pid.value()))
+		if (const HANDLE hHandle = OpenProcess(SYNCHRONIZE, false, pid.value()))
 		{
 			LOG_INFO("Waiting for other updater process to terminate");
 			WaitForSingleObject(hHandle, 10000);
