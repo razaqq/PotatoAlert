@@ -5,7 +5,8 @@
 
 #pragma once
 //
-// include bundled or external copy of fmtlib's ostream support
+// include bundled or external copy of fmtlib's std support (for formatting e.g. std::filesystem::path, std::thread::id, std::monostate,
+// std::variant, ...)
 //
 
 #if !defined(SPDLOG_USE_STD_FORMAT)
@@ -15,8 +16,8 @@
 #                define FMT_HEADER_ONLY
 #            endif
 #        endif
-#        include <spdlog/fmt/bundled/ostream.h>
+#        include <spdlog/fmt/bundled/std.h>
 #    else
-#        include <fmt/ostream.h>
+#        include <fmt/std.h>
 #    endif
 #endif
