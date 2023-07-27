@@ -1,5 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/Directory.hpp"
 #include "Core/Encoding.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
@@ -200,7 +201,11 @@ void Updater::Run()
 		const Path archive = UpdateArchive();
 		const Path dest = UpdateDest();
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 		if (QFile* file = new QFile(archive); file->open(QFile::WriteOnly))
+#else
+		if (QFile* file = new QFile(Core::FromFilesystemPath(archive).absolutePath()); file->open(QFile::WriteOnly))
+#endif
 		{
 			file->write(reply->readAll());
 			file->flush();
