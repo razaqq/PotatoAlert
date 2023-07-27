@@ -56,31 +56,6 @@ std::string Sha1::GetHash()
 	return buf.str();
 }
 
-template<is_byte T>
-inline bool Sha1::ProcessByte(const T byte)
-{
-	ProcessByteImpl(byte);
-
-	if (m_bitCountLow < 0xFFFFFFF8)
-	{
-		m_bitCountLow += 8;
-	}
-	else
-	{
-		m_bitCountLow = 0;
-
-		if (m_bitCountHigh <= 0xFFFFFFFE)
-		{
-			++m_bitCountHigh;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
 inline void Sha1::GetDigest(DigestType& digest)
 {
 	// append the bit '1' to the message
