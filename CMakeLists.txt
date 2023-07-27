@@ -51,7 +51,7 @@ generate_product_version(
         ICON ${PROJECT_SOURCE_DIR}/Resources/potato.ico
         VERSION_MAJOR 3
         VERSION_MINOR 1
-        VERSION_PATCH 11
+        VERSION_PATCH 12
         VERSION_REVISION ${BUILD_REVISION}
 )
 
@@ -73,10 +73,12 @@ if(NOT GENERATE_QRC_RESULT EQUAL "0")
 endif()
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/ThirdParty)
+# add_subdirectory(${PROJECT_SOURCE_DIR}/Rust)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Core)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Client)
 add_subdirectory(${PROJECT_SOURCE_DIR}/GameFileUnpack)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Gui)
+# add_subdirectory(${PROJECT_SOURCE_DIR}/MinimapRenderer)
 add_subdirectory(${PROJECT_SOURCE_DIR}/PotatoAlert)
 add_subdirectory(${PROJECT_SOURCE_DIR}/ReplayParser)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Test)
