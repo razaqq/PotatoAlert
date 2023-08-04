@@ -59,7 +59,7 @@ void ReplayAnalyzer::OnFileChanged(const std::filesystem::path& file)
 		file.filename() != fs::path("temp.wowsreplay"))
 	{
 		LOG_TRACE("Replay file {} changed", file);
-		AnalyzeReplay(file, 3s);
+		AnalyzeReplay(file, 30s);
 	}
 }
 
