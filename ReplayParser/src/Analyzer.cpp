@@ -405,7 +405,7 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 		}));
 	}
 
-	if (!replayData.playerTeam || !replayData.winningTeam)
+	if (!replayData.playerTeam || !replayData.winningTeam || (replayData.winningTeam && replayData.winningTeam == -2))
 	{
 		LOG_TRACE("Failed to determine match outcome, PT {} WT {}", replayData.playerTeam.has_value(), replayData.winningTeam.has_value());
 		outcome = MatchOutcome::Unknown;
