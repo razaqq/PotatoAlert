@@ -1,3 +1,4 @@
+// Copyright 2023 <github.com/razaqq>
 #pragma once
 
 namespace PotatoAlert::Core {
