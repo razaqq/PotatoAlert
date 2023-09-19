@@ -33,24 +33,6 @@ static QString ToQString(const std::string_view& str)
 	return QString::fromUtf8(str.data(), static_cast<int>(str.size()));
 }
 
-static constexpr std::string_view TierToString(uint8_t tier)
-{
-	switch (tier)
-	{
-		case 1: return "I";
-		case 2: return "II";
-		case 3: return "III";
-		case 4: return "IV";
-		case 5: return "V";
-		case 6: return "VI";
-		case 7: return "VII";
-		case 8: return "VIII";
-		case 9: return "IX";
-		case 10: return "X";
-		default: return "Err";
-	}
-}
-
 }
 
 
@@ -211,7 +193,7 @@ struct Ship
 		}
 		else
 		{
-			shipTier->setText(TierToString(Tier).data());
+			shipTier->setText(Client::TierToString(Tier).data());
 			shipTier->setFont(font);
 		}
 

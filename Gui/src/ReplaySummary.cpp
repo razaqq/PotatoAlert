@@ -2,6 +2,7 @@
 
 #include "Client/Config.hpp"
 #include "Client/ServiceProvider.hpp"
+#include "Client/StatsParser.hpp"
 #include "Client/StringTable.hpp"
 
 #include "Gui/IconButton.hpp"
@@ -76,24 +77,14 @@ static void ClearLayout(QLayout* layout)
 	}
 }
 
-static constexpr std::string_view TierToString(uint8_t tier)
+static constexpr std::string_view GetMatchGroupName(std::string_view matchGroup)
 {
-	switch (tier)
+	if (matchGroup == "pvp")
 	{
-		case 1: return "I";
-		case 2: return "II";
-		case 3: return "III";
-		case 4: return "IV";
-		case 5: return "V";
-		case 6: return "VI";
-		case 7: return "VII";
-		case 8: return "VIII";
-		case 9: return "IX";
-		case 10: return "X";
-		default: return "Err";
-	}
-}
 
+	}
+	return matchGroup;
+}
 
 static constexpr std::string_view GetRibbonName(int lang, RibbonType ribbon)
 {
@@ -374,7 +365,7 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 		}
 		else
 		{
-			shipTier->setText(TierToString(match.ShipTier).data());
+			shipTier->setText(Client::TierToString(match.ShipTier).data());
 		}
 
 		ShadowLabel* shipName = new ShadowLabel(match.Ship.c_str(), 0, 1, 4);

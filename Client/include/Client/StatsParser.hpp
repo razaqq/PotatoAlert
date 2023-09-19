@@ -12,7 +12,38 @@
 #include <vector>
 
 
-namespace PotatoAlert::Client::StatsParser {
+namespace PotatoAlert::Client {
+
+constexpr inline std::string_view TierToString(uint8_t tier)
+{
+	switch (tier)
+	{
+		case 1:
+			return "I";
+		case 2:
+			return "II";
+		case 3:
+			return "III";
+		case 4:
+			return "IV";
+		case 5:
+			return "V";
+		case 6:
+			return "VI";
+		case 7:
+			return "VII";
+		case 8:
+			return "VIII";
+		case 9:
+			return "IX";
+		case 10:
+			return "X";
+		default:
+			return "Err";
+	}
+}
+
+namespace StatsParser {
 
 typedef std::variant<QLabel*, QTableWidgetItem*, QWidget*> FieldType;
 typedef std::vector<FieldType> PlayerType;
@@ -83,4 +114,6 @@ struct MatchContext
 Core::JsonResult<StatsParseResult> ParseMatch(const rapidjson::Value& j, const MatchContext& matchContext) noexcept;
 Core::JsonResult<StatsParseResult> ParseMatch(const std::string& raw, const MatchContext& matchContext) noexcept;
 
-}  // namespace PotatoAlert::Client::StatsParser
+}  // namespace StatsParser
+
+}  // namespace PotatoAlert::Client
