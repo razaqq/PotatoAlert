@@ -65,6 +65,7 @@ void* FileMapping::RawMap(Handle handle, Flags flags, uint64_t offset, size_t si
 	size_t length = 0;
 	long pageSize = sysconf(_SC_PAGE_SIZE);
 	void* addr = mmap(nullptr, length, prot, shareFlag, UnwrapHandle<int>(handle), offset);
+	return addr;
 }
 
 void FileMapping::RawUnmap(Handle handle, const void* view, size_t size)

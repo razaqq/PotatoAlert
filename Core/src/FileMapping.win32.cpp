@@ -45,7 +45,7 @@ FileMapping::Handle FileMapping::RawOpen(File::Handle file, Flags flags, uint64_
 
 	switch (static_cast<uint32_t>(flags & (Flags::Read | Flags::Write)))
 	{
-		case static_cast<int>(Flags::Read):
+		case static_cast<uint32_t>(Flags::Read):
 		{
 			protect = PAGE_READONLY;
 			break;
