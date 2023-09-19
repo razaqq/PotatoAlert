@@ -31,8 +31,6 @@ static inline constexpr std::string_view ErrorMessage(ReaderError error)
 			return "Out of bounds seek";
 		case ReaderError::OutOfBoundsRead:
 			return "Out of bounds read";
-		default:
-			return "Unknown Error";
 	}
 }
 
@@ -51,7 +49,7 @@ private:
 	size_t m_pos;
 
 public:
-	ByteReader(std::span<const ByteType> data) : m_data(data), m_pos(0)
+	explicit ByteReader(std::span<const ByteType> data) : m_data(data), m_pos(0)
 	{
 	}
 
@@ -61,22 +59,22 @@ public:
 		m_pos = 0;
 	}
 
-	size_t Size() const
+	[[nodiscard]] size_t Size() const
 	{
 		return m_data.size() - m_pos;
 	}
 
-	size_t Capacity() const
+	[[nodiscard]] size_t Capacity() const
 	{
 		return m_data.size();
 	}
 
-	size_t Position() const
+	[[nodiscard]] size_t Position() const
 	{
 		return m_pos;
 	}
 
-	bool Empty() const
+	[[nodiscard]] bool Empty() const
 	{
 		return m_pos >= m_data.size() - 1;
 	}
@@ -128,10 +126,6 @@ public:
 					}
 					return PA_ERROR(ReaderError::OutOfBoundsSeek);
 				}
-			}
-			default:
-			{
-				return PA_ERROR(ReaderError::InvalidSeek);
 			}
 		}
 	}
