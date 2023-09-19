@@ -66,7 +66,7 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 {
 	PA_PROFILE_FUNCTION();
 
-	File file = File::Open(filePath, File::Flags::Open | File::Flags::Read);
+	File file = File::Open(filePath, File::Flags::Open | File::Flags::Read | File::Flags::ShareRead | File::Flags::ShareWrite);
 	if (!file)
 	{
 		return PA_REPLAY_ERROR("Failed to open replay file: {}", file.LastError());
@@ -84,37 +84,36 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 	std::span<const Byte> data{ static_cast<const Byte*>(mapping), fileSize };
 
 	Replay replay;
-	replay.m_data = data;
 
-	if (replay.m_data.size() < 8)
+	if (data.size() < 8)
 	{
-		return PA_REPLAY_ERROR("Replay has invalid length {} < 8.", replay.m_data.size());
+		return PA_REPLAY_ERROR("Replay has invalid length {} < 8.", data.size());
 	}
 
 	constexpr std::array<Byte, 4> sig = { 0x12, 0x32, 0x34, 0x11 };
-	if (Take(replay.m_data, 4) != std::span{ sig })
+	if (Take(data, 4) != std::span{ sig })
 	{
 		return PA_REPLAY_ERROR("Replay has invalid file signature.");
 	}
 
 	uint32_t blocksCount;
-	if (!TakeInto(replay.m_data, blocksCount))
+	if (!TakeInto(data, blocksCount))
 	{
 		return PA_REPLAY_ERROR("Replay is missing blocksCount.");
 	}
 
 	uint32_t metaSize;
-	if (!TakeInto(replay.m_data, metaSize))
+	if (!TakeInto(data, metaSize))
 	{
 		return PA_REPLAY_ERROR("Replay is missing metaSize.");
 	}
 
-	if (replay.m_data.size() < metaSize)
+	if (data.size() < metaSize)
 	{
 		return PA_REPLAY_ERROR("Replay is missing meta info.");
 	}
 	replay.MetaString.resize(metaSize);
-	std::memcpy(replay.MetaString.data(), Take(replay.m_data, metaSize).data(), metaSize);
+	std::memcpy(replay.MetaString.data(), Take(data, metaSize).data(), metaSize);
 
 	PA_TRY_OR_ELSE(js, Core::ParseJson(replay.MetaString),
 	{
@@ -125,49 +124,49 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 	for (size_t i = 0; i < blocksCount - 1; i++)
 	{
 		uint32_t blockSize;
-		if (!TakeInto(replay.m_data, blockSize))
+		if (!TakeInto(data, blockSize))
 		{
 			return PA_REPLAY_ERROR("Replay is missing blockSize.");
 		}
 		if (blockSize > 0)
-			Take(replay.m_data, blockSize);
+			Take(data, blockSize);
 	}
 	
 	uint32_t decompressedSize;
-	if (!TakeInto(replay.m_data, decompressedSize))
+	if (!TakeInto(data, decompressedSize))
 	{
 		return PA_REPLAY_ERROR("Replay is missing decompressedSize.");
 	}
 
 	uint32_t streamSize;
-	if (!TakeInto(replay.m_data, streamSize))
+	if (!TakeInto(data, streamSize))
 	{
 		return PA_REPLAY_ERROR("Replay is missing streamSize.");
 	}
 
-	if (replay.m_data.size() != streamSize)
+	if (data.size() != streamSize)
 	{
 		//return PA_REPLAY_ERROR("Replay data != streamSize");
 	}
 
-	if (replay.m_data.size() % Blowfish::BlockSize() != 0)
+	if (data.size() % Blowfish::BlockSize() != 0)
 	{
 		return PA_REPLAY_ERROR("Replay data is not a multiple of blowfish block size.");
 	}
 
 	std::vector<Byte> decrypted{};
-	decrypted.resize(replay.m_data.size(), Byte{ 0 });
+	decrypted.resize(data.size(), Byte{ 0 });
 
 	constexpr std::array<Byte, 16> key = { 0x29, 0xB7, 0xC9, 0x09, 0x38, 0x3F, 0x84, 0x88, 0xFA, 0x98, 0xEC, 0x4E, 0x13, 0x19, 0x79, 0xFB };
 	const Blowfish blowfish(key);
 
 	Byte prev[8] = { Byte{ 0 } };
-	for (size_t i = 0; i < replay.m_data.size() / Blowfish::BlockSize(); i++)
+	for (size_t i = 0; i < data.size() / Blowfish::BlockSize(); i++)
 	{
 		const size_t offset = i * Blowfish::BlockSize();
 
 		uint32_t block[2];
-		std::memcpy(block, replay.m_data.data() + offset, sizeof(block));
+		std::memcpy(block, data.data() + offset, sizeof(block));
 
 		Blowfish::ReverseByteOrder(block[0]);
 		Blowfish::ReverseByteOrder(block[1]);
@@ -183,6 +182,9 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 			prev[j] = decrypted[offset + j];
 		}
 	}
+
+	fileMapping.Close();
+	file.Close();
 
 	const std::vector<Byte> decompressed = Zlib::Inflate(decrypted);
 	if (decompressed.empty())

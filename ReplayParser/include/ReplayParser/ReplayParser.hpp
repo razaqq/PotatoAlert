@@ -331,7 +331,6 @@ public:
 
 private:
 	PacketParser m_packetParser;
-	std::span<const Byte> m_data;
 };
 
 ReplayResult<ReplaySummary> AnalyzeReplay(const std::filesystem::path& file, const std::filesystem::path& gameFilePath);
