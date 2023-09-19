@@ -1,6 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Core/Directory.hpp"
+#include "Core/Format.hpp"
 #include "Core/Log.hpp"
 #include "Core/Screenshot.hpp"
 #include "Core/Time.hpp"
@@ -8,7 +9,6 @@
 #include <QWidget>
 
 #include <filesystem>
-#include <format>
 #include <string>
 
 
@@ -20,7 +20,7 @@ namespace {
 
 static std::string GetFileName()
 {
-	return std::format("capture_{}.png", PotatoAlert::Core::Time::GetTimeStamp(g_timeFormat));
+	return fmt::format("capture_{}.png", PotatoAlert::Core::Time::GetTimeStamp(g_timeFormat));
 }
 
 }

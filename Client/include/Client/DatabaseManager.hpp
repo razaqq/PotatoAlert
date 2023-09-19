@@ -1,13 +1,13 @@
 // Copyright 2022 <github.com/razaqq>
 #pragma once
 
+#include "Core/Format.hpp"
 #include "Core/Result.hpp"
 #include "Core/Sqlite.hpp"
 
 #include "ReplayParser/ReplayParser.hpp"
 
 #include <expected>
-#include <format>
 #include <string>
 
 
@@ -51,7 +51,7 @@ struct NonAnalyzedMatch
 using SqlError = std::string;
 template<typename T>
 using SqlResult = Result<T, SqlError>;
-#define PA_SQL_ERROR(...) (::std::unexpected(::PotatoAlert::Client::SqlError(std::format(__VA_ARGS__))))
+#define PA_SQL_ERROR(...) (::std::unexpected(::PotatoAlert::Client::SqlError(fmt::format(__VA_ARGS__))))
 
 
 class DatabaseManager

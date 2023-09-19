@@ -1,13 +1,13 @@
 // Copyright 2022 <github.com/razaqq>
 #pragma once
 
+#include "Core/Format.hpp"
 #include "Core/Process.hpp"
 #include "Core/Result.hpp"
 #include "Core/StandardPaths.hpp"
 #include "Core/String.hpp"
 
 #include <filesystem>
-#include <format>
 #include <iostream>
 #include <string>
 
@@ -31,7 +31,7 @@ public:
 		ScreenshotsDir = (AppDir / "Screenshots").make_preferred();
 		ReplayVersionsDir = (AppDir / "ReplayVersions").make_preferred();
 		ConfigFile = (AppDir / "config.json").make_preferred();
-		LogFile = (AppDir / std::format("{}.log", AppName)).make_preferred();
+		LogFile = (AppDir / fmt::format("{}.log", AppName)).make_preferred();
 		DatabaseFile = (MatchesDir / "match_history.db").make_preferred();
 
 		CreateAppDir(MatchesDir);

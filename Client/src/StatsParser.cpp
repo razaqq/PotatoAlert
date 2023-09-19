@@ -2,6 +2,7 @@
 
 #include "Client/StatsParser.hpp"
 
+#include "Core/Format.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
 
@@ -11,7 +12,6 @@
 #include <QLabel>
 
 #include <array>
-#include <format>
 #include <optional>
 #include <ranges>
 #include <string>
@@ -58,9 +58,6 @@ namespace _JSON {
 
 struct Color
 {
-	int m_r, m_g, m_b;
-	std::optional<int> m_a;
-
 	Color() = default;
 	[[maybe_unused]] Color(int r, int g, int b) : m_r(r), m_g(g), m_b(b) {}
 	[[maybe_unused]] Color(int r, int g, int b, int a) : m_r(r), m_g(g), m_b(b), m_a(a) {}
@@ -70,9 +67,9 @@ struct Color
 	[[nodiscard]] std::string ToString() const
 	{
 		if (!m_a)
-			return std::format("rgb({}, {}, {})", m_r, m_g, m_b);
+			return fmt::format("rgb({}, {}, {})", m_r, m_g, m_b);
 		else
-			return std::format("rgba({}, {}, {}, {})", m_r, m_g, m_b, m_a.value());
+			return fmt::format("rgba({}, {}, {}, {})", m_r, m_g, m_b, m_a.value());
 	}
 
 	[[nodiscard]] bool Valid() const
@@ -91,6 +88,10 @@ struct Color
 		else
 			return QColor::fromRgb(m_r, m_g, m_b, m_a.value());
 	}
+
+private:
+	int m_r, m_g, m_b;
+	std::optional<int> m_a;
 };
 
 template<size_t Size>
@@ -185,9 +186,9 @@ struct Ship
 
 		QLabel* shipIcon = new QLabel();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-		shipIcon->setPixmap(QIcon(std::format(":/{}.svg", Class).c_str()).pixmap(QSize(18, 9), qApp->devicePixelRatio()));
+		shipIcon->setPixmap(QIcon(fmt::format(":/{}.svg", Class).c_str()).pixmap(QSize(18, 9), qApp->devicePixelRatio()));
 #else
-		shipIcon->setPixmap(QIcon(std::format(":/{}.svg", Class).c_str()).pixmap(QSize(18, 9)));
+		shipIcon->setPixmap(QIcon(fmt::format(":/{}.svg", Class).c_str()).pixmap(QSize(18, 9)));
 #endif
 		shipIcon->setStyleSheet("background-color: transparent;");
 		shipIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
@@ -225,7 +226,7 @@ struct Ship
 		layout->addStretch();
 
 		ship->setLayout(layout);
-		ship->setStyleSheet(std::format("background-color: {};", bg.ToString()).c_str());
+		ship->setStyleSheet(fmt::format("background-color: {};", bg.ToString()).c_str());
 
 		return ship;
 	}
@@ -417,8 +418,8 @@ static std::string GetCSV(const Match& match)
 			if (player.ship)
 				shipName = player.ship->Name;
 
-			out += std::format("{};{};{};{};{};{};{};{};{};{};{}\n",
-					teamID, player.name, clanName, shipName,
+			out += fmt::format("{};{};{};{};{};{};{};{};{};{};{}\n",
+					teamID, player.Name, clanName, shipName,
 					player.battles.string, player.winrate.string,
 					player.avgDmg.string, player.battlesShip.string,
 					player.winrateShip.string, player.avgDmgShip.string,

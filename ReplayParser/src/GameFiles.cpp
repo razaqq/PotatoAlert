@@ -2,6 +2,7 @@
 
 #include "Core/Directory.hpp"
 #include "Core/File.hpp"
+#include "Core/Format.hpp"
 #include "Core/Log.hpp"
 #include "Core/String.hpp"
 #include "Core/Xml.hpp"
@@ -9,7 +10,6 @@
 #include "ReplayParser/Entity.hpp"
 #include "ReplayParser/GameFiles.hpp"
 
-#include <format>
 #include <functional>
 #include <optional>
 #include <ranges>
@@ -92,7 +92,7 @@ std::vector<EntitySpec> rp::ParseScripts(Version version, const fs::path& gameFi
 		for (XMLElement* entityElem = clientServerEntries->FirstChildElement(); entityElem != nullptr; entityElem = entityElem->NextSiblingElement())
 		{
 			std::string entityName = Core::String::Trim(entityElem->Name());
-			DefFile defFile = ParseDef(versionDir / "entity_defs" / std::format("{}.def", entityName), aliases);
+			DefFile defFile = ParseDef(versionDir / "entity_defs" / fmt::format("{}.def", entityName), aliases);
 			std::vector<DefFile> interfaces;
 
 			ParseInterfaces((versionDir / "entity_defs" / "interfaces"), aliases, defFile, interfaces);

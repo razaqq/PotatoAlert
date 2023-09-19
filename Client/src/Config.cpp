@@ -16,7 +16,6 @@
 #include <QStandardPaths>
 
 #include <filesystem>
-#include <format>
 #include <iostream>
 #include <string>
 #include <utility>

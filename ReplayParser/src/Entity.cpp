@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/Encoding.hpp"
+#include "Core/Format.hpp"
 #include "Core/Log.hpp"
 #include "Core/String.hpp"
 #include "Core/Xml.hpp"
@@ -9,7 +10,6 @@
 #include "ReplayParser/Types.hpp"
 
 #include <filesystem>
-#include <format>
 #include <ranges>
 #include <string>
 #include <vector>
@@ -159,7 +159,7 @@ void rp::ParseInterfaces(const fs::path& root, const AliasType& aliases, const D
 {
 	for (const std::string& imp : def.Implements)
 	{
-		out.emplace_back(ParseDef(root / std::format("{}.def", imp), aliases));
+		out.emplace_back(ParseDef(root / fmt::format("{}.def", imp), aliases));
 		ParseInterfaces(root, aliases, out.back(), out);
 	}
 }

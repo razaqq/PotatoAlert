@@ -10,6 +10,7 @@
 #include "Client/StatsParser.hpp"
 
 #include "Core/Defer.hpp"
+#include "Core/Format.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
 #include "Core/Sha256.hpp"
@@ -26,7 +27,6 @@
 
 #include <chrono>
 #include <filesystem>
-#include <format>
 #include <optional>
 #include <string>
 #include <thread>
@@ -79,7 +79,7 @@ static Result<TempArenaInfoResult, std::string> ReadArenaInfo(const fs::path& fi
 
 	if (!file)
 	{
-		return PA_ERROR(std::format("Failed to open arena info file: {}", File::LastError()));
+		return PA_ERROR(fmt::format("Failed to open arena info file: {}", File::LastError()));
 	}
 
 	// close the file when the scope ends
@@ -110,12 +110,12 @@ static Result<TempArenaInfoResult, std::string> ReadArenaInfo(const fs::path& fi
 
 				return TempArenaInfoResult{ arenaInfo, playerName, playerVehicle, std::move(j), hash };
 			}
-			return PA_ERROR(std::format("Failed to read arena info file: {}", File::LastError()));
+			return PA_ERROR(fmt::format("Failed to read arena info file: {}", File::LastError()));
 		}
 		std::this_thread::sleep_for(100ms);
 		now = std::chrono::high_resolution_clock::now();
 	}
-	return PA_ERROR(std::format("Game failed to write arena info within 1 second."));
+	return PA_ERROR(fmt::format("Game failed to write arena info within 1 second."));
 }
 
 enum RequestStatus
@@ -174,7 +174,7 @@ static inline std::string GetReplayName(const MatchType::InfoType& info)
 	const std::vector<std::string> date = Split(dateSplit[0], ".");
 	const std::vector<std::string> time = Split(dateSplit[1], ":");
 
-	return std::format("{}{}{}_{}{}{}_{}_{}.wowsreplay", date[2], date[1], date[0], time[0], time[1], time[2], info.ShipIdent, info.Map);
+	return fmt::format("{}{}{}_{}{}{}_{}_{}.wowsreplay", date[2], date[1], date[0], time[0], time[1], time[2], info.ShipIdent, info.Map);
 }
 
 }
@@ -222,7 +222,7 @@ void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& ma
 				emit StatusReady(Status::Error, "Invalid Response");
 				return;
 			}
-			const std::string lookupUrl = std::format(g_lookupUrl, locationHeader.toStdString());
+			const std::string lookupUrl = fmt::format(g_lookupUrl, locationHeader.toStdString());
 
 			/* TODO: this should be working, but isn't
 			const QVariant locationHeader = submitReply->header(QNetworkRequest::LocationHeader);
@@ -233,7 +233,7 @@ void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& ma
 				return;
 			}
 			const QString location = locationHeader.toString();
-			const std::string lookupUrl = std::format(g_lookupUrl, location.toStdString());
+			const std::string lookupUrl = fmt::format(g_lookupUrl, location.toStdString());
 			*/
 
 			LOG_TRACE("Got submitReply from server with location '{}' and content '{}'", lookupUrl, content.toStdString());
@@ -377,7 +377,7 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 
 						if (config.Get<ConfigKey::SaveMatchCsv>())
 						{
-							const fs::path fileName = m_services.Get<AppDirectories>().MatchesDir / std::format("match_{}.csv", Time::GetTimeStamp("%Y-%m-%d_%H-%M-%S"));
+							const fs::path fileName = m_services.Get<AppDirectories>().MatchesDir / fmt::format("match_{}.csv", Time::GetTimeStamp("%Y-%m-%d_%H-%M-%S"));
 							if (const File file = File::Open(fileName, File::Flags::Write | File::Flags::Create))
 							{
 								if (file.WriteString(res.Csv))

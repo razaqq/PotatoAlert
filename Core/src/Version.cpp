@@ -1,9 +1,9 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Core/Format.hpp"
 #include "Core/String.hpp"
 #include "Core/Version.hpp"
 
-#include <format>
 #include <regex>
 #include <string>
 
@@ -60,7 +60,7 @@ std::string Version::ToString(std::string_view del, bool includeBuild) const
 {
 	if (includeBuild)
 	{
-		return std::format("{1}{0}{2}{0}{3}{0}{4}", del, Major(), Minor(), Patch(), Build());
+		return fmt::format("{1}{0}{2}{0}{3}{0}{4}", del, Major(), Minor(), Patch(), Build());
 	}
-	return std::format("{1}{0}{2}{0}{3}", del, Major(), Minor(), Patch());
+	return fmt::format("{1}{0}{2}{0}{3}", del, Major(), Minor(), Patch());
 }

@@ -1,6 +1,7 @@
 // Copyright 2023 <github.com/razaqq>
 #pragma once
 
+#include "Core/Format.hpp"
 #include "Core/Result.hpp"
 #include "Core/String.hpp"
 
@@ -17,7 +18,6 @@ namespace rapidjson {
 
 #include <array>
 #include <expected>
-#include <format>
 #include <ranges>
 #include <string>
 #include <unordered_map>
@@ -33,7 +33,7 @@ namespace PotatoAlert::Core {
 using JsonError = std::string;
 template<typename T>
 using JsonResult = Result<T, JsonError>;
-#define PA_JSON_ERROR(...) (::std::unexpected(::PotatoAlert::Core::JsonError(std::format(__VA_ARGS__))))
+#define PA_JSON_ERROR(...) (::std::unexpected(::PotatoAlert::Core::JsonError(fmt::format(__VA_ARGS__))))
 
 static rapidjson::GenericStringRef<char> ToRef(std::string_view str)
 {
@@ -47,7 +47,7 @@ static inline JsonResult<rapidjson::Document> ParseJson(std::string_view json)
 
 	if (doc.HasParseError())
 	{
-		return PA_JSON_ERROR("Json parse error: %s (%u)\n", GetParseError_En(doc.GetParseError()), doc.GetErrorOffset());
+		return PA_JSON_ERROR("Json parse error: {} ({})\n", GetParseError_En(doc.GetParseError()), doc.GetErrorOffset());
 	}
 	return doc;
 }
@@ -60,7 +60,7 @@ static inline JsonResult<T> FromJson(std::string_view json)
 
 	if (doc.HasParseError())
 	{
-		return PA_JSON_ERROR("Json parse error: %s (%u)\n", GetParseError_En(doc.GetParseError()), doc.GetErrorOffset());
+		return PA_JSON_ERROR("Json parse error: {} ({})\n", GetParseError_En(doc.GetParseError()), doc.GetErrorOffset());
 	}
 	return FromJson<T>(doc);
 }

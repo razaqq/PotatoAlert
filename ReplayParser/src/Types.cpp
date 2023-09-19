@@ -1,13 +1,13 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/Bytes.hpp"
+#include "Core/Format.hpp"
 #include "Core/Log.hpp"
 #include "Core/String.hpp"
 #include "Core/Xml.hpp"
 
 #include "ReplayParser/Types.hpp"
 
-#include <format>
 #include <optional>
 #include <span>
 #include <string>
@@ -394,17 +394,17 @@ std::string rp::PrintType(const ArgType& type)
 		else if constexpr (std::is_same_v<T, ArrayType>)
 		{
 			if (t.Size)
-				return std::format("Array<{}, {}>", t.Size.value(), PrintType(*t.SubType));
-			return std::format("Array<-1, {}>", PrintType(*t.SubType));
+				return fmt::format("Array<{}, {}>", t.Size.value(), PrintType(*t.SubType));
+			return fmt::format("Array<-1, {}>", PrintType(*t.SubType));
 		}
 		else if constexpr (std::is_same_v<T, FixedDictType>)
 		{
-			std::string dict = std::format("FixedDict<{}, [", t.AllowNone);
+			std::string dict = fmt::format("FixedDict<{}, [", t.AllowNone);
 
 			for (auto begin = t.Properties.begin(); begin != t.Properties.end();)
 			{
 				const FixedDictProperty p = *begin;
-				dict += std::format("Property(name: {} type: {})", p.Name, PrintType(*p.Type));
+				dict += fmt::format("Property(name: {} type: {})", p.Name, PrintType(*p.Type));
 
 				++begin;
 				if (begin != t.Properties.end())
