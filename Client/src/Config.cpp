@@ -12,9 +12,6 @@
 #include "Core/Singleton.hpp"
 #include "Core/StandardPaths.hpp"
 
-#include <QDir>
-#include <QStandardPaths>
-
 #include <filesystem>
 #include <iostream>
 #include <string>
@@ -138,9 +135,7 @@ void Config::Load()
 
 	m_json = std::move(json);
 
-	AddMissingKeys();
-	CheckTypes();
-	CheckEnums();
+	Validate();
 
 	LOG_TRACE("Config loaded.");
 }
@@ -259,25 +254,23 @@ bool Config::CreateBackup() const
 	return true;
 }
 
-void Config::AddMissingKeys()
-{
-	for (auto it = g_defaultConfig.MemberBegin(); it != g_defaultConfig.MemberEnd(); ++it)
-	{
-		if (!m_json.HasMember(it->name))
-		{
-			LOG_INFO("Adding missing key '{}' to config.", it->name.GetString());
-			m_json.AddMember(it->name, it->value, m_json.GetAllocator());
-		}
-	}
-}
-
-void Config::CheckTypes()
+void Config::Validate()
 {
 	for (const auto [key, name] : g_keyNames)
 	{
 		if (!g_defaultConfig.HasMember(name.data()))
 			continue;
 
+		// add missing keys
+		if (!m_json.HasMember(name.data()))
+		{
+			LOG_INFO("Adding missing key '{}' to config.", name);
+			rapidjson::Value value;
+			value.CopyFrom(g_defaultConfig[name.data()], m_json.GetAllocator());
+			m_json.AddMember(Core::ToRef(name), value, m_json.GetAllocator());
+		}
+
+		// check types
 		if (IsType(key, ConfigType::String) && !m_json[name.data()].IsString()
 			|| IsType(key, ConfigType::Bool) && !m_json[name.data()].IsBool()
 			|| IsType(key, ConfigType::Int) && !m_json[name.data()].IsInt()
@@ -290,16 +283,8 @@ void Config::CheckTypes()
 			LOG_WARN("Config key '{}' was not of expected type, setting to default value", name);
 			m_json[name.data()] = g_defaultConfig[name.data()];
 		}
-	}
-}
 
-void Config::CheckEnums()
-{
-	for (const auto [key, name] : g_keyNames)
-	{
-		if (!g_defaultConfig.HasMember(name.data()))
-			continue;
-
+		// check enums
 		if (IsType(key, ConfigType::StatsMode))
 		{
 			StatsMode statsMode;

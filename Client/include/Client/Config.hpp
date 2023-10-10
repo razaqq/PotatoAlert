@@ -214,9 +214,7 @@ private:
 	rapidjson::Document m_json;
 	File m_file;
 	fs::path m_filePath;
-	void AddMissingKeys();
-	void CheckTypes();
-	void CheckEnums();
+	void Validate();
 	void SetDefault(ConfigKey key);
 	void ApplyUpdates();
 	bool CreateDefault();
