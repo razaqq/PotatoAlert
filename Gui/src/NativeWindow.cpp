@@ -83,7 +83,7 @@ void NativeWindow::Init()
 
 	if (QSystemTrayIcon::isSystemTrayAvailable())
 	{
-		auto trayIcon = new QSystemTrayIcon(QIcon(":/potato.png"));
+		QSystemTrayIcon* trayIcon = new QSystemTrayIcon(QIcon(":/potato.svg"));
 		trayIcon->setToolTip("PotatoAlert");
 
 		connect(trayIcon, &QSystemTrayIcon::activated, [this](QSystemTrayIcon::ActivationReason reason)

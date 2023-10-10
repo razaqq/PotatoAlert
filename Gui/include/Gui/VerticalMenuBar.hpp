@@ -16,9 +16,9 @@ enum class MenuEntry
 {
 	Table,
 	Settings,
-	Discord,
 	MatchHistory,
 	
+	Discord,
 	Screenshot,
 	CSV,
 	Log,

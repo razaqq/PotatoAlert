@@ -35,7 +35,7 @@ void TitleBar::Init()
 	m_appName->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 	m_appName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-	QSizePolicy buttonPolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	constexpr QSizePolicy buttonPolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	m_btnMinimize->setSizePolicy(buttonPolicy);
 	m_btnMaximize->setSizePolicy(buttonPolicy);
 	m_btnRestore->setSizePolicy(buttonPolicy);
@@ -50,7 +50,7 @@ void TitleBar::Init()
 	m_appName->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 	m_appName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-	m_appIcon->setIcon(QIcon(":/potato.png"));
+	m_appIcon->setIcon(QIcon(":/potato.svg"));
 	m_appIcon->setIconSize(QSize(12, 12));
 
 	m_appIcon->setObjectName("appIcon");

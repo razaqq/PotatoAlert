@@ -48,7 +48,7 @@ void VerticalMenuBar::Init()
 	IconButton* github = new IconButton(":/Github.svg", ":/GithubHover.svg", iconSize);
 	IconButton* about = new IconButton(":/About.svg", ":/AboutHover.svg", iconSize, true);
 
-	m_menuEntries = { table, settings, discord, matchHistory, screenshot, csvMatches, log, github, about };
+	m_menuEntries = { table, settings, matchHistory, discord, screenshot, csvMatches, log, github, about };
 
 	for (size_t i = 0; i < m_menuEntries.size(); i++)
 	{
