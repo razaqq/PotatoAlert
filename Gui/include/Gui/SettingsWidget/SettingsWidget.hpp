@@ -32,6 +32,7 @@ private:
 	QLabel* m_statsModeLabel = new QLabel();
 	QLabel* m_teamDamageModeLabel = new QLabel();
 	QLabel* m_teamWinRateModeLabel = new QLabel();
+	QLabel* m_showKarmaLabel = new QLabel();
 	QLabel* m_tableLayoutLabel = new QLabel();
 	QLabel* m_languageLabel = new QLabel();
 
@@ -39,6 +40,7 @@ private:
 	SettingsSwitch* m_minimizeTray = new SettingsSwitch();
 	SettingsSwitch* m_saveMatchCsv = new SettingsSwitch();
 	SettingsSwitch* m_matchHistory = new SettingsSwitch();
+	SettingsSwitch* m_showKarma = new SettingsSwitch();
 	
 	SettingsChoice* m_statsMode;
 	SettingsChoice* m_teamDamageMode;
@@ -69,6 +71,7 @@ private:
 signals:
 	void Done();
 	void TableLayoutChanged();
+	void ShowKarmaChanged(bool showKarma);
 };
 
 }  // namespace PotatoAlert::Gui

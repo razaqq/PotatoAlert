@@ -35,7 +35,7 @@ private:
 	QWidget* m_activeWidget = m_statsWidget;
 
 public:
-	MainWindow(const Client::ServiceProvider& serviceProvider);
+	explicit MainWindow(const Client::ServiceProvider& serviceProvider);
 	bool ConfirmUpdate();
 
 private:

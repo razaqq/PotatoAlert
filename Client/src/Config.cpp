@@ -44,7 +44,8 @@ static std::unordered_map<ConfigKey, std::string_view> g_keyNames =
 	{ ConfigKey::WindowState,              "window_state" },
 	{ ConfigKey::GameDirectory,            "game_directory" },
 	{ ConfigKey::Language,                 "language" },
-	{ ConfigKey::MenuBarLeft,              "menubar_left" }
+	{ ConfigKey::MenuBarLeft,              "menubar_left" },
+	{ ConfigKey::ShowKarma,                "show_karma" },
 };
 
 }
@@ -62,6 +63,7 @@ Config::Config(const fs::path& filePath) : m_filePath(filePath)
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::MinimizeTray]), false, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::MatchHistory]), true, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::SaveMatchCsv]), false, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::ShowKarma]), false, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowHeight]), 450, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowWidth]), 1500, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowX]), 0, a);

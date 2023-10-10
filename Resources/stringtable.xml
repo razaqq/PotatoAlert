@@ -149,7 +149,13 @@
         <繁體中文>取消</繁體中文>
         <日本語>キャンセル</日本語>
     </Key>
-
+    <Key ID="SETTINGS_SHOW_KARMA">
+        <English>Show Karma</English>
+        <Deutsch>Karma Anzeigen</Deutsch>
+        <简体中文>显示业力</简体中文>
+        <繁體中文>顯示業力</繁體中文>
+        <日本語>カルマを見せる</日本語>
+    </Key>
 
     <!-- STATS TABLES -->
     <Key ID="LABEL_WINRATE">
@@ -244,6 +250,13 @@
         <简体中文>战舰伤害</简体中文>
         <繁體中文>戰艦傷害</繁體中文>
         <日本語>戦艦ダメージ</日本語>
+    </Key>
+    <Key ID="COLUMN_KARMA">
+        <English>Karma</English>
+        <Deutsch>Karma</Deutsch>
+        <简体中文>业力</简体中文>
+        <繁體中文>業力</繁體中文>
+        <日本語>カルマ</日本語>
     </Key>
 
     <!-- UPDATER -->

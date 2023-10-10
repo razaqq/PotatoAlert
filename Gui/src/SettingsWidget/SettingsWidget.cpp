@@ -146,6 +146,15 @@ void SettingsWidget::Init()
 	layout->addLayout(teamWinRateLayout);
 	/* TEAM WIN RATE MODE */
 
+	/* SHOW KARMA */
+	QHBoxLayout* showKarmaLayout = new QHBoxLayout();
+	m_showKarmaLabel->setFont(labelFont);
+	m_showKarmaLabel->setFixedWidth(LABEL_WIDTH);
+	showKarmaLayout->addWidget(m_showKarmaLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+	showKarmaLayout->addWidget(m_showKarma, 0, Qt::AlignVCenter | Qt::AlignRight);
+	layout->addLayout(showKarmaLayout);
+	/* SHOW KARMA */
+
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* TABLE LAYOUT */
@@ -242,6 +251,7 @@ void SettingsWidget::Load() const
 	m_language->setCurrentIndex(config.Get<ConfigKey::Language>());
 	m_matchHistory->setChecked(config.Get<ConfigKey::MatchHistory>());
 	m_saveMatchCsv->setChecked(config.Get<ConfigKey::SaveMatchCsv>());
+	m_showKarma->setChecked(config.Get<ConfigKey::ShowKarma>());
 }
 
 void SettingsWidget::ConnectSignals()
@@ -272,6 +282,11 @@ void SettingsWidget::ConnectSignals()
 	});
 	connect(m_updates, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::UpdateNotifications>(checked); });
 	connect(m_minimizeTray, &SettingsSwitch::clicked, [&config](bool checked) { config.Set<ConfigKey::MinimizeTray>(checked); });
+	connect(m_showKarma, &SettingsSwitch::clicked, [this, &config](bool checked)
+	{
+		config.Set<ConfigKey::ShowKarma>(checked);
+		emit ShowKarmaChanged(checked);
+	});
 	connect(m_statsMode->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
 	{
 		m_forceRun = true;
@@ -327,7 +342,7 @@ bool SettingsWidget::eventFilter(QObject* watched, QEvent* event)
 {
 	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		const int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
 		m_updateLabel->setText(GetString(lang, StringTableKey::SETTINGS_UPDATES));
 		m_minimizeTrayLabel->setText(GetString(lang, StringTableKey::SETTINGS_MINIMIZETRAY));
 		m_saveMatchCsvLabel->setText(GetString(lang, StringTableKey::SETTINGS_SAVE_CSV));
@@ -340,6 +355,7 @@ bool SettingsWidget::eventFilter(QObject* watched, QEvent* event)
 		m_languageLabel->setText(GetString(lang, StringTableKey::SETTINGS_LANGUAGE));
 		m_saveButton->setText(GetString(lang, StringTableKey::SETTINGS_SAVE));
 		m_cancelButton->setText(GetString(lang, StringTableKey::SETTINGS_CANCEL));
+		m_showKarmaLabel->setText(GetString(lang, StringTableKey::SETTINGS_SHOW_KARMA));
 	}
 	return QWidget::eventFilter(watched, event);
 }

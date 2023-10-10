@@ -1,5 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Client/Config.hpp"
+#include "Client/ServiceProvider.hpp"
 #include "Client/StringTable.hpp"
 
 #include "Gui/LanguageChangeEvent.hpp"
@@ -14,10 +16,11 @@
 using namespace PotatoAlert::Client::StringTable;
 using PotatoAlert::Gui::StatsTable;
 
-StatsTable::StatsTable(QWidget* parent) : QTableWidget(parent)
+StatsTable::StatsTable(bool showKarma, QWidget* parent) : QTableWidget(parent)
 {
 	Init();
 	InitHeaders();
+	SetShowKarma(showKarma);
 }
 
 void StatsTable::Init()
@@ -32,7 +35,7 @@ void StatsTable::Init()
 	// setMouseTracking(true);
 
 	setRowCount(12);
-	setColumnCount(8);
+	setColumnCount(9);
 	setSortingEnabled(false);
 	setContentsMargins(0, 0, 0, 0);
 	setCursor(Qt::PointingHandCursor);
@@ -72,6 +75,12 @@ bool StatsTable::eventFilter(QObject* watched, QEvent* event)
 		horizontalHeaderItem(5)->setText(GetString(lang, StringTableKey::COLUMN_MATCHES_SHIP));
 		horizontalHeaderItem(6)->setText(GetString(lang, StringTableKey::COLUMN_WINRATE_SHIP));
 		horizontalHeaderItem(7)->setText(GetString(lang, StringTableKey::COLUMN_AVERAGE_DAMAGE_SHIP));
+		horizontalHeaderItem(8)->setText(GetString(lang, StringTableKey::COLUMN_KARMA));
 	}
-	return QWidget::eventFilter(watched, event);
+	return QTableWidget::eventFilter(watched, event);
+}
+
+void StatsTable::SetShowKarma(bool showKarma)
+{
+	setColumnHidden(8, !showKarma);
 }

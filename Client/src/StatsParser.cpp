@@ -236,7 +236,7 @@ struct Player
 	Stat battlesShip;
 	Stat winrateShip;
 	Stat avgDmgShip;
-	Color prColor;
+	std::optional<Stat> Karma;
 	std::string wowsNumbers;
 
 	[[nodiscard]] PlayerType GetTableRow() const
@@ -246,19 +246,23 @@ struct Player
 		QFont font16("Segoe UI", 1, QFont::Bold);
 		font16.setPixelSize(16);
 
-		QColor bg = this->prColor.GetQColor();
-		QWidget* shipItem = this->ship ? this->ship->GetField(font13, prColor, Qt::AlignVCenter | Qt::AlignLeft)  : new QWidget();
+		QColor bg = PrColor.GetQColor();
+		QWidget* shipItem = ship ? ship->GetField(font13, PrColor, Qt::AlignVCenter | Qt::AlignLeft)  : new QWidget();
 		
-		return {
-				this->GetNameField(),
-				shipItem,
-				this->battles.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
-				this->winrate.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
-				this->avgDmg.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
-				this->battlesShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
-				this->winrateShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
-				this->avgDmgShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight)
+		PlayerType row =
+		{
+			GetNameField(),
+			shipItem,
+			battles.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
+			winrate.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
+			avgDmg.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
+			battlesShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
+			winrateShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
+			avgDmgShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight)
 		};
+		if (Karma.has_value())
+			row.emplace_back(Karma->GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight));
+		return row;
 	}
 
 	[[nodiscard]] FieldType GetNameField() const
@@ -330,6 +334,14 @@ static JsonResult<void> FromJson(const rapidjson::Value& j, Player& p)
 	PA_TRYA(p.prColor, ToColor<4>(j, "pr_color"));
 
 	PA_TRYA(p.wowsNumbers, Core::FromJson<std::string>(j, "wows_numbers_link"));
+
+	if (j.HasMember("karma"))
+	{
+		Stat karma;
+		PA_TRYV(FromJson(j, "karma", karma));
+		p.Karma = karma;
+	}
+
 	return {};
 }
 
@@ -422,7 +434,7 @@ void pn::Label::UpdateLabel(QLabel* label) const
 {
 	label->setText(this->Text);
 
-	if (this->Color)
+	if (Color)
 	{
 		auto palette = label->palette();
 		palette.setColor(QPalette::WindowText, this->Color.value());
@@ -458,8 +470,7 @@ JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const Mat
 				playerShip = player.ship.value();
 			}
 
-			auto row = player.GetTableRow();
-			teamTable.push_back(row);
+			teamTable.push_back(player.GetTableRow());
 			outTeam.WowsNumbers.push_back(ToQString(player.wowsNumbers));
 		}
 		outTeam.AvgDmg = inTeam.avgDmg.GetLabel();

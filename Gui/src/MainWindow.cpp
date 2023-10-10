@@ -186,6 +186,8 @@ void MainWindow::ConnectSignals()
 	});
 
 	connect(m_settingsWidget, &SettingsWidget::TableLayoutChanged, m_statsWidget, &StatsWidget::UpdateTableLayout);
+
+	connect(m_settingsWidget, &SettingsWidget::ShowKarmaChanged, m_statsWidget, &StatsWidget::SetShowKarma);
 }
 
 bool MainWindow::ConfirmUpdate()
