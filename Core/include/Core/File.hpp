@@ -25,15 +25,18 @@ public:
 
 	enum class Flags : uint32_t
 	{
-		Read    = 0x01,
-		Write   = 0x02,
+		Read       = 1 << 1,
+		Write      = 1 << 2,
 
-		Open    = 0x04,
-		Create  = 0x08,
+		Open       = 1 << 3,
+		Create     = 1 << 4,
 
-		NoBuffer = 0x10,
-		Append   = 0x20,
-		Truncate = 0x40
+		NoBuffer   = 1 << 5,
+		Append     = 1 << 6,
+		Truncate   = 1 << 7,
+
+		ShareRead  = 1 << 8,
+		ShareWrite = 1 << 9,
 	};
 
 	File() : m_handle(Handle::Null) {}
