@@ -20,7 +20,6 @@
 #include <QEvent>
 #include <QFileDialog>
 #include <QHBoxLayout>
-#include <QIcon>
 #include <QPixmap>
 #include <QPushButton>
 #include <QSize>
@@ -49,10 +48,10 @@ void SettingsWidget::Init()
 {
 	qApp->installEventFilter(this);
 
-	auto horLayout = new QHBoxLayout();
+	QHBoxLayout* horLayout = new QHBoxLayout();
 	horLayout->setContentsMargins(10, 10, 10, 10);
 	horLayout->setSpacing(0);
-	auto centralWidget = new QWidget(this);
+	QWidget* centralWidget = new QWidget(this);
 	centralWidget->setObjectName("settingsWidget");
 	horLayout->addStretch();
 	horLayout->addWidget(centralWidget);
@@ -62,11 +61,11 @@ void SettingsWidget::Init()
 	QFont labelFont("Noto Sans", 13, QFont::Bold);
 	labelFont.setStyleStrategy(QFont::PreferAntialias);
 
-	auto layout = new QVBoxLayout();
+	QVBoxLayout* layout = new QVBoxLayout();
 	layout->setContentsMargins(10, 10, 10, 10);
 	
 	/* UPDATE NOTIFICATIONS */
-	auto updateLayout = new QHBoxLayout();
+	QHBoxLayout* updateLayout = new QHBoxLayout();
 	m_updateLabel->setFont(labelFont);
 	m_updateLabel->setFixedWidth(LABEL_WIDTH);
 	updateLayout->addWidget(m_updateLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -77,7 +76,7 @@ void SettingsWidget::Init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* MINIMIZE TO TRAY */
-	auto minimizeTrayLayout = new QHBoxLayout();
+	QHBoxLayout* minimizeTrayLayout = new QHBoxLayout();
 	m_minimizeTrayLabel->setFont(labelFont);
 	m_minimizeTrayLabel->setFixedWidth(LABEL_WIDTH);
 	minimizeTrayLayout->addWidget(m_minimizeTrayLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -88,7 +87,7 @@ void SettingsWidget::Init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* SELECTOR FOR GAME FOLDER */
-	auto gamePathLayout = new QHBoxLayout();
+	QHBoxLayout* gamePathLayout = new QHBoxLayout();
 	m_gamePathLabel->setFont(labelFont);
 	m_gamePathLabel->setFixedWidth(LABEL_WIDTH);
 	gamePathLayout->addWidget(m_gamePathLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -110,7 +109,7 @@ void SettingsWidget::Init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* DISPLAYED STATS MODE */
-	auto statsModeLayout = new QHBoxLayout();
+	QHBoxLayout* statsModeLayout = new QHBoxLayout();
 	m_statsModeLabel->setFont(labelFont);
 	m_statsModeLabel->setFixedWidth(LABEL_WIDTH);
 	statsModeLayout->addWidget(m_statsModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -120,10 +119,8 @@ void SettingsWidget::Init()
 	layout->addLayout(statsModeLayout);
 	/* DISPLAYED STATS MODE */
 
-	layout->addWidget(new HorizontalLine(centralWidget));
-
 	/* TEAM DAMAGE MODE */
-	auto teamDamageModeLayout = new QHBoxLayout();
+	QHBoxLayout* teamDamageModeLayout = new QHBoxLayout();
 	m_teamDamageModeLabel->setFont(labelFont);
 	m_teamDamageModeLabel->setFixedWidth(LABEL_WIDTH);
 	teamDamageModeLayout->addWidget(m_teamDamageModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -133,10 +130,8 @@ void SettingsWidget::Init()
 	layout->addLayout(teamDamageModeLayout);
 	/* TEAM DAMAGE MODE */
 
-	layout->addWidget(new HorizontalLine(centralWidget));
-
 	/* TEAM WIN RATE MODE */
-	auto teamWinRateLayout = new QHBoxLayout();
+	QHBoxLayout* teamWinRateLayout = new QHBoxLayout();
 	m_teamWinRateModeLabel->setFont(labelFont);
 	m_teamWinRateModeLabel->setFixedWidth(LABEL_WIDTH);
 	teamWinRateLayout->addWidget(m_teamWinRateModeLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -158,7 +153,7 @@ void SettingsWidget::Init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* TABLE LAYOUT */
-	auto tableLayoutLayout = new QHBoxLayout();
+	QHBoxLayout* tableLayoutLayout = new QHBoxLayout();
 	m_tableLayoutLabel->setFont(labelFont);
 	m_tableLayoutLabel->setFixedWidth(LABEL_WIDTH);
 	tableLayoutLayout->addWidget(m_tableLayoutLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -168,10 +163,8 @@ void SettingsWidget::Init()
 	layout->addLayout(tableLayoutLayout);
 	/* TABLE LAYOUT */
 
-	layout->addWidget(new HorizontalLine(centralWidget));
-
 	/* LANGUAGE */
-	auto languageLayout = new QHBoxLayout();
+	QHBoxLayout* languageLayout = new QHBoxLayout();
 	m_languageLabel->setFont(labelFont);
 	m_languageLabel->setFixedWidth(LABEL_WIDTH);
 	languageLayout->addWidget(m_languageLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -188,7 +181,7 @@ void SettingsWidget::Init()
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* MATCH HISTORY & CSV */
-	auto matchHistoryLayout = new QHBoxLayout();
+	QHBoxLayout* matchHistoryLayout = new QHBoxLayout();
 	m_matchHistoryLabel->setFixedWidth(LABEL_WIDTH);
 	m_matchHistoryLabel->setFont(labelFont);
 	m_matchHistoryLabel->setFixedWidth(LABEL_WIDTH);
@@ -196,7 +189,7 @@ void SettingsWidget::Init()
 	matchHistoryLayout->addWidget(m_matchHistory, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(matchHistoryLayout);
 
-	auto csvLayout = new QHBoxLayout();
+	QHBoxLayout* csvLayout = new QHBoxLayout();
 	m_saveMatchCsvLabel->setFixedWidth(LABEL_WIDTH);
 	m_saveMatchCsvLabel->setFont(labelFont);
 	m_saveMatchCsvLabel->setFixedWidth(LABEL_WIDTH);
@@ -210,7 +203,7 @@ void SettingsWidget::Init()
 	layout->addStretch();
 
 	/* SAVE & CANCEL BUTTON */
-	auto confirmLayout = new QHBoxLayout();
+	QHBoxLayout* confirmLayout = new QHBoxLayout();
 	m_saveButton = new QPushButton();
 	m_saveButton->setFixedWidth(100);
 	m_saveButton->setObjectName("settingsButton");
@@ -285,7 +278,6 @@ void SettingsWidget::ConnectSignals()
 	connect(m_showKarma, &SettingsSwitch::clicked, [this, &config](bool checked)
 	{
 		config.Set<ConfigKey::ShowKarma>(checked);
-		emit ShowKarmaChanged(checked);
 	});
 	connect(m_statsMode->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
 	{
@@ -294,10 +286,12 @@ void SettingsWidget::ConnectSignals()
 	});
 	connect(m_teamDamageMode->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
 	{
+		m_forceRun = true;
 		config.Set<ConfigKey::TeamDamageMode>(static_cast<Client::TeamStatsMode>(id));
 	});
 	connect(m_teamWinRateMode->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
 	{
+		m_forceRun = true;
 		config.Set<ConfigKey::TeamWinRateMode>(static_cast<Client::TeamStatsMode>(id));
 	});
 	connect(m_tableLayout->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
