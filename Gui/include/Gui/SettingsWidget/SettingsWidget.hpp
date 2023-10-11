@@ -71,7 +71,6 @@ private:
 signals:
 	void Done();
 	void TableLayoutChanged();
-	void ShowKarmaChanged(bool showKarma);
 };
 
 }  // namespace PotatoAlert::Gui

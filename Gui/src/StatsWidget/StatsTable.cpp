@@ -16,11 +16,10 @@
 using namespace PotatoAlert::Client::StringTable;
 using PotatoAlert::Gui::StatsTable;
 
-StatsTable::StatsTable(bool showKarma, QWidget* parent) : QTableWidget(parent)
+StatsTable::StatsTable(QWidget* parent) : QTableWidget(parent)
 {
 	Init();
 	InitHeaders();
-	SetShowKarma(showKarma);
 }
 
 void StatsTable::Init()
@@ -35,7 +34,7 @@ void StatsTable::Init()
 	// setMouseTracking(true);
 
 	setRowCount(12);
-	setColumnCount(9);
+	setColumnCount(8);
 	setSortingEnabled(false);
 	setContentsMargins(0, 0, 0, 0);
 	setCursor(Qt::PointingHandCursor);
@@ -45,7 +44,7 @@ void StatsTable::InitHeaders()
 {
 	for (int i = 0; i < columnCount(); i++)
 	{
-		auto item = new QTableWidgetItem();
+		QTableWidgetItem* item = new QTableWidgetItem();
 		item->setFont(QFont("Segoe UI", 11));
 		setHorizontalHeaderItem(i, item);
 	}
@@ -66,7 +65,7 @@ bool StatsTable::eventFilter(QObject* watched, QEvent* event)
 {
 	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		const int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
 		horizontalHeaderItem(0)->setText(GetString(lang, StringTableKey::COLUMN_PLAYER));
 		horizontalHeaderItem(1)->setText(GetString(lang, StringTableKey::COLUMN_SHIP));
 		horizontalHeaderItem(2)->setText(GetString(lang, StringTableKey::COLUMN_MATCHES));
@@ -75,12 +74,6 @@ bool StatsTable::eventFilter(QObject* watched, QEvent* event)
 		horizontalHeaderItem(5)->setText(GetString(lang, StringTableKey::COLUMN_MATCHES_SHIP));
 		horizontalHeaderItem(6)->setText(GetString(lang, StringTableKey::COLUMN_WINRATE_SHIP));
 		horizontalHeaderItem(7)->setText(GetString(lang, StringTableKey::COLUMN_AVERAGE_DAMAGE_SHIP));
-		horizontalHeaderItem(8)->setText(GetString(lang, StringTableKey::COLUMN_KARMA));
 	}
 	return QTableWidget::eventFilter(watched, event);
-}
-
-void StatsTable::SetShowKarma(bool showKarma)
-{
-	setColumnHidden(8, !showKarma);
 }

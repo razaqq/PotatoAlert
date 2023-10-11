@@ -18,8 +18,8 @@
 
 using PotatoAlert::Gui::TeamWidget;
 
-TeamWidget::TeamWidget(Side side, const Client::ServiceProvider& serviceProvider, QWidget* parent)
-	: QWidget(parent), m_side(side), m_table(new StatsTable(serviceProvider.Get<Client::Config>().Get<Client::ConfigKey::ShowKarma>())), m_services(serviceProvider)
+TeamWidget::TeamWidget(Side side, QWidget* parent)
+	: QWidget(parent), m_side(side), m_table(new StatsTable())
 {
 	QVBoxLayout* layout = new QVBoxLayout();
 	layout->setContentsMargins(0, 0, 0, 0);
@@ -88,9 +88,4 @@ void TeamWidget::SetStatus(Client::Status status, std::string_view text) const
 	{
 		dynamic_cast<StatsHeaderFriendly*>(m_header)->SetStatus(status, text);
 	}
-}
-
-void TeamWidget::SetShowKarma(bool showKarma) const
-{
-	m_table->SetShowKarma(showKarma);
 }

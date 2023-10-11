@@ -24,11 +24,10 @@ public:
 		Enemy,
 	};
 
-	explicit TeamWidget(Side side, const Client::ServiceProvider& serviceProvider , QWidget* parent = nullptr);
+	explicit TeamWidget(Side side, QWidget* parent = nullptr);
 
 	void Update(const Team& team);
 	void SetStatus(Client::Status status, std::string_view text) const;
-	void SetShowKarma(bool showKarma) const;
 
 private:
 	Side m_side;
@@ -36,7 +35,6 @@ private:
 	StatsTeamFooter* m_footer = new StatsTeamFooter();
 	QWidget* m_header;
 	Client::StatsParser::WowsNumbersType m_wowsNumbers;
-	const Client::ServiceProvider& m_services;
 };
 
 }  // namespace PotatoAlert::Gui

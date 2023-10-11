@@ -227,7 +227,7 @@ struct Player
 {
 	std::optional<Clan> clan;
 	bool hiddenPro;
-	std::string name;
+	std::string Name;
 	Color nameColor;
 	std::optional<Ship> ship;
 	Stat battles;
@@ -237,21 +237,23 @@ struct Player
 	Stat winrateShip;
 	Stat avgDmgShip;
 	std::optional<Stat> Karma;
+	Color PrColor;
 	std::string wowsNumbers;
+	bool IsUsingPa;
 
-	[[nodiscard]] PlayerType GetTableRow() const
+	[[nodiscard]] PlayerType GetTableRow(bool showKarma) const
 	{
 		QFont font13("Segoe UI", 1, QFont::Bold);
 		font13.setPixelSize(13);
 		QFont font16("Segoe UI", 1, QFont::Bold);
 		font16.setPixelSize(16);
 
-		QColor bg = PrColor.GetQColor();
+		const QColor bg = PrColor.GetQColor();
 		QWidget* shipItem = ship ? ship->GetField(font13, PrColor, Qt::AlignVCenter | Qt::AlignLeft)  : new QWidget();
 		
 		PlayerType row =
 		{
-			GetNameField(),
+			GetNameField(showKarma),
 			shipItem,
 			battles.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
 			winrate.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
@@ -260,51 +262,74 @@ struct Player
 			winrateShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
 			avgDmgShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight)
 		};
-		if (Karma.has_value())
-			row.emplace_back(Karma->GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight));
 		return row;
 	}
 
-	[[nodiscard]] FieldType GetNameField() const
+	[[nodiscard]] QWidget* GetNameField(bool showKarma) const
 	{
-		if (this->clan)
+		QWidget* name = new QWidget();
+		QHBoxLayout* layout = new QHBoxLayout();
+		layout->setContentsMargins(3, 0, 3, 0);
+		layout->setSpacing(3);
+
+		QLabel* nameLabel = new QLabel();
+		nameLabel->setStyleSheet("background-color: transparent");
+		if (clan)
 		{
-			auto label = new QLabel();
-			label->setTextFormat(Qt::RichText);
-			label->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-			label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-			label->setContentsMargins(3, 0, 3, 0);
-			auto text = std::format(
-					"<span style=\"color: {};\">[{}]</span>{}",
-					this->clan->color.ToString(), this->clan->tag, this->name);
-			label->setText(QString::fromStdString(text));
-
-			if (this->prColor.Valid())
-			{
-				label->setAutoFillBackground(true);
-				label->setStyleSheet(
-						QString::fromStdString(std::format(
-								"background-color: {}; font-size: 13px; font-family: Segoe UI;", this->prColor.ToString()
-						)));
-			}
-			else
-			{
-				label->setStyleSheet(QString::fromStdString("font-size: 13px; font-family: Segoe UI;"));
-			}
-
-			return label;
+			nameLabel->setTextFormat(Qt::RichText);
+			nameLabel->setText(fmt::format("<span style=\"color: {};\">[{}]</span>{}", clan->color.ToString(), clan->tag, Name).c_str());
 		}
 		else
 		{
-			auto label = new QTableWidgetItem(ToQString(this->name));
+			nameLabel->setText(Name.c_str());
 			QFont font("Segoe UI");
 			font.setPixelSize(13);
-			label->setFont(font);
-			label->setTextAlignment(Qt::AlignVCenter);
-			if (this->prColor.Valid())
-				label->setBackground(this->prColor.GetQColor());
-			return label;
+			nameLabel->setFont(font);
 		}
+		layout->addWidget(nameLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+
+		if (Karma && showKarma)
+		{
+			QHBoxLayout* karmaLayout = new QHBoxLayout();
+			karmaLayout->setSpacing(0);
+			karmaLayout->setContentsMargins(0, 3, 0, 0);
+
+			QLabel* karmaLabel = new QLabel();
+			karmaLabel->setObjectName("karmaLabel");
+			karmaLabel->setTextFormat(Qt::RichText);
+			karmaLabel->setText(fmt::format("<span style=\"color: {};\">{}</span>", Karma.value().color.ToString(), Karma.value().string).c_str());
+			karmaLabel->setStyleSheet("background-color: transparent");
+			QFont font("Segoe UI");
+			font.setPixelSize(11);
+			karmaLabel->setFont(font);
+
+			karmaLayout->addWidget(karmaLabel, 0, Qt::AlignTop | Qt::AlignLeft);
+			layout->addLayout(karmaLayout, 0);
+		}
+
+		if (IsUsingPa)
+		{
+			QLabel* potatoIcon = new QLabel();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+			potatoIcon->setPixmap(QIcon(":/potato.svg").pixmap(QSize(12, 12), qApp->devicePixelRatio()));
+#else
+			potatoIcon->setPixmap(QIcon(":/potato.svg").pixmap(QSize(12, 12)));
+#endif
+			potatoIcon->setStyleSheet("background-color: transparent;");
+			potatoIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+			potatoIcon->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+
+			layout->addWidget(potatoIcon, 0, Qt::AlignVCenter | Qt::AlignLeft);
+		}
+
+		layout->addStretch();
+		name->setLayout(layout);
+		if (PrColor.Valid())
+		{
+			name->setStyleSheet(fmt::format("background-color: {};", PrColor.ToString()).c_str());
+		}
+
+		return name;
 	}
 };
 
@@ -317,7 +342,7 @@ static JsonResult<void> FromJson(const rapidjson::Value& j, Player& p)
 		p.clan = clan;
 	}
 	PA_TRYA(p.hiddenPro, Core::FromJson<bool>(j, "hidden_profile"));
-	PA_TRYA(p.name, Core::FromJson<std::string>(j, "name"));
+	PA_TRYA(p.Name, Core::FromJson<std::string>(j, "name"));
 	PA_TRYA(p.nameColor, ToColor<3>(j, "name_color"));
 	if (j.HasMember("ship") && !j["ship"].IsNull())
 	{
@@ -331,7 +356,7 @@ static JsonResult<void> FromJson(const rapidjson::Value& j, Player& p)
 	PA_TRYV(FromJson(j, "battles_ship", p.battlesShip));
 	PA_TRYV(FromJson(j, "win_rate_ship", p.winrateShip));
 	PA_TRYV(FromJson(j, "avg_dmg_ship", p.avgDmgShip));
-	PA_TRYA(p.prColor, ToColor<4>(j, "pr_color"));
+	PA_TRYA(p.PrColor, ToColor<4>(j, "pr_color"));
 
 	PA_TRYA(p.wowsNumbers, Core::FromJson<std::string>(j, "wows_numbers_link"));
 
@@ -342,6 +367,14 @@ static JsonResult<void> FromJson(const rapidjson::Value& j, Player& p)
 		p.Karma = karma;
 	}
 
+	if (j.HasMember("is_using_pa"))
+	{
+		PA_TRYA(p.IsUsingPa, Core::FromJson<bool>(j, "is_using_pa"));
+	}
+	else
+	{
+		p.IsUsingPa = false;
+	}
 	return {};
 }
 
@@ -432,7 +465,7 @@ namespace pn = PotatoAlert::Client::StatsParser;
 
 void pn::Label::UpdateLabel(QLabel* label) const
 {
-	label->setText(this->Text);
+	label->setText(Text);
 
 	if (Color)
 	{
@@ -442,7 +475,7 @@ void pn::Label::UpdateLabel(QLabel* label) const
 	}
 }
 
-JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const MatchContext& matchContext) noexcept
+JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const MatchContext& matchContext, bool showKarma) noexcept
 {
 	StatsParseResult result;
 
@@ -454,7 +487,7 @@ JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const Mat
 	_JSON::Ship playerShip;
 
 	// parse match stats
-	auto getTeam = [&match, &matchContext, &playerShip](const _JSON::Team& inTeam, Team& outTeam)
+	auto getTeam = [&match, &matchContext, &playerShip, showKarma](const _JSON::Team& inTeam, Team& outTeam)
 	{
 		// do not display bots in scenario or operation mode
 		if ((match.matchGroup == "pve" || match.matchGroup == "pve_premade") && inTeam.id == 2)
@@ -465,12 +498,12 @@ JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const Mat
 		TeamType teamTable;
 		for (auto& player : inTeam.players)
 		{
-			if (player.name == matchContext.PlayerName && player.ship.has_value())
+			if (player.Name == matchContext.PlayerName && player.ship.has_value())
 			{
 				playerShip = player.ship.value();
 			}
 
-			teamTable.push_back(player.GetTableRow());
+			teamTable.push_back(player.GetTableRow(showKarma));
 			outTeam.WowsNumbers.push_back(ToQString(player.wowsNumbers));
 		}
 		outTeam.AvgDmg = inTeam.avgDmg.GetLabel();
@@ -541,9 +574,9 @@ JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const Mat
 	return result;
 }
 
-JsonResult<StatsParseResult> pn::ParseMatch(const std::string& raw, const MatchContext& matchContext) noexcept
+JsonResult<StatsParseResult> pn::ParseMatch(const std::string& raw, const MatchContext& matchContext, bool showKarma) noexcept
 {
 	PA_TRY(j, Core::ParseJson(raw));
-	PA_TRY(match, ParseMatch(j, matchContext));
+	PA_TRY(match, ParseMatch(j, matchContext ,showKarma));
 	return match;
 }

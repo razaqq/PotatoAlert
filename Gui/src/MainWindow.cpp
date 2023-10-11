@@ -186,8 +186,6 @@ void MainWindow::ConnectSignals()
 	});
 
 	connect(m_settingsWidget, &SettingsWidget::TableLayoutChanged, m_statsWidget, &StatsWidget::UpdateTableLayout);
-
-	connect(m_settingsWidget, &SettingsWidget::ShowKarmaChanged, m_statsWidget, &StatsWidget::SetShowKarma);
 }
 
 bool MainWindow::ConfirmUpdate()
@@ -197,7 +195,7 @@ bool MainWindow::ConfirmUpdate()
 	 * QWindowsWindow::setGeometry: Unable to set geometry
 	*/
 
-	int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
-	auto dialog = new QuestionDialog(lang, this, GetString(lang, StringTableKey::UPDATE_QUESTION));
+	const int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
+	QuestionDialog* dialog = new QuestionDialog(lang, this, GetString(lang, StringTableKey::UPDATE_QUESTION));
 	return dialog->Run() == QuestionAnswer::Yes;
 }
