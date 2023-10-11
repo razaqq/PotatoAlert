@@ -140,7 +140,8 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 	connect(m_view, &QTableView::doubleClicked, [this](const QModelIndex& index)
 	{
 		const Client::Match& match = m_model->GetMatch(m_sortFilter->mapToSource(index).row());
-		PA_TRY_OR_ELSE(res, ParseMatch(match.Json, MatchContext{}),
+		const bool showKarma = m_services.Get<Config>().Get<ConfigKey::ShowKarma>();
+		PA_TRY_OR_ELSE(res, ParseMatch(match.Json, MatchContext{}, showKarma),
 		{
 			LOG_ERROR("Failed to parse match as JSON: {}", error);
 			return;
