@@ -73,9 +73,6 @@ void MainWindow::Init()
 	m_centralLayout->addWidget(m_matchHistory);
 	m_centralLayout->addWidget(m_replaySummary);
 	m_centralLayout->addWidget(m_aboutWidget);
-
-	// trigger run
-	m_settingsWidget->CheckPath();
 }
 
 void MainWindow::SwitchTab(MenuEntry i)

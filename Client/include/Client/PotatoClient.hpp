@@ -38,14 +38,6 @@ class PotatoClient : public QObject
 {
 	Q_OBJECT
 
-private:
-	const ServiceProvider& m_services;
-	Core::DirectoryWatcher m_watcher;
-	std::string m_lastArenaInfoHash;
-	DirectoryStatus m_dirStatus;
-	ReplayAnalyzer& m_replayAnalyzer;
-	QNetworkAccessManager* m_networkAccessManager = new QNetworkAccessManager();
-
 public:
 	explicit PotatoClient(const ServiceProvider& serviceProvider)
 		: m_services(serviceProvider), m_replayAnalyzer(serviceProvider.Get<ReplayAnalyzer>()) {}
@@ -62,11 +54,20 @@ private:
 	void HandleReply(QNetworkReply* reply, auto& successHandler);
 	void LookupResult(const std::string& url, const std::string& authToken, const MatchContext& matchContext);
 
+private:
+	const ServiceProvider& m_services;
+	Core::DirectoryWatcher m_watcher;
+	std::string m_lastArenaInfoHash;
+	DirectoryStatus m_dirStatus;
+	ReplayAnalyzer& m_replayAnalyzer;
+	QNetworkAccessManager* m_networkAccessManager = new QNetworkAccessManager();
+
 signals:
 	void MatchReady(const StatsParser::MatchType& match);
 	void MatchHistoryNewMatch(const Match& match);
 	void ReplaySummaryChanged(uint32_t id, const ReplaySummary& summary);
 	void StatusReady(Status status, std::string_view statusText);
+	void DirectoryStatusChanged(const DirectoryStatus& status);
 };
 
 }  // namespace PotatoAlert::Client

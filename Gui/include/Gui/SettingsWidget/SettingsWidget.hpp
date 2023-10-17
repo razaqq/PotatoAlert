@@ -21,6 +21,19 @@ class SettingsWidget : public QWidget
 {
 	Q_OBJECT
 
+public:
+	explicit SettingsWidget(const Client::ServiceProvider& serviceProvider, QWidget* parent = nullptr);
+	bool eventFilter(QObject* watched, QEvent* event) override;
+
+private:
+	void Init();
+	void Load() const;
+	void ConnectSignals();
+
+signals:
+	void Done();
+	void TableLayoutChanged();
+
 private:
 	const Client::ServiceProvider& m_services;
 
@@ -57,20 +70,6 @@ private:
 	FolderStatus* m_folderStatusGui = new FolderStatus(this);
 
 	bool m_forceRun = false;
-
-public:
-	explicit SettingsWidget(const Client::ServiceProvider& serviceProvider, QWidget* parent = nullptr);
-	void CheckPath() const;
-	bool eventFilter(QObject* watched, QEvent* event) override;
-
-private:
-	void Init();
-	void Load() const;
-	void ConnectSignals();
-
-signals:
-	void Done();
-	void TableLayoutChanged();
 };
 
 }  // namespace PotatoAlert::Gui

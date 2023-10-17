@@ -181,14 +181,12 @@ static inline std::string GetReplayName(const MatchType::InfoType& info)
 
 void PotatoClient::Init()
 {
-	emit StatusReady(Status::Ready, "Ready");
-
 	connect(&m_watcher, &DirectoryWatcher::FileChanged, this, &PotatoClient::OnFileChanged);
 	connect(&m_watcher, &DirectoryWatcher::FileChanged, &m_replayAnalyzer, &ReplayAnalyzer::OnFileChanged);
 
 	connect(&m_replayAnalyzer, &ReplayAnalyzer::ReplaySummaryReady, this, &PotatoClient::ReplaySummaryChanged);
 
-	TriggerRun();
+	CheckPath();
 }
 
 void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& matchContext)
@@ -556,9 +554,10 @@ DirectoryStatus PotatoClient::CheckPath()
 
 	m_watcher.ClearDirectories();
 
-	Result<fs::path> gamePath = m_services.Get<Config>().Get<ConfigKey::GameDirectory>();
+	const Result<fs::path> gamePath = m_services.Get<Config>().Get<ConfigKey::GameDirectory>();
 	if (!gamePath)
 	{
+		emit DirectoryStatusChanged(dirStatus);
 		return dirStatus;
 	}
 
@@ -591,7 +590,15 @@ DirectoryStatus PotatoClient::CheckPath()
 		// lets check the entire game folder, replays might be hiding everywhere
 		m_replayAnalyzer.AnalyzeDirectory(gamePath.value());
 
+		emit StatusReady(Status::Ready, "Ready");
+
 		TriggerRun();
 	}
+	else
+	{
+		emit StatusReady(Status::Error, "Game Directory");
+	}
+
+	emit DirectoryStatusChanged(dirStatus);
 	return dirStatus;
 }
