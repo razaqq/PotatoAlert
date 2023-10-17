@@ -17,6 +17,7 @@ target_sources(
     src/Palette.cpp
     src/QuestionDialog.cpp
     src/ReplaySummary.cpp
+    src/StatisticsWidget.cpp
     src/TitleBar.cpp
     src/VerticalMenuBar.cpp
 
@@ -52,6 +53,7 @@ target_sources(
     include/Gui/SettingsWidget/SettingsSwitch.hpp
     include/Gui/SettingsWidget/SettingsWidget.hpp
     include/Gui/StatsWidget/StatsHeader.hpp
+    include/Gui/StatisticsWidget.hpp
     include/Gui/TitleBar.hpp
     include/Gui/VerticalMenuBar.hpp
 )
@@ -77,9 +79,9 @@ if(UNIX)
     )
 endif()
 
-find_package(Qt6 COMPONENTS SvgWidgets Widgets QUIET)
+find_package(Qt6 COMPONENTS Charts SvgWidgets Widgets QUIET)
 if (NOT Qt6_FOUND)
-    find_package(Qt5 COMPONENTS Svg Widgets REQUIRED)
+    find_package(Qt5 COMPONENTS Charts Svg Widgets REQUIRED)
 endif()
 
 if (Qt6_FOUND)
@@ -88,8 +90,8 @@ else()
     set(QT_SVG_TARGET_NAME "Qt::Svg")
 endif()
 
-target_link_libraries(Gui PRIVATE FramelessHelperWidgets ${QT_SVG_TARGET_NAME} Qt::WidgetsPrivate)
-target_link_libraries(Gui PUBLIC Qt::Widgets)
+target_link_libraries(Gui PRIVATE FramelessHelperWidgets ${QT_SVG_TARGET_NAME} Qt::WidgetsPrivate Qt::ChartsPrivate)
+target_link_libraries(Gui PUBLIC Qt6::Charts Qt::Widgets)
 
 if(WIN32)
     target_link_libraries(Gui PRIVATE Dwmapi Win32 Updater)

@@ -40,6 +40,7 @@ void VerticalMenuBar::Init()
 	constexpr QSize iconSize = QSize(20, 20);
 	IconButton* table = new IconButton(":/Table.svg", ":/TableHover.svg", iconSize, true);
 	IconButton* settings = new IconButton(":/Settings.svg", ":/SettingsHover.svg", iconSize, true);
+	IconButton* statistics = new IconButton(":/ReplaySummaryButton.svg", ":/ReplaySummaryButtonHover.svg", iconSize, true);
 	IconButton* matchHistory = new IconButton(":/MatchHistory.svg", ":/MatchHistoryHover.svg", iconSize, true);
 	IconButton* discord = new IconButton(":/Discord.svg", ":/DiscordHover.svg", iconSize);
 	IconButton* screenshot = new IconButton(":/Screenshot.svg", ":/ScreenshotHover.svg", iconSize);
@@ -48,7 +49,7 @@ void VerticalMenuBar::Init()
 	IconButton* github = new IconButton(":/Github.svg", ":/GithubHover.svg", iconSize);
 	IconButton* about = new IconButton(":/About.svg", ":/AboutHover.svg", iconSize, true);
 
-	m_menuEntries = { table, settings, matchHistory, discord, screenshot, csvMatches, log, github, about };
+	m_menuEntries = { table, settings, statistics, matchHistory, discord, screenshot, csvMatches, log, github, about };
 
 	for (size_t i = 0; i < m_menuEntries.size(); i++)
 	{
@@ -62,6 +63,7 @@ void VerticalMenuBar::Init()
 
 	layout->addWidget(table, 0, Qt::AlignTop | Qt::AlignHCenter);
 	layout->addWidget(settings, 0, Qt::AlignTop | Qt::AlignHCenter);
+	layout->addWidget(statistics, 0, Qt::AlignTop | Qt::AlignHCenter);
 	layout->addWidget(matchHistory, 0, Qt::AlignTop | Qt::AlignHCenter);
 	layout->addStretch();
 	layout->addWidget(discord, 0, Qt::AlignBottom | Qt::AlignHCenter);

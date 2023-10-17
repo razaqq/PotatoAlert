@@ -10,6 +10,7 @@
 #include <QString>
 #include <QVariant>
 
+#include <span>
 #include <vector>
 
 
@@ -35,6 +36,11 @@ public:
 	[[nodiscard]] size_t MatchCount() const
 	{
 		return static_cast<int>(m_matches.size());
+	}
+
+	std::span<const Client::Match> GetMatches() const
+	{
+		return m_matches;
 	}
 
 	[[nodiscard]] const Client::Match& GetMatch(size_t idx) const

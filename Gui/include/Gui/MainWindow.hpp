@@ -8,6 +8,7 @@
 #include "Gui/ReplaySummary.hpp"
 #include "Gui/SettingsWidget/SettingsWidget.hpp"
 #include "Gui/StatsWidget/StatsWidget.hpp"
+#include "Gui/StatisticsWidget.hpp"
 #include "Gui/VerticalMenuBar.hpp"
 
 #include <QMainWindow>
@@ -29,6 +30,7 @@ private:
 	StatsWidget* m_statsWidget = new StatsWidget(m_services, this);
 	SettingsWidget* m_settingsWidget = new SettingsWidget(m_services, this);
 	MatchHistory* m_matchHistory = new MatchHistory(m_services, this);
+	StatisticsWidget* m_statisticsWidget = new StatisticsWidget(m_matchHistory, this);
 	ReplaySummary* m_replaySummary = new ReplaySummary(m_services, this);
 	AboutWidget* m_aboutWidget = new AboutWidget(this);
 

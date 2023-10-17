@@ -1,6 +1,9 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_library(GameFileUnpack STATIC src/GameFileUnpack.cpp)
+add_library(GameFileUnpack STATIC src/GameFileUnpack.cpp src/MoFile.cpp)
 set_target_properties(GameFileUnpack PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 target_include_directories(GameFileUnpack PUBLIC include)
-target_link_libraries(GameFileUnpack PRIVATE Core)
+target_link_libraries(GameFileUnpack PUBLIC Core)
+
+add_executable(StandaloneMoFileReader StandaloneMoFileReader.cpp)
+target_link_libraries(StandaloneMoFileReader PRIVATE Core GameFileUnpack)

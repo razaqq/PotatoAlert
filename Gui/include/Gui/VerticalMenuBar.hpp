@@ -16,6 +16,7 @@ enum class MenuEntry
 {
 	Table,
 	Settings,
+	Statistics,
 	MatchHistory,
 	
 	Discord,
@@ -33,7 +34,7 @@ public:
 	explicit VerticalMenuBar(QWidget* parent = nullptr);
 	void SetChecked(MenuEntry entry) const;
 private:
-	std::array<IconButton*, 9> m_menuEntries;
+	std::array<IconButton*, 10> m_menuEntries;
 	QButtonGroup* m_btnGroup = new QButtonGroup();
 	void Init();
 signals:

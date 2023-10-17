@@ -64,12 +64,14 @@ void MainWindow::Init()
 
 	// set other tabs invisible
 	m_settingsWidget->setVisible(false);
+	m_statisticsWidget->setVisible(false);
 	m_matchHistory->setVisible(false);
 	m_replaySummary->setVisible(false);
 	m_aboutWidget->setVisible(false);
 
 	m_centralLayout->addWidget(m_statsWidget);
 	m_centralLayout->addWidget(m_settingsWidget);
+	m_centralLayout->addWidget(m_statisticsWidget);
 	m_centralLayout->addWidget(m_matchHistory);
 	m_centralLayout->addWidget(m_replaySummary);
 	m_centralLayout->addWidget(m_aboutWidget);
@@ -88,6 +90,11 @@ void MainWindow::SwitchTab(MenuEntry i)
 		case MenuEntry::Settings:
 		{
 			m_activeWidget = m_settingsWidget;
+			break;
+		}
+		case MenuEntry::Statistics:
+		{
+			m_activeWidget = m_statisticsWidget;
 			break;
 		}
 		case MenuEntry::MatchHistory:

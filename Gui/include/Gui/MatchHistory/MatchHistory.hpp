@@ -42,6 +42,11 @@ public:
 	
 	bool eventFilter(QObject* watched, QEvent* event) override;
 
+	MatchHistoryModel* GetModel() const
+	{
+		return m_model;
+	}
+
 private:
 	void LoadMatches() const;
 	void Refresh() const;
