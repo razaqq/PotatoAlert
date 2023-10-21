@@ -141,7 +141,8 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 	{
 		const Client::Match& match = m_model->GetMatch(m_sortFilter->mapToSource(index).row());
 		const bool showKarma = m_services.Get<Config>().Get<ConfigKey::ShowKarma>();
-		PA_TRY_OR_ELSE(res, ParseMatch(match.Json, MatchContext{}, showKarma),
+		const bool fontShadow = m_services.Get<Config>().Get<ConfigKey::FontShadow>();
+		PA_TRY_OR_ELSE(res, ParseMatch(match.Json, MatchContext{}, showKarma, fontShadow),
 		{
 			LOG_ERROR("Failed to parse match as JSON: {}", error);
 			return;

@@ -33,6 +33,7 @@ private:
 	QLabel* m_teamDamageModeLabel = new QLabel();
 	QLabel* m_teamWinRateModeLabel = new QLabel();
 	QLabel* m_showKarmaLabel = new QLabel();
+	QLabel* m_fontShadowLabel = new QLabel();
 	QLabel* m_tableLayoutLabel = new QLabel();
 	QLabel* m_languageLabel = new QLabel();
 
@@ -41,7 +42,8 @@ private:
 	SettingsSwitch* m_saveMatchCsv = new SettingsSwitch();
 	SettingsSwitch* m_matchHistory = new SettingsSwitch();
 	SettingsSwitch* m_showKarma = new SettingsSwitch();
-	
+	SettingsSwitch* m_fontShadow = new SettingsSwitch();
+
 	SettingsChoice* m_statsMode;
 	SettingsChoice* m_teamDamageMode;
 	SettingsChoice* m_teamWinRateMode;

@@ -317,7 +317,8 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 
 						LOG_TRACE("Parsing match.");
 						const bool showKarma = m_services.Get<Config>().Get<ConfigKey::ShowKarma>();
-						PA_TRY_OR_ELSE(res, ParseMatch(serverResponse.Result.value(), matchContext, showKarma),
+						const bool fontShadow = m_services.Get<Config>().Get<ConfigKey::FontShadow>();
+						PA_TRY_OR_ELSE(res, ParseMatch(serverResponse.Result.value(), matchContext, showKarma, fontShadow),
 						{
 							LOG_ERROR("Failed to parse server response as JSON: {}", error);
 							emit StatusReady(Status::Error, "JSON Parse Error");

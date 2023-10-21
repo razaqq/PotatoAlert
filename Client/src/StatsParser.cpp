@@ -10,11 +10,15 @@
 #include <QGraphicsEffect>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QPainter>
 
 #include <array>
+#include <cstdint>
 #include <optional>
 #include <ranges>
 #include <string>
+#include <utility>
+#include <unordered_map>
 #include <vector>
 
 #ifdef _MSC_VER
@@ -28,12 +32,20 @@ using PotatoAlert::Core::JsonResult;
 
 namespace {
 
-static QString ToQString(const std::string_view& str)
+static QString ToQString(std::string_view str)
 {
 	return QString::fromUtf8(str.data(), static_cast<int>(str.size()));
 }
 
+void AddShadow(QWidget* widget)
+{
+	QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect(widget);
+	shadow->setOffset(1, 1);
+	shadow->setColor(QApplication::palette().base().color());
+	widget->setGraphicsEffect(shadow);
 }
+
+}  // namespace
 
 
 namespace _JSON {
@@ -56,7 +68,10 @@ struct Color
 
 	[[nodiscard]] bool Valid() const
 	{
-		auto valid = [](int i) -> bool { return i >= 0 && i <= 255; };
+		auto valid = [](int i) -> bool
+		{
+			return i >= 0 && i <= 255;
+		};
 		if (!m_a.has_value())
 			return valid(m_r) && valid(m_g) && valid(m_b);
 		else
@@ -90,24 +105,57 @@ static JsonResult<Color> ToColor(const rapidjson::Value& value, std::string_view
 	return Color(color);
 }
 
+class ShadowLabel : public QLabel
+{
+public:
+	using QLabel::QLabel;
+
+	ShadowLabel(const QString& text, const QColor& fg, const QColor& bg, Qt::Alignment textAlignment, bool fontShadow) : m_fg(fg), m_bg(bg), m_alignment(textAlignment), m_fontShadow(fontShadow)
+	{
+		setText(text);
+	}
+
+private:
+	void paintEvent(QPaintEvent* event) override
+	{
+		QPainter painter(this);
+
+		painter.fillRect(contentsRect(), m_bg);
+
+		const QRect textRect = contentsRect().adjusted(-3, -3, -3, -3);
+
+		if (m_fontShadow)
+		{
+			painter.setPen(palette().base().color());
+			painter.drawText(textRect.adjusted(1, 1, 1, 1), m_alignment, text());
+		}
+
+		painter.setPen(m_fg);
+		painter.drawText(textRect, m_alignment, text());
+	}
+
+private:
+	QColor m_fg;
+	QColor m_bg;
+	Qt::Alignment m_alignment;
+	bool m_fontShadow;
+};
+
 struct Stat
 {
-	std::string string;
-	Color color;
+	std::string Str;
+	Color ColorRGB;
 
-	[[nodiscard]] QTableWidgetItem* GetField(const QFont& font, const QColor& bg, const QFlags<Qt::AlignmentFlag>& align) const
+	[[nodiscard]] ShadowLabel* GetField(const QFont& font, const QColor& bg, const QFlags<Qt::AlignmentFlag>& align, bool fontShadow) const
 	{
-		auto item = new QTableWidgetItem(ToQString(this->string));
-		item->setForeground(this->color.GetQColor());
-		item->setBackground(bg);
+		ShadowLabel* item = new ShadowLabel(ToQString(Str), ColorRGB.GetQColor(), bg, align, fontShadow);
 		item->setFont(font);
-		item->setTextAlignment(align);
 		return item;
 	}
 
 	[[nodiscard]] Label GetLabel(const QString& suffix = "") const
 	{
-		return {ToQString(this->string) + suffix, this->color.GetQColor()};
+		return { ToQString(Str) + suffix, ColorRGB.GetQColor() };
 	}
 };
 
@@ -116,38 +164,38 @@ static JsonResult<void> FromJson(const rapidjson::Value& j, std::string_view key
 	if (!j.HasMember(key.data()))
 		return PA_JSON_ERROR("Json object for Stat has no key '{}'", key);
 
-	PA_TRYA(s.string, Core::FromJson<std::string>(j[key.data()], "string"));
-	PA_TRYA(s.color, ToColor<3>(j[key.data()], "color"));
+	PA_TRYA(s.Str, Core::FromJson<std::string>(j[key.data()], "string"));
+	PA_TRYA(s.ColorRGB, ToColor<3>(j[key.data()], "color"));
 	return {};
 }
 
 struct Clan
 {
-	std::string name;
-	std::string tag;
-	Color color;
-	std::string region;
+	std::string Name;
+	std::string Tag;
+	Color ColorRGB;
+	std::string Region;
 
 	[[nodiscard]] Label GetTagLabel() const
 	{
-		return { "[" + ToQString(this->tag) + "] ", this->color.GetQColor() };
+		return { "[" + ToQString(Tag) + "] ", ColorRGB.GetQColor() };
 	}
 	[[nodiscard]] Label GetNameLabel() const
 	{
-		return { ToQString(this->name), std::nullopt };
+		return { ToQString(Name), std::nullopt };
 	}
 	[[nodiscard]] Label GetRegionLabel() const
 	{
-		return { ToQString(this->region), std::nullopt };
+		return { ToQString(Region), std::nullopt };
 	}
 };
 
 static JsonResult<void> FromJson(const rapidjson::Value& j, Clan& c)
 {
-	PA_TRYA(c.name, Core::FromJson<std::string>(j, "name"));
-	PA_TRYA(c.tag, Core::FromJson<std::string>(j, "tag"));
-	PA_TRYA(c.color, ToColor<3>(j, "color"));
-	PA_TRYA(c.region, Core::FromJson<std::string>(j, "region"));
+	PA_TRYA(c.Name, Core::FromJson<std::string>(j, "name"));
+	PA_TRYA(c.Tag, Core::FromJson<std::string>(j, "tag"));
+	PA_TRYA(c.ColorRGB, ToColor<3>(j, "color"));
+	PA_TRYA(c.Region, Core::FromJson<std::string>(j, "region"));
 	return {};
 }
 
@@ -157,9 +205,8 @@ struct Ship
 	std::string Class;
 	std::string Nation;
 	uint8_t Tier;
-	// Color color;
 
-	[[nodiscard]] QWidget* GetField(const QFont& font, const Color& bg, const QFlags<Qt::AlignmentFlag>& align) const
+	[[nodiscard]] QWidget* GetField(const QFont& font, const Color& bg, const QFlags<Qt::AlignmentFlag>& align, bool fontShadow) const
 	{
 		QWidget* ship = new QWidget();
 		QHBoxLayout* layout = new QHBoxLayout();
@@ -175,10 +222,12 @@ struct Ship
 		shipIcon->setStyleSheet("background-color: transparent;");
 		shipIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 		shipIcon->setAlignment(Qt::AlignLeft);
-		// shipIcon->setFixedWidth(21);
-		auto effect = new QGraphicsOpacityEffect();
+		QGraphicsOpacityEffect* effect = new QGraphicsOpacityEffect();
 		effect->setOpacity(0.85);
 		shipIcon->setGraphicsEffect(effect);
+
+		if (fontShadow)
+			AddShadow(shipIcon);
 
 		QLabel* shipTier = new QLabel();
 		shipTier->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
@@ -197,10 +246,16 @@ struct Ship
 			shipTier->setFont(font);
 		}
 
+		if (fontShadow)
+			AddShadow(shipTier);
+
 		QLabel* shipName = new QLabel(Name.c_str());
 		shipName->setFont(font);
 		shipName->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 		shipName->setStyleSheet("background-color: transparent;");
+
+		if (fontShadow)
+			AddShadow(shipName);
 
 		layout->addWidget(shipIcon, 0, align);
 		layout->addWidget(shipTier, 0, align);
@@ -225,23 +280,23 @@ static JsonResult<void> FromJson(const rapidjson::Value& j, Ship& s)
 
 struct Player
 {
-	std::optional<Clan> clan;
-	bool hiddenPro;
+	std::optional<Clan> Clan;
+	bool HiddenPro;
 	std::string Name;
-	Color nameColor;
-	std::optional<Ship> ship;
-	Stat battles;
-	Stat winrate;
-	Stat avgDmg;
-	Stat battlesShip;
-	Stat winrateShip;
-	Stat avgDmgShip;
+	Color NameColor;
+	std::optional<Ship> Ship;
+	Stat Battles;
+	Stat Winrate;
+	Stat AvgDmg;
+	Stat BattlesShip;
+	Stat WinrateShip;
+	Stat AvgDmgShip;
 	std::optional<Stat> Karma;
 	Color PrColor;
-	std::string wowsNumbers;
+	std::string WowsNumbers;
 	bool IsUsingPa;
 
-	[[nodiscard]] PlayerType GetTableRow(bool showKarma) const
+	[[nodiscard]] PlayerType GetTableRow(bool showKarma, bool fontShadow) const
 	{
 		QFont font13("Segoe UI", 1, QFont::Bold);
 		font13.setPixelSize(13);
@@ -249,23 +304,22 @@ struct Player
 		font16.setPixelSize(16);
 
 		const QColor bg = PrColor.GetQColor();
-		QWidget* shipItem = ship ? ship->GetField(font13, PrColor, Qt::AlignVCenter | Qt::AlignLeft)  : new QWidget();
-		
-		PlayerType row =
-		{
-			GetNameField(showKarma),
+		QWidget* shipItem = Ship ? Ship->GetField(font13, PrColor, Qt::AlignVCenter | Qt::AlignLeft, fontShadow) : new QWidget();
+
+		PlayerType row = {
+			GetNameField(showKarma, fontShadow),
 			shipItem,
-			battles.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
-			winrate.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
-			avgDmg.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
-			battlesShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
-			winrateShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight),
-			avgDmgShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight)
+			Battles.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, fontShadow),
+			Winrate.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, fontShadow),
+			AvgDmg.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, fontShadow),
+			BattlesShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, fontShadow),
+			WinrateShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, fontShadow),
+			AvgDmgShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, fontShadow)
 		};
 		return row;
 	}
 
-	[[nodiscard]] QWidget* GetNameField(bool showKarma) const
+	[[nodiscard]] QWidget* GetNameField(bool showKarma, bool fontShadow) const
 	{
 		QWidget* name = new QWidget();
 		QHBoxLayout* layout = new QHBoxLayout();
@@ -274,10 +328,10 @@ struct Player
 
 		QLabel* nameLabel = new QLabel();
 		nameLabel->setStyleSheet("background-color: transparent");
-		if (clan)
+		if (Clan)
 		{
 			nameLabel->setTextFormat(Qt::RichText);
-			nameLabel->setText(fmt::format("<span style=\"color: {};\">[{}]</span>{}", clan->color.ToString(), clan->tag, Name).c_str());
+			nameLabel->setText(fmt::format("<span style=\"color: {};\">[{}]</span>{}", Clan->ColorRGB.ToString(), Clan->Tag, Name).c_str());
 		}
 		else
 		{
@@ -288,6 +342,9 @@ struct Player
 		}
 		layout->addWidget(nameLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
+		if (fontShadow)
+			AddShadow(nameLabel);
+
 		if (Karma && showKarma)
 		{
 			QHBoxLayout* karmaLayout = new QHBoxLayout();
@@ -297,11 +354,14 @@ struct Player
 			QLabel* karmaLabel = new QLabel();
 			karmaLabel->setObjectName("karmaLabel");
 			karmaLabel->setTextFormat(Qt::RichText);
-			karmaLabel->setText(fmt::format("<span style=\"color: {};\">{}</span>", Karma.value().color.ToString(), Karma.value().string).c_str());
+			karmaLabel->setText(fmt::format("<span style=\"color: {};\">{}</span>", Karma.value().ColorRGB.ToString(), Karma.value().Str).c_str());
 			karmaLabel->setStyleSheet("background-color: transparent");
 			QFont font("Segoe UI");
 			font.setPixelSize(11);
 			karmaLabel->setFont(font);
+
+			if (fontShadow)
+				AddShadow(karmaLabel);
 
 			karmaLayout->addWidget(karmaLabel, 0, Qt::AlignTop | Qt::AlignLeft);
 			layout->addLayout(karmaLayout, 0);
@@ -318,6 +378,9 @@ struct Player
 			potatoIcon->setStyleSheet("background-color: transparent;");
 			potatoIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 			potatoIcon->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+
+			if (fontShadow)
+				AddShadow(potatoIcon);
 
 			layout->addWidget(potatoIcon, 0, Qt::AlignVCenter | Qt::AlignLeft);
 		}
@@ -339,26 +402,26 @@ static JsonResult<void> FromJson(const rapidjson::Value& j, Player& p)
 	{
 		Clan clan;
 		PA_TRYV(FromJson(j["clan"], clan));
-		p.clan = clan;
+		p.Clan = clan;
 	}
-	PA_TRYA(p.hiddenPro, Core::FromJson<bool>(j, "hidden_profile"));
+	PA_TRYA(p.HiddenPro, Core::FromJson<bool>(j, "hidden_profile"));
 	PA_TRYA(p.Name, Core::FromJson<std::string>(j, "name"));
-	PA_TRYA(p.nameColor, ToColor<3>(j, "name_color"));
+	PA_TRYA(p.NameColor, ToColor<3>(j, "name_color"));
 	if (j.HasMember("ship") && !j["ship"].IsNull())
 	{
 		Ship ship;
 		PA_TRYV(FromJson(j["ship"], ship));
-		p.ship = ship;
+		p.Ship = ship;
 	}
-	PA_TRYV(FromJson(j, "battles", p.battles));
-	PA_TRYV(FromJson(j, "win_rate", p.winrate));
-	PA_TRYV(FromJson(j, "avg_dmg", p.avgDmg));
-	PA_TRYV(FromJson(j, "battles_ship", p.battlesShip));
-	PA_TRYV(FromJson(j, "win_rate_ship", p.winrateShip));
-	PA_TRYV(FromJson(j, "avg_dmg_ship", p.avgDmgShip));
+	PA_TRYV(FromJson(j, "battles", p.Battles));
+	PA_TRYV(FromJson(j, "win_rate", p.Winrate));
+	PA_TRYV(FromJson(j, "avg_dmg", p.AvgDmg));
+	PA_TRYV(FromJson(j, "battles_ship", p.BattlesShip));
+	PA_TRYV(FromJson(j, "win_rate_ship", p.WinrateShip));
+	PA_TRYV(FromJson(j, "avg_dmg_ship", p.AvgDmgShip));
 	PA_TRYA(p.PrColor, ToColor<4>(j, "pr_color"));
 
-	PA_TRYA(p.wowsNumbers, Core::FromJson<std::string>(j, "wows_numbers_link"));
+	PA_TRYA(p.WowsNumbers, Core::FromJson<std::string>(j, "wows_numbers_link"));
 
 	if (j.HasMember("karma"))
 	{
@@ -380,50 +443,50 @@ static JsonResult<void> FromJson(const rapidjson::Value& j, Player& p)
 
 struct Team
 {
-	uint8_t id;
-	std::vector<Player> players;
-	Stat avgDmg;
-	Stat avgWr;
+	uint8_t Id;
+	std::vector<Player> Players;
+	Stat AvgDmg;
+	Stat AvgWr;
 };
 
 static JsonResult<void> FromJson(const rapidjson::Value& j, Team& t)
 {
-	PA_TRYV(Core::FromJson(j, "id", t.id));
+	PA_TRYV(Core::FromJson(j, "id", t.Id));
 
 	const auto playersValue = j["players"].GetArray();
-	t.players.reserve(playersValue.Size());
+	t.Players.reserve(playersValue.Size());
 	for (const auto& m : playersValue)
 	{
 		Player player;
 		PA_TRYV(FromJson(m, player));
-		t.players.emplace_back(player);
+		t.Players.emplace_back(player);
 	}
 	// PA_TRYV(Core::FromJson(j, "players", t.players));
-	PA_TRYV(FromJson(j, "avg_dmg", t.avgDmg));
-	PA_TRYV(FromJson(j, "avg_win_rate", t.avgWr));
+	PA_TRYV(FromJson(j, "avg_dmg", t.AvgDmg));
+	PA_TRYV(FromJson(j, "avg_win_rate", t.AvgWr));
 	return {};
 }
 
 struct Match
 {
-	Team team1;
-	Team team2;
-	std::string matchGroup;
-	std::string statsMode;
-	std::string region;
-	std::string map;
-	std::string dateTime;
+	Team Team1;
+	Team Team2;
+	std::string MatchGroup;
+	std::string StatsMode;
+	std::string Region;
+	std::string Map;
+	std::string DateTime;
 };
 
 static JsonResult<void> FromJson(const rapidjson::Value& j, Match& m)
 {
-	PA_TRYV(FromJson(j["team1"], m.team1));
-	PA_TRYV(FromJson(j["team2"], m.team2));
-	PA_TRYA(m.matchGroup, Core::FromJson<std::string>(j, "match_group"));
-	PA_TRYA(m.statsMode, Core::FromJson<std::string>(j, "stats_mode"));
-	PA_TRYA(m.region, Core::FromJson<std::string>(j, "region"));
-	PA_TRYA(m.map, Core::FromJson<std::string>(j, "map"));
-	PA_TRYA(m.dateTime, Core::FromJson<std::string>(j, "date_time"));
+	PA_TRYV(FromJson(j["team1"], m.Team1));
+	PA_TRYV(FromJson(j["team2"], m.Team2));
+	PA_TRYA(m.MatchGroup, Core::FromJson<std::string>(j, "match_group"));
+	PA_TRYA(m.StatsMode, Core::FromJson<std::string>(j, "stats_mode"));
+	PA_TRYA(m.Region, Core::FromJson<std::string>(j, "region"));
+	PA_TRYA(m.Map, Core::FromJson<std::string>(j, "map"));
+	PA_TRYA(m.DateTime, Core::FromJson<std::string>(j, "date_time"));
 
 	return {};
 }
@@ -435,26 +498,26 @@ static std::string GetCSV(const Match& match)
 
 	auto getTeam = [&out](const Team& team, std::string_view teamID)
 	{
-		for (auto& player : team.players)
+		for (auto& player : team.Players)
 		{
 			std::string clanName;
-			if (player.clan)
-				clanName = player.clan->name;
+			if (player.Clan)
+				clanName = player.Clan->Name;
 
 			std::string shipName;
-			if (player.ship)
-				shipName = player.ship->Name;
+			if (player.Ship)
+				shipName = player.Ship->Name;
 
 			out += fmt::format("{};{};{};{};{};{};{};{};{};{};{}\n",
 					teamID, player.Name, clanName, shipName,
-					player.battles.string, player.winrate.string,
-					player.avgDmg.string, player.battlesShip.string,
-					player.winrateShip.string, player.avgDmgShip.string,
-					player.wowsNumbers);
+					player.Battles.Str, player.Winrate.Str,
+					player.AvgDmg.Str, player.BattlesShip.Str,
+					player.WinrateShip.Str, player.AvgDmgShip.Str,
+					player.WowsNumbers);
 		}
 	};
-	getTeam(match.team1, "1");
-	getTeam(match.team2, "2");
+	getTeam(match.Team1, "1");
+	getTeam(match.Team2, "2");
 
 	return out;
 }
@@ -470,12 +533,12 @@ void pn::Label::UpdateLabel(QLabel* label) const
 	if (Color)
 	{
 		auto palette = label->palette();
-		palette.setColor(QPalette::WindowText, this->Color.value());
+		palette.setColor(QPalette::WindowText, Color.value());
 		label->setPalette(palette);
 	}
 }
 
-JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const MatchContext& matchContext, bool showKarma) noexcept
+JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const MatchContext& matchContext, bool showKarma, bool fontShadow) noexcept
 {
 	StatsParseResult result;
 
@@ -487,34 +550,34 @@ JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const Mat
 	_JSON::Ship playerShip;
 
 	// parse match stats
-	auto getTeam = [&match, &matchContext, &playerShip, showKarma](const _JSON::Team& inTeam, Team& outTeam)
+	auto getTeam = [&match, &matchContext, &playerShip, showKarma, fontShadow](const _JSON::Team& inTeam, Team& outTeam)
 	{
 		// do not display bots in scenario or operation mode
-		if ((match.matchGroup == "pve" || match.matchGroup == "pve_premade") && inTeam.id == 2)
+		if ((match.MatchGroup == "pve" || match.MatchGroup == "pve_premade") && inTeam.Id == 2)
 		{
 			return;
 		}
 
 		TeamType teamTable;
-		for (auto& player : inTeam.players)
+		for (auto& player : inTeam.Players)
 		{
-			if (player.Name == matchContext.PlayerName && player.ship.has_value())
+			if (player.Name == matchContext.PlayerName && player.Ship.has_value())
 			{
-				playerShip = player.ship.value();
+				playerShip = player.Ship.value();
 			}
 
-			teamTable.push_back(player.GetTableRow(showKarma));
-			outTeam.WowsNumbers.push_back(ToQString(player.wowsNumbers));
+			teamTable.push_back(player.GetTableRow(showKarma, fontShadow));
+			outTeam.WowsNumbers.push_back(ToQString(player.WowsNumbers));
 		}
-		outTeam.AvgDmg = inTeam.avgDmg.GetLabel();
-		outTeam.Winrate = inTeam.avgWr.GetLabel("%");
+		outTeam.AvgDmg = inTeam.AvgDmg.GetLabel();
+		outTeam.Winrate = inTeam.AvgWr.GetLabel("%");
 		outTeam.Table = teamTable;
 	};
-	getTeam(match.team1, result.Match.Team1);
-	getTeam(match.team2, result.Match.Team2);
+	getTeam(match.Team1, result.Match.Team1);
+	getTeam(match.Team2, result.Match.Team2);
 
 	// parse clan tag+name
-	if (match.matchGroup == "clan")
+	if (match.MatchGroup == "clan")
 	{
 		auto findClan = [](const _JSON::Team& inTeam, Team& outTeam)
 		{
@@ -523,20 +586,20 @@ JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const Mat
 				size_t count;
 				const _JSON::Clan& clan;
 			};
-			std::map<std::string, Clan> clans;
-			for (const _JSON::Player& player : inTeam.players)
+			std::unordered_map<std::string, Clan> clans;
+			for (const _JSON::Player& player : inTeam.Players)
 			{
-				if (!player.clan)
+				if (!player.Clan)
 					continue;
 
-				const _JSON::Clan& clan = player.clan.value();
-				if (clans.contains(clan.tag))
+				const _JSON::Clan& clan = player.Clan.value();
+				if (clans.contains(clan.Tag))
 				{
-					clans.at(clan.tag).count++;
+					clans.at(clan.Tag).count++;
 				}
 				else
 				{
-					clans.emplace(clan.tag, Clan{ 1, clan });
+					clans.emplace(clan.Tag, Clan{ 1, clan });
 				}
 			}
 
@@ -553,17 +616,17 @@ JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const Mat
 				outTeam.Clan.Region = max_elem->second.clan.GetRegionLabel();
 			}
 		};
-		findClan(match.team1, result.Match.Team1);
-		findClan(match.team2, result.Match.Team2);
+		findClan(match.Team1, result.Match.Team1);
+		findClan(match.Team2, result.Match.Team2);
 	}
 
 	// parse match info
 	MatchType::InfoType& info = result.Match.Info;
-	info.MatchGroup = std::move(match.matchGroup);
-	info.StatsMode = std::move(match.statsMode);
-	info.Region = std::move(match.region);
-	info.Map = std::move(match.map);
-	info.DateTime = std::move(match.dateTime);
+	info.MatchGroup = std::move(match.MatchGroup);
+	info.StatsMode = std::move(match.StatsMode);
+	info.Region = std::move(match.Region);
+	info.Map = std::move(match.Map);
+	info.DateTime = std::move(match.DateTime);
 	info.Player = std::move(matchContext.PlayerName);
 	info.ShipIdent = std::move(matchContext.ShipIdent);
 	info.ShipName = std::move(playerShip.Name);
@@ -574,9 +637,9 @@ JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const Mat
 	return result;
 }
 
-JsonResult<StatsParseResult> pn::ParseMatch(const std::string& raw, const MatchContext& matchContext, bool showKarma) noexcept
+JsonResult<StatsParseResult> pn::ParseMatch(const std::string& raw, const MatchContext& matchContext, bool showKarma, bool fontShadow) noexcept
 {
 	PA_TRY(j, Core::ParseJson(raw));
-	PA_TRY(match, ParseMatch(j, matchContext ,showKarma));
+	PA_TRY(match, ParseMatch(j, matchContext, showKarma, fontShadow));
 	return match;
 }

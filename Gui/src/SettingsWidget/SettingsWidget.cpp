@@ -150,6 +150,15 @@ void SettingsWidget::Init()
 	layout->addLayout(showKarmaLayout);
 	/* SHOW KARMA */
 
+	/* FONT SHADOW */
+	QHBoxLayout* fontShadowLayout = new QHBoxLayout();
+	m_fontShadowLabel->setFont(labelFont);
+	m_fontShadowLabel->setFixedWidth(LABEL_WIDTH);
+	fontShadowLayout->addWidget(m_fontShadowLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+	fontShadowLayout->addWidget(m_fontShadow, 0, Qt::AlignVCenter | Qt::AlignRight);
+	layout->addLayout(fontShadowLayout);
+	/* FONT SHADOW */
+
 	layout->addWidget(new HorizontalLine(centralWidget));
 
 	/* TABLE LAYOUT */
@@ -245,6 +254,7 @@ void SettingsWidget::Load() const
 	m_matchHistory->setChecked(config.Get<ConfigKey::MatchHistory>());
 	m_saveMatchCsv->setChecked(config.Get<ConfigKey::SaveMatchCsv>());
 	m_showKarma->setChecked(config.Get<ConfigKey::ShowKarma>());
+	m_fontShadow->setChecked(config.Get<ConfigKey::FontShadow>());
 }
 
 void SettingsWidget::ConnectSignals()
@@ -278,6 +288,10 @@ void SettingsWidget::ConnectSignals()
 	connect(m_showKarma, &SettingsSwitch::clicked, [this, &config](bool checked)
 	{
 		config.Set<ConfigKey::ShowKarma>(checked);
+	});
+	connect(m_fontShadow, &SettingsSwitch::clicked, [this, &config](bool checked)
+	{
+		config.Set<ConfigKey::FontShadow>(checked);
 	});
 	connect(m_statsMode->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
 	{
@@ -350,6 +364,7 @@ bool SettingsWidget::eventFilter(QObject* watched, QEvent* event)
 		m_saveButton->setText(GetString(lang, StringTableKey::SETTINGS_SAVE));
 		m_cancelButton->setText(GetString(lang, StringTableKey::SETTINGS_CANCEL));
 		m_showKarmaLabel->setText(GetString(lang, StringTableKey::SETTINGS_SHOW_KARMA));
+		m_fontShadowLabel->setText(GetString(lang, StringTableKey::SETTINGS_FONT_SHADOW));
 	}
 	return QWidget::eventFilter(watched, event);
 }

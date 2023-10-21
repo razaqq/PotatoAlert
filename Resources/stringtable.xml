@@ -156,6 +156,13 @@
         <繁體中文>顯示業力</繁體中文>
         <日本語>カルマを見せる</日本語>
     </Key>
+    <Key ID="SETTINGS_FONT_SHADOW">
+        <English>Font Shadow</English>
+        <Deutsch>Schriftschatten</Deutsch>
+        <简体中文>字体阴影</简体中文>
+        <繁體中文>字體陰影</繁體中文>
+        <日本語>フォントの影</日本語>
+    </Key>
 
     <!-- STATS TABLES -->
     <Key ID="LABEL_WINRATE">
