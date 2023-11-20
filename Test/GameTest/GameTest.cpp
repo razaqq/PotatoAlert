@@ -1,10 +1,13 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Client/Game.hpp"
+
 #include "Core/Directory.hpp"
+#include "Core/Log.hpp"
+#include "Core/StandardPaths.hpp"
 #include "Core/Version.hpp"
 
-#include "catch.hpp"
+#include <catch2/catch_all.hpp>
 
 #include <filesystem>
 
@@ -12,6 +15,16 @@
 using PotatoAlert::Core::Version;
 using namespace PotatoAlert::Client::Game;
 namespace fs = std::filesystem;
+
+namespace {
+
+static struct test_init
+{
+	test_init()
+	{
+		PotatoAlert::Core::Log::Init(PotatoAlert::Core::AppDataPath("PotatoAlert") / "GameTest.log");
+	}
+} test_init_instance;
 
 enum class Test
 {
@@ -32,14 +45,16 @@ static fs::path GetGamePath(Test t)
 	switch (t)
 	{
 		case Test::nsnv:
-			return fs::path(rootPath.value()).remove_filename() / "gameDirectories" / "non_steam_non_versioned";
+			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "non_steam_non_versioned";
 		case Test::nsv:
-			return fs::path(rootPath.value()).remove_filename() / "gameDirectories" / "non_steam_versioned";
+			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "non_steam_versioned";
 		case Test::snvexe:
-			return fs::path(rootPath.value()).remove_filename() / "gameDirectories" / "steam_non_versioned_exe";
+			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "steam_non_versioned_exe";
 		case Test::svcwd:
-			return fs::path(rootPath.value()).remove_filename() / "gameDirectories" / "steam_versioned_cwd";
+			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "steam_versioned_cwd";
 	}
+}
+
 }
 
 TEST_CASE( "GameTest_CheckPathTest" )

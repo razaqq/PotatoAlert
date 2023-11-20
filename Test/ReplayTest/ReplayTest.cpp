@@ -1,14 +1,16 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/Directory.hpp"
+#include "Core/Log.hpp"
 #include "Core/Process.hpp"
 #include "Core/Result.hpp"
+#include "Core/StandardPaths.hpp"
 #include "Core/Version.hpp"
 
 #include "ReplayParser/GameFiles.hpp"
 #include "ReplayParser/ReplayParser.hpp"
 
-#include "catch.hpp"
+#include <catch2/catch_all.hpp>
 
 #include <filesystem>
 #include <numeric>
@@ -25,11 +27,19 @@ namespace fs = std::filesystem;
 
 namespace {
 
+static struct test_init
+{
+	test_init()
+	{
+		PotatoAlert::Core::Log::Init(PotatoAlert::Core::AppDataPath("PotatoAlert") / "ReplayTest.log");
+	}
+} test_init_instance;
+
 static fs::path GetReplay(std::string_view name)
 {
 	if (Result<fs::path> rootPath = GetModuleRootPath())
 	{
-		return rootPath.value().remove_filename() / "replays" / name;
+		return rootPath.value().remove_filename() / "Replays" / name;
 	}
 
 	PotatoAlert::Core::ExitCurrentProcess(1);

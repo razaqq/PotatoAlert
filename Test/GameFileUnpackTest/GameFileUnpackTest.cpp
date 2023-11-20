@@ -3,10 +3,12 @@
 #include "Core/Bytes.hpp"
 #include "Core/Directory.hpp"
 #include "Core/File.hpp"
+#include "Core/Log.hpp"
+#include "Core/StandardPaths.hpp"
 
 #include <GameFileUnpack/GameFileUnpack.hpp>
 
-#include "catch.hpp"
+#include <catch2/catch_all.hpp>
 
 #include <filesystem>
 
@@ -23,6 +25,15 @@ using PotatoAlert::GameFileUnpack::Unpacker;
 
 namespace {
 
+static struct test_init
+{
+	test_init()
+	{
+		PotatoAlert::Core::Log::Init(PotatoAlert::Core::AppDataPath("PotatoAlert") / "GameFileUnpackTest.log");
+	}
+} test_init_instance;
+
+
 static fs::path GetGameFileRootPath()
 {
 	const auto rootPath = PotatoAlert::Core::GetModuleRootPath();
@@ -30,7 +41,7 @@ static fs::path GetGameFileRootPath()
 	{
 		std::exit(1);
 	}
-	return fs::path(rootPath.value()).remove_filename() / "gameFiles";
+	return fs::path(rootPath.value()).remove_filename() / "GameFiles";
 }
 
 static fs::path GetTempDirectory()
