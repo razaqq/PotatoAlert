@@ -25,22 +25,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebI
     set_property(TARGET PotatoUpdater PROPERTY WIN32_EXECUTABLE true)
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    if ("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")  # clang-cl
-        target_compile_options(PotatoUpdater PRIVATE $<$<CONFIG:DEBUG>:/Wall -Wno-unknown-pragmas -Wno-error=unused-variable -Wno-c++98-compat -Wno-c++98-compat-pedantic /Ob0 /Od>)
-        target_compile_options(PotatoUpdater PRIVATE $<$<CONFIG:RELEASE>:/O2 /Ob2>)
-    elseif("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU")  # clang
-        target_compile_options(PotatoUpdater PRIVATE -fno-exceptions)
-        target_compile_options(PotatoUpdater PRIVATE $<$<CONFIG:DEBUG>:-Wall -pedantic -fno-exceptions -Wno-unknown-pragmas -O0>)
-        target_compile_options(PotatoUpdater PRIVATE $<$<CONFIG:RELEASE>:-O3>)
-    endif()
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    target_compile_options(PotatoUpdater PRIVATE $<$<CONFIG:DEBUG>:/Wall /Od /Ob0>)  # TODO: completely untested
-    target_compile_options(PotatoUpdater PRIVATE $<$<CONFIG:RELEASE>:/O2 /Ob2>)
-    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-else()
-    message(FATAL_ERROR "Unsupported compiler!")
-endif()
+include(CompilerFlags)
+SetCompilerFlags(PotatoUpdater)
 
 target_link_libraries(PotatoUpdater PRIVATE Core Gui Updater Qt::Core Qt::Widgets Win32)
 set_target_properties(PotatoUpdater PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
