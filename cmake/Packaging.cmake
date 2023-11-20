@@ -12,8 +12,8 @@ find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
 # find_program(BINARYCREATOR_EXECUTABLE binarycreator HINTS "${_qt_bin_dir}" ${CPACK_IFW_ROOT}/bin)
 # mark_as_advanced(WINDEPLOYQT_EXECUTABLE)
 
-# Qt5 DLLs
-function(windeployqt target)
+# Qt DLLs
+function(WinDeployQt target)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(WINDEPLOYQT_ARGS --debug)
     else()
@@ -47,7 +47,7 @@ function(ssllibraries target)
             )
 endfunction()
 
-function(replayversions target)
+function(CopyReplayScripts target)
     add_custom_command(TARGET ${target} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/Resources/ReplayVersions
             $<TARGET_FILE_DIR:${target}>/ReplayVersions

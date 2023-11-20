@@ -48,9 +48,9 @@ set_target_properties(PotatoAlert
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-include(packaging)
+include(Packaging)
 if(WIN32)
-    windeployqt(PotatoAlert)
+    WinDeployQt(PotatoAlert)
     if (NOT Qt6_FOUND)  # only need ssl libs on qt5, not qt6
         ssllibraries(PotatoAlert)
     endif()

@@ -56,8 +56,8 @@ add_custom_command(
         COMMENT "Adding manifest..."
 )
 
-include(packaging)
-windeployqt(PotatoUpdater)
+include(Packaging)
+WinDeployQt(PotatoUpdater)
 if (NOT Qt6_FOUND)  # only need ssl libs on qt5, not qt6
     ssllibraries(PotatoUpdater)
 endif()

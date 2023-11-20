@@ -1,6 +1,6 @@
 option(PA_BUILD_STANDALONE_REPLAYPARSER OFF)
 
-include(packaging)
+include(Packaging)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -29,5 +29,5 @@ if(PA_BUILD_STANDALONE_REPLAYPARSER)
     add_executable(StandaloneReplayParser StandaloneReplayParser.cpp)
     target_link_libraries(StandaloneReplayParser PRIVATE ReplayParser Core)
     set_target_properties(StandaloneReplayParser PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-    windeployqt(StandaloneReplayParser)
+    WinDeployQt(StandaloneReplayParser)
 endif()
