@@ -139,4 +139,3 @@ TEST_CASE( "ReplayGameFileTest" )
 	REQUIRE(spec[0].BaseProperties.size() == 1);
 	REQUIRE(spec[0].Name == "Avatar");
 }
-

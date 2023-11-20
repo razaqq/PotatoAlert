@@ -36,10 +36,10 @@ set_target_properties(PotatoUpdater
 )
 
 add_custom_command(
-        TARGET PotatoUpdater
-        POST_BUILD
-        COMMAND "mt.exe" -manifest \"${CMAKE_CURRENT_SOURCE_DIR}/PotatoUpdater.manifest\" -outputresource:$<TARGET_FILE_DIR:PotatoUpdater>/PotatoUpdater.exe\;\#1
-        COMMENT "Adding manifest..."
+    TARGET PotatoUpdater
+    POST_BUILD
+    COMMAND "mt.exe" -manifest \"${CMAKE_CURRENT_SOURCE_DIR}/PotatoUpdater.manifest\" -outputresource:$<TARGET_FILE_DIR:PotatoUpdater>/PotatoUpdater.exe\;\#1
+    COMMENT "Adding manifest..."
 )
 
 include(Packaging)
