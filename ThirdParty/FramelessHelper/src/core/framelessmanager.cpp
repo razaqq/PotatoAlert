@@ -336,11 +336,11 @@ void FramelessManagerPrivate::initialize()
                     << ", aspect style: " << m_wallpaperAspectStyle
                     << '.';
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
-    QStyleHints * const styleHints = QGuiApplication::styleHints();
+    QStyleHints* const styleHints = QGuiApplication::styleHints();
     Q_ASSERT(styleHints);
     if (styleHints) {
-        connect(styleHints, &QStyleHints::appearanceChanged, this, [this](const Qt::Appearance appearance){
-            Q_UNUSED(appearance);
+        connect(styleHints, &QStyleHints::colorSchemeChanged, this, [this](const Qt::ColorScheme colorScheme){
+            Q_UNUSED(colorScheme);
             notifySystemThemeHasChangedOrNot();
         });
     }

@@ -67,7 +67,7 @@ QT_END_NAMESPACE
 #endif
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 7, 0))
-#  define qAsConst(i) std::as_const(i)
+#  define std::as_const(i) std::as_const(i)
 #endif
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 10, 0))

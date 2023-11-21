@@ -216,7 +216,7 @@ void QuickMicaMaterialPrivate::forceRegenerateWallpaperImageCache()
     if (m_nodes.isEmpty()) {
         return;
     }
-    for (auto &&node : qAsConst(m_nodes)) {
+    for (auto &&node : std::as_const(m_nodes)) {
         if (node) {
             node->maybeGenerateWallpaperImageCache(true);
         }

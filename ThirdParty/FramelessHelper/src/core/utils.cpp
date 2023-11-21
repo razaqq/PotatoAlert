@@ -170,7 +170,7 @@ QWindow *Utils::findWindow(const WId windowId)
     if (windows.isEmpty()) {
         return nullptr;
     }
-    for (auto &&window : qAsConst(windows)) {
+    for (auto &&window : std::as_const(windows)) {
         if (window && window->handle()) {
             if (window->winId() == windowId) {
                 return window;
@@ -275,7 +275,7 @@ QColor Utils::calculateSystemButtonBackgroundColor(const SystemButtonType button
 bool Utils::shouldAppsUseDarkMode()
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
-    return (QGuiApplication::styleHints()->appearance() == Qt::Appearance::Dark);
+    return (QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark);
 #elif (QT_VERSION >= QT_VERSION_CHECK(6, 2, 1))
     if (const QPlatformTheme * const theme = QGuiApplicationPrivate::platformTheme()) {
         return (theme->appearance() == QPlatformTheme::Appearance::Dark);
