@@ -15,7 +15,6 @@
 #include "ReplayParser/Result.hpp"
 
 #include <filesystem>
-#include <optional>
 #include <ranges>
 #include <span>
 #include <string>
@@ -217,12 +216,12 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 	} while (!out.empty());
 
 	// sort the packets by game time
-	std::ranges::sort(replay.Packets, [](const PacketType& a, const PacketType& b)
-	{
-		const Packet& aPacket = std::visit([](const auto& x) -> const Packet& { return x; }, a);
-		const Packet& bPacket = std::visit([](const auto& x) -> const Packet& { return x; }, b);
-		return aPacket.Clock < bPacket.Clock;
-	});
+	// std::ranges::sort(replay.Packets, [](const PacketType& a, const PacketType& b)
+	// {
+	// 	const Packet& aPacket = std::visit([](const auto& x) -> const Packet& { return x; }, a);
+	// 	const Packet& bPacket = std::visit([](const auto& x) -> const Packet& { return x; }, b);
+	// 	return aPacket.Clock < bPacket.Clock;
+	// });
 
 	return replay;
 }

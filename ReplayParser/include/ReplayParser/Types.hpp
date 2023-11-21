@@ -96,7 +96,8 @@ struct ArrayType;
 struct FixedDictType;
 struct TupleType;
 struct UnknownType;
-typedef std::variant<PrimitiveType, ArrayType, FixedDictType, TupleType, UnknownType> ArgType;
+struct UserType;
+typedef std::variant<PrimitiveType, ArrayType, FixedDictType, TupleType, UserType, UnknownType> ArgType;
 
 struct ArgValue;
 using ValueVariant = std::variant<
@@ -135,6 +136,11 @@ struct TupleType
 {
 	std::shared_ptr<ArgType> SubType;
 	size_t Size;
+};
+
+struct UserType
+{
+	std::shared_ptr<ArgType> Type;
 };
 
 struct UnknownType {};

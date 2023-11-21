@@ -8,6 +8,7 @@
 
 #include "ReplayParser/Types.hpp"
 
+#include <memory>
 #include <optional>
 #include <span>
 #include <string>
@@ -45,12 +46,11 @@ ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 		{ "VECTOR3", BasicType::Vector3 },
 		{ "BLOB", BasicType::Blob },
 
-		{ "USER_TYPE", BasicType::Blob },  // TODO: these 3 can be parsed better
-		{ "MAILBOX", BasicType::Blob },
+		{ "MAILBOX", BasicType::Blob },  // TODO: these 2 can be parsed better
 		{ "PYTHON", BasicType::Blob },  // TODO end
 	};
 
-	std::string typeName = Core::String::ToUpper(Core::String::Trim(elem->GetText()));
+	const std::string typeName = Core::String::ToUpper(Core::String::Trim(elem->GetText()));
 	if (types.contains(typeName))
 	{
 		return PrimitiveType{ types.at(typeName) };
@@ -121,6 +121,27 @@ ArgType rp::ParseType(XMLElement* elem, const AliasType& aliases)
 		return tuple;
 	}
 
+	if (typeName == "USER_TYPE")
+	{
+		if (XMLElement* typeElem = elem->FirstChildElement("Type"))
+		{
+			const char* text = typeElem->GetText();
+			if (types.contains(text))
+			{
+				return UserType{ std::make_shared<ArgType>(PrimitiveType{ types.at(text) }) };
+			}
+			else if (aliases.contains(text))
+			{
+				return UserType{ std::make_shared<ArgType>(aliases.at(typeName)) };
+			}
+		}
+		else
+		{
+			PrimitiveType type{ BasicType::Blob };
+			return type;
+		}
+	}
+
 	if (aliases.contains(typeName))
 	{
 		return aliases.at(typeName);
@@ -166,6 +187,11 @@ size_t rp::TypeSize(const ArgType& type)
 			size_t size = TypeSize(*arg.SubType);
 			if (size == Infinity) return Infinity;
 			return size * arg.Size;
+		}
+
+		if constexpr (std::is_same_v<T, UserType>)
+		{
+			return Infinity;
 		}
 
 		return Infinity;
@@ -485,6 +511,18 @@ ArgValue rp::ParseValue(std::span<const Byte>& data, const ArgType& type)
 			LOG_ERROR("TupleType encountered in ParseValue");
 			return {};
 		}
+		else if constexpr (std::is_same_v<T, UserType>)
+		{
+			if (const PrimitiveType* prim = std::get_if<PrimitiveType>(&*t.Type))
+			{
+				if (prim->Type == BasicType::Blob)
+				{
+					return ParseValue(data, *t.Type);
+				}
+			}
+			Take(data, 1);
+			return ParseValue(data, *t.Type);
+		}
 		return {};
 	}, type);
 }
@@ -542,6 +580,10 @@ ArgValue rp::GetDefaultValue(const ArgType& type)
 		{
 			LOG_ERROR("TupleType encountered in GetDefault");
 			return {};
+		}
+		else if constexpr (std::is_same_v<T, UserType>)
+		{
+			return GetDefaultValue(*t.Type);
 		}
 
 		return ArgValue{};

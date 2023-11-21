@@ -6,8 +6,10 @@
 
 #include "ReplayParser/BitReader.hpp"
 #include "ReplayParser/PacketParser.hpp"
+#include "ReplayParser/Packets.hpp"
 #include "ReplayParser/Result.hpp"
 
+#include <cstdint>
 #include <optional>
 #include <span>
 #include <unordered_map>
@@ -874,7 +876,7 @@ ReplayResult<PacketType> PotatoAlert::ReplayParser::ParsePacket(std::span<const 
 	if (!TakeInto(data, clock))
 		return PA_REPLAY_ERROR("Packet had invalid size {}", data.size());
 
-	auto raw = Take(data, size);
+	std::span<const Byte> raw = Take(data, size);
 
 	if (IsPacket(PacketBaseType::EntityCreate, type, version))
 		return ParseEntityCreatePacket(raw, parser, clock);
@@ -892,6 +894,8 @@ ReplayResult<PacketType> PotatoAlert::ReplayParser::ParsePacket(std::span<const 
 		return ParsePlayerPositionPacketPacket(raw, parser, clock);
 	if (IsPacket(PacketBaseType::PlayerOrientation, type, version))
 		return ParsePlayerOrientationPacket(raw, parser, clock);
+	if (IsPacket(PacketBaseType::EntityLeave, type, version))
+		return ParseEntityLeavePacket(raw, parser, clock);
 
 #ifndef NDEBUG
 	if (IsPacket(PacketBaseType::Version, type, version))
@@ -900,8 +904,6 @@ ReplayResult<PacketType> PotatoAlert::ReplayParser::ParsePacket(std::span<const 
 		return ParseEntityControlPacket(raw, parser, clock);
 	if (IsPacket(PacketBaseType::EntityEnter, type, version))
 		return ParseEntityEnterPacket(raw, parser, clock);
-	if (IsPacket(PacketBaseType::EntityLeave, type, version))
-		return ParseEntityLeavePacket(raw, parser, clock);
 	if (IsPacket(PacketBaseType::PlayerEntity, type, version))
 		return ParsePlayerEntityPacket(raw, parser, clock);
 	if (IsPacket(PacketBaseType::Camera, type, version))

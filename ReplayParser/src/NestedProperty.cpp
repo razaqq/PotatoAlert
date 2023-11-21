@@ -66,7 +66,7 @@ ReplayResult<PropertyNesting> GetNestedUpdateCommand(bool isSlice, const ArgType
 				const size_t idx1 = bitReader.Get(idxBits);
 				const size_t idx2 = bitReader.Get(idxBits);
 				if (idx1 > idx2)
-					return PA_REPLAY_ERROR("FixedDict ArrayType had idx1 > idx2: {} > {}", idx1, idx2);
+					return PA_REPLAY_ERROR("FixedDict ArrayType has idx1 > idx2: {} > {}", idx1, idx2);
 
 				while (bitReader.Remaining() % 8 != 0)
 				{
@@ -116,7 +116,7 @@ ReplayResult<PropertyNesting> GetNestedUpdateCommand(bool isSlice, const ArgType
 
 				std::span<const Byte> remaining = bitReader.GetAll();
 				if (remaining.empty())
-					return PA_REPLAY_ERROR("FixedDict ArrayType had no data remaining");
+					return PA_REPLAY_ERROR("FixedDict ArrayType has no data remaining");
 
 				std::vector<ArgValue> newValues;
 				while (!remaining.empty())

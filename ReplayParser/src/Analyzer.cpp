@@ -12,6 +12,7 @@
 #include "ReplayParser/Variant.hpp"
 
 #include <any>
+#include <cstdint>
 #include <optional>
 #include <ranges>
 #include <string>
