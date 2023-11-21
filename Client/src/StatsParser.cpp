@@ -345,7 +345,7 @@ struct Player
 		if (fontShadow)
 			AddShadow(nameLabel);
 
-		if (Karma && showKarma)
+		if (Karma && showKarma && !HiddenPro)
 		{
 			QHBoxLayout* karmaLayout = new QHBoxLayout();
 			karmaLayout->setSpacing(0);
