@@ -17,13 +17,15 @@ namespace rapidjson {
 #include <rapidjson/writer.h>
 
 #include <array>
+#include <cstdint>
 #include <expected>
 #include <ranges>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
-#ifdef _MSC_VER
+#ifdef WIN32
 	#undef GetObject
 #endif
 
@@ -293,7 +295,14 @@ template<is_deserializable Key, is_deserializable Value>
 static inline JsonResult<void> FromJsonImpl(std::unordered_map<Key, Value>& map, const rapidjson::Value& key, const rapidjson::Value& value)
 {
 	Key k;
-	FromJson(key, k);
+	if constexpr (std::is_enum_v<Key>)
+	{
+		FromJson(key, k);
+	}
+	else
+	{
+		k = FromJson<Key>(key);
+	}
 
 	if constexpr (is_primitive_serializable<Value>)
 	{
@@ -314,13 +323,11 @@ static inline JsonResult<void> FromJsonImpl(std::unordered_map<Key, Value>& map,
 template<is_deserializable Key, is_deserializable Value>
 static inline JsonResult<void> FromJson(const rapidjson::Value& j, std::unordered_map<Key, Value>& map)
 {
-	static_assert(std::is_enum_v<Key>);
-
 	if (j.IsObject())
 	{
 		for (const auto& m : j.GetObject())
 		{
-			FromJsonImpl(map, m.name, m.value);
+			PA_TRYV(FromJsonImpl(map, m.name, m.value));
 		}
 		return {};
 	}
@@ -333,7 +340,7 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& j, std::unordere
 				return PA_JSON_ERROR("JSON for std::unordered_map is type array but size was != 2");
 			}
 
-			FromJsonImpl(map, m[0], m[1]);
+			PA_TRYV(FromJsonImpl(map, m[0], m[1]));
 		}
 		return {};
 	}
@@ -389,6 +396,32 @@ static inline bool FromJson(const rapidjson::Value& j, std::vector<Value>& vec)
 			if (!FromJson(j[i], v))
 				return false;
 			vec.emplace_back(v);
+		}
+	}
+	return true;
+}
+
+template<is_deserializable Value>
+static inline bool FromJson(const rapidjson::Value& j, std::unordered_set<Value>& set)
+{
+	if (!j.IsArray())
+		return false;
+
+	const auto value = j.GetArray();
+	size_t size = value.Size();
+	set.reserve(size);
+	for (size_t i = 0; i < size; i++)
+	{
+		if constexpr (is_primitive_serializable<Value>)
+		{
+			set.emplace(FromJson<Value>(j[i]));
+		}
+		else
+		{
+			Value v;
+			if (!FromJson(j[i], v))
+				return false;
+			set.emplace(v);
 		}
 	}
 	return true;
