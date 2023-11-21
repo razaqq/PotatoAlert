@@ -284,7 +284,7 @@ void Config::Validate()
 			|| IsType(key, ConfigType::TableLayout) && !m_json[name.data()].IsString()
 			|| IsType(key, ConfigType::TeamStatsMode) && !m_json[name.data()].IsString())
 		{
-			LOG_WARN("Config key '{}' was not of expected type, setting to default value", name);
+			LOG_WARN("Config key '{}' is not of expected type, setting to default value", name);
 			m_json[name.data()] = g_defaultConfig[name.data()];
 		}
 

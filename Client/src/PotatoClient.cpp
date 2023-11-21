@@ -247,7 +247,7 @@ void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& ma
 
 			if (!json.HasMember("AuthToken"))
 			{
-				LOG_ERROR("Server response did not include an auth token");
+				LOG_ERROR("Server response does not include an auth token");
 				emit StatusReady(Status::Error, "Auth Error");
 				return;
 			}
@@ -512,7 +512,7 @@ void PotatoClient::OnFileChanged(const std::filesystem::path& file)
 
 	if (!File::Exists(file))
 	{
-		LOG_TRACE("Arena info did not exist when directory changed.");
+		LOG_TRACE("Arena info does not exist when directory changed.");
 		return;
 	}
 

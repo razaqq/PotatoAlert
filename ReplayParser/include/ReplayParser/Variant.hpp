@@ -48,7 +48,7 @@ static constexpr ReplayResult<void> VariantGet(const EntityMethodPacket& packet,
 	}
 	else
 	{
-		return PA_REPLAY_ERROR("ValueType (index {}) for EntityMethodPacket '{}' did not match '{}' and instead was '{}'",
+		return PA_REPLAY_ERROR("ValueType (index {}) for EntityMethodPacket '{}' does not match '{}' and instead was '{}'",
 				  index, packet.MethodName, typeid(T).name(), VariantType(packet.Values[index]).name());
 	}
 }

@@ -132,7 +132,7 @@ ReplayResult<PropertyNesting> GetNestedUpdateCommand(bool isSlice, const ArgType
 		}
 		else
 		{
-			return PA_REPLAY_ERROR("Nested Property was neither FixedDictType nor ArrayType, but instead '{}'", typeid(T).name());
+			return PA_REPLAY_ERROR("Nested Property is neither FixedDictType nor ArrayType, but instead '{}'", typeid(T).name());
 		}
 	}, argType);
 }
@@ -165,7 +165,7 @@ ReplayResult<PropertyNesting> rp::GetNestedPropertyPath(bool isSlice, const ArgT
 					newArgValue = &value.at(prop.Name);
 					return {};
 				}
-				return PA_REPLAY_ERROR("Nested Property Path did not contain property named ''", prop.Name);
+				return PA_REPLAY_ERROR("Nested Property Path does not contain property named ''", prop.Name);
 			});
 			if (!setRes)
 				return ReplayResult<PropertyNesting>{ Core::ResultError, ReplayError(setRes.error()) };
@@ -199,7 +199,7 @@ ReplayResult<PropertyNesting> rp::GetNestedPropertyPath(bool isSlice, const ArgT
 		}
 		else
 		{
-			return PA_REPLAY_ERROR("Nested Property was neither FixedDictType nor ArrayType, but instead '{}'", typeid(T).name());
+			return PA_REPLAY_ERROR("Nested Property is neither FixedDictType nor ArrayType, but instead '{}'", typeid(T).name());
 		}
 	}, argType);
 }

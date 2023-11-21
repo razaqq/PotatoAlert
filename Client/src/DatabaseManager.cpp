@@ -648,7 +648,7 @@ SqlResult<bool> DatabaseManager::MatchExists(std::string_view hash) const
 		{
 			return exists;
 		}
-		return PA_SQL_ERROR("Result was not a bool");
+		return PA_SQL_ERROR("Result is not a bool");
 	}
-	return PA_SQL_ERROR("Result had no row");
+	return PA_SQL_ERROR("Result has no row");
 }

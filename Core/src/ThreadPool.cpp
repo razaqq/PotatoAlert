@@ -71,7 +71,7 @@ void ThreadPool::StartWorker(size_t id, const std::unique_lock<std::mutex>& lock
 					// downsize the workers vector as much as possible
 					while (!m_threads.empty() && !m_threads.back().joinable())
 						m_threads.pop_back();
-					// if this is was last worker, notify the destructor
+					// if this is last worker, notify the destructor
 					if (m_threads.empty())
 						m_conditionConsumers.notify_all();
 					return;

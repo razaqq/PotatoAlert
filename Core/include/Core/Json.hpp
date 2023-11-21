@@ -330,14 +330,14 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& j, std::unordere
 		{
 			if (m.Size() != 2)
 			{
-				return PA_JSON_ERROR("JSON for std::unordered_map was array but size was != 2");
+				return PA_JSON_ERROR("JSON for std::unordered_map is type array but size was != 2");
 			}
 
 			FromJsonImpl(map, m[0], m[1]);
 		}
 		return {};
 	}
-	return PA_JSON_ERROR("JSON for std::unordered_map was neither object nor array");
+	return PA_JSON_ERROR("JSON for std::unordered_map is neither of type object nor array");
 }
 
 template<is_deserializable Value, size_t Size>
@@ -435,17 +435,17 @@ static inline JsonResult<T> FromJson(const rapidjson::Value& json, std::string_v
 	if constexpr (is_bool<D>)
 	{
 		if (!json[key.data()].IsBool())
-			return PA_JSON_ERROR("Json value '{}' was not of type 'bool'", key);
+			return PA_JSON_ERROR("Json value '{}' is not of type 'bool'", key);
 	}
 	else if constexpr (is_number<D>)
 	{
 		if (!json[key.data()].IsNumber())
-			return PA_JSON_ERROR("Json value '{}' was not of type '{}'", key, typeid(D).name());
+			return PA_JSON_ERROR("Json value '{}' is not of type '{}'", key, typeid(D).name());
 	}
 	else if constexpr (is_string<D>)
 	{
 		if (!json[key.data()].IsString())
-			return PA_JSON_ERROR("Json value '{}' was not of type '{}'", key, typeid(D).name());
+			return PA_JSON_ERROR("Json value '{}' is not of type '{}'", key, typeid(D).name());
 	}
 	else
 	{
@@ -465,17 +465,17 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 	if constexpr (is_string<D>)
 	{
 		if (!json[key.data()].IsString())
-			return PA_JSON_ERROR("Json value '{}' was not of type '{}'", key, typeid(D).name());
+			return PA_JSON_ERROR("Json value '{}' is not of type '{}'", key, typeid(D).name());
 	}
 	else if constexpr (is_number<D>)
 	{
 		if (!json[key.data()].IsNumber())
-			return PA_JSON_ERROR("Json value '{}' was not of type '{}'", key, typeid(D).name());
+			return PA_JSON_ERROR("Json value '{}' is not of type '{}'", key, typeid(D).name());
 	}
 	else
 	{
 		if (!json.Is<D>())
-			return PA_JSON_ERROR("Json value '{}' was not of type '{}'", key, typeid(D).name());
+			return PA_JSON_ERROR("Json value '{}' is not of type '{}'", key, typeid(D).name());
 	}
 	
 	v = Core::FromJson<T>(json[key.data()]);
