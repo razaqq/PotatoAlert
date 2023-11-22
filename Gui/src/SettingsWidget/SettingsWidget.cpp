@@ -46,6 +46,8 @@ SettingsWidget::SettingsWidget(const Client::ServiceProvider& serviceProvider, Q
 
 void SettingsWidget::Init()
 {
+	setMinimumHeight(580);
+
 	qApp->installEventFilter(this);
 
 	QHBoxLayout* horLayout = new QHBoxLayout();
@@ -94,7 +96,7 @@ void SettingsWidget::Init()
 
 	gamePathLayout->addStretch();
 
-	m_gamePathEdit->setFixedSize(278, ROW_HEIGHT);
+	m_gamePathEdit->setFixedSize(LABEL_WIDTH - 2, ROW_HEIGHT);
 	m_gamePathEdit->setReadOnly(true);
 	m_gamePathEdit->setFocusPolicy(Qt::NoFocus);
 	gamePathLayout->addWidget(m_gamePathEdit, 0, Qt::AlignVCenter | Qt::AlignRight);
@@ -158,6 +160,16 @@ void SettingsWidget::Init()
 	fontShadowLayout->addWidget(m_fontShadow, 0, Qt::AlignVCenter | Qt::AlignRight);
 	layout->addLayout(fontShadowLayout);
 	/* FONT SHADOW */
+
+	/* ANONYMIZE PLAYER NAMES IN SCREENSHOTS */
+	QHBoxLayout* anonymizePlayersLayout = new QHBoxLayout();
+	m_anonymizePlayersLabel->setFont(labelFont);
+	m_anonymizePlayersLabel->setFixedWidth(LABEL_WIDTH);
+	m_anonymizePlayersLabel->setWordWrap(true);
+	anonymizePlayersLayout->addWidget(m_anonymizePlayersLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
+	anonymizePlayersLayout->addWidget(m_anonymizePlayers, 0, Qt::AlignVCenter | Qt::AlignRight);
+	layout->addLayout(anonymizePlayersLayout);
+	/* ANONYMIZE PLAYER NAMES IN SCREENSHOTS */
 
 	layout->addWidget(new HorizontalLine(centralWidget));
 
@@ -255,6 +267,7 @@ void SettingsWidget::Load() const
 	m_saveMatchCsv->setChecked(config.Get<ConfigKey::SaveMatchCsv>());
 	m_showKarma->setChecked(config.Get<ConfigKey::ShowKarma>());
 	m_fontShadow->setChecked(config.Get<ConfigKey::FontShadow>());
+	m_anonymizePlayers->setChecked(config.Get<ConfigKey::AnonymizePlayers>());
 }
 
 void SettingsWidget::ConnectSignals()
@@ -292,6 +305,10 @@ void SettingsWidget::ConnectSignals()
 	connect(m_fontShadow, &SettingsSwitch::clicked, [this, &config](bool checked)
 	{
 		config.Set<ConfigKey::FontShadow>(checked);
+	});
+	connect(m_anonymizePlayers, &SettingsSwitch::clicked, [this, &config](bool checked)
+	{
+		config.Set<ConfigKey::AnonymizePlayers>(checked);
 	});
 	connect(m_statsMode->GetButtonGroup(), &QButtonGroup::idClicked, [this, &config](int id)
 	{
@@ -365,6 +382,7 @@ bool SettingsWidget::eventFilter(QObject* watched, QEvent* event)
 		m_cancelButton->setText(GetString(lang, StringTableKey::SETTINGS_CANCEL));
 		m_showKarmaLabel->setText(GetString(lang, StringTableKey::SETTINGS_SHOW_KARMA));
 		m_fontShadowLabel->setText(GetString(lang, StringTableKey::SETTINGS_FONT_SHADOW));
+		m_anonymizePlayersLabel->setText(GetString(lang, StringTableKey::SETTINGS_ANONYMIZE_PLAYER_NAMES_SCREENSHOT));
 	}
 	return QWidget::eventFilter(watched, event);
 }

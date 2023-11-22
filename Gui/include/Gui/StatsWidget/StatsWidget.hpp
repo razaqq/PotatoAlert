@@ -31,6 +31,7 @@ public:
 	void Update(const MatchType& match) const;
 	void SetStatus(Client::Status status, std::string_view statusText) const;
 	void UpdateTableLayout();
+	QList<QRect> GetPlayerColumnRects(QWidget* parent) const;
 
 private:
 	void AddTables();

@@ -163,6 +163,13 @@
         <繁體中文>字體陰影</繁體中文>
         <日本語>フォントの影</日本語>
     </Key>
+    <Key ID="SETTINGS_ANONYMIZE_PLAYER_NAMES_SCREENSHOT">
+        <English>Anonymize Player Names in Screenshots</English>
+        <Deutsch>Spielernamen in Screenshots anonymisieren</Deutsch>
+        <简体中文>匿名化屏幕截图中的玩家姓名</简体中文>
+        <繁體中文>匿名化螢幕截圖中的玩家姓名</繁體中文>
+        <日本語>スクリーンショット内のプレイヤー名を匿名化する</日本語>
+    </Key>
 
     <!-- STATS TABLES -->
     <Key ID="LABEL_WINRATE">

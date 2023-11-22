@@ -89,3 +89,11 @@ void StatsWidget::UpdateTableLayout()
 	RemoveTables();
 	AddTables();
 }
+
+QList<QRect> StatsWidget::GetPlayerColumnRects(QWidget* parent) const
+{
+	return {
+		m_team1->GetPlayerColumnRect(parent),
+		m_team2->GetPlayerColumnRect(parent)
+	};
+}

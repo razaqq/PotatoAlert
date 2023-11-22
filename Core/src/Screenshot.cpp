@@ -6,6 +6,10 @@
 #include "Core/Screenshot.hpp"
 #include "Core/Time.hpp"
 
+#include <QGraphicsBlurEffect>
+#include <QGraphicsPixmapItem>
+#include <QGraphicsScene>
+#include <QGraphicsView>
 #include <QWidget>
 
 #include <filesystem>
@@ -25,13 +29,43 @@ static std::string GetFileName()
 
 }
 
-bool PotatoAlert::Core::CaptureScreenshot(QWidget* window, const fs::path& dir)
+bool PotatoAlert::Core::CaptureScreenshot(QWidget* window, const fs::path& dir, const QList<QRect>& blurRects)
 {
 	if (!window)
 		return false;
 
 	QPixmap pix(window->size());
 	window->render(&pix);
+
+	if (!blurRects.empty())
+	{
+		QGraphicsScene* scene = new QGraphicsScene();
+		scene->addPixmap(pix);
+
+		QGraphicsBlurEffect* effect = new QGraphicsBlurEffect();
+		effect->setBlurHints(QGraphicsBlurEffect::BlurHint::QualityHint);
+		effect->setBlurRadius(15);
+
+		QGraphicsScene* blurScene = new QGraphicsScene();
+		QGraphicsPixmapItem* pixItem = blurScene->addPixmap(pix);
+		pixItem->setGraphicsEffect(effect);
+		QGraphicsView* blurView = new QGraphicsView(blurScene);
+		blurView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+		blurView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+		const QPixmap blurPix = blurView->grab(blurView->sceneRect().toRect());
+
+		for (const QRect& r : blurRects)
+		{
+			QGraphicsPixmapItem* item = scene->addPixmap(blurPix.copy(r));
+			item->setOffset(r.topLeft());
+		}
+
+		QGraphicsView* view = new QGraphicsView(scene);
+		view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+		view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+		pix = view->grab(view->sceneRect().toRect());
+	}
+
 	const std::string fileName = GetFileName();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	if (pix.save(QDir(dir).absoluteFilePath(fileName.c_str()), "PNG", 100))

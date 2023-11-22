@@ -28,6 +28,7 @@ public:
 
 	void Update(const Team& team);
 	void SetStatus(Client::Status status, std::string_view text) const;
+	QRect GetPlayerColumnRect(QWidget* parent) const;
 
 private:
 	Side m_side;

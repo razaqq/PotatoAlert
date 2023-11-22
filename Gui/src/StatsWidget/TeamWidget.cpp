@@ -89,3 +89,12 @@ void TeamWidget::SetStatus(Client::Status status, std::string_view text) const
 		dynamic_cast<StatsHeaderFriendly*>(m_header)->SetStatus(status, text);
 	}
 }
+
+QRect TeamWidget::GetPlayerColumnRect(QWidget* parent) const
+{
+	const QRect rectTop = m_table->visualRect(m_table->model()->index(0, 0));
+	const QRect rectBottom = m_table->visualRect(m_table->model()->index(m_table->rowCount() - 1, 0));
+	const QPoint tl = m_table->viewport()->mapTo(parent, rectTop.topLeft());
+	const QPoint br = m_table->viewport()->mapTo(parent, rectBottom.bottomRight());
+	return { tl, br };
+}

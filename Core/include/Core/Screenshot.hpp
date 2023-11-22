@@ -8,6 +8,6 @@
 
 namespace PotatoAlert::Core {
 
-bool CaptureScreenshot(QWidget* window, const std::filesystem::path& dir);
+bool CaptureScreenshot(QWidget* window, const std::filesystem::path& dir, const QList<QRect>& blurRects = {});
 
 }  // namespace PotatoAlert::Core

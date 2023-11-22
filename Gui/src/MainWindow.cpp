@@ -27,9 +27,6 @@ using namespace PotatoAlert::Client::StringTable;
 using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Gui::MainWindow;
-using PotatoAlert::Gui::MatchHistory;
-using PotatoAlert::Gui::QuestionAnswer;
-using PotatoAlert::Gui::QuestionDialog;
 
 MainWindow::MainWindow(const Client::ServiceProvider& serviceProvider)
 	: QMainWindow(), m_services(serviceProvider)
@@ -105,8 +102,9 @@ void MainWindow::SwitchTab(MenuEntry i)
 		}
 		case MenuEntry::Screenshot:
 		{
-			const auto screenshotDir = m_services.Get<Client::AppDirectories>().ScreenshotsDir;
-			Core::CaptureScreenshot(window(), screenshotDir);
+			const bool doBlur = m_activeWidget == m_statsWidget && m_services.Get<Config>().Get<ConfigKey::AnonymizePlayers>();
+			const fs::path screenshotDir = m_services.Get<Client::AppDirectories>().ScreenshotsDir;
+			Core::CaptureScreenshot(window(), screenshotDir, doBlur ? m_statsWidget->GetPlayerColumnRects(dynamic_cast<QWidget*>(parent())) : QList<QRect>());
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(screenshotDir).absolutePath()));
 #else

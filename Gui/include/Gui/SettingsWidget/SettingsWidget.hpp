@@ -36,6 +36,7 @@ private:
 	QLabel* m_fontShadowLabel = new QLabel();
 	QLabel* m_tableLayoutLabel = new QLabel();
 	QLabel* m_languageLabel = new QLabel();
+	QLabel* m_anonymizePlayersLabel = new QLabel();
 
 	SettingsSwitch* m_updates = new SettingsSwitch();
 	SettingsSwitch* m_minimizeTray = new SettingsSwitch();
@@ -43,6 +44,7 @@ private:
 	SettingsSwitch* m_matchHistory = new SettingsSwitch();
 	SettingsSwitch* m_showKarma = new SettingsSwitch();
 	SettingsSwitch* m_fontShadow = new SettingsSwitch();
+	SettingsSwitch* m_anonymizePlayers = new SettingsSwitch();
 
 	SettingsChoice* m_statsMode;
 	SettingsChoice* m_teamDamageMode;
