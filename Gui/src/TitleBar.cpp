@@ -1,6 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Gui/TitleBar.hpp"
+#include "Gui/Fonts.hpp"
 
 #include <QEvent>
 #include <QHBoxLayout>
@@ -95,6 +96,10 @@ bool TitleBar::eventFilter(QObject* object, QEvent* event)
 
 		m_btnMaximize->setAttribute(Qt::WA_UnderMouse, false);
 		m_btnRestore->setAttribute(Qt::WA_UnderMouse, false);
+	}
+	else if (event->type() == QEvent::ApplicationFontChange)
+	{
+		UpdateLayoutFont(layout());
 	}
 	QWidget::eventFilter(object, event);
 	return false;

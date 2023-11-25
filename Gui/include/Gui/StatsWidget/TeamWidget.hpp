@@ -2,7 +2,6 @@
 #pragma once
 
 #include "Client/PotatoClient.hpp"
-#include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
 
 #include "Gui/StatsWidget/StatsTable.hpp"
@@ -29,6 +28,7 @@ public:
 	void Update(const Team& team);
 	void SetStatus(Client::Status status, std::string_view text) const;
 	QRect GetPlayerColumnRect(QWidget* parent) const;
+	bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
 	Side m_side;

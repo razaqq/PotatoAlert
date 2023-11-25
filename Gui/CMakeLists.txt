@@ -48,6 +48,7 @@ target_sources(
     include/Gui/NativeWindow.hpp
     include/Gui/Pagination.hpp
     include/Gui/ReplaySummary.hpp
+    include/Gui/SettingsWidget/SettingsChoice.hpp
     include/Gui/SettingsWidget/SettingsChoiceButton.hpp
     include/Gui/SettingsWidget/SettingsSwitch.hpp
     include/Gui/SettingsWidget/SettingsWidget.hpp

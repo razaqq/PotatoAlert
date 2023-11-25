@@ -145,7 +145,7 @@ QVariant MatchHistoryModel::headerData(int section, Qt::Orientation orientation,
 		}
 		case Qt::FontRole:
 		{
-			return QFont("Segoe UI", 11);
+			return QFont(QApplication::font().family(), 11);
 		}
 		default:
 		{

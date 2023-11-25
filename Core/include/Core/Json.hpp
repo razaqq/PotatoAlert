@@ -223,22 +223,18 @@ static inline T FromJson(const rapidjson::Value& v)
 	return t;
 }
 
-static inline rapidjson::Value ToJson(std::string_view str)
+static inline rapidjson::Value ToJson(std::string_view str, rapidjson::MemoryPoolAllocator<>& allocator)
 {
-	rapidjson::Value value;
-	value = value.SetString(str.data(), str.size());
-	return value;
+	return { str.data(), str.size(), allocator };
 }
 
-static inline rapidjson::Value ToJson(bool v)
+static inline rapidjson::Value ToJson(bool v, rapidjson::MemoryPoolAllocator<>& allocator)
 {
-	rapidjson::Value value;
-	value = value.SetBool(v);
-	return value;
+	return rapidjson::Value(v);
 }
 
 template<is_number T>
-static inline rapidjson::Value ToJson(T t)
+static inline rapidjson::Value ToJson(T t, rapidjson::MemoryPoolAllocator<>& allocator)
 {
 	rapidjson::Value value;
 

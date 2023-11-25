@@ -1,6 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include <QEvent>
 #include <QWidget>
 
 
@@ -10,6 +11,8 @@ class AboutWidget : public QWidget
 {
 public:
 	explicit AboutWidget(QWidget* parent = nullptr);
+	bool eventFilter(QObject* watched, QEvent* event) override;
+
 private:
 	void Init();
 };

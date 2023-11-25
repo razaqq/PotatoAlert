@@ -3,8 +3,6 @@
 
 #include "Core/StandardPaths.hpp"
 
-#include "Gui/MatchHistory/MatchHistoryModel.hpp"
-
 #include <QApplication>
 #include <QAbstractItemModel>
 #include <QAbstractItemDelegate>

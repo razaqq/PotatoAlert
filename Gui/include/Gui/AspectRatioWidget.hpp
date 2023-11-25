@@ -4,8 +4,8 @@
 #include <QWidget>
 #include <QHBoxLayout>
 
-#include <QDebug>
 #include <QResizeEvent>
+
 
 namespace PotatoAlert::Gui {
 

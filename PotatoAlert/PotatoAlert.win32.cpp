@@ -9,6 +9,7 @@
 #include "Client/AppDirectories.hpp"
 #include "Client/Config.hpp"
 #include "Client/DatabaseManager.hpp"
+#include "Client/FontLoader.hpp"
 #include "Client/ServiceProvider.hpp"
 #include "Client/ReplayAnalyzer.hpp"
 
@@ -27,14 +28,16 @@
 #include "win32.h"
 
 #include <QApplication>
-#include <QFile>
 #include <QEvent>
+#include <QFile>
+#include <QFontDatabase>
 
 
 using PotatoAlert::Client::AppDirectories;
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Client::DatabaseManager;
+using PotatoAlert::Client::LoadFonts;
 using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Client::ReplayAnalyzer;
 using PotatoAlert::Client::ServiceProvider;
@@ -101,8 +104,14 @@ static int RunMain(int argc, char* argv[])
 	QApplication::setPalette(DarkPalette());
 	app.setStyleSheet(style);
 
-	auto mainWindow = new MainWindow(serviceProvider);
-	auto nativeWindow = new NativeWindow(serviceProvider, mainWindow);
+	LoadFonts();
+	QFont font(QString::fromStdString(config.Get<ConfigKey::Font>()), 9);
+	font.setLetterSpacing(QFont::PercentageSpacing, 0);
+	font.setStyleStrategy(QFont::PreferAntialias);
+	QApplication::setFont(font);
+
+	MainWindow* mainWindow = new MainWindow(serviceProvider);
+	NativeWindow* nativeWindow = new NativeWindow(serviceProvider, mainWindow);
 
 	nativeWindow->show();
 

@@ -54,6 +54,7 @@ enum class ConfigKey : uint64_t
 	DECL_TYPE(Language,                 ConfigType::Int,           5),
 	DECL_TYPE(WindowState,              ConfigType::Int,           6),
 	DECL_TYPE(GameDirectory,            ConfigType::Path,          1),
+	DECL_TYPE(Font,                     ConfigType::String,        1),
 };
 
 static constexpr bool IsType(ConfigKey key, ConfigType type)
@@ -165,7 +166,7 @@ private:
 		}
 		else
 		{
-			m_json[GetKeyName(Key).data()] = Core::ToJson(value);
+			m_json[GetKeyName(Key).data()] = Core::ToJson(value, m_json.GetAllocator());
 		}
 	}
 

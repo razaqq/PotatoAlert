@@ -170,6 +170,27 @@
         <繁體中文>匿名化螢幕截圖中的玩家姓名</繁體中文>
         <日本語>スクリーンショット内のプレイヤー名を匿名化する</日本語>
     </Key>
+    <Key ID="SETTINGS_FONT">
+        <English>Font</English>
+        <Deutsch>Schriftart</Deutsch>
+        <简体中文>字体</简体中文>
+        <繁體中文>字體</繁體中文>
+        <日本語>フォント</日本語>
+    </Key>
+    <Key ID="SETTINGS_GENERAL">
+        <English>General</English>
+        <Deutsch>Allgemein</Deutsch>
+        <简体中文>常规</简体中文>
+        <繁體中文>常規</繁體中文>
+        <日本語>般</日本語>
+    </Key>
+    <Key ID="SETTINGS_DISPLAY">
+        <English>Display</English>
+        <Deutsch>Ansicht</Deutsch>
+        <简体中文>显示</简体中文>
+        <繁體中文>顯示</繁體中文>
+        <日本語>表示</日本語>
+    </Key>
 
     <!-- STATS TABLES -->
     <Key ID="LABEL_WINRATE">

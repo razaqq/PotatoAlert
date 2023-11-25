@@ -21,17 +21,6 @@ class MatchHistory : public QWidget
 {
 	Q_OBJECT
 
-private:
-	const Client::ServiceProvider& m_services;
-	QPushButton* m_deleteButton = new QPushButton();
-	MatchHistoryView* m_view;
-	MatchHistoryModel* m_model;
-	MatchHistorySortFilter* m_sortFilter;
-	QLabel* m_entryCount = new QLabel();
-	Pagination* m_pagination = new Pagination();
-	int m_page = 0;
-	int m_entriesPerPage = 100;
-
 public:
 	explicit MatchHistory(const Client::ServiceProvider& serviceProvider, QWidget* parent = nullptr);
 
@@ -45,6 +34,17 @@ public:
 private:
 	void LoadMatches() const;
 	void Refresh() const;
+
+private:
+	const Client::ServiceProvider& m_services;
+	QPushButton* m_deleteButton = new QPushButton();
+	MatchHistoryView* m_view;
+	MatchHistoryModel* m_model;
+	MatchHistorySortFilter* m_sortFilter;
+	QLabel* m_entryCount = new QLabel();
+	Pagination* m_pagination = new Pagination();
+	int m_page = 0;
+	int m_entriesPerPage = 100;
 
 signals:
 	void ReplaySelected(const Client::StatsParser::MatchType& match);

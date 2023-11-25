@@ -2,6 +2,7 @@
 
 #include "Gui/SettingsWidget/SettingsChoice.hpp"
 
+#include <QApplication>
 #include <QButtonGroup>
 #include <QFont>
 #include <QHBoxLayout>
@@ -32,24 +33,27 @@ void SettingsChoice::Init(Iterator begin, Iterator end)
 {
 	setObjectName("settingsChoice");
 
-	auto layout = new QHBoxLayout();
+	QHBoxLayout* layout = new QHBoxLayout();
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(1);
 
 	setCursor(Qt::PointingHandCursor);
 	setFixedHeight(WIDGET_HEIGHT);
 
-	m_btnGroup = new QButtonGroup(this);
 	m_btnGroup->setExclusive(true);
 
-	// QFont btnFont("Helvetica Neue", 10, QFont::DemiBold);
-	QFont btnFont("Noto Sans", 10, QFont::DemiBold);
+	connect(m_btnGroup, &QButtonGroup::idClicked, [this](int index)
+	{
+		emit CurrentIndexChanged(index);
+	});
+
+	QFont btnFont(QApplication::font().family(), 10, QFont::Bold);
 	btnFont.setStyleStrategy(QFont::PreferAntialias);
 
 	size_t i = 0;
 	for (auto it = begin; it != end; it++)
 	{
-		auto button = new SettingsChoiceButton(*it, this);
+		SettingsChoiceButton* button = new SettingsChoiceButton(*it, this);
 
 		static constexpr const char* PosProp = "GroupPosition";
 		if (it == begin)
@@ -64,9 +68,6 @@ void SettingsChoice::Init(Iterator begin, Iterator end)
 		button->setObjectName("settingsChoiceButton");
 		button->setMinimumWidth(5);
 		button->setFont(btnFont);
-		button->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
-		int width = button->fontMetrics().boundingRect(*it).width() + 10;
-		button->setFixedWidth(width);
 		button->setFixedHeight(WIDGET_HEIGHT);
 		button->setFlat(true);
 		button->setCheckable(true);
@@ -77,4 +78,9 @@ void SettingsChoice::Init(Iterator begin, Iterator end)
 	}
 
 	setLayout(layout);
+}
+
+void SettingsChoice::SetCurrentIndex(int index) const
+{
+	m_btnGroup->button(index)->setChecked(true);
 }

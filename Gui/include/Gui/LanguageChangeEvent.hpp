@@ -9,7 +9,7 @@ namespace PotatoAlert::Gui {
 class LanguageChangeEvent : public QEvent
 {
 public:
-	LanguageChangeEvent(int lang) : QEvent(RegisteredType()), m_language(lang) {}
+	explicit LanguageChangeEvent(int lang) : QEvent(RegisteredType()), m_language(lang) {}
 	[[nodiscard]] int GetLanguage() const { return m_language; }
 	static Type RegisteredType() { return m_type; }
 

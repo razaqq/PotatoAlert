@@ -10,7 +10,8 @@ using PotatoAlert::Gui::HorizontalLine;
 
 HorizontalLine::HorizontalLine(QWidget* parent) : QFrame(parent)
 {
-	this->setObjectName("hLine");
-	this->setFrameShape(QFrame::HLine);
-	this->setFrameShadow(QFrame::Plain);
+	setObjectName("hLine");
+	setFrameShape(QFrame::HLine);
+	setFrameShadow(QFrame::Plain);
+	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 }

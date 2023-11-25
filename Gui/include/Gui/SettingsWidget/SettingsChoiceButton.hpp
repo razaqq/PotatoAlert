@@ -1,11 +1,13 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include <QApplication>
 #include <QColor>
 #include <QPalette>
 #include <QPropertyAnimation>
 #include <QPushButton>
 #include <QString>
+
 
 namespace PotatoAlert::Gui {
 
@@ -16,6 +18,10 @@ class SettingsChoiceButton : public QPushButton
 public:
 	SettingsChoiceButton(const QString& text, QWidget* parent) : QPushButton(text, parent)
 	{
+		qApp->installEventFilter(this);
+
+		setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+
 		m_colorNormal = palette().color(QPalette::Base);
 		m_colorSelected = palette().color(QPalette::Highlight);
 		m_anim->setDuration(200);
@@ -41,6 +47,17 @@ public:
 	void SetColor(const QColor& color)
 	{
 		setStyleSheet(std::format("background-color: rgb({}, {}, {})", color.red(), color.green(), color.blue()).c_str());
+	}
+
+	bool eventFilter(QObject* watched, QEvent* event) override
+	{
+		if (event->type() == QEvent::FontChange)
+		{
+			const int width = fontMetrics().boundingRect(text()).width() + 10;
+			setFixedWidth(width);
+		}
+
+		return QPushButton::eventFilter(watched, event);
 	}
 
 	[[nodiscard]] QColor GetColor() const

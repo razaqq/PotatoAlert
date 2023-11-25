@@ -1,14 +1,15 @@
 // Copyright 2022 <github.com/razaqq>
 
-#include <Client/Config.hpp>
-#include <Client/DatabaseManager.hpp>
-#include <Client/ServiceProvider.hpp>
-#include <Client/StatsParser.hpp>
+#include "Client/Config.hpp"
+#include "Client/DatabaseManager.hpp"
+#include "Client/ServiceProvider.hpp"
+#include "Client/StatsParser.hpp"
 #include "Client/StringTable.hpp"
 
 #include "Core/Instrumentor.hpp"
 #include "Core/Log.hpp"
 
+#include "Gui/Fonts.hpp"
 #include "Gui/LanguageChangeEvent.hpp"
 #include "Gui/MatchHistory/MatchHistory.hpp"
 #include "Gui/QuestionDialog.hpp"
@@ -30,7 +31,6 @@ using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Client::DatabaseManager;
 using PotatoAlert::Client::StatsParser::MatchContext;
 using PotatoAlert::Client::StatsParser::ParseMatch;
-using PotatoAlert::Client::StatsParser::StatsParseResult;
 using PotatoAlert::Client::StringTable::GetString;
 using PotatoAlert::Client::StringTable::StringTableKey;
 using PotatoAlert::Gui::MatchHistory;
@@ -221,6 +221,10 @@ bool MatchHistory::eventFilter(QObject* watched, QEvent* event)
 	{
 		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
 		m_deleteButton->setText(GetString(lang, StringTableKey::HISTORY_DELETE));
+	}
+	else if (event->type() == QEvent::ApplicationFontChange)
+	{
+		UpdateLayoutFont(layout());
 	}
 	return QWidget::eventFilter(watched, event);
 }

@@ -3,12 +3,13 @@
 #include "Client/PotatoClient.hpp"
 #include "Client/ServiceProvider.hpp"
 
-#include "Gui/LanguageChangeEvent.hpp"
+#include "Gui/Fonts.hpp"
 #include "Gui/StatsWidget/StatsHeader.hpp"
 #include "Gui/StatsWidget/StatsTable.hpp"
 #include "Gui/StatsWidget/StatsTeamFooter.hpp"
 #include "Gui/StatsWidget/TeamWidget.hpp"
 
+#include <QApplication>
 #include <QDesktopServices>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -21,6 +22,8 @@ using PotatoAlert::Gui::TeamWidget;
 TeamWidget::TeamWidget(Side side, QWidget* parent)
 	: QWidget(parent), m_side(side), m_table(new StatsTable())
 {
+	qApp->installEventFilter(this);
+
 	QVBoxLayout* layout = new QVBoxLayout();
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(0);
@@ -97,4 +100,13 @@ QRect TeamWidget::GetPlayerColumnRect(QWidget* parent) const
 	const QPoint tl = m_table->viewport()->mapTo(parent, rectTop.topLeft());
 	const QPoint br = m_table->viewport()->mapTo(parent, rectBottom.bottomRight());
 	return { tl, br };
+}
+
+bool TeamWidget::eventFilter(QObject* watched, QEvent* event)
+{
+	if (event->type() == QEvent::ApplicationFontChange)
+	{
+		UpdateLayoutFont(layout());
+	}
+	return QWidget::eventFilter(watched, event);
 }

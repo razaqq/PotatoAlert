@@ -122,7 +122,7 @@ private:
 
 		painter.fillRect(contentsRect(), m_bg);
 
-		const QRect textRect = contentsRect().adjusted(-3, -3, -3, -3);
+		const QRect textRect = contentsRect().adjusted(3, 3, -3, -3);
 
 		if (m_fontShadow)
 		{
@@ -298,9 +298,9 @@ struct Player
 
 	[[nodiscard]] PlayerType GetTableRow(bool showKarma, bool fontShadow) const
 	{
-		QFont font13("Segoe UI", 1, QFont::Bold);
+		QFont font13(QApplication::font().family(), 1, QFont::Bold);
 		font13.setPixelSize(13);
-		QFont font16("Segoe UI", 1, QFont::Bold);
+		QFont font16(QApplication::font().family(), 1, QFont::Bold);
 		font16.setPixelSize(16);
 
 		const QColor bg = PrColor.GetQColor();
@@ -336,7 +336,7 @@ struct Player
 		else
 		{
 			nameLabel->setText(Name.c_str());
-			QFont font("Segoe UI");
+			QFont font(QApplication::font().family());
 			font.setPixelSize(13);
 			nameLabel->setFont(font);
 		}
@@ -356,7 +356,7 @@ struct Player
 			karmaLabel->setTextFormat(Qt::RichText);
 			karmaLabel->setText(fmt::format("<span style=\"color: {};\">{}</span>", Karma.value().ColorRGB.ToString(), Karma.value().Str).c_str());
 			karmaLabel->setStyleSheet("background-color: transparent");
-			QFont font("Segoe UI");
+			QFont font(QApplication::font().family());
 			font.setPixelSize(11);
 			karmaLabel->setFont(font);
 

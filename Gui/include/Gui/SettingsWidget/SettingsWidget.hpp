@@ -1,6 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Client/StringTable.hpp"
+
 #include "Gui/IconButton.hpp"
 #include "Gui/SettingsWidget/FolderStatus.hpp"
 #include "Gui/SettingsWidget/SettingsChoice.hpp"
@@ -8,6 +10,7 @@
 
 #include <QComboBox>
 #include <QEvent>
+#include <QFormLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
@@ -24,57 +27,25 @@ class SettingsWidget : public QWidget
 private:
 	const Client::ServiceProvider& m_services;
 
-	QLabel* m_updateLabel = new QLabel();
-	QLabel* m_minimizeTrayLabel = new QLabel();
-	QLabel* m_saveMatchCsvLabel = new QLabel();
-	QLabel* m_matchHistoryLabel = new QLabel();
-	QLabel* m_gamePathLabel = new QLabel();
-	QLabel* m_statsModeLabel = new QLabel();
-	QLabel* m_teamDamageModeLabel = new QLabel();
-	QLabel* m_teamWinRateModeLabel = new QLabel();
-	QLabel* m_showKarmaLabel = new QLabel();
-	QLabel* m_fontShadowLabel = new QLabel();
-	QLabel* m_tableLayoutLabel = new QLabel();
-	QLabel* m_languageLabel = new QLabel();
-	QLabel* m_anonymizePlayersLabel = new QLabel();
-
-	SettingsSwitch* m_updates = new SettingsSwitch();
-	SettingsSwitch* m_minimizeTray = new SettingsSwitch();
-	SettingsSwitch* m_saveMatchCsv = new SettingsSwitch();
-	SettingsSwitch* m_matchHistory = new SettingsSwitch();
-	SettingsSwitch* m_showKarma = new SettingsSwitch();
-	SettingsSwitch* m_fontShadow = new SettingsSwitch();
-	SettingsSwitch* m_anonymizePlayers = new SettingsSwitch();
-
-	SettingsChoice* m_statsMode;
-	SettingsChoice* m_teamDamageMode;
-	SettingsChoice* m_teamWinRateMode;
-	SettingsChoice* m_tableLayout;
-	QComboBox* m_language = new QComboBox();
-
-	QPushButton* m_saveButton;
-	QPushButton* m_cancelButton;
-
-	// game directory selection
-	QLineEdit* m_gamePathEdit = new QLineEdit();
-	IconButton* m_gamePathButton;
 	FolderStatus* m_folderStatusGui = new FolderStatus(this);
 
 	bool m_forceRun = false;
 
 public:
 	explicit SettingsWidget(const Client::ServiceProvider& serviceProvider, QWidget* parent = nullptr);
-	void CheckPath() const;
 	bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
 	void Init();
-	void Load() const;
-	void ConnectSignals();
+	template<typename SettingType, Client::ConfigKey Key>
+	void AddSetting(QGridLayout* layout, SettingType* form, Client::StringTable::StringTableKey stringKey, auto&& onChange);
 
 signals:
 	void Done();
+	void FontChanged();
 	void TableLayoutChanged();
+	void LanguageChanged(int lang);
+	void Reset();
 };
 
 }  // namespace PotatoAlert::Gui

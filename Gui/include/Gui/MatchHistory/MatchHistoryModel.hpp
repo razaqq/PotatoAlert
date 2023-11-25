@@ -52,7 +52,7 @@ public:
 		m_matches.push_back(match);
 	}
 
-	void SetMatches(std::vector<Client::Match> matches)
+	void SetMatches(std::vector<Client::Match>&& matches)
 	{
 		m_matches = matches;
 	}

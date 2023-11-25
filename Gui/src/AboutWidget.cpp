@@ -1,6 +1,7 @@
 // Copyright 2020 <github.com/razaqq>
 
 #include "Gui/AboutWidget.hpp"
+#include "Gui/Fonts.hpp"
 
 #include <QApplication>
 #include <QGridLayout>
@@ -16,9 +17,20 @@ AboutWidget::AboutWidget(QWidget* parent) : QWidget(parent)
 	Init();
 }
 
+bool AboutWidget::eventFilter(QObject* watched, QEvent* event)
+{
+	if (event->type() == QEvent::ApplicationFontChange)
+	{
+		UpdateLayoutFont(layout());
+	}
+	return QWidget::eventFilter(watched, event);
+}
+
 void AboutWidget::Init()
 {
-	QFont labelFont;
+	qApp->installEventFilter(this);
+
+	QFont labelFont = QApplication::font();
 	labelFont.setPointSize(10);
 	labelFont.setStyleStrategy(QFont::PreferAntialias);
 

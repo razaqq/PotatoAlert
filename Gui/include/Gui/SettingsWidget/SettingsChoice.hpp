@@ -4,10 +4,7 @@
 #include "Gui/SettingsWidget/SettingsChoiceButton.hpp"
 
 #include <QButtonGroup>
-#include <QFont>
 #include <QHBoxLayout>
-#include <QPushButton>
-#include <QSizePolicy>
 #include <QString>
 #include <QWidget>
 
@@ -18,18 +15,23 @@ namespace PotatoAlert::Gui {
 
 class SettingsChoice : public QWidget
 {
-public:
-	SettingsChoice(QWidget* parent = nullptr, std::initializer_list<const QString> buttons = {});
-	SettingsChoice(QWidget* parent = nullptr, std::span<const QString> buttons = {});
+	Q_OBJECT
 
-	QButtonGroup* GetButtonGroup() const { return m_btnGroup; }
+public:
+	explicit SettingsChoice(QWidget* parent = nullptr, std::initializer_list<const QString> buttons = {});
+	explicit SettingsChoice(QWidget* parent = nullptr, std::span<const QString> buttons = {});
+
+	void SetCurrentIndex(int index) const;
 
 private:
 	template<typename Iterator>
 	void Init(Iterator begin, Iterator end);
 
-	QButtonGroup* m_btnGroup;
+	QButtonGroup* m_btnGroup = new QButtonGroup(this);
 	static constexpr int WIDGET_HEIGHT = 20;
+
+signals:
+	void CurrentIndexChanged(int index);
 };
 
 }  // namespace PotatoAlert::Gui

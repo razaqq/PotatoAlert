@@ -1,11 +1,10 @@
 // Copyright 2022 <github.com/razaqq>
 #pragma once
 
-#include "MatchHistoryView.hpp"
-#include "Client/DatabaseManager.hpp"
-#include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
+
 #include "Gui/MatchHistory/MatchHistoryModel.hpp"
+#include "Gui/MatchHistory/MatchHistoryView.hpp"
 
 #include <QHeaderView>
 #include <QTableView>
@@ -25,7 +24,7 @@ public:
 	{
 		setObjectName("matchHistoryTable");
 		viewport()->setAttribute(Qt::WA_Hover);
-		setMinimumWidth(800);
+		setMinimumWidth(900);
 		setCursor(Qt::PointingHandCursor);
 
 		setSelectionBehavior(SelectRows);
@@ -34,7 +33,8 @@ public:
 
 		horizontalHeader()->setVisible(true);
 		horizontalHeader()->setHighlightSections(false);
-		horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);horizontalHeader()->setSectionResizeMode(MatchHistoryModel::ButtonColumn(), QHeaderView::Fixed);
+		horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+		horizontalHeader()->setSectionResizeMode(MatchHistoryModel::ButtonColumn(), QHeaderView::Fixed);
 		horizontalHeader()->setMinimumSectionSize(20);
 		horizontalHeader()->resizeSection(MatchHistoryModel::ButtonColumn(), 20);
 

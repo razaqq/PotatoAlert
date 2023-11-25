@@ -28,11 +28,11 @@ void StatsTeamFooter::Init()
 {
 	qApp->installEventFilter(this);
 
-	auto layout = new QHBoxLayout();
+	QHBoxLayout* layout = new QHBoxLayout();
 	layout->setContentsMargins(10, 0, 10, 0);
 	layout->setSpacing(10);
 
-	const QFont labelFont = QFont("Segoe UI", 10, QFont::Bold);
+	const QFont labelFont(QApplication::font().family(), 10, QFont::Bold);
 
 	layout->setContentsMargins(10, 0, 10, 0);
 	layout->setSpacing(0);

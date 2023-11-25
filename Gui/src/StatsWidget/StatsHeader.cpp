@@ -63,10 +63,10 @@ void StatsHeaderFriendly::Init()
 	statusLayout->addStretch();
 	status->setLayout(statusLayout);
 
-	m_label->setFont(QFont("Segoe UI", 15, QFont::Bold));
+	m_label->setFont(QFont(QApplication::font().family(), 15, QFont::Bold));
 
 	// dummy with same width as status
-	auto dummy = new QWidget();
+	QWidget* dummy = new QWidget();
 	dummy->setFixedWidth(130);
 
 	// add to layouts
@@ -83,7 +83,7 @@ bool StatsHeaderFriendly::eventFilter(QObject* watched, QEvent* event)
 {
 	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		const int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
 		m_label->setText(GetString(lang, StringTableKey::LABEL_MYTEAM));
 	}
 	return QWidget::eventFilter(watched, event);
@@ -128,7 +128,7 @@ void StatsHeaderEnemy::Init()
 	layout->setContentsMargins(10, 0, 10, 2);
 	layout->setSpacing(10);
 
-	m_label->setFont(QFont("Segoe UI", 15, QFont::Bold));
+	m_label->setFont(QFont(QApplication::font().family(), 15, QFont::Bold));
 
 	layout->addStretch();
 	layout->addWidget(m_label, 0, Qt::AlignCenter);
@@ -141,7 +141,7 @@ bool StatsHeaderEnemy::eventFilter(QObject* watched, QEvent* event)
 {
 	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		const int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
 		m_label->setText(GetString(lang, StringTableKey::LABEL_ENEMYTEAM));
 	}
 	return QWidget::eventFilter(watched, event);
