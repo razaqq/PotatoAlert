@@ -56,7 +56,7 @@ jobs:
       run: cmake -S . -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release
 
     - name: Run Build
-      run: cmake --build build --config Release --target PotatoAlert PotatoUpdater PotatoTest
+      run: cmake --build build --config Release --target PotatoAlert PotatoUpdater CoreTest GameFileUnpackTest GameTest ReplayTest
 
     - name: Run CTest
       working-directory: ${{env.GITHUB_WORKSPACE}}/build
@@ -138,7 +138,7 @@ jobs:
       run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"  -DCMAKE_CXX_FLAGS="-stdlib=libc++ -lc++abi"
 
     - name: Run Build
-      run: cmake --build build --config Release --target PotatoAlert PotatoTest
+      run: cmake --build build --config Release --target PotatoAlert PotatoUpdater CoreTest GameFileUnpackTest GameTest ReplayTest
 
     - name: Run CTest
       working-directory: ${{env.GITHUB_WORKSPACE}}/build
