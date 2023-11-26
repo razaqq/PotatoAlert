@@ -43,6 +43,12 @@ jobs:
         version: ${{ matrix.qt-version }}
         cache: true
 
+    - name: Install LLVM and Clang
+      uses: KyleMayes/install-llvm-action@v1
+      with:
+        version: "17"
+        env: true
+
     - name: CMake Version
       run: cmake --version
 
