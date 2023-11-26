@@ -52,12 +52,12 @@ jobs:
       run: cmake --version
 
     - name: Clang Version
-      run: ${{ env.LLVM_PATH }}/clang-cl --version
+      run: clang-cl --version
 
     - name: Run CMake
       env:
-        CC: ${{ env.LLVM_PATH }}/clang-cl
-        CXX: ${{ env.LLVM_PATH }}/clang-cl
+        CC: "${{ env.LLVM_PATH }}\\bin\\clang-cl"
+        CXX: "${{ env.LLVM_PATH }}\\bin\\clang-cl"
       run: cmake -S . -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release
 
     - name: Run Build
