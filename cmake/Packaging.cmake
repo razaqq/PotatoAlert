@@ -29,7 +29,7 @@ function(WinDeployQt target)
             --no-opengl-sw
             --no-translations
             --dir $<TARGET_FILE_DIR:${target}>
-            $<TARGET_FILE:${target}>
+            $<TARGET_FILE:${target}> || (exit 0)
             COMMENT "Deploying Qt..."
             )
     install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/" DESTINATION bin)
