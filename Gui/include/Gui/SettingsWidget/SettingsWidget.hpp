@@ -42,7 +42,6 @@ private:
 
 signals:
 	void Done();
-	void FontChanged();
 	void TableLayoutChanged();
 	void LanguageChanged(int lang);
 	void Reset();

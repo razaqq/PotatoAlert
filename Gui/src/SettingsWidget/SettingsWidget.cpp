@@ -185,7 +185,6 @@ void SettingsWidget::Init()
 		QFont font = QApplication::font();
 		font.setFamily(form->currentText());
 		QApplication::setFont(font);
-		emit FontChanged();
 	});
 
 	TabWidget* tabWidget = new TabWidget();
