@@ -47,18 +47,17 @@ jobs:
       uses: KyleMayes/install-llvm-action@v1
       with:
         version: "17"
-        env: true
 
     - name: CMake Version
       run: cmake --version
 
     - name: Clang Version
-      run: clang-cl --version
+      run: ${{ env.LLVM_PATH }}/clang-cl --version
 
     - name: Run CMake
       env:
-        CC: clang-cl
-        CXX: clang-cl
+        CC: ${{ env.LLVM_PATH }}/clang-cl
+        CXX: ${{ env.LLVM_PATH }}/clang-cl
       run: cmake -S . -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release
 
     - name: Run Build
