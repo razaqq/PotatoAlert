@@ -10,7 +10,7 @@ jobs:
         qt-major-version: [6, 5]
         include:
           - qt-major-version: 6
-            qt-version: 6.4.2
+            qt-version: 6.6.0
             zipfile: PotatoAlert.zip
           - qt-major-version: 5
             qt-version: 5.15.2
@@ -35,7 +35,7 @@ jobs:
     - name: Setup Ninja
       uses: ashutoshvarma/setup-ninja@master
       with:
-        version: 1.10.2
+        version: 1.11.1
 
     - name: Install Qt${{ matrix.qt-major-version }}
       uses: jurplel/install-qt-action@v3
@@ -92,12 +92,12 @@ jobs:
     - name: Setup Ninja
       uses: ashutoshvarma/setup-ninja@master
       with:
-        version: 1.10.2
+        version: 1.11.1
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
       with:
-        version: 6.4.2
+        version: 6.6.0
         cache: true
 
     - name: Cache LLVM and Clang
