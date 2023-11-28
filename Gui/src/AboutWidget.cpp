@@ -4,7 +4,7 @@
 #include "Gui/Fonts.hpp"
 
 #include <QApplication>
-#include <QGridLayout>
+#include <QFormLayout>
 #include <QLabel>
 #include <QPixmap>
 #include <QWidget>
@@ -36,71 +36,69 @@ void AboutWidget::Init()
 
 	QWidget* centralWidget = new QWidget(this);
 	centralWidget->setObjectName("aboutWidget");
+
 	QHBoxLayout* centralLayout = new QHBoxLayout();
 	centralLayout->setContentsMargins(10, 10, 10, 10);
 	centralLayout->setSpacing(0);
 
-	QHBoxLayout* horLayout = new QHBoxLayout();
-	horLayout->setContentsMargins(10, 10, 10, 10);
-	horLayout->setSpacing(0);
+	QFormLayout* vLayout = new QFormLayout();
+	vLayout->setContentsMargins(10, 0, 10, 0);
+	vLayout->setHorizontalSpacing(10);
 
 	QLabel* appIcon = new QLabel();
 	appIcon->setPixmap(QPixmap(":/potato.svg").scaledToWidth(100, Qt::SmoothTransformation));
-	horLayout->addWidget(appIcon);
 
-	QGridLayout* gridLayout = new QGridLayout();
-	gridLayout->setContentsMargins(10, 0, 10, 0);
-	gridLayout->setColumnMinimumWidth(0, 100);
-
-	gridLayout->addWidget(new QLabel, 0, 0);  // dummy for alignment
-	gridLayout->setRowStretch(0, 1);
+	QFormLayout* aboutLayout = new QFormLayout();
+	aboutLayout->setContentsMargins(0, 0, 0, 0);
+	aboutLayout->setHorizontalSpacing(10);
 
 	QLabel* authorLabel = new QLabel("Author:");
 	authorLabel->setFont(labelFont);
 	QLabel* authorText = new QLabel(QApplication::organizationName());
 	authorText->setFont(labelFont);
-	authorLabel->setBuddy(authorText);
-	gridLayout->addWidget(authorLabel, 1, 0);
-	gridLayout->addWidget(authorText, 1, 1);
+	aboutLayout->addRow(authorLabel, authorText);
 
 	QLabel* versionLabel = new QLabel("Version:");
 	versionLabel->setFont(labelFont);
 	QLabel* versionText = new QLabel(QApplication::applicationVersion());
 	versionText->setFont(labelFont);
-	versionLabel->setBuddy(versionText);
-	gridLayout->addWidget(versionLabel, 2, 0);
-	gridLayout->addWidget(versionText, 2, 1);
+	aboutLayout->addRow(versionLabel, versionText);
 
 	QLabel* poweredLabel = new QLabel("Powered by:");
 	poweredLabel->setFont(labelFont);
 	QLabel* poweredText = new QLabel("Qt, rapidjson, tinyxml2, spdlog, zlib, sqlite3");
 	poweredText->setFont(labelFont);
-	poweredLabel->setBuddy(poweredText);
-	gridLayout->addWidget(poweredLabel, 3, 0);
-	gridLayout->addWidget(poweredText, 3, 1);
+	aboutLayout->addRow(poweredLabel, poweredText);
 
 	QLabel* qtLabel = new QLabel("Qt Version:");
 	qtLabel->setFont(labelFont);
 	QLabel* qtText = new QLabel(qVersion());
 	qtText->setFont(labelFont);
-	qtLabel->setBuddy(qtText);
-	gridLayout->addWidget(qtLabel, 4, 0);
-	gridLayout->addWidget(qtText, 4, 1);
+	aboutLayout->addRow(qtLabel, qtText);
 
 	QLabel* licenseLabel = new QLabel("License:");
 	licenseLabel->setFont(labelFont);
 	QLabel* licenseText = new QLabel("MIT");
 	licenseText->setFont(labelFont);
-	licenseLabel->setBuddy(licenseText);
-	gridLayout->addWidget(licenseLabel, 5, 0);
-	gridLayout->addWidget(licenseText, 5, 1);
+	aboutLayout->addRow(licenseLabel, licenseText);
 
-	gridLayout->addWidget(new QLabel, 6, 0);  // dummy for alignment
-	gridLayout->setRowStretch(6, 1);
+	QLabel* donationIcon = new QLabel();
+	donationIcon->setPixmap(QPixmap(":/Coffee.svg").scaledToWidth(100, Qt::SmoothTransformation));
 
-	horLayout->addLayout(gridLayout);
+	QLabel* donationText = new QLabel();
+	donationText->setFont(labelFont);
+	donationText->setText("If you like PotatoAlert, you can buy me a coffee<br><a href=\"https://www.paypal.me/potatoalert\">https://www.paypal.me/potatoalert</a>");
+	donationText->setTextFormat(Qt::RichText);
+	donationText->setTextInteractionFlags(Qt::TextBrowserInteraction);
+	donationText->setOpenExternalLinks(true);
 
-	centralWidget->setLayout(horLayout);
+	vLayout->setLabelAlignment(Qt::AlignRight | Qt::AlignVCenter);
+	vLayout->setFormAlignment(Qt::AlignCenter);
+	vLayout->addRow(appIcon, aboutLayout);
+	vLayout->addRow(donationIcon, donationText);
+
+	centralWidget->setLayout(vLayout);
+
 	centralLayout->addStretch();
 	centralLayout->addWidget(centralWidget);
 	centralLayout->addStretch();
