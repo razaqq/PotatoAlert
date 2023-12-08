@@ -45,5 +45,5 @@ add_custom_command(
 include(Packaging)
 WinDeployQt(PotatoUpdater)
 if (NOT Qt6_FOUND)  # only need ssl libs on qt5, not qt6
-    ssllibraries(PotatoUpdater)
+    CopySslDlls(PotatoUpdater)
 endif()

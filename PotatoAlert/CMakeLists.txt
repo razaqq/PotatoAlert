@@ -38,7 +38,7 @@ include(Packaging)
 if(WIN32)
     WinDeployQt(PotatoAlert)
     if (NOT Qt6_FOUND)  # only need ssl libs on qt5, not qt6
-        ssllibraries(PotatoAlert)
+        CopySslDlls(PotatoAlert)
     endif()
 endif()
 # makeinstaller(PotatoAlert)

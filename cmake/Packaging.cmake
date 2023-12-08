@@ -15,23 +15,30 @@ find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
 # Qt DLLs
 function(WinDeployQt target)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(WINDEPLOYQT_ARGS --debug)
+        set(WINDEPLOYQT_BUILD_TYPE --debug)
     else()
-        set(WINDEPLOYQT_ARGS --release)
+        set(WINDEPLOYQT_BUILD_TYPE --release)
+    endif()
+
+    if (Qt5_FOUND)
+        set(WINDEPLOYQT_EXCLUDES "")
+    else()
+        set(WINDEPLOYQT_EXCLUDES --exclude-plugins qopensslbackend)
     endif()
 
     add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E
-            env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
-            ${WINDEPLOYQT_ARGS}
-            --verbose 0
-            --no-compiler-runtime
-            --no-opengl-sw
-            --no-translations
-            --dir $<TARGET_FILE_DIR:${target}>
-            $<TARGET_FILE:${target}> || (exit 0)
-            COMMENT "Deploying Qt..."
-            )
+        COMMAND "${CMAKE_COMMAND}" -E
+        env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
+        ${WINDEPLOYQT_BUILD_TYPE}
+        --verbose 0
+        --no-compiler-runtime
+        --no-opengl-sw
+        --no-translations
+        ${WINDEPLOYQT_EXCLUDES}
+        --dir $<TARGET_FILE_DIR:${target}>
+        $<TARGET_FILE:${target}> || (exit 0)
+        COMMENT "Deploying Qt..."
+    )
     install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/" DESTINATION bin)
 
     set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
@@ -39,20 +46,20 @@ function(WinDeployQt target)
 endfunction()
 
 # OpenSSL DLLs
-function(ssllibraries target)
+function(CopySslDlls target)
     add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${SSL_DLLS}
-            $<TARGET_FILE_DIR:${target}>
-            COMMENT "Copying OpenSSL dlls..."
-            )
+        COMMAND ${CMAKE_COMMAND} -E copy ${SSL_DLLS}
+        $<TARGET_FILE_DIR:${target}>
+        COMMENT "Copying OpenSSL dlls..."
+    )
 endfunction()
 
 function(CopyReplayScripts target)
     add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/Resources/ReplayVersions
-            $<TARGET_FILE_DIR:${target}>/ReplayVersions
-            COMMENT "Copying Replay Version Files..."
-            )
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/Resources/ReplayVersions
+        $<TARGET_FILE_DIR:${target}>/ReplayVersions
+        COMMENT "Copying Replay Version Files..."
+    )
 endfunction()
 
 #[[
