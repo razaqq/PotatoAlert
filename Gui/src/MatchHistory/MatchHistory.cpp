@@ -68,7 +68,7 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 	horLayout->addStretch();
 	horLayout->addWidget(centralWidget);
 	horLayout->addStretch();
-	auto layout = new QVBoxLayout();
+	QVBoxLayout* layout = new QVBoxLayout();
 	layout->setContentsMargins(0, 0, 0, 10);
 	centralWidget->setLayout(layout);
 
@@ -105,7 +105,7 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 			return;
 		}
 
-		int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
+		const int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
 		QuestionDialog* dialog = new QuestionDialog(lang, this, GetString(lang, StringTableKey::HISTORY_DELETE_QUESTION));
 		if (dialog->Run() == QuestionAnswer::Yes)
 		{
@@ -219,7 +219,7 @@ bool MatchHistory::eventFilter(QObject* watched, QEvent* event)
 {
 	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		const int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
 		m_deleteButton->setText(GetString(lang, StringTableKey::HISTORY_DELETE));
 	}
 	else if (event->type() == QEvent::ApplicationFontChange)

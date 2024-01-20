@@ -27,7 +27,7 @@ MatchHistoryModel::MatchHistoryModel(const Client::ServiceProvider& serviceProvi
 
 void MatchHistoryModel::SetReplaySummary(uint32_t id, const ReplaySummary& summary)
 {
-	auto it = std::ranges::find_if(m_matches, [id](const Client::Match& match)
+	const auto it = std::ranges::find_if(m_matches, [id](const Client::Match& match)
 	{
 		return match.Id == id;
 	});
@@ -120,7 +120,7 @@ QVariant MatchHistoryModel::headerData(int section, Qt::Orientation orientation,
 		{
 			if (orientation == Qt::Horizontal)
 			{
-				int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
+				const int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
 				switch (section)
 				{
 					case 0:

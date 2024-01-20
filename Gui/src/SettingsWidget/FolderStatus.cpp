@@ -92,7 +92,7 @@ bool FolderStatus::eventFilter(QObject* watched, QEvent* event)
 {
 	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		const int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
 		m_statusLabel->setText(GetString(lang, StringTableKey::SETTINGS_REPLAYSFOLDER_STATUS));
 		m_replaysLabel->setText(GetString(lang, StringTableKey::SETTINGS_REPLAYSFOLDER_FOLDERS));
 		m_regionLabel->setText(GetString(lang, StringTableKey::SETTINGS_REPLAYSFOLDER_REGION));

@@ -31,8 +31,6 @@ void StatsTable::Init()
 	setFocusPolicy(Qt::NoFocus);
 	setAlternatingRowColors(false);
 
-	// setMouseTracking(true);
-
 	setRowCount(12);
 	setColumnCount(8);
 	setSortingEnabled(false);

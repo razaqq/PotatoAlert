@@ -57,7 +57,7 @@ private:
 		if (ec)
 		{
 			fmt::println(stderr, STR("Failed to check if app dir '{}' exists, reason: '{}'"), dir, ec);
-			Core::ExitCurrentProcessWithError(ec.value());
+			Core::ExitCurrentProcessWithError((uint32_t)ec.value());
 		}
 
 		if (!exists)
@@ -66,7 +66,7 @@ private:
 			if (ec)
 			{
 				fmt::println(stderr, STR("Failed to create app dir '{}', reason: '{}'"), dir, ec);
-				Core::ExitCurrentProcessWithError(ec.value());
+				Core::ExitCurrentProcessWithError((uint32_t)ec.value());
 			}
 		}
 	}

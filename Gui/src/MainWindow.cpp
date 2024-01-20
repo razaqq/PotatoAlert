@@ -165,7 +165,6 @@ void MainWindow::ConnectSignals()
 		SwitchTab(MenuEntry::MatchHistory);
 	});
 
-	// connect(m_matchHistory, &MatchHistory::ReplaySummarySelected, [this](const ReplayParser::ReplaySummary& replaySummary)
 	connect(m_matchHistory, &MatchHistory::ReplaySummarySelected, [this](const Client::Match& match)
 	{
 		m_activeWidget->setVisible(false);

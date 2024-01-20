@@ -87,7 +87,7 @@ bool StatsTeamFooter::eventFilter(QObject* watched, QEvent* event)
 {
 	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
-		int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		const int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
 		m_wrLabel->setText(GetString(lang, StringTableKey::LABEL_WINRATE));
 		m_dmgLabel->setText(GetString(lang, StringTableKey::LABEL_DAMAGE));
 		m_regionLabel->setText(GetString(lang, StringTableKey::LABEL_REGION));

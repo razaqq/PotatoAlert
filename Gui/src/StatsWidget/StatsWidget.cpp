@@ -23,8 +23,6 @@ StatsWidget::StatsWidget(const ServiceProvider& serviceProvider, QWidget* parent
 
 void StatsWidget::Init()
 {
-	// setStyleSheet("border: 1px solid red;");
-
 	m_layout->setContentsMargins(0, 0, 0, 10);
 	m_layout->setSpacing(0);
 
