@@ -23,7 +23,13 @@ function(WinDeployQt target)
     if (Qt5_FOUND)
         set(WINDEPLOYQT_EXCLUDES "")
     else()
-        set(WINDEPLOYQT_EXCLUDES --exclude-plugins qopensslbackend)
+        # --exclude-plugins only exists from 6.6.1 onwards
+        if (${Qt6_VERSION} VERSION_GREATER_EQUAL "6.6.1")
+            set(WINDEPLOYQT_EXCLUDES --exclude-plugins qopensslbackend)
+        else()
+            set(WINDEPLOYQT_EXCLUDES "")
+            # TODO once 6.6.1 is usable
+        endif()
     endif()
 
     add_custom_command(TARGET ${target} POST_BUILD
