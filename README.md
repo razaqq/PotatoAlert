@@ -31,7 +31,7 @@ If you think you cannot follow this simple rule, then you hereby don't have my p
 
 ### Windows
 #### Requirements
-- [Qt](https://www.qt.io/) >= 6.6.1
+- [Qt](https://www.qt.io/) >= 6.6.0
 - [clang](https://clang.llvm.org/) >= 11.0.0 or MSVC
 - [ninja](https://ninja-build.org/) >= 1.10.2
 - [cmake](https://cmake.org/) >= 3.17
@@ -46,7 +46,7 @@ If you think you cannot follow this simple rule, then you hereby don't have my p
 - Add clang to PATH and set `CC` and `CXX` env vars to set clang as compiler
   - `set CC=clang`
   - `set CXX=clang++`
-- Call cmake (from x64 Native Tools Command Prompt for VS2019)
+- Call cmake (from x64 Native Tools Command Prompt for VS2022)
 ```console
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=C:\Qt\6.3.1\msvc2019_64 -DCMAKE_RC_COMPILER=RC
 cmake --build build --config Release --target PotatoAlert PotatoUpdater
