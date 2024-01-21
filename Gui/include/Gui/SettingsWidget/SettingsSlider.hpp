@@ -43,7 +43,11 @@ public:
 			emit ValueChanged(m_slider->value());
 		});
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 		connect(m_spinBox, &QSpinBox::valueChanged, [this](int value)
+#else
+		connect(m_spinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value)
+#endif
 		{
 			m_slider->setValue(value);
 		});
