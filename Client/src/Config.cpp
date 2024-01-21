@@ -49,6 +49,7 @@ static std::unordered_map<ConfigKey, std::string_view> g_keyNames =
 	{ ConfigKey::FontShadow,               "font_shadow" },
 	{ ConfigKey::AnonymizePlayers,         "anonymize_player_names_screenshots" },
 	{ ConfigKey::Font,                     "font" },
+	{ ConfigKey::FontScaling,              "font_scaling" },
 };
 
 }
@@ -75,6 +76,7 @@ Config::Config(const fs::path& filePath) : m_filePath(filePath)
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowY]), 0, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowState]), Qt::WindowState::WindowActive, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::Font]), "Roboto", a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::FontScaling]), 100, a);
 	std::string gamePathStr = "";
 	if (const std::optional<fs::path> gamePath = GetGamePath())
 	{

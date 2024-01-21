@@ -4,13 +4,14 @@
 #include "Client/PotatoClient.hpp"
 #include "Client/StringTable.hpp"
 
-#include "Gui/LanguageChangeEvent.hpp"
+#include "Gui/Events.hpp"
 #include "Gui/StatsWidget/StatsHeader.hpp"
 
 #include <QApplication>
 #include <QFont>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QScreen>
 #include <QSize>
 #include <QSvgWidget>
 #include <QWidget>
@@ -44,13 +45,13 @@ void StatsHeaderFriendly::Init()
 	iconLayout->addWidget(m_loading);
 	m_statusIcon->setLayout(iconLayout);
 
-	auto layout = new QHBoxLayout();
+	QHBoxLayout* layout = new QHBoxLayout();
 	layout->setContentsMargins(10, 0, 10, 2);
 	layout->setSpacing(10);
 
 	// status icon and text
-	auto status = new QWidget(this);
-	auto statusLayout = new QHBoxLayout();
+	QWidget* status = new QWidget(this);
+	QHBoxLayout* statusLayout = new QHBoxLayout();
 	statusLayout->setContentsMargins(0, 0, 0, 0);
 	statusLayout->setSpacing(0);
 	status->setFixedWidth(130);
@@ -58,12 +59,9 @@ void StatsHeaderFriendly::Init()
 	statusLayout->addWidget(m_statusIcon);
 	statusLayout->addSpacing(5);
 	m_statusText->setAlignment(Qt::AlignCenter);
-	m_statusText->setStyleSheet("font-size: 10px;");
 	statusLayout->addWidget(m_statusText);
 	statusLayout->addStretch();
 	status->setLayout(statusLayout);
-
-	m_label->setFont(QFont(QApplication::font().family(), 15, QFont::Bold));
 
 	// dummy with same width as status
 	QWidget* dummy = new QWidget();
@@ -127,8 +125,6 @@ void StatsHeaderEnemy::Init()
 	QHBoxLayout* layout = new QHBoxLayout();
 	layout->setContentsMargins(10, 0, 10, 2);
 	layout->setSpacing(10);
-
-	m_label->setFont(QFont(QApplication::font().family(), 15, QFont::Bold));
 
 	layout->addStretch();
 	layout->addWidget(m_label, 0, Qt::AlignCenter);

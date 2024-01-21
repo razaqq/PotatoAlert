@@ -5,6 +5,7 @@
 #include "Client/ServiceProvider.hpp"
 #include "Client/StringTable.hpp"
 
+#include "Gui/Events.hpp"
 #include "Gui/MatchHistory/MatchHistoryModel.hpp"
 
 #include <QAbstractTableModel>
@@ -23,6 +24,7 @@ using PotatoAlert::Client::StringTable::StringTableKey;
 MatchHistoryModel::MatchHistoryModel(const Client::ServiceProvider& serviceProvider, QObject* parent)
 	: QAbstractTableModel(parent), m_matches({}), m_services(serviceProvider)
 {
+	qApp->installEventFilter(this);
 }
 
 void MatchHistoryModel::SetReplaySummary(uint32_t id, const ReplaySummary& summary)
@@ -145,7 +147,7 @@ QVariant MatchHistoryModel::headerData(int section, Qt::Orientation orientation,
 		}
 		case Qt::FontRole:
 		{
-			return QFont(QApplication::font().family(), 11);
+			return QFont(QApplication::font().family(), m_headerSize);
 		}
 		default:
 		{
@@ -154,4 +156,14 @@ QVariant MatchHistoryModel::headerData(int section, Qt::Orientation orientation,
 	}
 
 	return QVariant();
+}
+
+bool MatchHistoryModel::eventFilter(QObject* watched, QEvent* event)
+{
+	if (event->type() == FontScalingChangeEvent::RegisteredType())
+	{
+		const float scaling = dynamic_cast<FontScalingChangeEvent*>(event)->GetScaling();
+		m_headerSize = (int)std::roundf(11.0f * scaling);
+	}
+	return QAbstractTableModel::eventFilter(watched, event);
 }

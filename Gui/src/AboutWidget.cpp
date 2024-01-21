@@ -2,6 +2,7 @@
 
 #include "Gui/AboutWidget.hpp"
 #include "Gui/Fonts.hpp"
+#include "Gui/ScalingLabel.hpp"
 
 #include <QApplication>
 #include <QFormLayout>
@@ -52,42 +53,16 @@ void AboutWidget::Init()
 	aboutLayout->setContentsMargins(0, 0, 0, 0);
 	aboutLayout->setHorizontalSpacing(10);
 
-	QLabel* authorLabel = new QLabel("Author:");
-	authorLabel->setFont(labelFont);
-	QLabel* authorText = new QLabel(QApplication::organizationName());
-	authorText->setFont(labelFont);
-	aboutLayout->addRow(authorLabel, authorText);
+	aboutLayout->addRow(new ScalingLabel("Author:", labelFont), new ScalingLabel(QApplication::organizationName(), labelFont));
+	aboutLayout->addRow(new ScalingLabel("Version:", labelFont), new ScalingLabel(QApplication::applicationVersion(), labelFont));
+	aboutLayout->addRow(new ScalingLabel("Powered by:", labelFont), new ScalingLabel("Qt, rapidjson, tinyxml2, spdlog, zlib, sqlite3", labelFont));
+	aboutLayout->addRow(new ScalingLabel("Qt Version:", labelFont), new ScalingLabel(qVersion(), labelFont));
+	aboutLayout->addRow(new ScalingLabel("License:", labelFont), new ScalingLabel("MIT", labelFont));
 
-	QLabel* versionLabel = new QLabel("Version:");
-	versionLabel->setFont(labelFont);
-	QLabel* versionText = new QLabel(QApplication::applicationVersion());
-	versionText->setFont(labelFont);
-	aboutLayout->addRow(versionLabel, versionText);
-
-	QLabel* poweredLabel = new QLabel("Powered by:");
-	poweredLabel->setFont(labelFont);
-	QLabel* poweredText = new QLabel("Qt, rapidjson, tinyxml2, spdlog, zlib, sqlite3");
-	poweredText->setFont(labelFont);
-	aboutLayout->addRow(poweredLabel, poweredText);
-
-	QLabel* qtLabel = new QLabel("Qt Version:");
-	qtLabel->setFont(labelFont);
-	QLabel* qtText = new QLabel(qVersion());
-	qtText->setFont(labelFont);
-	aboutLayout->addRow(qtLabel, qtText);
-
-	QLabel* licenseLabel = new QLabel("License:");
-	licenseLabel->setFont(labelFont);
-	QLabel* licenseText = new QLabel("MIT");
-	licenseText->setFont(labelFont);
-	aboutLayout->addRow(licenseLabel, licenseText);
-
-	QLabel* donationIcon = new QLabel();
+	ScalingLabel* donationIcon = new ScalingLabel();
 	donationIcon->setPixmap(QPixmap(":/Coffee.svg").scaledToWidth(100, Qt::SmoothTransformation));
 
-	QLabel* donationText = new QLabel();
-	donationText->setFont(labelFont);
-	donationText->setText("If you like PotatoAlert, you can buy me a coffee<br><a href=\"https://www.paypal.me/potatoalert\">https://www.paypal.me/potatoalert</a>");
+	ScalingLabel* donationText = new ScalingLabel("If you like PotatoAlert, you can buy me a coffee<br><a href=\"https://www.paypal.me/potatoalert\">https://www.paypal.me/potatoalert</a>", labelFont);
 	donationText->setTextFormat(Qt::RichText);
 	donationText->setTextInteractionFlags(Qt::TextBrowserInteraction);
 	donationText->setOpenExternalLinks(true);

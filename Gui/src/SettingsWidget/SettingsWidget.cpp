@@ -9,15 +9,17 @@
 #include "Core/Directory.hpp"
 #include "Core/TypeTraits.hpp"
 
+#include "Gui/Events.hpp"
 #include "Gui/Fonts.hpp"
+#include "Gui/IconButton.hpp"
+#include "Gui/ScalingLabel.hpp"
 #include "Gui/SettingsWidget/FolderStatus.hpp"
 #include "Gui/SettingsWidget/HorizontalLine.hpp"
 #include "Gui/SettingsWidget/SettingsChoice.hpp"
 #include "Gui/SettingsWidget/SettingsComboBox.hpp"
+#include "Gui/SettingsWidget/SettingsSlider.hpp"
 #include "Gui/SettingsWidget/SettingsSwitch.hpp"
 #include "Gui/SettingsWidget/SettingsWidget.hpp"
-
-#include "Gui/LanguageChangeEvent.hpp"
 
 #include <QApplication>
 #include <QComboBox>
@@ -25,7 +27,7 @@
 #include <QFileDialog>
 #include <QFormLayout>
 #include <QHBoxLayout>
-#include <QPixmap>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QSize>
 #include <QSizePolicy>
@@ -98,14 +100,14 @@ void SettingsWidget::Init()
 	connect(&potatoClient, &Client::PotatoClient::DirectoryStatusChanged, m_folderStatusGui, &FolderStatus::Update);
 
 	// GENERAL
-	QLabel* gamePathLabel = new QLabel();
-	gamePathLabel->setFont(labelFont);
+	ScalingLabel* gamePathLabel = new ScalingLabel(labelFont);
 
 	QLineEdit* gamePathEdit = new QLineEdit();
 	connect(gamePathEdit, &QLineEdit::selectionChanged, [gamePathEdit]()
 	{
 		gamePathEdit->deselect();
 	});
+	gamePathEdit->setProperty(FontSizeProperty, gamePathEdit->font().pointSizeF());
 	gamePathEdit->setFixedHeight(ROW_HEIGHT);
 	gamePathEdit->setFixedWidth(250);
 	gamePathEdit->setReadOnly(true);
@@ -187,6 +189,15 @@ void SettingsWidget::Init()
 		QApplication::setFont(font);
 	});
 
+	SettingsSlider* fontScaling = new SettingsSlider(50, 150);
+	fontScaling->setFixedWidth(250);
+	AddSetting<SettingsSlider, ConfigKey::FontScaling>(displayLayout, fontScaling, StringTableKey::SETTINGS_FONT_SCALING, [this](SettingsSlider* form, int value)
+	{
+		FontScalingChangeEvent event((float)value / 100.0f);
+		for (QWidget* w : qApp->allWidgets())
+			QApplication::sendEvent(w, &event);
+	});
+
 	TabWidget* tabWidget = new TabWidget();
 	tabWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 	tabWidget->addTab(general, "");
@@ -256,8 +267,7 @@ void SettingsWidget::Init()
 template<typename SettingType, ConfigKey Key>
 void SettingsWidget::AddSetting(QGridLayout* layout, SettingType* form, StringTableKey stringKey, auto&& onChange)
 {
-	QLabel* label = new QLabel();
-	label->setFont(QFont(QApplication::font().family(), 11, QFont::Medium));
+	ScalingLabel* label = new ScalingLabel(QFont(QApplication::font().family(), 11, QFont::Bold));
 	label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	connect(this, &SettingsWidget::LanguageChanged, [label, stringKey](int lang)
 	{
@@ -328,6 +338,18 @@ void SettingsWidget::AddSetting(QGridLayout* layout, SettingType* form, StringTa
 		{
 			m_services.Get<Config>().Set<Key>(static_cast<decltype(m_services.Get<Config>().Get<Key>())>(index));
 			onChange(form, index);
+		});
+	}
+	else if constexpr (std::is_same_v<SettingType, SettingsSlider>)
+	{
+		connect(this, &SettingsWidget::Reset, [this, form]()
+		{
+			form->SetValue(m_services.Get<Config>().Get<Key>());
+		});
+		connect(form, &SettingsSlider::ValueChanged, [this, onChange, form](int value)
+		{
+			m_services.Get<Config>().Set<Key>(value);
+			onChange(form, value);
 		});
 	}
 	else

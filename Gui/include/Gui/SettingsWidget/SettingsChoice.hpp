@@ -4,7 +4,6 @@
 #include "Gui/SettingsWidget/SettingsChoiceButton.hpp"
 
 #include <QButtonGroup>
-#include <QHBoxLayout>
 #include <QString>
 #include <QWidget>
 
@@ -29,6 +28,8 @@ private:
 
 	QButtonGroup* m_btnGroup = new QButtonGroup(this);
 	static constexpr int WIDGET_HEIGHT = 20;
+	bool eventFilter(QObject* watched, QEvent* event) override;
+	float m_fontScaling = 1.0f;
 
 signals:
 	void CurrentIndexChanged(int index);

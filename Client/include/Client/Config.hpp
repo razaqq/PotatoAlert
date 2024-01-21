@@ -53,6 +53,7 @@ enum class ConfigKey : uint64_t
 	DECL_TYPE(WindowY,                  ConfigType::Int,           4),
 	DECL_TYPE(Language,                 ConfigType::Int,           5),
 	DECL_TYPE(WindowState,              ConfigType::Int,           6),
+	DECL_TYPE(FontScaling,              ConfigType::Int,           7),
 	DECL_TYPE(GameDirectory,            ConfigType::Path,          1),
 	DECL_TYPE(Font,                     ConfigType::String,        1),
 };

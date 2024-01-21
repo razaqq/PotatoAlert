@@ -1,20 +1,20 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Client/Config.hpp"
+#include "Client/ServiceProvider.hpp"
+
+#include "Gui/Events.hpp"
+#include "Gui/Fonts.hpp"
 #include "Gui/SettingsWidget/SettingsChoice.hpp"
 
 #include <QApplication>
 #include <QButtonGroup>
 #include <QFont>
 #include <QHBoxLayout>
-#include <QPropertyAnimation>
 #include <QPushButton>
-#include <QSizePolicy>
 #include <QString>
-#include <QStyle>
 #include <QWidget>
 
-
-constexpr int WIDGET_HEIGHT = 20;
 
 using PotatoAlert::Gui::SettingsChoice;
 
@@ -31,6 +31,8 @@ SettingsChoice::SettingsChoice(QWidget* parent, std::span<const QString> buttons
 template<typename Iterator>
 void SettingsChoice::Init(Iterator begin, Iterator end)
 {
+	qApp->installEventFilter(this);
+
 	setObjectName("settingsChoice");
 
 	QHBoxLayout* layout = new QHBoxLayout();
@@ -45,6 +47,13 @@ void SettingsChoice::Init(Iterator begin, Iterator end)
 	connect(m_btnGroup, &QButtonGroup::idClicked, [this](int index)
 	{
 		emit CurrentIndexChanged(index);
+
+		// because we apply a stylesheet on button click, the font size resets every time
+		// TODO: maybe report this as a bug to Qt?
+		QAbstractButton* button = m_btnGroup->button(index);
+		QFont font = button->font();
+		font.setPointSizeF(button->property(FontSizeProperty).toFloat() * m_fontScaling);
+		button->setFont(font);
 	});
 
 	QFont btnFont(QApplication::font().family(), 10, QFont::Bold);
@@ -68,6 +77,7 @@ void SettingsChoice::Init(Iterator begin, Iterator end)
 		button->setObjectName("settingsChoiceButton");
 		button->setMinimumWidth(5);
 		button->setFont(btnFont);
+		button->setProperty(FontSizeProperty, btnFont.pointSizeF());
 		button->setFixedHeight(WIDGET_HEIGHT);
 		button->setFlat(true);
 		button->setCheckable(true);
@@ -83,4 +93,13 @@ void SettingsChoice::Init(Iterator begin, Iterator end)
 void SettingsChoice::SetCurrentIndex(int index) const
 {
 	m_btnGroup->button(index)->setChecked(true);
+}
+
+bool SettingsChoice::eventFilter(QObject* watched, QEvent* e)
+{
+	if (e->type() == FontScalingChangeEvent::RegisteredType())
+	{
+		m_fontScaling = dynamic_cast<FontScalingChangeEvent*>(e)->GetScaling();
+	}
+	return QWidget::eventFilter(watched, e);
 }

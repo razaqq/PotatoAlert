@@ -206,18 +206,20 @@ struct Ship
 	std::string Nation;
 	uint8_t Tier;
 
-	[[nodiscard]] QWidget* GetField(const QFont& font, const Color& bg, const QFlags<Qt::AlignmentFlag>& align, bool fontShadow) const
+	[[nodiscard]] QWidget* GetField(const QFont& font, const Color& bg, const QFlags<Qt::AlignmentFlag>& align, const MatchParseOptions& parseOptions) const
 	{
 		QWidget* ship = new QWidget();
 		QHBoxLayout* layout = new QHBoxLayout();
 		layout->setContentsMargins(3, 0, 3, 0);
 		layout->setSpacing(3);
 
+		QSize iconSize((int)std::roundf(18.0f * parseOptions.FontScaling), (int)std::roundf(9.0f * parseOptions.FontScaling));
+
 		QLabel* shipIcon = new QLabel();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-		shipIcon->setPixmap(QIcon(fmt::format(":/{}.svg", Class).c_str()).pixmap(QSize(18, 9), qApp->devicePixelRatio()));
+		shipIcon->setPixmap(QIcon(fmt::format(":/{}.svg", Class).c_str()).pixmap(iconSize, qApp->devicePixelRatio()));
 #else
-		shipIcon->setPixmap(QIcon(fmt::format(":/{}.svg", Class).c_str()).pixmap(QSize(18, 9)));
+		shipIcon->setPixmap(QIcon(fmt::format(":/{}.svg", Class).c_str()).pixmap(iconSize));
 #endif
 		shipIcon->setStyleSheet("background-color: transparent;");
 		shipIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
@@ -226,7 +228,7 @@ struct Ship
 		effect->setOpacity(0.85);
 		shipIcon->setGraphicsEffect(effect);
 
-		if (fontShadow)
+		if (parseOptions.FontShadow)
 			AddShadow(shipIcon);
 
 		QLabel* shipTier = new QLabel();
@@ -246,7 +248,7 @@ struct Ship
 			shipTier->setFont(font);
 		}
 
-		if (fontShadow)
+		if (parseOptions.FontShadow)
 			AddShadow(shipTier);
 
 		QLabel* shipName = new QLabel(Name.c_str());
@@ -254,7 +256,7 @@ struct Ship
 		shipName->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 		shipName->setStyleSheet("background-color: transparent;");
 
-		if (fontShadow)
+		if (parseOptions.FontShadow)
 			AddShadow(shipName);
 
 		layout->addWidget(shipIcon, 0, align);
@@ -296,30 +298,30 @@ struct Player
 	std::string WowsNumbers;
 	bool IsUsingPa;
 
-	[[nodiscard]] PlayerType GetTableRow(bool showKarma, bool fontShadow) const
+	[[nodiscard]] PlayerType GetTableRow(const MatchParseOptions& parseOptions) const
 	{
 		QFont font13(QApplication::font().family(), 1, QFont::Bold);
-		font13.setPixelSize(13);
+		font13.setPixelSize((int)std::roundf(13.0f * parseOptions.FontScaling));
 		QFont font16(QApplication::font().family(), 1, QFont::Bold);
-		font16.setPixelSize(16);
+		font16.setPixelSize((int)std::roundf(16.0f * parseOptions.FontScaling));
 
 		const QColor bg = PrColor.GetQColor();
-		QWidget* shipItem = Ship ? Ship->GetField(font13, PrColor, Qt::AlignVCenter | Qt::AlignLeft, fontShadow) : new QWidget();
+		QWidget* shipItem = Ship ? Ship->GetField(font13, PrColor, Qt::AlignVCenter | Qt::AlignLeft, parseOptions) : new QWidget();
 
 		PlayerType row = {
-			GetNameField(showKarma, fontShadow),
+			GetNameField(parseOptions),
 			shipItem,
-			Battles.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, fontShadow),
-			Winrate.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, fontShadow),
-			AvgDmg.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, fontShadow),
-			BattlesShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, fontShadow),
-			WinrateShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, fontShadow),
-			AvgDmgShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, fontShadow)
+			Battles.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, parseOptions.FontShadow),
+			Winrate.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, parseOptions.FontShadow),
+			AvgDmg.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, parseOptions.FontShadow),
+			BattlesShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, parseOptions.FontShadow),
+			WinrateShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, parseOptions.FontShadow),
+			AvgDmgShip.GetField(font16, bg, Qt::AlignVCenter | Qt::AlignRight, parseOptions.FontShadow)
 		};
 		return row;
 	}
 
-	[[nodiscard]] QWidget* GetNameField(bool showKarma, bool fontShadow) const
+	[[nodiscard]] QWidget* GetNameField(const MatchParseOptions& parseOptions) const
 	{
 		QWidget* name = new QWidget();
 		QHBoxLayout* layout = new QHBoxLayout();
@@ -328,24 +330,25 @@ struct Player
 
 		QLabel* nameLabel = new QLabel();
 		nameLabel->setStyleSheet("background-color: transparent");
+		const int nameSize = (int)std::roundf(13.0f * parseOptions.FontScaling);
 		if (Clan)
 		{
 			nameLabel->setTextFormat(Qt::RichText);
-			nameLabel->setText(fmt::format("<span style=\"color: {};\">[{}]</span>{}", Clan->ColorRGB.ToString(), Clan->Tag, Name).c_str());
+			nameLabel->setText(fmt::format(R"(<span style="font-size: {}px;"><span style="color: {};">[{}]</span>{}</span>)", nameSize, Clan->ColorRGB.ToString(), Clan->Tag, Name).c_str());
 		}
 		else
 		{
 			nameLabel->setText(Name.c_str());
 			QFont font(QApplication::font().family());
-			font.setPixelSize(13);
+			font.setPixelSize(nameSize);
 			nameLabel->setFont(font);
 		}
 		layout->addWidget(nameLabel, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
-		if (fontShadow)
+		if (parseOptions.FontShadow)
 			AddShadow(nameLabel);
 
-		if (Karma && showKarma && !HiddenPro)
+		if (Karma && parseOptions.ShowKarma && !HiddenPro)
 		{
 			QHBoxLayout* karmaLayout = new QHBoxLayout();
 			karmaLayout->setSpacing(0);
@@ -354,13 +357,13 @@ struct Player
 			QLabel* karmaLabel = new QLabel();
 			karmaLabel->setObjectName("karmaLabel");
 			karmaLabel->setTextFormat(Qt::RichText);
-			karmaLabel->setText(fmt::format("<span style=\"color: {};\">{}</span>", Karma.value().ColorRGB.ToString(), Karma.value().Str).c_str());
+			karmaLabel->setText(fmt::format(R"(<span style="color: {};">{}</span>)", Karma.value().ColorRGB.ToString(), Karma.value().Str).c_str());
 			karmaLabel->setStyleSheet("background-color: transparent");
 			QFont font(QApplication::font().family());
-			font.setPixelSize(11);
+			font.setPixelSize((int)std::roundf(11.0f * parseOptions.FontScaling));
 			karmaLabel->setFont(font);
 
-			if (fontShadow)
+			if (parseOptions.FontShadow)
 				AddShadow(karmaLabel);
 
 			karmaLayout->addWidget(karmaLabel, 0, Qt::AlignTop | Qt::AlignLeft);
@@ -369,17 +372,18 @@ struct Player
 
 		if (IsUsingPa)
 		{
+			const int potatoSize = (int)std::roundf(12.0f * parseOptions.FontScaling);
 			QLabel* potatoIcon = new QLabel();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-			potatoIcon->setPixmap(QIcon(":/potato.svg").pixmap(QSize(12, 12), qApp->devicePixelRatio()));
+			potatoIcon->setPixmap(QIcon(":/potato.svg").pixmap(QSize(potatoSize, potatoSize), qApp->devicePixelRatio()));
 #else
-			potatoIcon->setPixmap(QIcon(":/potato.svg").pixmap(QSize(12, 12)));
+			potatoIcon->setPixmap(QIcon(":/potato.svg").pixmap(QSize(potatoSize, potatoSize)));
 #endif
 			potatoIcon->setStyleSheet("background-color: transparent;");
 			potatoIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 			potatoIcon->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 
-			if (fontShadow)
+			if (parseOptions.FontShadow)
 				AddShadow(potatoIcon);
 
 			layout->addWidget(potatoIcon, 0, Qt::AlignVCenter | Qt::AlignLeft);
@@ -538,7 +542,7 @@ void pn::Label::UpdateLabel(QLabel* label) const
 	}
 }
 
-JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const MatchContext& matchContext, bool showKarma, bool fontShadow) noexcept
+JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const MatchContext& matchContext, MatchParseOptions&& parseOptions) noexcept
 {
 	StatsParseResult result;
 
@@ -550,7 +554,7 @@ JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const Mat
 	_JSON::Ship playerShip;
 
 	// parse match stats
-	auto getTeam = [&match, &matchContext, &playerShip, showKarma, fontShadow](const _JSON::Team& inTeam, Team& outTeam)
+	auto getTeam = [&match, &matchContext, &playerShip, parseOptions](const _JSON::Team& inTeam, Team& outTeam)
 	{
 		// do not display bots in scenario or operation mode
 		if ((match.MatchGroup == "pve" || match.MatchGroup == "pve_premade") && inTeam.Id == 2)
@@ -559,14 +563,14 @@ JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const Mat
 		}
 
 		TeamType teamTable;
-		for (auto& player : inTeam.Players)
+		for (const _JSON::Player& player : inTeam.Players)
 		{
 			if (player.Name == matchContext.PlayerName && player.Ship.has_value())
 			{
 				playerShip = player.Ship.value();
 			}
 
-			teamTable.push_back(player.GetTableRow(showKarma, fontShadow));
+			teamTable.push_back(player.GetTableRow(parseOptions));
 			outTeam.WowsNumbers.push_back(ToQString(player.WowsNumbers));
 		}
 		outTeam.AvgDmg = inTeam.AvgDmg.GetLabel();
@@ -627,8 +631,8 @@ JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const Mat
 	info.Region = std::move(match.Region);
 	info.Map = std::move(match.Map);
 	info.DateTime = std::move(match.DateTime);
-	info.Player = std::move(matchContext.PlayerName);
-	info.ShipIdent = std::move(matchContext.ShipIdent);
+	info.Player = matchContext.PlayerName;
+	info.ShipIdent = matchContext.ShipIdent;
 	info.ShipName = std::move(playerShip.Name);
 	info.ShipClass = std::move(playerShip.Class);
 	info.ShipNation = std::move(playerShip.Nation);
@@ -637,9 +641,9 @@ JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const Mat
 	return result;
 }
 
-JsonResult<StatsParseResult> pn::ParseMatch(const std::string& raw, const MatchContext& matchContext, bool showKarma, bool fontShadow) noexcept
+JsonResult<StatsParseResult> pn::ParseMatch(const std::string& raw, const MatchContext& matchContext, MatchParseOptions&& parseOptions) noexcept
 {
 	PA_TRY(j, Core::ParseJson(raw));
-	PA_TRY(match, ParseMatch(j, matchContext, showKarma, fontShadow));
+	PA_TRY(match, ParseMatch(j, matchContext, std::move(parseOptions)));
 	return match;
 }

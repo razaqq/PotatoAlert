@@ -18,4 +18,16 @@ private:
 	int m_language;
 };
 
+class FontScalingChangeEvent : public QEvent
+{
+public:
+	explicit FontScalingChangeEvent(float scaling) : QEvent(RegisteredType()), m_scaling(scaling) {}
+	[[nodiscard]] float GetScaling() const { return m_scaling; }
+	static Type RegisteredType() { return m_type; }
+
+private:
+	const static Type m_type;
+	float m_scaling;
+};
+
 }  // namespace PotatoAlert::Gui

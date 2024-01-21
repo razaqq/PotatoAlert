@@ -3,7 +3,7 @@
 #include "Client/StatsParser.hpp"
 #include "Client/StringTable.hpp"
 
-#include "Gui/LanguageChangeEvent.hpp"
+#include "Gui/Events.hpp"
 #include "Gui/StatsWidget/StatsTeamFooter.hpp"
 
 #include <QApplication>
@@ -32,13 +32,8 @@ void StatsTeamFooter::Init()
 	layout->setContentsMargins(10, 0, 10, 0);
 	layout->setSpacing(10);
 
-	const QFont labelFont(QApplication::font().family(), 10, QFont::Bold);
-
 	layout->setContentsMargins(10, 0, 10, 0);
 	layout->setSpacing(0);
-	
-	for (auto& label : { m_wrLabel, m_wr, m_dmgLabel, m_dmg, m_tag, m_name, m_regionLabel, m_region })
-		label->setFont(labelFont);
 
 	layout->addWidget(m_wrLabel, 0, Qt::AlignRight);
 	layout->addWidget(m_wr, 0, Qt::AlignLeft);

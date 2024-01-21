@@ -9,8 +9,8 @@
 #include "Core/Instrumentor.hpp"
 #include "Core/Log.hpp"
 
+#include "Gui/Events.hpp"
 #include "Gui/Fonts.hpp"
-#include "Gui/LanguageChangeEvent.hpp"
 #include "Gui/MatchHistory/MatchHistory.hpp"
 #include "Gui/QuestionDialog.hpp"
 
@@ -142,7 +142,8 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 		const Client::Match& match = m_model->GetMatch(m_sortFilter->mapToSource(index).row());
 		const bool showKarma = m_services.Get<Config>().Get<ConfigKey::ShowKarma>();
 		const bool fontShadow = m_services.Get<Config>().Get<ConfigKey::FontShadow>();
-		PA_TRY_OR_ELSE(res, ParseMatch(match.Json, MatchContext{}, showKarma, fontShadow),
+		const int fontScaling = m_services.Get<Config>().Get<ConfigKey::FontScaling>();
+		PA_TRY_OR_ELSE(res, ParseMatch(match.Json, MatchContext{}, { showKarma, fontShadow, (float)fontScaling / 100.0f }),
 		{
 			LOG_ERROR("Failed to parse match as JSON: {}", error);
 			return;

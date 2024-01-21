@@ -3,7 +3,10 @@
 
 #include "Client/StatsParser.hpp"
 
-#include <QLabel>
+#include "Gui/ScalingLabel.hpp"
+
+#include <QEvent>
+#include <QFont>
 #include <QWidget>
 
 
@@ -13,17 +16,6 @@ using Client::StatsParser::Team;
 
 class StatsTeamFooter : public QWidget
 {
-private:
-	QLabel* m_wrLabel = new QLabel();
-	QLabel* m_dmgLabel = new QLabel();
-	QLabel* m_regionLabel = new QLabel();
-
-	QLabel* m_wr = new QLabel("0.0%");
-	QLabel* m_dmg = new QLabel("0");
-	QLabel* m_tag = new QLabel();
-	QLabel* m_name = new QLabel();
-	QLabel* m_region = new QLabel();
-
 public:
 	explicit StatsTeamFooter(QWidget* parent = nullptr);
 	void Update(const Team& team) const;
@@ -31,6 +23,18 @@ public:
 
 private:
 	void Init();
+
+private:
+	QFont m_labelFont = QFont(QApplication::font().family(), 10, QFont::Bold);
+	ScalingLabel* m_wrLabel = new ScalingLabel(m_labelFont);
+	ScalingLabel* m_dmgLabel = new ScalingLabel(m_labelFont);
+	ScalingLabel* m_regionLabel = new ScalingLabel(m_labelFont);
+
+	ScalingLabel* m_wr = new ScalingLabel("0.0%", m_labelFont);
+	ScalingLabel* m_dmg = new ScalingLabel("0", m_labelFont);
+	ScalingLabel* m_tag = new ScalingLabel(m_labelFont);
+	ScalingLabel* m_name = new ScalingLabel(m_labelFont);
+	ScalingLabel* m_region = new ScalingLabel(m_labelFont);
 };
 
 }  // namespace PotatoAlert::Gui

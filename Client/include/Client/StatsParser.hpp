@@ -111,8 +111,15 @@ struct MatchContext
 	std::string ShipIdent;
 };
 
-Core::JsonResult<StatsParseResult> ParseMatch(const rapidjson::Value& j, const MatchContext& matchContext, bool showKarma, bool fontShadow) noexcept;
-Core::JsonResult<StatsParseResult> ParseMatch(const std::string& raw, const MatchContext& matchContext, bool showKarma, bool fontShadow) noexcept;
+struct MatchParseOptions
+{
+	bool ShowKarma;
+	bool FontShadow;
+	float FontScaling;
+};
+
+Core::JsonResult<StatsParseResult> ParseMatch(const rapidjson::Value& j, const MatchContext& matchContext, MatchParseOptions&& parseOptions) noexcept;
+Core::JsonResult<StatsParseResult> ParseMatch(const std::string& raw, const MatchContext& matchContext, MatchParseOptions&& parseOptions) noexcept;
 
 }  // namespace StatsParser
 

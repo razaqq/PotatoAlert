@@ -69,7 +69,10 @@ public:
 		return m_columnCount - 1;
 	}
 
+	bool eventFilter(QObject* watched, QEvent* event) override;
+
 private:
+	int m_headerSize = 11;
 	static constexpr int m_columnCount = 8;
 	std::vector<Client::Match> m_matches;
 	const Client::ServiceProvider& m_services;

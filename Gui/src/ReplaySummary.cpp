@@ -5,8 +5,8 @@
 #include "Client/StatsParser.hpp"
 #include "Client/StringTable.hpp"
 
+#include "Gui/Events.hpp"
 #include "Gui/IconButton.hpp"
-#include "Gui/LanguageChangeEvent.hpp"
 #include "Gui/ReplaySummary.hpp"
 
 #include <QApplication>

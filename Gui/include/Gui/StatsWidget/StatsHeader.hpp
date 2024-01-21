@@ -3,7 +3,11 @@
 
 #include "Client/PotatoClient.hpp"
 
+#include "Gui/ScalingLabel.hpp"
+
+#include <QApplication>
 #include <QEvent>
+#include <QFont>
 #include <QLabel>
 #include <QPixmap>
 #include <QWidget>
@@ -17,16 +21,6 @@ class StatsHeaderFriendly : public QWidget
 {
 	Q_OBJECT
 
-private:
-	QLabel* m_statusIcon = new QLabel();
-	QLabel* m_statusText = new QLabel();
-
-	QLabel* m_label = new QLabel();
-	
-	QWidget* m_loading;
-	QPixmap m_ready;
-	QPixmap m_error;
-
 public:
 	explicit StatsHeaderFriendly(QWidget* parent = nullptr);
 	void SetStatus(Client::Status status, std::string_view text) const;
@@ -34,6 +28,16 @@ public:
 
 private:
 	void Init();
+
+private:
+	QLabel* m_statusIcon = new QLabel();
+	ScalingLabel* m_statusText = (new ScalingLabel(QFont(QApplication::font().family(), 8)))->SetPointSizeF(7.5f);
+
+	ScalingLabel* m_label = new ScalingLabel(QFont(QApplication::font().family(), 15, QFont::Bold));
+	
+	QWidget* m_loading;
+	QPixmap m_ready;
+	QPixmap m_error;
 };
 
 
@@ -41,15 +45,15 @@ class StatsHeaderEnemy : public QWidget
 {
 	Q_OBJECT
 
-private:
-	QLabel* m_label = new QLabel();
-
 public:
 	explicit StatsHeaderEnemy(QWidget* parent = nullptr);
 	bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
 	void Init();
+
+private:
+	ScalingLabel* m_label = new ScalingLabel(QFont(QApplication::font().family(), 15, QFont::Bold));
 };
 
 }  // namespace PotatoAlert::Gui

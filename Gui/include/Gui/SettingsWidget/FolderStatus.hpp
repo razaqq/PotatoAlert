@@ -3,6 +3,8 @@
 
 #include "Client/Game.hpp"
 
+#include "Gui/ScalingLabel.hpp"
+
 #include <QEvent>
 #include <QLabel>
 #include <QWidget>
@@ -21,19 +23,19 @@ private:
 	void Init();
 
 private:
-	QLabel* m_statusLabel = new QLabel();
-	QLabel* m_replaysLabel = new QLabel();
-	QLabel* m_regionLabel = new QLabel();
-	QLabel* m_versionLabel = new QLabel();
-	QLabel* m_steamLabel = new QLabel();
-	QLabel* m_versionedLabel = new QLabel();
+	ScalingLabel* m_statusLabel = new ScalingLabel();
+	ScalingLabel* m_replaysLabel = new ScalingLabel();
+	ScalingLabel* m_regionLabel = new ScalingLabel();
+	ScalingLabel* m_versionLabel = new ScalingLabel();
+	ScalingLabel* m_steamLabel = new ScalingLabel();
+	ScalingLabel* m_versionedLabel = new ScalingLabel();
 
-	QLabel* m_region = new QLabel();
-	QLabel* m_gameVersion = new QLabel();
-	QLabel* m_found = new QLabel();
-	QLabel* m_replaysFolders = new QLabel();
-	QLabel* m_versionedReplays = new QLabel();
-	QLabel* m_statusText = new QLabel();
+	ScalingLabel* m_region = new ScalingLabel();
+	ScalingLabel* m_gameVersion = new ScalingLabel();
+	ScalingLabel* m_found = new ScalingLabel();
+	ScalingLabel* m_replaysFolders = new ScalingLabel();
+	ScalingLabel* m_versionedReplays = new ScalingLabel();
+	ScalingLabel* m_statusText = new ScalingLabel();
 	int m_currentLanguage = 0;
 };
 

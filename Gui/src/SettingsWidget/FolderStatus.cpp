@@ -5,7 +5,7 @@
 
 #include "Core/String.hpp"
 
-#include "Gui/LanguageChangeEvent.hpp"
+#include "Gui/Events.hpp"
 #include "Gui/SettingsWidget/FolderStatus.hpp"
 
 #include <QApplication>

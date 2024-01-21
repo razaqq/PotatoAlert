@@ -177,6 +177,13 @@
         <繁體中文>字體</繁體中文>
         <日本語>フォント</日本語>
     </Key>
+    <Key ID="SETTINGS_FONT_SCALING">
+        <English>Font Scaling</English>
+        <Deutsch>Schriftskalierung</Deutsch>
+        <简体中文>字体缩放</简体中文>
+        <繁體中文>字體縮放</繁體中文>
+        <日本語>フォントのスケーリング</日本語>
+    </Key>
     <Key ID="SETTINGS_GENERAL">
         <English>General</English>
         <Deutsch>Allgemein</Deutsch>

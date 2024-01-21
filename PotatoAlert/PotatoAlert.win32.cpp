@@ -13,10 +13,10 @@
 #include "Client/ServiceProvider.hpp"
 #include "Client/ReplayAnalyzer.hpp"
 
+#include "Gui/Events.hpp"
 #include "Gui/MainWindow.hpp"
 #include "Gui/NativeWindow.hpp"
 #include "Gui/Palette.hpp"
-#include "Gui/LanguageChangeEvent.hpp"
 
 #include "Updater/Updater.hpp"
 
@@ -30,7 +30,6 @@
 #include <QApplication>
 #include <QEvent>
 #include <QFile>
-#include <QFontDatabase>
 
 
 using PotatoAlert::Client::AppDirectories;
@@ -42,11 +41,11 @@ using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Client::ReplayAnalyzer;
 using PotatoAlert::Client::ServiceProvider;
 using PotatoAlert::Core::ApplicationGuard;
-using PotatoAlert::Core::AppDataPath;
 using PotatoAlert::Core::ExitCurrentProcess;
 using PotatoAlert::Core::ExitCurrentProcessWithError;
 using PotatoAlert::Core::SQLite;
 using PotatoAlert::Gui::DarkPalette;
+using PotatoAlert::Gui::FontScalingChangeEvent;
 using PotatoAlert::Gui::LanguageChangeEvent;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::NativeWindow;
@@ -116,8 +115,12 @@ static int RunMain(int argc, char* argv[])
 	nativeWindow->show();
 
 	// force update of language
-	LanguageChangeEvent event(serviceProvider.Get<Config>().Get<ConfigKey::Language>());
-	QApplication::sendEvent(mainWindow, &event);
+	LanguageChangeEvent languageChangeEvent(serviceProvider.Get<Config>().Get<ConfigKey::Language>());
+	QApplication::sendEvent(mainWindow, &languageChangeEvent);
+
+	// force update of font scaling
+	FontScalingChangeEvent fontScalingChangeEvent((float)serviceProvider.Get<Config>().Get<ConfigKey::FontScaling>() / 100.0f);
+	QApplication::sendEvent(mainWindow, &fontScalingChangeEvent);
 
 	// check if there is a new version available
 	if (serviceProvider.Get<Config>().Get<ConfigKey::UpdateNotifications>())

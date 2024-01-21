@@ -4,6 +4,7 @@
 #include "Client/ServiceProvider.hpp"
 
 #include "Gui/AboutWidget.hpp"
+#include "Gui/Events.hpp"
 #include "Gui/MatchHistory/MatchHistory.hpp"
 #include "Gui/ReplaySummary.hpp"
 #include "Gui/SettingsWidget/SettingsWidget.hpp"
@@ -19,6 +20,19 @@ namespace PotatoAlert::Gui {
 
 class MainWindow : public QMainWindow
 {
+
+public:
+	explicit MainWindow(const Client::ServiceProvider& serviceProvider);
+	bool ConfirmUpdate();
+
+private:
+	void Init();
+	void SwitchTab(MenuEntry i);
+	void ConnectSignals();
+
+protected:
+	bool event(QEvent* e) override;
+
 private:
 	const Client::ServiceProvider& m_services;
 
@@ -33,16 +47,6 @@ private:
 	AboutWidget* m_aboutWidget = new AboutWidget(this);
 
 	QWidget* m_activeWidget = m_statsWidget;
-
-public:
-	explicit MainWindow(const Client::ServiceProvider& serviceProvider);
-	bool ConfirmUpdate();
-
-private:
-	void Init();
-
-	void SwitchTab(MenuEntry i);
-	void ConnectSignals();
 };
 
 }  // namespace PotatoAlert::Gui

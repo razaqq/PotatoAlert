@@ -4,7 +4,8 @@
 #include "Client/ServiceProvider.hpp"
 #include "Client/StringTable.hpp"
 
-#include "Gui/LanguageChangeEvent.hpp"
+#include "Gui/Events.hpp"
+#include "Gui/Fonts.hpp"
 #include "Gui/StatsWidget/StatsTable.hpp"
 
 #include <QApplication>
@@ -44,6 +45,7 @@ void StatsTable::InitHeaders()
 	{
 		QTableWidgetItem* item = new QTableWidgetItem();
 		item->setFont(QFont(QApplication::font().family(), 11));
+		item->setData(FontSizeRole, 11.0f);
 		setHorizontalHeaderItem(i, item);
 	}
 	

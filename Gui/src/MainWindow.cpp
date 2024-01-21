@@ -8,6 +8,7 @@
 #include "Core/Directory.hpp"
 #include "Core/Screenshot.hpp"
 
+#include "Gui/Fonts.hpp"
 #include "Gui/MainWindow.hpp"
 #include "Gui/MatchHistory/MatchHistory.hpp"
 #include "Gui/ReplaySummary.hpp"
@@ -180,6 +181,16 @@ void MainWindow::ConnectSignals()
 	});
 
 	connect(m_settingsWidget, &SettingsWidget::TableLayoutChanged, m_statsWidget, &StatsWidget::UpdateTableLayout);
+}
+
+bool MainWindow::event(QEvent* e)
+{
+	if (e->type() == FontScalingChangeEvent::RegisteredType())
+	{
+		const float scaling = dynamic_cast<FontScalingChangeEvent*>(e)->GetScaling();
+		UpdateWidgetFontScaling(this, scaling);
+	}
+	return QMainWindow::event(e);
 }
 
 bool MainWindow::ConfirmUpdate()
