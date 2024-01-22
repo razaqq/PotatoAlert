@@ -77,10 +77,21 @@ void NativeWindow::hideEvent(QHideEvent* event)
 	}
 }
 
-void NativeWindow::Init()
+void NativeWindow::showEvent(QShowEvent* event)
 {
 	const Config& config = m_services.Get<Config>();
 
+	setGeometry(
+		config.Get<ConfigKey::WindowX>(),
+		config.Get<ConfigKey::WindowY>(),
+		config.Get<ConfigKey::WindowWidth>(),
+		config.Get<ConfigKey::WindowHeight>()
+	);
+	setWindowState(static_cast<decltype(windowState())>(config.Get<ConfigKey::WindowState>()));
+}
+
+void NativeWindow::Init()
+{
 	if (QSystemTrayIcon::isSystemTrayAvailable())
 	{
 		QSystemTrayIcon* trayIcon = new QSystemTrayIcon(QIcon(":/potato.svg"));
@@ -88,15 +99,15 @@ void NativeWindow::Init()
 
 		connect(trayIcon, &QSystemTrayIcon::activated, [this](QSystemTrayIcon::ActivationReason reason)
 		{
-			if (reason == QSystemTrayIcon::DoubleClick  || reason == QSystemTrayIcon::Trigger)
+			if (reason == QSystemTrayIcon::DoubleClick || reason == QSystemTrayIcon::Trigger)
 			{
 				show();
 			}
 		});
 
-		auto trayMenu = new QMenu(this);
-		auto closeAction = new QAction("Exit", this);
-		auto openAction = new QAction("Open", this);
+		QMenu* trayMenu = new QMenu(this);
+		QAction* closeAction = new QAction("Exit", this);
+		QAction* openAction = new QAction("Open", this);
 		trayMenu->addAction(openAction);
 		trayMenu->addAction(closeAction);
 		trayMenu->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
@@ -113,7 +124,7 @@ void NativeWindow::Init()
 
 	m_titleBar->setFixedHeight(23);
 
-	auto layout = new QVBoxLayout();
+	QVBoxLayout* layout = new QVBoxLayout();
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(0);
 
@@ -121,10 +132,6 @@ void NativeWindow::Init()
 	layout->addWidget(m_mainWindow);
 
 	setLayout(layout);
-	
-	resize(config.Get<ConfigKey::WindowWidth>(), config.Get<ConfigKey::WindowHeight>());
-	windowHandle()->setFramePosition(QPoint(config.Get<ConfigKey::WindowX>(), config.Get<ConfigKey::WindowY>()));
-	setWindowState(static_cast<decltype(windowState())>(config.Get<ConfigKey::WindowState>()));
 
 	bool reachable = false;
 	QRect titleBarGeo = windowHandle()->frameGeometry();
