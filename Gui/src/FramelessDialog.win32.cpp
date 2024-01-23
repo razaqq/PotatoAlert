@@ -23,16 +23,16 @@ using PotatoAlert::Gui::FramelessDialog;
 
 FramelessDialog::FramelessDialog(QWidget* parent) : QDialog(parent)
 {
-	this->setParent(parent);
+	setParent(parent);
 
-	this->setWindowFlags(this->windowFlags() | Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowStaysOnTopHint);
-	this->setWindowModality(Qt::WindowModal);
+	setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowStaysOnTopHint);
+	setWindowModality(Qt::WindowModal);
 }
 
 void FramelessDialog::showEvent(QShowEvent* event)
 {
 	// edit underlying native window
-	const HWND winId = reinterpret_cast<HWND>(this->windowHandle()->winId());
+	const HWND winId = reinterpret_cast<HWND>(windowHandle()->winId());
 
 	// edit style
 	const LONG style = GetWindowLongA(winId, GWL_STYLE);

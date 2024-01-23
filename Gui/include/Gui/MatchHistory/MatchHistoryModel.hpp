@@ -54,7 +54,7 @@ public:
 
 	void SetMatches(std::vector<Client::Match>&& matches)
 	{
-		m_matches = matches;
+		m_matches = std::move(matches);
 	}
 
 	void SetReplaySummary(uint32_t id, const ReplaySummary& summary);

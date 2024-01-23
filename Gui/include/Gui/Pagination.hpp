@@ -16,18 +16,6 @@ class Pagination : public QFrame
 {
 	Q_OBJECT
 
-private:
-	static constexpr int m_displayedPageCount = 7;
-
-	int m_currentPage = 0;
-	int m_totalPageCount = 1;
-	int m_maxPageDisplay = 5;
-	std::array<int, m_displayedPageCount> m_pageNumbers{};
-	QButtonGroup* m_buttons = new QButtonGroup();
-
-	IconButton* m_nextButton;
-	IconButton* m_previousButton;
-
 public:
 	explicit Pagination(QWidget* parent = nullptr);
 
@@ -50,6 +38,18 @@ private:
 
 signals:
 	void CurrentPageChanged(int page);
+
+private:
+	static constexpr int m_displayedPageCount = 7;
+
+	int m_currentPage = 0;
+	int m_totalPageCount = 1;
+	int m_maxPageDisplay = 5;
+	std::array<int, m_displayedPageCount> m_pageNumbers{};
+	QButtonGroup* m_buttons = new QButtonGroup();
+
+	IconButton* m_nextButton;
+	IconButton* m_previousButton;
 };
 
 }  // namespace PotatoAlert::Gui
