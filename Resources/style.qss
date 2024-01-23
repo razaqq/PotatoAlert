@@ -571,3 +571,48 @@ QFrame#hLine
 {
   background-color: palette(window);
 }
+
+QGroupBox::title
+{
+  subcontrol-origin: margin;
+  subcontrol-position: top center;
+  padding: 0 0px;
+}
+
+QListView
+{
+  outline: none;
+}
+
+QListView::item
+{
+  padding-left: 0px;
+}
+
+QListView::indicator
+{
+  border: 1px solid palette(midlight);
+  width: 10px;
+  height: 10px;
+
+  color: transparent;
+  background-color: palette(base);
+  selection-color: transparent;
+  selection-background-color: transparent;
+}
+
+QListView::indicator:checked,
+QListView::indicator:checked:selected,
+QListView::indicator:checked:focus
+{
+  padding: 1px;
+  image: url(:/Cross.svg);
+  color: transparent;
+  background-color: transparent;
+}
+
+QListView::indicator:unchecked
+{
+  color: transparent;
+  background-color: transparent;
+}

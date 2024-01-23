@@ -3,6 +3,7 @@
 #include "Gui/IconButton.hpp"
 #include "Gui/Pagination.hpp"
 
+#include <QApplication>
 #include <QButtonGroup>
 #include <QFont>
 #include <QFrame>
@@ -20,7 +21,7 @@ Pagination::Pagination(QWidget* parent) : QFrame(parent)
 
 	m_buttons->setExclusive(true);
 
-	const QFont buttonFont("Noto Sans", 10, QFont::DemiBold);
+	const QFont buttonFont(qApp->font().family(), 10, QFont::DemiBold);
 
 	m_previousButton = new IconButton(":ArrowLeft.svg", ":ArrowLeftHover.svg", QSize(30, 30));
 	m_nextButton = new IconButton(":ArrowRight.svg", ":ArrowRightHover.svg", QSize(30, 30));
@@ -149,11 +150,10 @@ void Pagination::RefreshPageNumbers()
 	m_pageNumbers[0] = 0;
 	m_pageNumbers[m_displayedPageCount - 1] = m_totalPageCount - 1;
 
-
 	int fromIndex = 1;
 	int toIndex = m_displayedPageCount - 2;
 
-	bool middle = m_currentPage >= 3 && m_currentPage < m_totalPageCount - 3;
+	const bool middle = m_currentPage >= 3 && m_currentPage < m_totalPageCount - 3;
 
 	if (m_currentPage > 3)
 	{

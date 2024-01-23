@@ -21,6 +21,7 @@ target_sources(
     src/VerticalMenuBar.cpp
 
     src/MatchHistory/MatchHistory.cpp
+    src/MatchHistory/MatchHistoryFilter.cpp
     src/MatchHistory/MatchHistoryView.cpp
     src/MatchHistory/MatchHistoryModel.cpp
 
@@ -43,6 +44,7 @@ target_sources(
     PRIVATE
 
     include/Gui/MatchHistory/MatchHistory.hpp
+    include/Gui/MatchHistory/MatchHistoryFilter.hpp
     include/Gui/MatchHistory/MatchHistoryView.hpp
     include/Gui/MatchHistory/MatchHistoryModel.hpp
     include/Gui/MatchHistory/ReplaySummaryButtonDelegate.hpp

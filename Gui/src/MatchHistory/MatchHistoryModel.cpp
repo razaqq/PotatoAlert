@@ -9,7 +9,16 @@
 #include "Gui/MatchHistory/MatchHistoryModel.hpp"
 
 #include <QAbstractTableModel>
+#include <QApplication>
+#include <QColor>
+#include <QEvent>
+#include <QFont>
+#include <QString>
+#include <QVariant>
 
+#include <cstdint>
+#include <chrono>
+#include <ranges>
 #include <sstream>
 #include <chrono>
 #include <vector>
@@ -147,7 +156,7 @@ QVariant MatchHistoryModel::headerData(int section, Qt::Orientation orientation,
 		}
 		case Qt::FontRole:
 		{
-			return QFont(QApplication::font().family(), m_headerSize);
+			return QFont(qApp->font().family(), m_headerSize);
 		}
 		default:
 		{

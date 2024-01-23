@@ -12,12 +12,11 @@
 #include "Gui/Events.hpp"
 #include "Gui/Fonts.hpp"
 #include "Gui/MatchHistory/MatchHistory.hpp"
-#include "Gui/QuestionDialog.hpp"
-
 #include "Gui/MatchHistory/MatchHistoryModel.hpp"
 #include "Gui/MatchHistory/MatchHistorySortFilter.hpp"
 #include "Gui/MatchHistory/MatchHistoryView.hpp"
 #include "Gui/MatchHistory/ReplaySummaryButtonDelegate.hpp"
+#include "Gui/QuestionDialog.hpp"
 
 #include <QHBoxLayout>
 #include <QSortFilterProxyModel>
@@ -42,7 +41,7 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 	m_view = new MatchHistoryView();
 	m_model = new MatchHistoryModel(m_services);
 
-	m_sortFilter = new MatchHistorySortFilter(m_model);
+	m_sortFilter = new MatchHistorySortFilter(m_filter, m_model);
 	m_sortFilter->setSourceModel(m_model);
 
 	ReplaySummaryButtonDelegate* summaryButtonDelegate = new ReplaySummaryButtonDelegate();
@@ -72,23 +71,27 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 	layout->setContentsMargins(0, 0, 0, 10);
 	centralWidget->setLayout(layout);
 
-	m_deleteButton->setFixedWidth(100);
-	m_deleteButton->setObjectName("settingsButton");
+	m_deleteButton->setObjectName("paginationButton");
+	m_deleteButton->setFixedSize(30, 30);
 	m_deleteButton->setEnabled(false);
+	m_deleteButton->setCheckable(false);
+	m_filterButton->setObjectName("paginationButton");
+	m_filterButton->setFixedSize(30, 30);
 
 	m_entryCount->setFixedWidth(150);
+	m_entryCount->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
 	QHBoxLayout* buttonLayout = new QHBoxLayout();
-	buttonLayout->setContentsMargins(15, 0, 15, 0);
-	buttonLayout->addWidget(m_entryCount);
+	buttonLayout->setContentsMargins(10, 0, 10, 0);
+	buttonLayout->setSpacing(10);
+	buttonLayout->addWidget(m_filterButton);  // 30 + 10 spacing
+	buttonLayout->addWidget(m_deleteButton);  // 30
+	buttonLayout->addSpacing(80);        // 80
 	buttonLayout->addStretch();
 	buttonLayout->addWidget(m_pagination);
 	buttonLayout->addStretch();
-	buttonLayout->addSpacing(25);
-	buttonLayout->addWidget(m_deleteButton);
-	buttonLayout->addSpacing(25);
+	buttonLayout->addWidget(m_entryCount);    // 150
 
-	m_pagination->SetTotalPageCount(PageCount());
 	connect(m_pagination, &Pagination::CurrentPageChanged, this, &MatchHistory::SwitchPage);
 
 	layout->addWidget(m_view);
@@ -137,6 +140,13 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 		}
 	});
 
+	m_filter->setVisible(false);
+	connect(m_filterButton, &QPushButton::clicked, [this](bool _)
+	{
+		m_filter->setVisible(!m_filter->isVisible());
+		m_filter->AdjustPosition();
+	});
+
 	connect(m_view, &QTableView::doubleClicked, [this](const QModelIndex& index)
 	{
 		const Client::Match& match = m_model->GetMatch(m_sortFilter->mapToSource(index).row());
@@ -155,6 +165,8 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 	{
 		m_deleteButton->setEnabled(!selected.empty());
 	});
+
+	connect(m_filter, &MatchHistoryFilter::FilterChanged, this, &MatchHistory::Refresh);
 }
 
 void MatchHistory::SwitchPage(int page) const
@@ -162,10 +174,10 @@ void MatchHistory::SwitchPage(int page) const
 	m_sortFilter->ResetFilter();
 
 	const int fromEntry = std::min(
-		page * m_entriesPerPage + m_entriesPerPage - 1,
-		std::max(static_cast<int>(m_model->MatchCount()) - 1, 0)
+		page * EntriesPerPage + EntriesPerPage - 1,
+		std::max(m_sortFilter->rowCount() - 1, 0)
 	);
-	const int toEntry = page * m_entriesPerPage;
+	const int toEntry = page * EntriesPerPage;
 
 	if (fromEntry == 0 && toEntry == 0)
 	{
@@ -173,7 +185,7 @@ void MatchHistory::SwitchPage(int page) const
 		return;
 	}
 
-	m_entryCount->setText(std::format("Entries {}-{} / {}", toEntry + 1, fromEntry + 1, m_model->MatchCount()).c_str());
+	m_entryCount->setText(std::format("Entries {}-{} / {}", toEntry + 1, fromEntry + 1, m_sortFilter->rowCount()).c_str());
 
 	const size_t from = m_sortFilter->mapToSource(m_sortFilter->index(fromEntry, 0)).row();
 	const size_t to = m_sortFilter->mapToSource(m_sortFilter->index(toEntry, 0)).row();
@@ -186,7 +198,8 @@ void MatchHistory::SwitchPage(int page) const
 
 int MatchHistory::PageCount() const
 {
-	return std::max(static_cast<int>(std::ceil(m_model->MatchCount() / static_cast<float>(m_entriesPerPage))), 1);
+	m_sortFilter->ResetFilter();  // TODO: this is not ideal
+	return std::max(static_cast<int>(std::ceil(m_sortFilter->rowCount() / (float)EntriesPerPage)), 1);
 }
 
 void MatchHistory::AddMatch(const Client::Match& match) const
@@ -207,6 +220,7 @@ void MatchHistory::LoadMatches() const
 	});
 	LOG_TRACE("Loaded MatchHistory");
 
+	m_filter->BuildFilter(matches);
 	m_model->SetMatches(std::move(matches));
 	Refresh();
 }
@@ -218,16 +232,22 @@ void MatchHistory::SetReplaySummary(uint32_t id, const ReplaySummary& summary) c
 
 bool MatchHistory::eventFilter(QObject* watched, QEvent* event)
 {
-	if (event->type() == LanguageChangeEvent::RegisteredType())
-	{
-		const int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
-		m_deleteButton->setText(GetString(lang, StringTableKey::HISTORY_DELETE));
-	}
-	else if (event->type() == QEvent::ApplicationFontChange)
+	if (event->type() == QEvent::ApplicationFontChange)
 	{
 		UpdateLayoutFont(layout());
 	}
 	return QWidget::eventFilter(watched, event);
+}
+
+void MatchHistory::hideEvent(QHideEvent* event)
+{
+	m_filter->setVisible(false);
+}
+
+void MatchHistory::showEvent(QShowEvent* event)
+{
+	if (m_filterButton->isChecked())
+		m_filter->setVisible(true);
 }
 
 void MatchHistory::Refresh() const

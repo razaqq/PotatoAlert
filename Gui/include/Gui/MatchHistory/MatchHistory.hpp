@@ -6,6 +6,7 @@
 #include "Client/StatsParser.hpp"
 
 #include "Gui/IconButton.hpp"
+#include "Gui/MatchHistory/MatchHistoryFilter.hpp"
 #include "Gui/MatchHistory/MatchHistoryModel.hpp"
 #include "Gui/MatchHistory/MatchHistorySortFilter.hpp"
 #include "Gui/MatchHistory/MatchHistoryView.hpp"
@@ -30,6 +31,18 @@ public:
 	void SetReplaySummary(uint32_t id, const ReplaySummary& summary) const;
 	
 	bool eventFilter(QObject* watched, QEvent* event) override;
+	void hideEvent(QHideEvent* event) override;
+	void showEvent(QShowEvent* event) override;
+	void moveEvent(QMoveEvent* event) override
+	{
+		if (m_filter->isVisible())
+			m_filter->AdjustPosition();
+	}
+	void resizeEvent(QResizeEvent* event) override
+	{
+		if (m_filter->isVisible())
+			m_filter->AdjustPosition();
+	}
 
 private:
 	void LoadMatches() const;
@@ -37,14 +50,16 @@ private:
 
 private:
 	const Client::ServiceProvider& m_services;
-	QPushButton* m_deleteButton = new QPushButton();
+	IconButton* m_deleteButton = new IconButton(":/Delete.svg", ":/DeleteHover.svg", QSize(20, 20), true);
+	IconButton* m_filterButton = new IconButton(":/Filter.svg", ":/FilterHover.svg", QSize(20, 20), true);
+	MatchHistoryFilter* m_filter = new MatchHistoryFilter(m_filterButton, this);
 	MatchHistoryView* m_view;
 	MatchHistoryModel* m_model;
 	MatchHistorySortFilter* m_sortFilter;
 	QLabel* m_entryCount = new QLabel();
 	Pagination* m_pagination = new Pagination();
 	int m_page = 0;
-	int m_entriesPerPage = 100;
+	static constexpr int EntriesPerPage = 100;
 
 signals:
 	void ReplaySelected(const Client::StatsParser::MatchType& match);
