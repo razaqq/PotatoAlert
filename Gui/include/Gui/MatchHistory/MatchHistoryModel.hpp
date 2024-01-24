@@ -34,7 +34,7 @@ public:
 
 	[[nodiscard]] size_t MatchCount() const
 	{
-		return static_cast<int>(m_matches.size());
+		return m_matches.size();
 	}
 
 	[[nodiscard]] const Client::Match& GetMatch(size_t idx) const
