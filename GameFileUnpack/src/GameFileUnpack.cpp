@@ -4,11 +4,16 @@
 #include "Core/File.hpp"
 #include "Core/FileMapping.hpp"
 #include "Core/Log.hpp"
+#include "Core/Result.hpp"
 #include "Core/String.hpp"
 #include "Core/Zlib.hpp"
 
 #include "GameFileUnpack/GameFileUnpack.hpp"
 
+#include <fmt/format.h>
+
+#include <cstdint>
+#include <expected>
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -29,8 +34,11 @@ using PotatoAlert::GameFileUnpack::IdxHeader;
 using PotatoAlert::GameFileUnpack::Node;
 using PotatoAlert::GameFileUnpack::FileRecord;
 using PotatoAlert::GameFileUnpack::Unpacker;
+using PotatoAlert::GameFileUnpack::UnpackResult;
 
 namespace fs = std::filesystem;
+
+#define PA_UNPACK_ERROR(...) (::std::unexpected(::PotatoAlert::GameFileUnpack::UnpackError(fmt::format(__VA_ARGS__))))
 
 namespace {
 
@@ -61,23 +69,17 @@ static bool ReadNullTerminatedString(std::span<Byte> data, int64_t offset, std::
 	return true;
 }
 
-static bool WriteFileData(const fs::path& file, std::span<const Byte> data)
+static UnpackResult<void> WriteFileData(const fs::path& file, std::span<const Byte> data)
 {
 	// write the data
 	if (const File outFile = File::Open(file, File::Flags::Open | File::Flags::Write | File::Flags::Create))
 	{
-		if (!outFile.Write(data))
+		if (outFile.Write(data))
 		{
-			LOG_ERROR(STR("Failed to write data to outfile {} - {}"), file, StringWrap(File::LastError()));
-			return false;
+			return {};
 		}
-		return true;
 	}
-	else
-	{
-		LOG_ERROR(STR("Failed to open file for writing {} - {}"), file, StringWrap(File::LastError()));
-		return false;
-	}
+	return PA_UNPACK_ERROR("Failed to write data to outfile {} - {}", file, File::LastError());
 }
 
 }
@@ -134,15 +136,18 @@ DirectoryTree::TreeNode& DirectoryTree::CreatePath(std::string_view path)
 	return *current;
 }
 
-Unpacker::Unpacker(const fs::path& pkgPath, const fs::path& idxPath) : m_pkgPath(pkgPath)
+Unpacker::Unpacker(fs::path pkgPath, fs::path idxPath) : m_pkgPath(std::move(pkgPath)), m_idxPath(std::move(idxPath))
 {
-	if (!fs::exists(idxPath))
+}
+
+UnpackResult<void> Unpacker::Parse()
+{
+	if (!fs::exists(m_idxPath))
 	{
-		LOG_ERROR(STR("IdxPath does not exist: {}"), idxPath);
-		return;
+		return PA_UNPACK_ERROR("IdxPath does not exist: {}", m_idxPath);
 	}
 
-	for (const auto& entry : fs::recursive_directory_iterator(idxPath))
+	for (const auto& entry : fs::recursive_directory_iterator(m_idxPath))
 	{
 		if (entry.is_regular_file() && entry.path().extension() == ".idx")
 		{
@@ -152,43 +157,39 @@ Unpacker::Unpacker(const fs::path& pkgPath, const fs::path& idxPath) : m_pkgPath
 				{
 					if (std::optional<IdxFile> idxFileRes = IdxFile::Parse(std::span{ data }))
 					{
-						IdxFile idxFile = idxFileRes.value();
-						for (const auto& [path, fileRecord] : idxFile.Files)
+						auto& [PkgName, Nodes, Files] = idxFileRes.value();
+						for (const auto& [path, fileRecord] : Files)
 						{
 							m_directoryTree.Insert(
-									FileRecord{ idxFile.PkgName, path, fileRecord.Id, fileRecord.Offset, fileRecord.Size, fileRecord.UncompressedSize });
+									FileRecord{ PkgName, path, fileRecord.Id, fileRecord.Offset, fileRecord.Size, fileRecord.UncompressedSize });
 						}
 					}
 					else
 					{
-						LOG_ERROR("Failed to parse idxFile");
+						return PA_UNPACK_ERROR("Failed to parse idxFile");
 					}
 				}
 				else
 				{
-					LOG_ERROR("Failed to read idxFile: {}", File::LastError());
+					return PA_UNPACK_ERROR("Failed to read idxFile: {}", File::LastError());
 				}
 			}
 			else
 			{
-				LOG_ERROR("Failed to open idxFile for reading: {}", File::LastError());
+				return PA_UNPACK_ERROR("Failed to open idxFile for reading: {}", File::LastError());
 			}
 		}
 	}
+
+	return {};
 }
 
-Unpacker::Unpacker(std::string_view pkgPath, std::string_view idxPath) : m_pkgPath(pkgPath)
+UnpackResult<void> Unpacker::Extract(std::string_view nodeName, const fs::path& dst) const
 {
-	Unpacker(fs::path(pkgPath), fs::path(idxPath));
-}
-
-bool Unpacker::Extract(std::string_view nodeName, const fs::path& dst) const
-{
-	std::optional<DirectoryTree::TreeNode> nodeResult = m_directoryTree.Find(nodeName);
+	const std::optional<DirectoryTree::TreeNode> nodeResult = m_directoryTree.Find(nodeName);
 	if (!nodeResult)
 	{
-		LOG_ERROR("There exists no node with name {} in directory tree", nodeName);
-		return false;
+		return PA_UNPACK_ERROR("There exists no node with name {} in directory tree", nodeName);
 	}
 	TreeNode rootNode = nodeResult.value();
 
@@ -198,32 +199,28 @@ bool Unpacker::Extract(std::string_view nodeName, const fs::path& dst) const
 	{
 		TreeNode* node = stack.back();
 		stack.pop_back();
-		for (auto& [_, child] : node->Nodes)
+		for (auto& child : node->Nodes | std::views::values)
 		{
 			stack.push_back(&child);
 		}
 
 		if (node->File)
 		{
-			if (!ExtractFile(node->File.value(), dst))
-			{
-				LOG_ERROR("Failed to extract file: {}", node->File.value().Path);
-				return false;
-			}
+			PA_TRYV(ExtractFile(node->File.value(), dst));
 		}
 	}
 
-	return true;
+	return {};
 }
 
-bool Unpacker::Extract(std::string_view nodeName, std::string_view dst) const
+UnpackResult<void> Unpacker::Extract(std::string_view nodeName, std::string_view dst) const
 {
 	return Extract(nodeName, fs::path(dst));
 }
 
-bool Unpacker::ExtractFile(const FileRecord& fileRecord, const fs::path& dst) const
+UnpackResult<void> Unpacker::ExtractFile(const FileRecord& fileRecord, const fs::path& dst) const
 {
-	if (File inFile = File::Open(m_pkgPath / fileRecord.PkgName, File::Flags::Open | File::Flags::Read))
+	if (const File inFile = File::Open(m_pkgPath / fileRecord.PkgName, File::Flags::Open | File::Flags::Read))
 	{
 		uint64_t fileSize = inFile.Size();
 		if (FileMapping mapping = FileMapping::Open(inFile, FileMapping::Flags::Read, fileSize))
@@ -232,9 +229,8 @@ bool Unpacker::ExtractFile(const FileRecord& fileRecord, const fs::path& dst) co
 			{
 				if (fileRecord.Offset + fileRecord.Size > fileSize)
 				{
-					LOG_ERROR("Got offset ({} - {}) out of size bounds ({})",
+					return PA_UNPACK_ERROR("Got offset ({} - {}) out of size bounds ({})",
 							  fileRecord.Offset, fileRecord.Offset + fileRecord.Size, fileSize);
-					return false;
 				}
 
 				// create output directories if they don't exist yet
@@ -245,8 +241,7 @@ bool Unpacker::ExtractFile(const FileRecord& fileRecord, const fs::path& dst) co
 					fs::create_directories(outDir, ec);
 					if (ec)
 					{
-						LOG_ERROR("Failed to create game file scripts directory: {}", ec);
-						return false;
+						return PA_UNPACK_ERROR("Failed to create game file scripts directory: {}", ec);
 					}
 				}
 
@@ -264,23 +259,11 @@ bool Unpacker::ExtractFile(const FileRecord& fileRecord, const fs::path& dst) co
 
 				return WriteFileData(filePath, data.subspan(fileRecord.Offset, fileRecord.Size));
 			}
-			else
-			{
-				LOG_ERROR("Failed to map PkgFile into memory: {}", FileMapping::LastError());
-				return false;
-			}
+			return PA_UNPACK_ERROR("Failed to map PkgFile into memory: {}", FileMapping::LastError());
 		}
-		else
-		{
-			LOG_ERROR("Failed to create file mapping: {}", FileMapping::LastError());
-			return false;
-		}
+		return PA_UNPACK_ERROR("Failed to create file mapping: {}", FileMapping::LastError());
 	}
-	else
-	{
-		LOG_ERROR("Failed to open pkg file for reading: {}", File::LastError());
-		return false;
-	}
+	return PA_UNPACK_ERROR("Failed to open pkg file for reading: {}", File::LastError());
 }
 
 std::optional<IdxHeader> IdxHeader::Parse(std::span<Byte> data)

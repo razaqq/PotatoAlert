@@ -14,6 +14,10 @@
 
 namespace PotatoAlert::GameFileUnpack {
 
+using UnpackError = std::string;
+template<typename T>
+using UnpackResult = Core::Result<T, UnpackError>;
+
 static constexpr std::array g_IdxSignature = {
 	std::byte{ 0x49 }, std::byte{ 0x53 },
 	std::byte{ 0x46 }, std::byte{ 0x50 }
@@ -88,16 +92,17 @@ private:
 class Unpacker
 {
 public:
-	Unpacker(const std::filesystem::path& pkgPath, const std::filesystem::path& idxPath);
-	Unpacker(std::string_view pkgPath, std::string_view idxPath);
-	bool Extract(std::string_view node, const std::filesystem::path& dst) const;
-	bool Extract(std::string_view node, std::string_view dst) const;
+	explicit Unpacker(std::filesystem::path pkgPath, std::filesystem::path idxPath);
+	UnpackResult<void> Parse();
+	UnpackResult<void> Extract(std::string_view node, const std::filesystem::path& dst) const;
+	UnpackResult<void> Extract(std::string_view node, std::string_view dst) const;
 
 private:
 	DirectoryTree m_directoryTree;
 	std::filesystem::path m_pkgPath;
+	std::filesystem::path m_idxPath;
 
-	bool ExtractFile(const FileRecord& fileRecord, const std::filesystem::path& dst) const;
+	UnpackResult<void> ExtractFile(const FileRecord& fileRecord, const std::filesystem::path& dst) const;
 };
 
 }  // namespace PotatoAlert::GameFileUnpack
