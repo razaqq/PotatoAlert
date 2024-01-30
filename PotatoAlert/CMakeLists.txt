@@ -27,7 +27,7 @@ endif()
 include(CompilerFlags)
 SetCompilerFlags(PotatoAlert)
 
-target_link_libraries(PotatoAlert PRIVATE Core Gui Qt::Widgets FramelessHelper::Widgets)
+target_link_libraries(PotatoAlert PRIVATE Core Gui Qt::Widgets)
 
 set_target_properties(PotatoAlert
     PROPERTIES

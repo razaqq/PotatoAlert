@@ -29,7 +29,7 @@ bool NativeWindow::nativeEvent(const QByteArray& eventType, void* message, long*
 	if (msg->message == WM_SHOWME)
 	{
 		show();
-		setWindowState((windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+		setWindowState(windowState() & ~Qt::WindowMinimized | Qt::WindowActive);
 		raise();
 		activateWindow();
 	}

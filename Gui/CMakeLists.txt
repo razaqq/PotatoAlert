@@ -93,7 +93,7 @@ else()
     set(QT_SVG_TARGET_NAME "Qt::Svg")
 endif()
 
-target_link_libraries(Gui PRIVATE FramelessHelperWidgets ${QT_SVG_TARGET_NAME} Qt::WidgetsPrivate)
+target_link_libraries(Gui PRIVATE QWKWidgets ${QT_SVG_TARGET_NAME} Qt::WidgetsPrivate)
 target_link_libraries(Gui PUBLIC Qt::Widgets)
 
 if(WIN32)

@@ -3,10 +3,10 @@
 #include "Client/Config.hpp"
 #include "Client/ServiceProvider.hpp"
 
-#include <FramelessWidgetsHelper>
-
 #include "Gui/NativeWindow.hpp"
 #include "Gui/TitleBar.hpp"
+
+#include <QWKWidgets/widgetwindowagent.h>
 
 #include <QApplication>
 #include <QMainWindow>
@@ -18,8 +18,6 @@
 #include <QWindow>
 
 
-using wangwenx190::FramelessHelper::FramelessWidgetsHelper;
-using wangwenx190::FramelessHelper::Global::SystemButtonType;
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Gui::NativeWindow;
@@ -30,20 +28,19 @@ NativeWindow::NativeWindow(const Client::ServiceProvider& serviceProvider, QMain
 	m_mainWindow->setParent(this);
 	Init();
 
-	FramelessWidgetsHelper* helper = FramelessWidgetsHelper::get(this);
+	QWK::WidgetWindowAgent* agent = new QWK::WidgetWindowAgent(this);
+	agent->setup(this);
 
-	helper->extendsContentIntoTitleBar();
-	helper->setTitleBarWidget(m_titleBar);
+	agent->setTitleBar(m_titleBar);
 
-	helper->setSystemButton(m_titleBar->GetMaximizeButton(), SystemButtonType::Maximize);
-	helper->setSystemButton(m_titleBar->GetMinimizeButton(), SystemButtonType::Minimize);
-	helper->setSystemButton(m_titleBar->GetCloseButton(), SystemButtonType::Close);
-	helper->setSystemButton(m_titleBar->GetRestoreButton(), SystemButtonType::Restore);
+	agent->setSystemButton(QWK::WindowAgentBase::Maximize, m_titleBar->GetMaximizeButton());
+	agent->setSystemButton(QWK::WindowAgentBase::Minimize, m_titleBar->GetMinimizeButton());
+	agent->setSystemButton(QWK::WindowAgentBase::Close, m_titleBar->GetCloseButton());
+	agent->setSystemButton(QWK::WindowAgentBase::WindowIcon, m_titleBar->GetAppIcon());
 
-	helper->setHitTestVisible(m_titleBar->GetMaximizeButton(), true);
-	helper->setHitTestVisible(m_titleBar->GetMinimizeButton(), true);
-	helper->setHitTestVisible(m_titleBar->GetCloseButton(), true);
-	helper->setHitTestVisible(m_titleBar->GetRestoreButton(), true);
+	agent->setHitTestVisible(m_titleBar->GetMaximizeButton(), true);
+	agent->setHitTestVisible(m_titleBar->GetMinimizeButton(), true);
+	agent->setHitTestVisible(m_titleBar->GetCloseButton(), true);
 }
 
 void NativeWindow::hideEvent(QHideEvent* event)
@@ -70,7 +67,7 @@ void NativeWindow::hideEvent(QHideEvent* event)
 			config.Set<ConfigKey::WindowX>(windowHandle()->framePosition().x());
 			config.Set<ConfigKey::WindowY>(windowHandle()->framePosition().y());
 		}
-		config.Set<ConfigKey::WindowState>(windowState());
+		config.Set<ConfigKey::WindowState>(windowState() & ~Qt::WindowMinimized);
 
 		QWidget::hideEvent(event);
 		QApplication::exit(0);
@@ -87,7 +84,7 @@ void NativeWindow::showEvent(QShowEvent* event)
 		config.Get<ConfigKey::WindowWidth>(),
 		config.Get<ConfigKey::WindowHeight>()
 	);
-	setWindowState(static_cast<decltype(windowState())>(config.Get<ConfigKey::WindowState>()));
+	setWindowState(static_cast<decltype(windowState())>(config.Get<ConfigKey::WindowState>() & ~Qt::WindowMinimized));
 }
 
 void NativeWindow::Init()
