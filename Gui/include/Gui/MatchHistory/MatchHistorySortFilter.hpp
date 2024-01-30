@@ -53,7 +53,7 @@ public:
 		const QString player = playerIndex.data(Qt::DisplayRole).toString();
 		const QString region = regionIndex.data(Qt::DisplayRole).toString();
 
-		auto isChecked = [this](const Filter& filter, const QString& key) -> bool
+		auto isChecked = [](const Filter& filter, const QString& key) -> bool
 		{
 			return filter.contains(key) && filter.at(key);
 		};
