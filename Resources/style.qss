@@ -291,7 +291,7 @@ QMainWindow::separator
 #ReplaySummary
 {
   /*border: 1px solid red;*/
-  font-family: WarHeliosCondC,Arial Narrow,Tahoma,arial,sans-serif;
+  font-family: Warhelios;
   font-size: 50px;
   color: #9CBABA;
 }
@@ -299,66 +299,53 @@ QMainWindow::separator
 #ReplaySummary_ShadowLabel
 {
   color: #9CBABA;
-  font-family: WarHeliosCondC,Arial Narrow,Tahoma,arial,sans-serif;
+  font-family: Warhelios;
+  font-weight: bold;
   font-size: 16px;
-  font-weight: 400;
-  letter-spacing: 0.43px;
 }
 
 #ReplaySummary_battlePerformanceLabel
 {
   color: #CECECE;
-  font-family: WarHeliosCondCBold,Arial Narrow,Tahoma,arial,sans-serif;
+  font-family: Warhelios;
+  font-weight: bold;
   font-size: 25px;
-  font-weight: 400;
-  letter-spacing: 0.43px;
 }
 
 #ReplaySummary_winLabel, #ReplaySummary_lossLabel, #ReplaySummary_drawLabel, #ReplaySummary_unknownLabel, #ReplaySummary_RibbonTitle, #ReplaySummary_dmgDone
 {
   color: #9CBABA;
-  font-family: WarHeliosCondCBold,Arial Narrow,Tahoma,arial,sans-serif;
+  font-family: Warhelios;
+  font-weight: bold;
   font-size: 60px;
-  font-weight: 400;
-  letter-spacing: 0.43px;
 }
 
 #ReplaySummary_Ribbon
 {
-  /*height: 46px;*/
   color: #FFFFFF;
   min-width: 100px;
-  /*font-size: 100%;*/
-  font-weight: 400;
-  letter-spacing: 0.43px;
 }
 
 #ReplaySummary_RibbonSmall
 {
-  /*height: 46px;*/
   color: #FFFFFF;
   min-width: 80px;
-  /*font-size: 100%;*/
-  font-weight: 400;
-  letter-spacing: 0.43px;
 }
 
 #ReplaySummary_RibbonTitle
 {
   text-align: center;
-  font-family: WarHeliosCondC,Arial Narrow,Tahoma,arial,sans-serif;
+  font-family: Warhelios;
+  font-weight: normal;
   font-size: 16px;
-  font-weight: 400;
-  letter-spacing: 0.43px;
 }
 
 #ReplaySummary_RibbonTitleSmall
 {
   text-align: center;
-  font-family: WarHeliosCondC,Arial Narrow,Tahoma,arial,sans-serif;
+  font-family: Warhelios;
+  font-weight: normal;
   font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0.43px;
 }
 
 #ReplaySummary_DamageLabel
@@ -369,10 +356,9 @@ QMainWindow::separator
   qproperty-indent: 0;
   color: #e7e9ea;
   text-align: center;
-  font-family: WarHeliosCondCBold,Arial Narrow,Tahoma,arial,sans-serif;
+  font-family: Warhelios;
+  font-weight: bold;
   font-size: 40px;
-  font-weight: 400;
-  letter-spacing: 0.43px;
 }
 
 #ReplaySummary_DamageLabelSmall
@@ -384,28 +370,25 @@ QMainWindow::separator
   qproperty-indent: 0;
   color: #e7e9ea;
   text-align: center;
-  font-family: WarHeliosCondCBold,Arial Narrow,Tahoma,arial,sans-serif;
+  font-family: Warhelios;
+  font-weight: bold;
   font-size: 20px;
-  font-weight: 400;
-  letter-spacing: 0.43px;
 }
 
 #ReplaySummary_ribbonCountLabel
 {
   color: #FFFFFF;
-  font-family: WarHeliosCondCBold,Arial Narrow,Tahoma,arial,sans-serif;
+  font-family: Warhelios;
+  font-weight: bold;
   font-size: 16px;
-  font-weight: 400;
-  letter-spacing: 0.43px;
 }
 
 #ReplaySummary_achievementCountLabel
 {
   color: #FFFFFF;
-  font-family: WarHeliosCondCBold,Arial Narrow,Tahoma,arial,sans-serif;
+  font-family: Warhelios;
+  font-weight: bold;
   font-size: 20px;
-  font-weight: 400;
-  letter-spacing: 0.43px;
   padding: 0px 0px 0px 0px;
   qproperty-indent: 0;
 }
@@ -414,10 +397,9 @@ QMainWindow::separator
 {
   color: #FFCC66;
   text-align: center;
-  font-family: WarHeliosCondC,Arial Narrow,Tahoma,arial,sans-serif;
+  font-family: Warhelios;
   font-size: 16px;
-  font-weight: 400;
-  letter-spacing: 0.43px;
+  font-weight: bold;
 }
 
 #ReplaySummary_winLabel

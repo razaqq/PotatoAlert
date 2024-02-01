@@ -239,15 +239,15 @@ void ReplaySummaryGui::paintEvent(QPaintEvent* _)
 
 ReplaySummaryGui::ReplaySummary(const Client::ServiceProvider& serviceProvider, QWidget* parent) : QWidget(parent), m_services(serviceProvider)
 {
-	QFontDatabase::addApplicationFont(":/WarHeliosCondC.ttf");
-	QFontDatabase::addApplicationFont(":/WarHeliosCondCBold.ttf");
+	QFontDatabase::addApplicationFont(":/Warhelios-Regular.ttf");
+	QFontDatabase::addApplicationFont(":/Warhelios-Bold.ttf");
 }
 
 void ReplaySummaryGui::SetReplaySummary(const Match& match)
 {
 	ClearLayout(layout());
 
-	int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
+	const int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
 
 	m_background = new Background(
 		std::format(":/{}.jpg", match.Map).c_str()
@@ -321,9 +321,9 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 		scenarioInfo->setContentsMargins(0, 0, 0, 0);
 		scenarioInfo->setSpacing(0);
 		ShadowLabel* mapModeLabel = new ShadowLabel(
-			std::format("{} \u23AF  {}", match.Map, match.MatchGroup).c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
+			std::format("{} \u23AF  {}", match.Map, match.MatchGroup), 0, 1, 4, QColor(0, 0, 0, 242));
 		ShadowLabel* startTimeLabel = new ShadowLabel(GetStringView(lang, StringTableKey::REPLAY_BATTLE_START_TIME), 0, 1, 4, QColor(0, 0, 0, 242));
-		ShadowLabel* startTime = new ShadowLabel(match.Date.c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
+		ShadowLabel* startTime = new ShadowLabel(match.Date, 0, 1, 4, QColor(0, 0, 0, 242));
 		QHBoxLayout* timeLayout = new QHBoxLayout();
 		timeLayout->setContentsMargins(0, 0, 0, 0);
 		timeLayout->setSpacing(5);
@@ -351,7 +351,7 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 		// playerInfo->addWidget(killerShipTier);
 		// playerInfo->addWidget(killerShipName);
 
-		ShadowLabel* playerName = new ShadowLabel(match.Player.c_str(), 0, 1, 4);
+		ShadowLabel* playerName = new ShadowLabel(match.Player, 0, 1, 4);
 		playerName->setObjectName("ReplaySummary_playerInfoLabel");
 		QLabel* shipClass = new QLabel();
 		shipClass->setPixmap(QPixmap(std::format(":/{}.svg", match.ShipClass).c_str()).scaledToHeight(9, Qt::SmoothTransformation));
@@ -368,7 +368,7 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 			shipTier->setText(Client::TierToString(match.ShipTier).data());
 		}
 
-		ShadowLabel* shipName = new ShadowLabel(match.Ship.c_str(), 0, 1, 4);
+		ShadowLabel* shipName = new ShadowLabel(match.Ship, 0, 1, 4);
 		shipName->setObjectName("ReplaySummary_playerInfoLabel");
 		playerInfo->addWidget(playerName);
 		playerInfo->addSpacing(5);
@@ -426,7 +426,7 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 		bpLayout->setContentsMargins(0, 0, 0, 0);
 		bpLayout->setSpacing(5);
 		bpLayout->setAlignment(Qt::AlignLeft);
-		ShadowLabel* dmgDone = new ShadowLabel(FormatDamageNumber(s.DamageDealt).c_str(), 1, 1, 1);
+		ShadowLabel* dmgDone = new ShadowLabel(FormatDamageNumber(s.DamageDealt), 1, 1, 1);
 		dmgDone->setObjectName("ReplaySummary_DamageLabel");
 		bpLayout->addWidget(new Ribbon(dmgDone, GetStringView(lang, StringTableKey::REPLAY_DAMAGE)), 0, 0, Qt::AlignTop | Qt::AlignLeft);
 
@@ -485,13 +485,13 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 		drLayout->setContentsMargins(0, 0, 0, 0);
 		drLayout->setSpacing(5);
 		drLayout->setAlignment(Qt::AlignLeft);
-		ShadowLabel* dmgSpotting = new ShadowLabel(FormatDamageNumber(s.DamageSpotting).c_str(), 1, 1, 1);
+		ShadowLabel* dmgSpotting = new ShadowLabel(FormatDamageNumber(s.DamageSpotting), 1, 1, 1);
 		dmgSpotting->setObjectName("ReplaySummary_DamageLabelSmall");
 		drLayout->addWidget(new RibbonSmall(dmgSpotting, GetStringView(lang, StringTableKey::REPLAY_SPOTTING_DAMAGE)), 0, Qt::AlignTop | Qt::AlignLeft);
-		ShadowLabel* dmgTaken = new ShadowLabel(FormatDamageNumber(s.DamageTaken).c_str(), 1, 1, 1);
+		ShadowLabel* dmgTaken = new ShadowLabel(FormatDamageNumber(s.DamageTaken), 1, 1, 1);
 		dmgTaken->setObjectName("ReplaySummary_DamageLabelSmall");
 		drLayout->addWidget(new RibbonSmall(dmgTaken, GetStringView(lang, StringTableKey::REPLAY_RECEIVED_DAMAGE)), 0, Qt::AlignTop | Qt::AlignLeft);
-		ShadowLabel* dmgPotential = new ShadowLabel(FormatDamageNumber(s.DamagePotential).c_str(), 1, 1, 1);
+		ShadowLabel* dmgPotential = new ShadowLabel(FormatDamageNumber(s.DamagePotential), 1, 1, 1);
 		dmgPotential->setObjectName("ReplaySummary_DamageLabelSmall");
 		drLayout->addWidget(new RibbonSmall(dmgPotential, GetStringView(lang, StringTableKey::REPLAY_POTENTIAL_DAMAGE)), 0, Qt::AlignTop | Qt::AlignLeft);
 		detailedReport->setLayout(drLayout);
