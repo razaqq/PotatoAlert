@@ -12,6 +12,7 @@
 
 #include <fmt/format.h>
 
+#include <array>
 #include <cstdint>
 #include <expected>
 #include <filesystem>
@@ -35,6 +36,7 @@ using PotatoAlert::GameFileUnpack::Node;
 using PotatoAlert::GameFileUnpack::FileRecord;
 using PotatoAlert::GameFileUnpack::Unpacker;
 using PotatoAlert::GameFileUnpack::UnpackResult;
+using PotatoAlert::GameFileUnpack::Volume;
 
 namespace fs = std::filesystem;
 
@@ -42,14 +44,19 @@ namespace fs = std::filesystem;
 
 namespace {
 
-static bool ReadNullTerminatedString(std::span<Byte> data, int64_t offset, std::string& out)
+static constexpr std::array g_IdxSignature = {
+	std::byte{ 0x49 }, std::byte{ 0x53 },
+	std::byte{ 0x46 }, std::byte{ 0x50 }
+};
+
+static bool ReadNullTerminatedString(std::span<const Byte> data, uint64_t offset, std::string& out)
 {
 	size_t length = 0;
-	for (int64_t i = offset; i < data.size(); i++)
+	for (uint64_t i = offset; i < data.size(); i++)
 	{
 		if (data[i] == Byte{ '\0' })
 		{
-			length = i - offset;
+			length = i - offset + 1;
 			break;
 		}
 	}
@@ -155,18 +162,11 @@ UnpackResult<void> Unpacker::Parse()
 			{
 				if (std::vector<Byte> data; file.ReadAll(data))
 				{
-					if (std::optional<IdxFile> idxFileRes = IdxFile::Parse(std::span{ data }))
+					PA_TRY(idxFile, IdxFile::Parse(data));
+					for (FileRecord& fileRecord : idxFile.Files)
 					{
-						auto& [PkgName, Nodes, Files] = idxFileRes.value();
-						for (const auto& [path, fileRecord] : Files)
-						{
-							m_directoryTree.Insert(
-									FileRecord{ PkgName, path, fileRecord.Id, fileRecord.Offset, fileRecord.Size, fileRecord.UncompressedSize });
-						}
-					}
-					else
-					{
-						return PA_UNPACK_ERROR("Failed to parse idxFile");
+						fileRecord.PkgName = idxFile.PkgName;
+						m_directoryTree.Insert(fileRecord);
 					}
 				}
 				else
@@ -184,7 +184,7 @@ UnpackResult<void> Unpacker::Parse()
 	return {};
 }
 
-UnpackResult<void> Unpacker::Extract(std::string_view nodeName, const fs::path& dst) const
+UnpackResult<void> Unpacker::Extract(std::string_view nodeName, const fs::path& dst, bool preservePath) const
 {
 	const std::optional<DirectoryTree::TreeNode> nodeResult = m_directoryTree.Find(nodeName);
 	if (!nodeResult)
@@ -206,16 +206,38 @@ UnpackResult<void> Unpacker::Extract(std::string_view nodeName, const fs::path& 
 
 		if (node->File)
 		{
-			PA_TRYV(ExtractFile(node->File.value(), dst));
+			fs::path filePath;
+			if (!preservePath)
+			{
+				const fs::path rel = fs::relative(node->File->Path, nodeName);
+				if (rel == fs::path("."))
+					filePath = dst / fs::path(nodeName).filename();
+				else
+					filePath = dst / rel;
+			}
+			else
+			{
+				filePath = dst / node->File->Path;
+			}
+
+			// create output directories if they don't exist yet
+			fs::path outDir = filePath;
+			outDir.remove_filename();
+			if (!fs::exists(outDir))
+			{
+				std::error_code ec;
+				fs::create_directories(outDir, ec);
+				if (ec)
+				{
+					return PA_UNPACK_ERROR("Failed to create game file scripts directory: {}", ec);
+				}
+			}
+
+			PA_TRYV(ExtractFile(node->File.value(), filePath));
 		}
 	}
 
 	return {};
-}
-
-UnpackResult<void> Unpacker::Extract(std::string_view nodeName, std::string_view dst) const
-{
-	return Extract(nodeName, fs::path(dst));
 }
 
 UnpackResult<void> Unpacker::ExtractFile(const FileRecord& fileRecord, const fs::path& dst) const
@@ -230,34 +252,20 @@ UnpackResult<void> Unpacker::ExtractFile(const FileRecord& fileRecord, const fs:
 				if (fileRecord.Offset + fileRecord.Size > fileSize)
 				{
 					return PA_UNPACK_ERROR("Got offset ({} - {}) out of size bounds ({})",
-							  fileRecord.Offset, fileRecord.Offset + fileRecord.Size, fileSize);
+						fileRecord.Offset, fileRecord.Offset + fileRecord.Size, fileSize);
 				}
-
-				// create output directories if they don't exist yet
-				const fs::path outDir = (fs::path(dst) / fileRecord.Path).remove_filename();
-				if (!fs::exists(outDir))
-				{
-					std::error_code ec;
-					fs::create_directories(outDir, ec);
-					if (ec)
-					{
-						return PA_UNPACK_ERROR("Failed to create game file scripts directory: {}", ec);
-					}
-				}
-
-				const fs::path filePath = fs::path(dst) / fileRecord.Path;
 
 				// check if data is compressed and inflate
-				std::span data{ static_cast<const Byte*>(dataPtr), fileSize };
+				const std::span data{ static_cast<const Byte*>(dataPtr), fileSize };
 				if (fileRecord.Size != fileRecord.UncompressedSize)
 				{
 					std::vector<Byte> inflated = Core::Zlib::Inflate(
 						data.subspan(fileRecord.Offset, fileRecord.Size), false
 					);
-					return WriteFileData(filePath, std::span{ inflated });
+					return WriteFileData(dst, std::span{ inflated });
 				}
 
-				return WriteFileData(filePath, data.subspan(fileRecord.Offset, fileRecord.Size));
+				return WriteFileData(dst, data.subspan(fileRecord.Offset, fileRecord.Size));
 			}
 			return PA_UNPACK_ERROR("Failed to map PkgFile into memory: {}", FileMapping::LastError());
 		}
@@ -266,12 +274,11 @@ UnpackResult<void> Unpacker::ExtractFile(const FileRecord& fileRecord, const fs:
 	return PA_UNPACK_ERROR("Failed to open pkg file for reading: {}", File::LastError());
 }
 
-std::optional<IdxHeader> IdxHeader::Parse(std::span<Byte> data)
+UnpackResult<IdxHeader> IdxHeader::Parse(std::span<const Byte> data)
 {
 	if (data.size() != HeaderSize)
 	{
-		LOG_ERROR("Invalid IdxHeader Length");
-		return {};
+		return PA_UNPACK_ERROR("Invalid IdxHeader Length");
 	}
 
 	IdxHeader header;
@@ -279,102 +286,96 @@ std::optional<IdxHeader> IdxHeader::Parse(std::span<Byte> data)
 	Byte signature[4];
 	if (!TakeInto(data, signature) || std::memcmp(signature, g_IdxSignature.data(), 4) != 0)
 	{
-		LOG_ERROR("Invalid Idx Header");
-		return {};
+		return PA_UNPACK_ERROR("Invalid Idx Header");
 	}
 
-	if (!TakeInto(data, header.FirstBlock))
-		return {};
+	TakeInto(data, header.Endianness);
+	TakeInto(data, header.MurmurHash);
+	TakeInto(data, header.Version);
 
-	if (!TakeInto(data, header.Nodes))
-		return {};
+	TakeInto(data, header.NodeCount);
+	TakeInto(data, header.FileCount);
+	TakeInto(data, header.VolumeCount);
 
-	if (!TakeInto(data, header.Files))
-		return {};
+	TakeInto(data, header.Unknown);
 
-	if (!TakeInto(data, header.Unknown1))
-		return {};
-
-	if (!TakeInto(data, header.Unknown2))
-		return {};
-
-	if (!TakeInto(data, header.ThirdOffset))
-		return {};
-
-	if (!TakeInto(data, header.TrailerOffset))
-		return {};
+	TakeInto(data, header.NodeTablePtr);
+	TakeInto(data, header.FileRecordTablePtr);
+	TakeInto(data, header.VolumeTablePtr);
 
 	return header;
 }
 
-std::optional<Node> Node::Parse(std::span<Byte> data, std::span<Byte> fullData)
+UnpackResult<Node> Node::Parse(std::span<const Byte> data, uint64_t offset, std::span<const Byte> fullData)
 {
 	if (data.size() != NodeSize)
 	{
-		LOG_ERROR("Invalid Node size {}", data.size());
-		return {};
+		return PA_UNPACK_ERROR("Invalid Node size {}", data.size());
 	}
 
 	Node node;
 
-	if (!TakeInto(data, node.Unknown))
-		return {};
+	uint64_t nameLength;
+	if (!TakeInto(data, nameLength))
+		return PA_UNPACK_ERROR("Failed read Node name length");
 
-	int64_t ptr;
-	if (!TakeInto(data, ptr))
-		return {};
+	uint64_t namePtr;
+	if (!TakeInto(data, namePtr))
+		return PA_UNPACK_ERROR("Failed read Node namePtr");
 
-	if (ptr >= fullData.size())
+	namePtr += offset;
+
+	if (namePtr >= fullData.size())
 	{
-		LOG_ERROR("String pointer {} outside data range {}", ptr, fullData.size());
-		return {};
+		return PA_UNPACK_ERROR("Node name pointer {} outside data range {}", namePtr, fullData.size());
 	}
 
-	if (!ReadNullTerminatedString(fullData, ptr, node.Name))
+	if (!ReadNullTerminatedString(fullData, namePtr, node.Name))
 	{
-		LOG_ERROR("Failed to get node name");
-		return {};
+		return PA_UNPACK_ERROR("Failed to get node name");
 	}
+
+	if (nameLength != node.Name.size())
+	{
+		return PA_UNPACK_ERROR("Node has invalid name length {} != {}", nameLength, node.Name.size());
+	}
+
+	node.Name.pop_back();  // remove the double \0, otherwise we get issues down the line
 
 	if (!TakeInto(data, node.Id))
-		return {};
+		return PA_UNPACK_ERROR("Failed read node.Id");
 
 	if (!TakeInto(data, node.Parent))
-		return {};
+		return PA_UNPACK_ERROR("Failed read node.Parent");
 
 	return node;
 }
 
-std::optional<FileRecord> FileRecord::Parse(std::span<Byte> data, const std::unordered_map<uint64_t, Node>& nodes)
+UnpackResult<FileRecord> FileRecord::Parse(std::span<const Byte> data, const std::unordered_map<uint64_t, Node>& nodes)
 {
 	if (data.size() != FileRecordSize)
 	{
-		LOG_ERROR("Invalid RawFileRecord size {}", data.size());
-		return {};
+		return PA_UNPACK_ERROR("Invalid RawFileRecord size {}", data.size());
 	}
 
 	FileRecord fileRecord;
 
-	if (!TakeInto(data, fileRecord.Id))
-		return {};
+	TakeInto(data, fileRecord.NodeId);
+	TakeInto(data, fileRecord.VolumeId);
+	TakeInto(data, fileRecord.Offset);
+	TakeInto(data, fileRecord.CompressionInfo);
+	TakeInto(data, fileRecord.Size);
+	TakeInto(data, fileRecord.Crc32);
+	TakeInto(data, fileRecord.UncompressedSize);
+	TakeInto(data, fileRecord.Padding);
 
-	Take(data, 8);
-
-	if (!TakeInto(data, fileRecord.Offset))
-		return {};
-
-	Take(data, 8);
-
-	if (!TakeInto(data, fileRecord.Size))
-		return {};
-
-	Take(data, 4);
-
-	if (!TakeInto(data, fileRecord.UncompressedSize))
-		return {};
+	if (!nodes.contains(fileRecord.NodeId))
+	{
+		return PA_UNPACK_ERROR("FileRecord references node with id {}, but that doesnt exist", fileRecord.NodeId);
+	}
 
 	std::vector<std::string_view> paths;
-	uint64_t current = fileRecord.Id;
+	uint64_t current = fileRecord.NodeId;
 
 	while (nodes.contains(current))
 	{
@@ -389,100 +390,110 @@ std::optional<FileRecord> FileRecord::Parse(std::span<Byte> data, const std::uno
 	return fileRecord;
 }
 
-std::optional<IdxFile> IdxFile::Parse(std::span<Byte> data)
+UnpackResult<Volume> Volume::Parse(std::span<const Byte> data, uint64_t offset, std::span<const Byte> fullData)
+{
+	if (data.size() < VolumeSize)
+	{
+		return PA_UNPACK_ERROR("Invalid IdxFile size {}", data.size());
+	}
+
+	Volume volume;
+
+	uint64_t nameLength;
+	if (!TakeInto(data, nameLength))
+		return PA_UNPACK_ERROR("Failed read Volume name length");
+
+	uint64_t namePtr;
+	if (!TakeInto(data, namePtr))
+		return PA_UNPACK_ERROR("Failed read Volume namePtr");
+
+	namePtr += offset;
+
+	if (namePtr >= fullData.size())
+	{
+		return PA_UNPACK_ERROR("Volume name pointer {} outside data range {}", namePtr, fullData.size());
+	}
+
+	if (!ReadNullTerminatedString(fullData, namePtr, volume.Name))
+	{
+		return PA_UNPACK_ERROR("Failed to get Volume name");
+	}
+
+	if (nameLength != volume.Name.size())
+	{
+		return PA_UNPACK_ERROR("Volume has invalid name length {} != {}", nameLength, volume.Name.size());
+	}
+
+	volume.Name.pop_back();  // remove the double \0, otherwise we get issues down the line
+
+	TakeInto(data, volume.Id);
+
+	return volume;
+}
+
+UnpackResult<IdxFile> IdxFile::Parse(std::span<const Byte> data)
 {
 	const std::span originalData = data;
 
 	if (data.size() < HeaderSize)
 	{
-		LOG_ERROR("Invalid IdxFile size {}", data.size());
-		return {};
+		return PA_UNPACK_ERROR("Invalid IdxFile size {}", data.size());
 	}
 
 	IdxFile file;
 
 	// parse headers
-	const std::optional<IdxHeader> headerResult = IdxHeader::Parse(Take(data, HeaderSize));
-	if (!headerResult)
+	PA_TRY(header, IdxHeader::Parse(Take(data, HeaderSize)));
+
+	if (header.Endianness != 0x2000000)
 	{
-		LOG_ERROR("Failed to parse IdxHeader");
-		return {};
+		return PA_UNPACK_ERROR("Endianness is not 0x20000000");
 	}
-	IdxHeader header = headerResult.value();
+
+	if (header.Version != 0x40)
+	{
+		return PA_UNPACK_ERROR("Endianness is not 0x40");
+	}
+
+	auto getData = [originalData](uint64_t offset, uint64_t size) -> UnpackResult<std::span<const Byte>>
+	{
+		if (offset + size > originalData.size())
+		{
+			return PA_UNPACK_ERROR("Data too small: offset {} + size {} > {}", offset, size, originalData.size());
+		}
+		return originalData.subspan(offset, size);
+	};
+
+	PA_TRY(nodeData, getData(header.NodeTablePtr + HeaderDataOffset, header.NodeCount * NodeSize));
+	PA_TRY(fileRecordData, getData(header.FileRecordTablePtr + HeaderDataOffset, header.FileCount * FileRecordSize));
+	PA_TRY(volumeData, getData(header.VolumeTablePtr + HeaderDataOffset, header.VolumeCount * VolumeSize));
 
 	// parse nodes
-	if (data.size() < header.Nodes * NodeSize)
+	for (uint32_t i = 0; i < header.NodeCount; i++)
 	{
-		LOG_ERROR("Data too small for {} Nodes, expected at least {} bytes but only got {}",
-				  header.Nodes, header.Nodes * NodeSize, data.size());
-		return {};
-	}
-
-	for (int32_t i = 0; i < header.Nodes; i++)
-	{
-		if (std::optional<Node> nodeResult = Node::Parse(Take(data, NodeSize), data))
-		{
-			file.Nodes[nodeResult.value().Id] = nodeResult.value();
-		}
-		else
-		{
-			LOG_ERROR("Failed to parse Node");
-			return {};
-		}
+		const uint64_t offset = header.NodeTablePtr + HeaderDataOffset + i * NodeSize;
+		PA_TRY(node, Node::Parse(Take(nodeData, NodeSize), offset, originalData));
+		file.Nodes[node.Id] = node;
 	}
 
 	// parse file records
-	if (originalData.size() < header.ThirdOffset + 0x10)
+	for (uint32_t i = 0; i < header.FileCount; i++)
 	{
-		LOG_ERROR("File record data ({} bytes) smaller than offset ({})", originalData.size(), header.ThirdOffset + 0x10);
-		return {};
-	}
-	std::span fileRecordData = originalData.subspan(header.ThirdOffset + 0x10);
-
-	if (fileRecordData.size() < header.Files * FileRecordSize)
-	{
-		LOG_ERROR("File record too small for {} RawFileRecords, expected at least {} bytes but only got {}",
-				  header.Files, header.Files * FileRecordSize, data.size());
-		return {};
-	}
-	for (int32_t i = 0; i < header.Files; i++)
-	{
-		if (std::optional<FileRecord> fileRecordResult = FileRecord::Parse(Take(fileRecordData, FileRecordSize), file.Nodes))
-		{
-			file.Files[fileRecordResult.value().Path] = fileRecordResult.value();
-		}
-		else
-		{
-			LOG_ERROR("Failed to parse RawFileRecord");
-			return {};
-		}
+		PA_TRY(fileRecord, FileRecord::Parse(Take(fileRecordData, FileRecordSize), file.Nodes));
+		file.Files.emplace_back(std::move(fileRecord));
 	}
 
-	// parse trailer
-	if (originalData.size() < header.TrailerOffset + 0x10)
+	// parse volumes
+	for (uint32_t i = 0; i < header.VolumeCount; i++)
 	{
-		LOG_ERROR("Trailer data ({} bytes) smaller than offset ({})", originalData.size(), header.ThirdOffset + 0x10);
-		return {};
-	}
-	std::span trailerData = originalData.subspan(header.TrailerOffset + 0x10);
-
-	struct
-	{
-		int64_t unknown1;
-		int64_t unknown2;
-		uint64_t unknown3;
-	} unknown;
-	if (!TakeInto(trailerData, unknown))
-	{
-		LOG_ERROR("Failed to take unknown from trailer data");
-		return {};
+		const uint64_t offset = header.VolumeTablePtr + HeaderDataOffset + i * VolumeSize;
+		PA_TRY(volume, Volume::Parse(Take(volumeData, VolumeSize), offset, originalData));
+		file.Volumes.emplace_back(std::move(volume));
 	}
 
-	if (!ReadNullTerminatedString(trailerData, 0, file.PkgName))
-	{
-		LOG_ERROR("Failed to get file pkg name");
-		return {};
-	}
+	if (file.Volumes.size() != 1)
+		return PA_UNPACK_ERROR("IdxFile had volume count {} != 1", file.Volumes.size());
+	file.PkgName = file.Volumes[0].Name;
 
 	return file;
 }

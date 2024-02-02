@@ -3,13 +3,13 @@
 
 #include "Core/Bytes.hpp"
 
-#include <array>
-#include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <optional>
 #include <span>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 
 namespace PotatoAlert::GameFileUnpack {
@@ -18,57 +18,73 @@ using UnpackError = std::string;
 template<typename T>
 using UnpackResult = Core::Result<T, UnpackError>;
 
-static constexpr std::array g_IdxSignature = {
-	std::byte{ 0x49 }, std::byte{ 0x53 },
-	std::byte{ 0x46 }, std::byte{ 0x50 }
-};
-
-static constexpr uint32_t HeaderSize = 56;
+static constexpr uint32_t HeaderSize = 0x38;
+static constexpr uint32_t HeaderDataOffset = 0x10;  // size until version
 struct IdxHeader
 {
-	int32_t Nodes;
-	int32_t Files;
-	int64_t ThirdOffset;
-	int64_t TrailerOffset;
-	std::array<std::byte, 12> FirstBlock;
-	int64_t Unknown1;
-	int64_t Unknown2;
+	uint32_t Endianness;
+	uint32_t MurmurHash;
+	uint32_t Version;
 
-	static std::optional<IdxHeader> Parse(std::span<Core::Byte> data);
+	uint32_t NodeCount;
+	uint32_t FileCount;
+	uint32_t VolumeCount;  // Number of pkg files
+
+	uint32_t Unknown;
+
+	// offsets from base of this struct
+	uint64_t NodeTablePtr;
+	uint64_t FileRecordTablePtr;
+	uint64_t VolumeTablePtr;
+
+	static UnpackResult<IdxHeader> Parse(std::span<const Core::Byte> data);
 };
+static_assert(sizeof(IdxHeader) == HeaderSize);
 
-static constexpr uint32_t NodeSize = 32;
+static constexpr uint32_t NodeSize = 0x20;
 struct Node
 {
 	std::string Name;
 	uint64_t Id;
 	uint64_t Parent;
-	std::array<Core::Byte, 8> Unknown;
 
-	static std::optional<Node> Parse(std::span<Core::Byte> data, std::span<Core::Byte> fullData);
+	static UnpackResult<Node> Parse(std::span<const Core::Byte> data, uint64_t offset, std::span<const Core::Byte> fullData);
 };
 
-static constexpr uint32_t FileRecordSize = 48;
+static constexpr uint32_t FileRecordSize = 0x30;
 struct FileRecord
 {
 	std::string PkgName;
 	std::string Path;
-	uint64_t Id;
-	int64_t Offset;
-	int32_t Size;
-	int64_t UncompressedSize;
+	uint64_t NodeId;
+	uint64_t VolumeId;
+	uint64_t Offset;
+	uint64_t CompressionInfo;
+	uint32_t Size;
+	uint32_t Crc32;
+	uint64_t UncompressedSize;
+	uint32_t Padding;
 
-	static std::optional<FileRecord> Parse(std::span<Core::Byte> data, const std::unordered_map<uint64_t, Node>& nodes);
+	static UnpackResult<FileRecord> Parse(std::span<const Core::Byte> data, const std::unordered_map<uint64_t, Node>& nodes);
 };
 
+static constexpr uint32_t VolumeSize = 0x18;
+struct Volume
+{
+	std::string Name;
+	uint64_t Id;
+
+	static UnpackResult<Volume> Parse(std::span<const Core::Byte> data, uint64_t offset, std::span<const Core::Byte> fullData);
+};
 
 struct IdxFile
 {
-	std::string PkgName;
+	std::string_view PkgName;
 	std::unordered_map<uint64_t, Node> Nodes;
-	std::unordered_map<std::string, FileRecord> Files;
+	std::vector<FileRecord> Files;
+	std::vector<Volume> Volumes;
 
-	static std::optional<IdxFile> Parse(std::span<Core::Byte> data);
+	static UnpackResult<IdxFile> Parse(std::span<const Core::Byte> data);
 };
 
 class DirectoryTree
@@ -94,8 +110,7 @@ class Unpacker
 public:
 	explicit Unpacker(std::filesystem::path pkgPath, std::filesystem::path idxPath);
 	UnpackResult<void> Parse();
-	UnpackResult<void> Extract(std::string_view node, const std::filesystem::path& dst) const;
-	UnpackResult<void> Extract(std::string_view node, std::string_view dst) const;
+	UnpackResult<void> Extract(std::string_view node, const std::filesystem::path& dst, bool preservePath = true) const;
 
 private:
 	DirectoryTree m_directoryTree;
