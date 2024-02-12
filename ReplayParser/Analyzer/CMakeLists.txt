@@ -40,7 +40,7 @@ if(WIN32)
     set(RUST_LIB "${CMAKE_CURRENT_BINARY_DIR}/${RUST_LIB_DIR}/ReplayAnalyzer.lib")
     target_link_libraries(ReplayAnalyzer PRIVATE ${RUST_LIB} Userenv Ntdll)
 elseif(UNIX)
-    set(RUST_LIB "${CMAKE_CURRENT_BINARY_DIR}/${RUST_LIB_DIR}/libReplayAnalyzer.a")
+    set(RUST_LIB "${CMAKE_CURRENT_BINARY_DIR}/${RUST_LIB_DIR}/libreplayanalyzer.a")
     target_link_libraries(ReplayAnalyzer PRIVATE ${RUST_LIB})
 endif()
 
