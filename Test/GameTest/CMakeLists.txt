@@ -10,3 +10,6 @@ add_test(NAME GameTest COMMAND GameTest WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/b
 include(Packaging)
 WinDeployQt(GameTest)
 CopyTestDir(GameTest GameDirectories)
+
+include(CompilerFlags)
+SetCompilerFlags(GameTest)

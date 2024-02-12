@@ -11,3 +11,6 @@ include(Packaging)
 WinDeployQt(PythonTest)
 CopyTestDir(PythonTest Pickles)
 DeployPython(PythonTest)
+
+include(CompilerFlags)
+SetCompilerFlags(PythonTest)

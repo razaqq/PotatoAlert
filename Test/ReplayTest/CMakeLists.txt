@@ -11,3 +11,6 @@ include(Packaging)
 WinDeployQt(ReplayTest)
 CopyTestDir(ReplayTest Replays)
 CopyReplayScripts(ReplayTest)
+
+include(CompilerFlags)
+SetCompilerFlags(ReplayTest)

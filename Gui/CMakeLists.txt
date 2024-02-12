@@ -95,6 +95,8 @@ endif()
 
 target_link_libraries(Gui PRIVATE QWKWidgets ${QT_SVG_TARGET_NAME} Qt::WidgetsPrivate)
 target_link_libraries(Gui PUBLIC Qt::Widgets)
+include(CompilerFlags)
+SetCompilerFlags(Gui)
 
 if(WIN32)
     target_link_libraries(Gui PRIVATE Dwmapi Win32 Updater)

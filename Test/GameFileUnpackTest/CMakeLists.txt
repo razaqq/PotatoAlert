@@ -11,3 +11,5 @@ include(Packaging)
 WinDeployQt(GameFileUnpackTest)
 CopyTestDir(GameFileUnpackTest GameFiles)
 
+include(CompilerFlags)
+SetCompilerFlags(GameFileUnpackTest)
