@@ -89,7 +89,6 @@ static int RunMain(int argc, char* argv[])
 
 	DatabaseManager dbm(db);
 	serviceProvider.Add(dbm);
-	auto res = dbm.GetMatches();
 
 	QApplication::setQuitOnLastWindowClosed(false);
 	
