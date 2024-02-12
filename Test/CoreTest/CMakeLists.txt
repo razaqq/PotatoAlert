@@ -9,6 +9,7 @@ add_test(NAME CoreTest COMMAND CoreTest WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/b
 
 include(Packaging)
 WinDeployQt(CoreTest)
+CopyTestDir(CoreTest Misc)
 
 include(CompilerFlags)
 SetCompilerFlags(CoreTest)

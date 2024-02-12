@@ -3,6 +3,9 @@
 #include "Core/ByteReader.hpp"
 #include "Core/Blowfish.hpp"
 #include "Core/Directory.hpp"
+#include "Core/File.hpp"
+#include "Core/FileMapping.hpp"
+#include "Core/Process.hpp"
 #include "Core/Semaphore.hpp"
 #include "Core/Sha1.hpp"
 #include "Core/Sha256.hpp"
@@ -14,12 +17,14 @@
 
 #include <algorithm>
 #include <array>
+#include <filesystem>
 #include <string>
 #include <span>
 #include <ranges>
 #include <vector>
 
 
+namespace fs = std::filesystem;
 using namespace PotatoAlert::Core;
 using namespace PotatoAlert;
 
@@ -40,6 +45,16 @@ template<typename TByte, typename... Ts>
 static std::array<Byte, sizeof...(Ts)> FromHex(Ts&&... args) noexcept
 {
 	return { static_cast<TByte>(std::forward<Ts>(args))... };
+}
+
+static fs::path GetFile(std::string_view name)
+{
+	if (Result<fs::path> rootPath = GetModuleRootPath())
+	{
+		return rootPath.value().remove_filename() / "Misc" / name;
+	}
+
+	PotatoAlert::Core::ExitCurrentProcess(1);
 }
 
 }
@@ -132,6 +147,28 @@ TEST_CASE( "BlowFishDecryptTest" )
 
 	REQUIRE(blowfish.Decrypt(text, out));
 	REQUIRE(std::equal(out.begin(), out.end(), solution.begin(), solution.end()));
+}
+
+TEST_CASE( "FileMappingTest" )
+{
+	File file = File::Open(GetFile("lorem.txt"), File::Flags::Open | File::Flags::Read);
+	REQUIRE(file);
+	std::string content;
+	REQUIRE(file.ReadAllString(content));
+	REQUIRE(content.size() == 591);
+
+	const uint64_t fileSize = file.Size();
+	REQUIRE(content.size() == fileSize);
+	FileMapping fileMapping = FileMapping::Open(file, FileMapping::Flags::Read, fileSize);
+	REQUIRE(fileMapping);
+	void* m = fileMapping.Map(FileMapping::Flags::Read, 0, fileSize);
+	REQUIRE(m != nullptr);
+
+	std::string_view mappedContent((char*)m, fileSize);
+	REQUIRE(content == mappedContent);
+
+	file.Close();
+	fileMapping.Close();
 }
 
 TEST_CASE( "MutexTest" )
