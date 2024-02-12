@@ -2,6 +2,7 @@
 
 #include "Core/Directory.hpp"
 #include "Core/Encoding.hpp"
+#include "Core/Format.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
 #include "Core/Process.hpp"
@@ -20,7 +21,6 @@
 
 #include <chrono>
 #include <filesystem>
-#include <format>
 #include <string>
 #include <utility>
 
@@ -122,7 +122,7 @@ struct DownloadProgress
 
 	[[nodiscard]] std::string ToString() const
 	{
-		return std::format("{:.1f} {}", m_speed, m_unit);
+		return fmt::format("{:.1f} {}", m_speed, m_unit);
 	}
 
 private:
@@ -264,7 +264,7 @@ QNetworkReply* Updater::Download()
 	QNetworkAccessManager* manager = new QNetworkAccessManager();
 
 	QNetworkRequest request;
-	request.setUrl(QUrl(std::format(g_updateURL, UpdateArchiveFile(CurrentEdition)).c_str()));
+	request.setUrl(QUrl(fmt::format(g_updateURL, UpdateArchiveFile(CurrentEdition)).c_str()));
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 	auto reply = manager->get(request);
 
@@ -275,7 +275,7 @@ QNetworkReply* Updater::Download()
 
 		g_downloadProgress.Update(bytesReceived);
 
-		const QString progress = std::format("{:.1f}/{:.1f} MB", bytesReceived / 1e6f, bytesTotal / 1e6f).c_str();
+		const QString progress = fmt::format("{:.1f}/{:.1f} MB", bytesReceived / 1e6f, bytesTotal / 1e6f).c_str();
 		const QString speedStr = QString::fromStdString(g_downloadProgress.ToString());
 		emit DownloadProgress(static_cast<int>(bytesReceived * 100 / bytesTotal), progress, speedStr);
 	});

@@ -1,6 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include "Core/Format.hpp"
+
 #include <QApplication>
 #include <QColor>
 #include <QPalette>
@@ -46,7 +48,7 @@ public:
 
 	void SetColor(const QColor& color)
 	{
-		setStyleSheet(std::format("background-color: rgb({}, {}, {})", color.red(), color.green(), color.blue()).c_str());
+		setStyleSheet(fmt::format("background-color: rgb({}, {}, {})", color.red(), color.green(), color.blue()).c_str());
 	}
 
 	bool eventFilter(QObject* watched, QEvent* event) override

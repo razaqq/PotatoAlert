@@ -2,6 +2,7 @@
 
 #include "Client/DatabaseManager.hpp"
 
+#include "Core/Format.hpp"
 #include "Core/Instrumentor.hpp"
 #include "Core/Preprocessor.hpp"
 #include "Core/Result.hpp"
@@ -273,7 +274,7 @@ SqlResult<void> DatabaseManager::DeleteMatches(std::span<uint32_t> ids) const
 	std::ranges::copy(ids, std::ostream_iterator<int>(ss, ", "));
 	const std::string idString = ss.str();
 	const std::string x = idString.substr(0, idString.size() - 2);
-	std::string deleteQuery = std::format("DELETE FROM matches WHERE Id IN ({})", x);
+	std::string deleteQuery = fmt::format("DELETE FROM matches WHERE Id IN ({})", x);
 
 	SQLite::Statement stmt(m_db, deleteQuery);
 

@@ -6,8 +6,6 @@
 #include <QLocalSocket>
 #include <QLocalServer>
 
-#include <format>
-
 
 static std::string_view g_sockPath = "/tmp/PotatoAlert-f0a3b58c-b62e-4b3e-a10a-8e2f7a164b7a";
 static QLocalServer g_server;

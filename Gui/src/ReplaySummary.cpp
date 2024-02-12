@@ -1,5 +1,7 @@
 // Copyright 2022 <github.com/razaqq>
 
+#include "Core/Format.hpp"
+
 #include "Client/Config.hpp"
 #include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
@@ -16,6 +18,8 @@
 #include <QPainter>
 #include <QStyleOption>
 #include <QtWidgets/private/qpixmapfilter_p.h>
+
+#include <string>
 
 
 using namespace PotatoAlert::Client::StringTable;
@@ -250,8 +254,8 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 	int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
 
 	m_background = new Background(
-		std::format(":/{}.jpg", match.Map).c_str()
-		// std::format(":/{}.png", match.ShipNation).c_str()
+		fmt::format(":/{}.jpg", match.Map).c_str()
+		// fmt::format(":/{}.png", match.ShipNation).c_str()
 	);
 	m_arWidget = new AspectRatioWidget(nullptr, m_background, 9.0f / 16.0f);
 
@@ -321,7 +325,7 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 		scenarioInfo->setContentsMargins(0, 0, 0, 0);
 		scenarioInfo->setSpacing(0);
 		ShadowLabel* mapModeLabel = new ShadowLabel(
-			std::format("{} \u23AF  {}", match.Map, match.MatchGroup).c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
+			fmt::format("{} \u23AF  {}", match.Map, match.MatchGroup).c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
 		ShadowLabel* startTimeLabel = new ShadowLabel(GetStringView(lang, StringTableKey::REPLAY_BATTLE_START_TIME), 0, 1, 4, QColor(0, 0, 0, 242));
 		ShadowLabel* startTime = new ShadowLabel(match.Date.c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
 		QHBoxLayout* timeLayout = new QHBoxLayout();
@@ -343,7 +347,7 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 
 		// ShadowLabel* killerName = new ShadowLabel("razaqq", 0, 1, 4);
 		// QLabel* killerShipClass = new QLabel();
-		// killerShipClass->setPixmap(QPixmap(std::format(":/{}.png", entry.ShipClass).c_str()));
+		// killerShipClass->setPixmap(QPixmap(fmt::format(":/{}.png", entry.ShipClass).c_str()));
 		// ShadowLabel* killerShipTier = new ShadowLabel(TierToString(5), 0, 1, 4);
 		// ShadowLabel* killerShipName = new ShadowLabel("Pensacola", 0, 1, 4);
 		// playerInfo->addWidget(killerName);
@@ -354,7 +358,7 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 		ShadowLabel* playerName = new ShadowLabel(match.Player.c_str(), 0, 1, 4);
 		playerName->setObjectName("ReplaySummary_playerInfoLabel");
 		QLabel* shipClass = new QLabel();
-		shipClass->setPixmap(QPixmap(std::format(":/{}.svg", match.ShipClass).c_str()).scaledToHeight(9, Qt::SmoothTransformation));
+		shipClass->setPixmap(QPixmap(fmt::format(":/{}.svg", match.ShipClass).c_str()).scaledToHeight(9, Qt::SmoothTransformation));
 
 		ShadowLabel* shipTier = new ShadowLabel("", 0, 1 ,4);
 		shipTier->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
@@ -392,14 +396,14 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 			QHBoxLayout* achievements = new QHBoxLayout();
 			for (const auto& [achievement, count] : s.Achievements)
 			{
-				const QPixmap pixmap(std::format(":/{}.png", GetName(achievement)).c_str());
+				const QPixmap pixmap(fmt::format(":/{}.png", GetName(achievement)).c_str());
 				QLabel* achievementLabel = new QLabel();
 				achievementLabel->setPixmap(pixmap.scaledToHeight(53, Qt::SmoothTransformation));
 
 				if (count > 1)
 				{
 					QVBoxLayout* achievementLayout = new QVBoxLayout();
-					QLabel* achievementCountLabel = new QLabel(std::format("x{}", count).c_str());
+					QLabel* achievementCountLabel = new QLabel(fmt::format("x{}", count).c_str());
 					achievementCountLabel->setObjectName("ReplaySummary_achievementCountLabel");
 					achievementLayout->setContentsMargins(0, 0, 0, 0);
 					achievementLayout->addWidget(achievementCountLabel, 0, Qt::AlignBottom | Qt::AlignRight);
@@ -454,11 +458,11 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 				column = 0;
 				row++;
 			}
-			const QPixmap pixmap(std::format(":/{}.png", GetName(ribbon)).c_str());
+			const QPixmap pixmap(fmt::format(":/{}.png", GetName(ribbon)).c_str());
 			QLabel* ribbonLabel = new QLabel();
 			QVBoxLayout* ribbonLayout = new QVBoxLayout();
 			ribbonLabel->setPixmap(pixmap.scaledToHeight(40, Qt::SmoothTransformation));
-			QLabel* ribbonCountLabel = new QLabel(std::format("x{}", count).c_str());
+			QLabel* ribbonCountLabel = new QLabel(fmt::format("x{}", count).c_str());
 			ribbonCountLabel->setObjectName("ReplaySummary_ribbonCountLabel");
 			ribbonLayout->setContentsMargins(1, 1, 2, 0);
 			ribbonLayout->addStretch();

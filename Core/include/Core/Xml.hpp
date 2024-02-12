@@ -1,12 +1,12 @@
 // Copyright 2023 <github.com/razaqq>
 #pragma once
 
+#include "Core/Format.hpp"
 #include "Core/Log.hpp"
 #include "Core/Result.hpp"
 
 #include <expected>
 #include <filesystem>
-#include <format>
 #include <string>
 #include <type_traits>
 
@@ -19,7 +19,7 @@ namespace PotatoAlert::Core {
 using XmlError = std::string;
 template<typename T>
 using XmlResult = Result<T, XmlError>;
-#define PA_XML_ERROR(...) (::std::unexpected(::PotatoAlert::Core::XmlError(std::format(__VA_ARGS__))))
+#define PA_XML_ERROR(...) (::std::unexpected(::PotatoAlert::Core::XmlError(fmt::format(__VA_ARGS__))))
 
 template<typename>
 errno_t WfOpen(FILE** stream, const wchar_t* fileName, const wchar_t* mode)

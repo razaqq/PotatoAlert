@@ -4,11 +4,11 @@
 #include "Core/Encoding.hpp"
 #include "Core/File.hpp"
 #include "Core/Flags.hpp"
+#include "Core/Format.hpp"
 
 #include "win32.h"
 
 #include <filesystem>
-#include <format>
 #include <string>
 #include <vector>
 
@@ -346,7 +346,7 @@ bool File::GetVersion(const fs::path& filePath, Version& outVersion)
 		return false;
 	}
 
-	outVersion = Version(std::format("{}.{}.{}.{}",
+	outVersion = Version(fmt::format("{}.{}.{}.{}",
 									 (out->dwFileVersionMS >> 16) & 0xff,
 									 (out->dwFileVersionMS >> 0) & 0xff,
 									 (out->dwFileVersionLS >> 16) & 0xff,

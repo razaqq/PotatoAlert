@@ -1,13 +1,14 @@
 // Copyright 2022 <github.com/razaqq>
 
+#include "Core/Format.hpp"
+#include "Core/Instrumentor.hpp"
+#include "Core/Log.hpp"
+
 #include "Client/Config.hpp"
 #include "Client/DatabaseManager.hpp"
 #include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
 #include "Client/StringTable.hpp"
-
-#include "Core/Instrumentor.hpp"
-#include "Core/Log.hpp"
 
 #include "Gui/Events.hpp"
 #include "Gui/Fonts.hpp"
@@ -21,7 +22,8 @@
 #include <QHBoxLayout>
 #include <QSortFilterProxyModel>
 
-#include <format>
+#include <algorithm>
+#include <cstdint>
 #include <vector>
 
 
@@ -185,7 +187,7 @@ void MatchHistory::SwitchPage(int page) const
 		return;
 	}
 
-	m_entryCount->setText(std::format("Entries {}-{} / {}", toEntry + 1, fromEntry + 1, m_sortFilter->rowCount()).c_str());
+	m_entryCount->setText(fmt::format("Entries {}-{} / {}", toEntry + 1, fromEntry + 1, m_sortFilter->rowCount()).c_str());
 
 	const size_t from = m_sortFilter->mapToSource(m_sortFilter->index(fromEntry, 0)).row();
 	const size_t to = m_sortFilter->mapToSource(m_sortFilter->index(toEntry, 0)).row();
