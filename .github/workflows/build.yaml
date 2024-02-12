@@ -87,7 +87,12 @@ jobs:
         files: ${{ matrix.zipfile }}
 
   build-linux:
-    if: ${{ false }}  # disable for now
+    name: Build Linux Qt6
+    strategy:
+      matrix:
+        include:
+          - gcc-version: 12
+
     runs-on: ubuntu-latest
 
     steps:
@@ -95,9 +100,39 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Setup Ninja
-      uses: ashutoshvarma/setup-ninja@master
-      with:
-        version: 1.11.1
+      run: sudo apt install -y ninja-build
+
+    - name: Ninja Version
+      run: ninja --version
+
+    - name: Install Dependencies
+      run: >
+        sudo apt install -y
+        libfontconfig1-dev
+        libfreetype6-dev
+        libx11-dev
+        libx11-xcb-dev
+        libxext-dev
+        libxfixes-dev
+        libxi-dev
+        libxrender-dev
+        libxcb1-dev
+        libxcb-cursor-dev
+        libxcb-glx0-dev
+        libxcb-keysyms1-dev
+        libxcb-image0-dev
+        libxcb-shm0-dev
+        libxcb-icccm4-dev
+        libxcb-sync-dev
+        libxcb-xfixes0-dev
+        libxcb-shape0-dev
+        libxcb-randr0-dev
+        libxcb-render-util0-dev
+        libxcb-util-dev
+        libxcb-xinerama0-dev
+        libxcb-xkb-dev
+        libxkbcommon-dev
+        libxkbcommon-x11-dev
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
@@ -105,48 +140,23 @@ jobs:
         version: 6.6.0
         cache: true
 
-    - name: Cache LLVM and Clang
-      id: cache-llvm
-      uses: actions/cache@v2
-      with:
-        path: |
-          ./llvm
-        key: llvm-15
-  
-    - name: Install LLVM and Clang
-      uses: KyleMayes/install-llvm-action@v1
-      with:
-        version: "15"
-        cached: ${{ steps.cache-llvm.outputs.cache-hit }}
-
-    #- name: Remove other LLVM installs
-    #  run: sudo apt remove -y clang lld libc++-dev libc++abi-dev
-
-    #- name: Install LLVM
-    #  uses: myci-actions/add-deb-repo@10
-    #  with:
-    #    repo: deb http://apt.llvm.org/focal/ llvm-toolchain-focal-14 main
-    #    repo-name: llvm-toolchain-focal-14
-    #    keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
-    #    install: clang-14 lld-14 libc++-14-dev libc++abi-14-dev
-
     - name: CMake Version
       run: cmake --version
 
-    - name: Clang Version
-      run: clang --version
+    - name: GCC Version
+      run: g++-${{ matrix.gcc-version }} --version
 
     - name: Run CMake
       env:
-        CC: clang
-        CXX: clang++
-      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"  -DCMAKE_CXX_FLAGS="-stdlib=libc++ -lc++abi"
+        CC: gcc-${{ matrix.gcc-version }}
+        CXX: g++-${{ matrix.gcc-version }}
+      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
     - name: Run Build
-      run: cmake --build build --config Release --target PotatoAlert PotatoUpdater CoreTest GameFileUnpackTest GameTest ReplayTest
+      run: cmake --build build --config Release --target PotatoAlert CoreTest GameFileUnpackTest GameTest ReplayTest
 
     - name: Run CTest
-      working-directory: ${{env.GITHUB_WORKSPACE}}/build
+      working-directory: build
       env:
         CTEST_OUTPUT_ON_FAILURE: 1
       run: ctest
@@ -166,4 +176,4 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         draft: true
-        files: PotatoAlert.zip
+        files: PotatoAlert_linux.zip
