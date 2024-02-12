@@ -44,6 +44,7 @@ if(WIN32)
         src/Process.win32.cpp
         src/Semaphore.win32.cpp
         src/Time.win32.cpp
+        src/Xml.win32.cpp
     )
 endif(WIN32)
 
@@ -57,8 +58,10 @@ if(UNIX)
         src/Encoding.linux.cpp
         src/File.linux.cpp
         src/FileMapping.linux.cpp
+        src/Process.linux.cpp
         src/Semaphore.linux.cpp
         src/Time.linux.cpp
+        src/Xml.linux.cpp
     )
 endif(UNIX)
 

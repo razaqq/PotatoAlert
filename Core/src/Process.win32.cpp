@@ -10,6 +10,7 @@
 #include <shellapi.h>
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
 
 
@@ -31,12 +32,12 @@ void PotatoAlert::Core::ExitCurrentProcessWithError(uint32_t code)
 	ExitProcess(code);
 }
 
-bool c::CreateNewProcess(std::string_view path, std::string_view args, bool elevated)
+bool c::CreateNewProcess(const std::filesystem::path& path, std::string_view args, bool elevated)
 {
 	const char* lpVerb = elevated ? "runas" : "open";
-	const std::string pathStr = std::string(path);
+	const std::string pathStr = path.string();
 	const std::string argsStr = std::string(args);
-	SHELLEXECUTEINFOA sei = {
+	SHELLEXECUTEINFOA sei = {  // TODO: use W version here
 		sizeof(sei),
 		SEE_MASK_NO_CONSOLE,
 		nullptr,

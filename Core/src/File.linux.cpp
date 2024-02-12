@@ -9,9 +9,12 @@
 #include <unistd.h>
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <vector>
 
+
+namespace fs = std::filesystem;
 
 using namespace PotatoAlert::Core;
 
@@ -57,6 +60,10 @@ int GetFileOpenFlags(File::Flags flags)
 
 } // namespace
 
+
+static_assert(std::is_same_v<int8_t, signed char>, "int8_t is not signed char");
+static_assert(std::is_same_v<uint8_t, unsigned char>, "uint8_t is not unsigned char");
+
 File::Handle File::RawOpen(std::string_view path, Flags flags)
 {
 	std::string pathString(path);
@@ -75,6 +82,11 @@ File::Handle File::RawOpen(std::string_view path, Flags flags)
 #endif
 
 	return CreateHandle<Handle>(fd);
+}
+
+File::Handle File::RawOpen(const fs::path& path, Flags flags)
+{
+	return RawOpen(std::string_view(path.native()), flags);
 }
 
 void File::RawClose(Handle handle)
@@ -123,8 +135,6 @@ bool File::RawRead(Handle handle, std::vector<T>& out, uint64_t size, bool reset
 template bool File::RawRead(Handle, std::vector<uint8_t>&, uint64_t, bool);
 template bool File::RawRead(Handle, std::vector<int8_t>&, uint64_t, bool);
 template bool File::RawRead(Handle, std::vector<std::byte>&, uint64_t, bool);
-template bool File::RawRead(Handle, std::vector<unsigned char>&, uint64_t, bool);
-template bool File::RawRead(Handle, std::vector<char>&, uint64_t, bool);
 
 template<is_byte T>
 bool File::RawReadAll(Handle handle, std::vector<T>& out, bool resetFilePointer)
@@ -152,8 +162,6 @@ bool File::RawReadAll(Handle handle, std::vector<T>& out, bool resetFilePointer)
 template bool File::RawReadAll(Handle, std::vector<uint8_t>&, bool);
 template bool File::RawReadAll(Handle, std::vector<int8_t>&, bool);
 template bool File::RawReadAll(Handle, std::vector<std::byte>&, bool);
-template bool File::RawReadAll(Handle, std::vector<unsigned char>&, bool);
-template bool File::RawReadAll(Handle, std::vector<char>&, bool);
 
 bool File::RawReadString(Handle handle, std::string& out, uint64_t size, bool resetFilePointer)
 {
@@ -239,8 +247,6 @@ bool File::RawWrite(Handle handle, std::span<const T> data, bool resetFilePointe
 template bool File::RawWrite(Handle, std::span<const uint8_t>, bool);
 template bool File::RawWrite(Handle, std::span<const int8_t>, bool);
 template bool File::RawWrite(Handle, std::span<const std::byte>, bool);
-template bool File::RawWrite(Handle, std::span<const unsigned char>, bool);
-template bool File::RawWrite(Handle, std::span<const char>, bool);
 
 bool File::RawWriteString(Handle handle, std::string_view data, bool resetFilePointer)
 {
@@ -363,7 +369,7 @@ std::string File::RawLastError()
 	}
 }
 
-bool File::GetVersion(std::string_view fileName, Version& outVersion)
+bool File::GetVersion(const fs::path& filePath, Version& outVersion)
 {
 	// TODO:: this might not exist, but you can get the sha1 build id
 	return false;
@@ -387,6 +393,12 @@ bool File::RawDelete(std::string_view file)
 		return false;
 	}
 	return true;
+}
+
+bool File::RawExists(const fs::path& file)
+{
+	const std::string s = file.string();
+	return access(s.c_str(), F_OK) != -1;
 }
 
 bool File::RawExists(std::string_view file)

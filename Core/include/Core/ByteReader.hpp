@@ -127,6 +127,8 @@ public:
 					return PA_ERROR(ReaderError::OutOfBoundsSeek);
 				}
 			}
+			default:
+				return PA_ERROR(ReaderError::InvalidSeek);
 		}
 	}
 
