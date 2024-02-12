@@ -3,10 +3,12 @@
 #include "Core/File.hpp"
 #include "Core/FileMapping.hpp"
 
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
 #include <cstdint>
+#include <type_traits>
 
 
 using PotatoAlert::Core::File;
@@ -41,6 +43,7 @@ std::string FileMapping::LastError()
 
 FileMapping::Handle FileMapping::RawOpen(File::Handle file, Flags flags, uint64_t maxSize)
 {
+	return static_cast<FileMapping::Handle>(static_cast<std::underlying_type_t<decltype(file)>>(file));
 }
 
 void FileMapping::RawClose(Handle handle)
@@ -60,11 +63,11 @@ void* FileMapping::RawMap(Handle handle, Flags flags, uint64_t offset, size_t si
 	if (HasFlag(flags, Flags::None))
 		prot |= PROT_NONE;
 
-	int shareFlag = 0;
+	void* addr = mmap(nullptr, size, prot, MAP_PRIVATE, UnwrapHandle<int>(handle), offset);
 
-	size_t length = 0;
-	long pageSize = sysconf(_SC_PAGE_SIZE);
-	void* addr = mmap(nullptr, length, prot, shareFlag, UnwrapHandle<int>(handle), offset);
+	if (addr == MAP_FAILED)
+		return nullptr;
+
 	return addr;
 }
 
