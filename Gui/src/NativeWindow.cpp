@@ -85,6 +85,24 @@ void NativeWindow::showEvent(QShowEvent* event)
 		config.Get<ConfigKey::WindowHeight>()
 	);
 	setWindowState(static_cast<decltype(windowState())>(config.Get<ConfigKey::WindowState>() & ~Qt::WindowMinimized));
+
+	bool reachable = false;
+	QRect titleBarGeo = windowHandle()->frameGeometry();
+	titleBarGeo.setBottom(titleBarGeo.top() + m_titleBar->height());
+
+	for (const QScreen* screen : QApplication::screens())
+	{
+		if (titleBarGeo.intersects(screen->availableGeometry()))
+		{
+			reachable = true;
+			break;
+		}
+	}
+
+	if (!reachable)
+	{
+		windowHandle()->setPosition(100, 100);
+	}
 }
 
 void NativeWindow::Init()
@@ -129,22 +147,4 @@ void NativeWindow::Init()
 	layout->addWidget(m_mainWindow);
 
 	setLayout(layout);
-
-	bool reachable = false;
-	QRect titleBarGeo = windowHandle()->frameGeometry();
-	titleBarGeo.setBottom(titleBarGeo.top() + m_titleBar->height());
-
-	for (const QScreen* screen : QApplication::screens())
-	{
-		if (titleBarGeo.intersects(screen->availableGeometry()))
-		{
-			reachable = true;
-			break;
-		}
-	}
-
-	if (!reachable)
-	{
-		windowHandle()->setPosition(100, 100);
-	}
 }

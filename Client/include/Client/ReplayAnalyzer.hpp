@@ -43,7 +43,6 @@ public:
 	void OnFileChanged(const std::filesystem::path& file);
 	bool HasGameFiles(Version gameVersion) const;
 	static ReplayResult<void> UnpackGameFiles(const std::filesystem::path& dst, const std::filesystem::path& pkgPath, const std::filesystem::path& idxPath);
-	static ReplayResult<void> UnpackGameFiles(std::string_view dst, std::string_view pkgPath, std::string_view idxPath);
 
 private:
 	void AnalyzeReplay(const std::filesystem::path& path, std::chrono::seconds readDelay = std::chrono::seconds(0));
