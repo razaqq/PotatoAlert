@@ -74,16 +74,16 @@ TEST_CASE("GameFileUnpackTest_DirectoryTreeTest")
 	tree.Insert(FileRecord{ "", "content/testFile.txt" });
 	std::optional<TreeNode> record1 = tree.Find("content/testFile.txt");
 	REQUIRE(record1);
-	REQUIRE(record1.value().File);
-	REQUIRE(record1.value().File.value().Path == "content/testFile.txt");
+	REQUIRE(record1->File);
+	REQUIRE(record1->File->Path == "content/testFile.txt");
 
 	tree.Insert(FileRecord{ "", "content/testFile2.txt" });
 	std::optional<TreeNode> record2 = tree.Find("content/");
 	REQUIRE(record2);
-	REQUIRE_FALSE(record2.value().File);
-	REQUIRE(record2.value().Nodes.contains("testFile.txt"));
-	REQUIRE(record2.value().Nodes.contains("testFile2.txt"));
-	REQUIRE_FALSE(record2.value().File.has_value());
+	REQUIRE_FALSE(record2->File);
+	REQUIRE(record2->Nodes.contains("testFile.txt"));
+	REQUIRE(record2->Nodes.contains("testFile2.txt"));
+	REQUIRE_FALSE(record2->File.has_value());
 }
 
 TEST_CASE("GameFileUnpackTest_IdxFileTest")
@@ -95,16 +95,18 @@ TEST_CASE("GameFileUnpackTest_IdxFileTest")
 	REQUIRE(file);
 	std::vector<Byte> data;
 	REQUIRE(file.ReadAll(data));
-	IdxFile idxFile = IdxFile::Parse(data).value();
+	UnpackResult<IdxFile> idxFileRes = IdxFile::Parse(data);
+	REQUIRE(idxFileRes);
+	IdxFile& idxFile = *idxFileRes;
 	REQUIRE(idxFile.Files.size() == 39);
 	REQUIRE(idxFile.Nodes.size() == 54);
 
-	REQUIRE(idxFile.Files["content/gameplay/usa/gun/secondary/textures/AGS206_3in50_MK21_Sub_ao.dds"].Size == 1799);
-	REQUIRE(idxFile.Files["content/gameplay/usa/gun/secondary/textures/AGS206_3in50_MK21_Sub_ao.dds"].UncompressedSize == 2872);
-	REQUIRE(idxFile.Files["content/gameplay/usa/gun/secondary/textures/AGS206_3in50_MK21_Sub_ao.dds"].Id == 9050552029570354906);
-	REQUIRE(idxFile.Files["content/gameplay/usa/gun/secondary/textures/AGS206_3in50_MK21_Sub_ao.dds"].Offset == 0x6226F);
-	REQUIRE(idxFile.Files["content/gameplay/usa/gun/secondary/textures/AGS206_3in50_MK21_Sub_ao.dds"].Path ==
-		"content/gameplay/usa/gun/secondary/textures/AGS206_3in50_MK21_Sub_ao.dds");
+	REQUIRE(idxFile.Files[4].Size == 1799);
+	REQUIRE(idxFile.Files[4].UncompressedSize == 2872);
+	REQUIRE(idxFile.Files[4].NodeId == 9050552029570354906);
+	REQUIRE(idxFile.Files[4].Offset == 0x6226F);
+	REQUIRE(idxFile.Files[4].Path ==
+			"content/gameplay/usa/gun/secondary/textures/AGS206_3in50_MK21_Sub_ao.dds");
 	REQUIRE(idxFile.Nodes[1704543301444328984].Name == "AGS206_3in50_MK21_Sub_mg.dds");
 	REQUIRE(idxFile.PkgName == "vehicles_level6_usa_0001.pkg");
 }
@@ -112,8 +114,9 @@ TEST_CASE("GameFileUnpackTest_IdxFileTest")
 TEST_CASE("GameFileUnpackTest_UnpackerTest")
 {
 	Unpacker unpacker(GetGameFileRootPath(), GetGameFileRootPath());
+	REQUIRE(unpacker.Parse());
 	REQUIRE(unpacker.Extract(
-		R"(content/gameplay/usa/gun/secondary/textures/AGS206_3in50_MK21_Sub_ao.dds)",
-		GetTempDirectory())
+			R"(content/gameplay/usa/gun/secondary/textures/AGS206_3in50_MK21_Sub_ao.dds)",
+			GetTempDirectory())
 	);
 }
