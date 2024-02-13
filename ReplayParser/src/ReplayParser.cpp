@@ -118,7 +118,7 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 	{
 		return PA_REPLAY_ERROR("Failed to parse replay meta as JSON: {}", error);
 	});
-	FromJson(js, replay.Meta);
+	PA_TRYV(FromJson(js, replay.Meta));
 
 	for (size_t i = 0; i < blocksCount - 1; i++)
 	{
