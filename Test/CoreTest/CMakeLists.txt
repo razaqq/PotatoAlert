@@ -8,7 +8,6 @@ set_target_properties(CoreTest
 add_test(NAME CoreTest COMMAND CoreTest WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/bin-test")
 
 include(Packaging)
-WinDeployQt(CoreTest)
 CopyTestDir(CoreTest Misc)
 
 include(CompilerFlags)
