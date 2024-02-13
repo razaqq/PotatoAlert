@@ -35,21 +35,10 @@ bool ReplayAnalyzer::HasGameFiles(Version gameVersion) const
 
 ReplayResult<void> ReplayAnalyzer::UnpackGameFiles(const fs::path& dst, const fs::path& pkgPath, const fs::path& idxPath)
 {
-	const Unpacker unpacker(pkgPath, idxPath);
-	if (!unpacker.Extract("scripts/", dst))
-		return PA_REPLAY_ERROR("Failed to unpack game scripts");
-	if (!unpacker.Extract("content/GameParams.data", dst))
-		return PA_REPLAY_ERROR("Failed to unpack game params");
-	return {};
-}
-
-ReplayResult<void> ReplayAnalyzer::UnpackGameFiles(std::string_view dst, std::string_view pkgPath, std::string_view idxPath)
-{
-	const Unpacker unpacker(pkgPath, idxPath);
-	if (!unpacker.Extract("scripts/", dst))
-		return PA_REPLAY_ERROR("Failed to unpack game scripts");
-	if (!unpacker.Extract("content/GameParams.data", dst))
-		return PA_REPLAY_ERROR("Failed to unpack game params");
+	Unpacker unpacker(pkgPath, idxPath);
+	PA_TRYV(unpacker.Parse());
+	PA_TRYV(unpacker.Extract("scripts/", dst));
+	PA_TRYV(unpacker.Extract("content/GameParams.data", dst));
 	return {};
 }
 
