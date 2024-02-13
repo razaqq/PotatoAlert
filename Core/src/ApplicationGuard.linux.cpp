@@ -39,13 +39,12 @@ ApplicationGuard::~ApplicationGuard()
 
 bool ApplicationGuard::Reset()
 {
-	std::string file = "/tmp/" + m_name;
+	const std::string file = "/tmp/" + m_name;
 	close(UnwrapHandle<int>(m_handle));
 	remove(file.c_str());
 	m_handle = CreateHandle<Handle>(open(file.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, S_IRUSR | S_IWUSR));
 
-	auto rtn = lockf(UnwrapHandle<int>(m_handle), F_TLOCK, 0);
-	return true;
+	return lockf(UnwrapHandle<int>(m_handle), F_TLOCK, 0) == 0;
 }
 
 bool ApplicationGuard::ExistsOtherInstance() const
