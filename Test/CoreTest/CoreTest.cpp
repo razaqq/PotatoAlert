@@ -5,6 +5,8 @@
 #include "Core/Directory.hpp"
 #include "Core/File.hpp"
 #include "Core/FileMapping.hpp"
+#include "Core/PeFileVersion.hpp"
+#include "Core/PeReader.hpp"
 #include "Core/Process.hpp"
 #include "Core/Semaphore.hpp"
 #include "Core/Sha1.hpp"
@@ -54,7 +56,7 @@ static fs::path GetFile(std::string_view name)
 		return rootPath.value().remove_filename() / "Misc" / name;
 	}
 
-	PotatoAlert::Core::ExitCurrentProcess(1);
+	ExitCurrentProcess(1);
 }
 
 }
@@ -219,6 +221,59 @@ TEST_CASE( "MutexTest" )
 	REQUIRE_FALSE(sem3.IsOpen());
 
 	Semaphore::Remove(SemName);
+}
+
+TEST_CASE( "PeReaderTest" )
+{
+	File file = File::Open(GetFile("FooBar.exe"), File::Flags::Read | File::Flags::Open);
+	REQUIRE(file);
+	const uint64_t fileSize = file.Size();
+	FileMapping fileMapping = FileMapping::Open(file, FileMapping::Flags::Read, fileSize);
+	REQUIRE(fileMapping);
+	void* ptr = fileMapping.Map(FileMapping::Flags::Read, 0, fileSize);
+	REQUIRE(ptr);
+	PeReader peReader(std::span<const Byte>(static_cast<const Byte*>(ptr), fileSize));
+	REQUIRE(peReader.Parse());
+
+	auto table = peReader.GetResourceTable();
+	REQUIRE(table);
+	REQUIRE(table->Resources.size() == 2);
+	auto it = std::ranges::find_if(table->Resources, [](const Resource& res) -> bool { return res.Type == ResourceType::Version; });
+	REQUIRE(it != table->Resources.end());
+	REQUIRE(it->Data.size() == 752);
+	auto v = VsVersionInfo::FromData(it->Data);
+	REQUIRE(v);
+	REQUIRE(v->Length == 752);
+	REQUIRE(v->ValueLength == 52);
+	REQUIRE(v->Key == std::wstring_view(L"VS_VERSION_INFO"));
+	REQUIRE(v->Value.Signature == 4277077181);
+	REQUIRE(v->Value.StrucVersion == 65536);
+	REQUIRE(v->Value.FileVersionMS == 65538);
+	REQUIRE(v->Value.FileVersionLS == 196612);
+	REQUIRE(v->Value.ProductVersionMS == 65538);
+	REQUIRE(v->Value.ProductVersionLS == 196608);
+	REQUIRE(v->Value.FileFlagsMask == 63);
+	REQUIRE(v->Value.FileFlags == 0);
+	REQUIRE(v->Value.FileOS == 4);
+	REQUIRE(v->Value.FileType == 1);
+	REQUIRE(v->Value.FileSubtype == 0);
+	REQUIRE(v->Value.FileDateMS == 0);
+	REQUIRE(v->Value.FileDateLS == 0);
+
+	Version version(
+		v->Value.FileVersionMS >> 16 & 0xFF,
+		v->Value.FileVersionMS >> 0 & 0xFF,
+		v->Value.FileVersionLS >> 16 & 0xFF,
+		v->Value.FileVersionLS >> 0 & 0xFF
+	);
+	REQUIRE(version == Version(1, 2, 3, 4));
+
+	fileMapping.Close();
+	file.Close();
+
+	auto result = ReadFileVersion(GetFile("FooBar.exe"));
+	REQUIRE(result);
+	REQUIRE(version == *result);
 }
 
 TEST_CASE( "Sha1Test" )

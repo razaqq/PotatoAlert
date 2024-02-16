@@ -12,6 +12,8 @@ target_sources(
     src/Blowfish.cpp
     src/DirectoryWatcher.cpp
     src/Log.cpp
+    src/PeFileVersion.cpp
+    src/PeReader.cpp
     src/Screenshot.cpp
     src/Sha1.cpp
     src/Sha256.cpp
