@@ -317,7 +317,7 @@ struct VsVersionInfo
 	uint16_t Length;
 	uint16_t ValueLength;
 	uint16_t Type;
-	wchar_t Key[16];
+	char16_t Key[16];
 	alignas(4) VsFixedFileInfo Value;
 	alignas(4) uint16_t Children;  // TODO: this is a var length array
 

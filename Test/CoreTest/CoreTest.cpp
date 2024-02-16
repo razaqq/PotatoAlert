@@ -245,7 +245,7 @@ TEST_CASE( "PeReaderTest" )
 	REQUIRE(v);
 	REQUIRE(v->Length == 752);
 	REQUIRE(v->ValueLength == 52);
-	REQUIRE(v->Key == std::wstring_view(L"VS_VERSION_INFO"));
+	REQUIRE(v->Key == std::u16string_view(u"VS_VERSION_INFO"));
 	REQUIRE(v->Value.Signature == 4277077181);
 	REQUIRE(v->Value.StrucVersion == 65536);
 	REQUIRE(v->Value.FileVersionMS == 65538);

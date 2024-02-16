@@ -67,7 +67,7 @@ struct ImageResourceDirectoryEntry
 		return OffsetToData.to_ulong() & 1 << 31;
 	}
 
-	static Result<ImageResourceDirectoryEntry, PeError> FromData(std::span<const Byte> data)
+	static Result<ImageResourceDirectoryEntry, PeError> FromData(std::span<const Byte>& data)
 	{
 		if (data.size() < 8)
 			return PA_ERROR(PeError::InvalidImageResourceDirectoryEntry);
@@ -416,12 +416,12 @@ Result<VsVersionInfo, PeError> VsVersionInfo::FromData(std::span<const Byte> dat
 		return PA_ERROR(PeError::InvalidVersionInfo);
 	}
 
-	if (info.Key != std::wstring_view(L"VS_VERSION_INFO"))
+	if (info.Key != std::u16string_view(u"VS_VERSION_INFO"))
 	{
 		return PA_ERROR(PeError::InvalidVersionInfo);
 	}
 
-	const size_t padding1Size = offsetof(VsVersionInfo, Value) - offsetof(VsVersionInfo, Key) - 16 * sizeof(wchar_t);
+	const size_t padding1Size = offsetof(VsVersionInfo, Value) - offsetof(VsVersionInfo, Key) - 16 * sizeof(char16_t);
 	if (data.size() < padding1Size)
 	{
 		return PA_ERROR(PeError::InvalidVersionInfo);
