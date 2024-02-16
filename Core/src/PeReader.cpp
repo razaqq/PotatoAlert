@@ -493,7 +493,7 @@ Result<ResourceTable, PeError> ResourceTable::FromData(std::span<const Byte> dat
 			Resource resource;
 			resource.Type = resourceType;
 
-			PA_TRY(nameEntry, ImageResourceDirectoryEntry::FromData(data));
+			PA_TRY(nameEntry, ImageResourceDirectoryEntry::FromData(nameData));
 
 			if (nameEntry.Name & 1 << 31)
 			{
@@ -541,7 +541,7 @@ Result<ResourceTable, PeError> ResourceTable::FromData(std::span<const Byte> dat
 				return PA_ERROR(PeError::InvalidResourceSectionLangEntry);
 			}
 
-			PA_TRY(langEntry, ImageResourceDirectoryEntry::FromData(data));
+			PA_TRY(langEntry, ImageResourceDirectoryEntry::FromData(langData));
 
 			resource.LanguageId = langEntry.Name;
 
