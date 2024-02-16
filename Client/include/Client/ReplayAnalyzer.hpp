@@ -6,6 +6,7 @@
 #include "Core/ThreadPool.hpp"
 
 #include "ReplayParser/ReplayParser.hpp"
+#include "GameFileUnpack/GameFileUnpack.hpp"
 
 #include <QFileSystemWatcher>
 #include <QString>
@@ -42,7 +43,7 @@ public:
 	void AnalyzeDirectory(const std::filesystem::path& directory);
 	void OnFileChanged(const std::filesystem::path& file);
 	bool HasGameFiles(Version gameVersion) const;
-	static ReplayResult<void> UnpackGameFiles(const std::filesystem::path& dst, const std::filesystem::path& pkgPath, const std::filesystem::path& idxPath);
+	static GameFileUnpack::UnpackResult<void> UnpackGameFiles(const std::filesystem::path& dst, const std::filesystem::path& pkgPath, const std::filesystem::path& idxPath);
 
 private:
 	void AnalyzeReplay(const std::filesystem::path& path, std::chrono::seconds readDelay = std::chrono::seconds(0));

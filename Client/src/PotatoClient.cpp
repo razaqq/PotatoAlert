@@ -18,6 +18,8 @@
 #include "Core/StandardPaths.hpp"
 #include "Core/Time.hpp"
 
+#include "GameFileUnpack/GameFileUnpack.hpp"
+
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QObject>
@@ -34,6 +36,7 @@
 
 using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Client::StatsParser::MatchType;
+using PotatoAlert::GameFileUnpack::UnpackResult;
 using namespace PotatoAlert::Core;
 
 // static constexpr std::string_view g_submitUrl = "http://127.0.0.1:10001/queue/submit";
@@ -582,12 +585,16 @@ DirectoryStatus PotatoClient::CheckPath()
 		{
 			LOG_INFO("Missing game files for version {} detected, trying to unpack...", gameVersion);
 			const fs::path dst = AppDataPath("PotatoAlert") / "ReplayVersions" / gameVersion;
-			if (!ReplayAnalyzer::UnpackGameFiles(dst, dirStatus.pkgPath, dirStatus.idxPath))
+			GameFileUnpack::UnpackResult<void> unpackResult = ReplayAnalyzer::UnpackGameFiles(dst, dirStatus.pkgPath, dirStatus.idxPath);
+			if (!unpackResult)
 			{
-				LOG_ERROR("Failed to unpack game files for version: {}", gameVersion);
+				LOG_ERROR("Failed to unpack game files for version '{}': {}", gameVersion, unpackResult.error());
 			}
 		}
-		LOG_INFO("Game files for version {} found", gameVersion);
+		else
+		{
+			LOG_INFO("Game files for version {} found", gameVersion);
+		}
 
 		// lets check the entire game folder, replays might be hiding everywhere
 		m_replayAnalyzer.AnalyzeDirectory(gamePath.value());

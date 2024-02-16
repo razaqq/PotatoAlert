@@ -258,6 +258,10 @@ UnpackResult<void> Unpacker::ExtractFile(const FileRecord& fileRecord, const fs:
 					std::vector<Byte> inflated = Core::Zlib::Inflate(
 						data.subspan(fileRecord.Offset, fileRecord.Size), false
 					);
+					if (inflated.size() != fileRecord.UncompressedSize)
+					{
+						return PA_UNPACK_ERROR("File '{}' had invalid size {} != {} after decompression", fileRecord.Path, inflated.size(), fileRecord.UncompressedSize);
+					}
 					return WriteFileData(dst, std::span{ inflated });
 				}
 

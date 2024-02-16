@@ -25,7 +25,7 @@ using namespace std::chrono_literals;
 using namespace PotatoAlert::Core;
 using PotatoAlert::Client::ReplayAnalyzer;
 using PotatoAlert::GameFileUnpack::Unpacker;
-using PotatoAlert::ReplayParser::ReplayResult;
+using PotatoAlert::GameFileUnpack::UnpackResult;
 
 bool ReplayAnalyzer::HasGameFiles(Version gameVersion) const
 {
@@ -33,7 +33,7 @@ bool ReplayAnalyzer::HasGameFiles(Version gameVersion) const
 	// &&MinimapRenderer::HasGameParams(gameVersion, m_gameFilePath);
 }
 
-ReplayResult<void> ReplayAnalyzer::UnpackGameFiles(const fs::path& dst, const fs::path& pkgPath, const fs::path& idxPath)
+UnpackResult<void> ReplayAnalyzer::UnpackGameFiles(const fs::path& dst, const fs::path& pkgPath, const fs::path& idxPath)
 {
 	Unpacker unpacker(pkgPath, idxPath);
 	PA_TRYV(unpacker.Parse());
