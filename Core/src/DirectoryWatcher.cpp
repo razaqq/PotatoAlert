@@ -98,7 +98,7 @@ void DirectoryWatcher::OnDirectoryChanged(const QString& path)
 		QDateTime lastModified = fileInfo.lastModified();
 
 		const bool contains = m_lastModified.contains(filePath);
-		if (!contains || contains && m_lastModified[filePath] < lastModified)
+		if (!contains || m_lastModified[filePath] < lastModified)
 		{
 			m_lastModified[filePath] = lastModified;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

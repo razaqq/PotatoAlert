@@ -281,14 +281,14 @@ void Config::Validate()
 		}
 
 		// check types
-		if (IsType(key, ConfigType::String) && !m_json[name.data()].IsString()
-			|| IsType(key, ConfigType::Bool) && !m_json[name.data()].IsBool()
-			|| IsType(key, ConfigType::Int) && !m_json[name.data()].IsInt()
-			|| IsType(key, ConfigType::Float) && !m_json[name.data()].IsFloat()
-			|| IsType(key, ConfigType::Path) && !m_json[name.data()].IsString()
-			|| IsType(key, ConfigType::StatsMode) && !m_json[name.data()].IsString()
-			|| IsType(key, ConfigType::TableLayout) && !m_json[name.data()].IsString()
-			|| IsType(key, ConfigType::TeamStatsMode) && !m_json[name.data()].IsString())
+		if ((IsType(key, ConfigType::String) && !m_json[name.data()].IsString())
+			|| (IsType(key, ConfigType::Bool) && !m_json[name.data()].IsBool())
+			|| (IsType(key, ConfigType::Int) && !m_json[name.data()].IsInt())
+			|| (IsType(key, ConfigType::Float) && !m_json[name.data()].IsFloat())
+			|| (IsType(key, ConfigType::Path) && !m_json[name.data()].IsString())
+			|| (IsType(key, ConfigType::StatsMode) && !m_json[name.data()].IsString())
+			|| (IsType(key, ConfigType::TableLayout) && !m_json[name.data()].IsString())
+			|| (IsType(key, ConfigType::TeamStatsMode) && !m_json[name.data()].IsString()))
 		{
 			LOG_WARN("Config key '{}' is not of expected type, setting to default value", name);
 			m_json[name.data()] = g_defaultConfig[name.data()];

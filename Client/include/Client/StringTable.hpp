@@ -25,14 +25,14 @@ static constexpr std::string_view Strings[][200] = // TODO: size of array
 
 inline QString GetString(int language, StringTableKey key)
 {
-	assert(language <= Languages->size());
+	assert((size_t)language <= Languages->size());
 	// TODO: this is pretty terrible, make this std::unordered_map or smth
 	return QString::fromUtf8(Strings[language][static_cast<int>(key)].data());
 }
 
 inline constexpr std::string_view GetStringView(int language, StringTableKey key)
 {
-	assert(language <= Languages->size());
+	assert((size_t)language <= Languages->size());
 	// TODO: this is pretty terrible, make this std::unordered_map or smth
 	return Strings[language][static_cast<int>(key)].data();
 }
