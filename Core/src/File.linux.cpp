@@ -236,7 +236,7 @@ bool File::RawWrite(Handle handle, std::span<const T> data, bool resetFilePointe
 		return false;
 	}
 
-	if (ftruncate64(UnwrapHandle<int>(handle), data.size() == -1))
+	if (ftruncate64(UnwrapHandle<int>(handle), data.size()) == -1)
 	{
 		// TODO: handle error
 		return false;
