@@ -3,6 +3,7 @@
 #include "Core/Blowfish.hpp"
 #include "Core/Bytes.hpp"
 #include "Core/File.hpp"
+#include "Core/FileMagic.hpp"
 #include "Core/FileMapping.hpp"
 #include "Core/Instrumentor.hpp"
 #include "Core/Json.hpp"
@@ -27,34 +28,6 @@ using namespace PotatoAlert::Core;
 using namespace PotatoAlert::ReplayParser;
 namespace rp = PotatoAlert::ReplayParser;
 using PotatoAlert::ReplayParser::ReplayResult;
-
-template<typename R, typename T>
-concept const_contiguous_range_of =
-		std::ranges::contiguous_range<R const> &&
-		std::same_as<
-				std::remove_cvref_t<T>,
-				std::ranges::range_value_t<R const>>;
-
-namespace std {
-
-template<equality_comparable T, size_t E,
-		 const_contiguous_range_of<T> R>
-bool operator==(span<T, E> lhs, R const& rhs)
-{
-	return ranges::equal(lhs, rhs);
-}
-
-template<three_way_comparable T, size_t E,
-		 const_contiguous_range_of<T> R>
-auto operator<=>(span<T, E> lhs, R const& rhs)
-{
-	return std::lexicographical_compare_three_way(
-			lhs.begin(), lhs.end(),
-			ranges::begin(rhs), ranges::end(rhs));
-}
-
-}  // namespace std
-
 
 ReplayResult<Replay> Replay::FromFile(std::string_view filePath, std::string_view gameFilePath)
 {
@@ -89,8 +62,7 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 		return PA_REPLAY_ERROR("Replay has invalid length {} < 8.", data.size());
 	}
 
-	constexpr std::array<Byte, 4> sig = { 0x12, 0x32, 0x34, 0x11 };
-	if (Take(data, 4) != std::span{ sig })
+	if (!Core::FileMagic<'\x12', '2', '4', '\x11'>(data))
 	{
 		return PA_REPLAY_ERROR("Replay has invalid file signature.");
 	}

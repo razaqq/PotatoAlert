@@ -2,6 +2,7 @@
 
 #include "Core/Bytes.hpp"
 #include "Core/File.hpp"
+#include "Core/FileMagic.hpp"
 #include "Core/FileMapping.hpp"
 #include "Core/Format.hpp"
 #include "Core/Log.hpp"
@@ -23,6 +24,7 @@
 
 using PotatoAlert::Core::Byte;
 using PotatoAlert::Core::File;
+using PotatoAlert::Core::FileMagic;
 using PotatoAlert::Core::FileMapping;
 using PotatoAlert::Core::Take;
 using PotatoAlert::Core::TakeInto;
@@ -42,11 +44,6 @@ namespace fs = std::filesystem;
 #define PA_UNPACK_ERROR(...) (::std::unexpected(::PotatoAlert::GameFileUnpack::UnpackError(fmt::format(__VA_ARGS__))))
 
 namespace {
-
-static constexpr std::array g_IdxSignature = {
-	std::byte{ 0x49 }, std::byte{ 0x53 },
-	std::byte{ 0x46 }, std::byte{ 0x50 }
-};
 
 static bool ReadNullTerminatedString(std::span<const Byte> data, uint64_t offset, std::string& out)
 {
@@ -282,8 +279,7 @@ UnpackResult<IdxHeader> IdxHeader::Parse(std::span<const Byte> data)
 
 	IdxHeader header;
 
-	Byte signature[4];
-	if (!TakeInto(data, signature) || std::memcmp(signature, g_IdxSignature.data(), 4) != 0)
+	if (!FileMagic<'I', 'S', 'F', 'P'>(data))
 	{
 		return PA_UNPACK_ERROR("Invalid Idx Header");
 	}
