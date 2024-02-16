@@ -1,5 +1,6 @@
 // Copyright 2024 <github.com/razaqq>
 
+#include "Core/Bytes.hpp"
 #include "Core/FileMagic.hpp"
 #include "Core/PeReader.hpp"
 #include "Core/Result.hpp"
@@ -12,6 +13,7 @@
 #include <span>
 
 
+using PotatoAlert::Core::Byte;
 using PotatoAlert::Core::DosHeader;
 using PotatoAlert::Core::DosStub;
 using PotatoAlert::Core::ImageFileHeader;
@@ -24,6 +26,7 @@ using PotatoAlert::Core::PeError;
 using PotatoAlert::Core::Result;
 using PotatoAlert::Core::ResourceTable;
 using PotatoAlert::Core::SectionHeader;
+using PotatoAlert::Core::TakeInto;
 using PotatoAlert::Core::VsVersionInfo;
 using PotatoAlert::Core::Version;
 
@@ -54,21 +57,34 @@ struct ImageResourceDirectoryEntry
 	uint32_t Name;  // relative to root node
 	std::bitset<32> OffsetToData;  // relative to root node
 
-	uint32_t GetOffset() const
+	[[nodiscard]] uint32_t GetOffset() const
 	{
 		return OffsetToData.to_ulong() & ~(1 << 31);
 	}
 
-	bool GetBit() const
+	[[nodiscard]] bool GetBit() const
 	{
 		return OffsetToData.to_ulong() & 1 << 31;
 	}
+
+	static Result<ImageResourceDirectoryEntry, PeError> FromData(std::span<const Byte> data)
+	{
+		if (data.size() < 8)
+			return PA_ERROR(PeError::InvalidImageResourceDirectoryEntry);
+
+		ImageResourceDirectoryEntry e;
+		TakeInto(data, e.Name);
+		uint32_t offset;
+		TakeInto(data, offset);
+		e.OffsetToData = offset;
+
+		return e;
+	}
 };
-static_assert(sizeof(ImageResourceDirectoryEntry) == 0x08);
 
 }
 
-constexpr std::string_view PotatoAlert::Core::GetErrorMessage(PeError error)
+std::string_view PotatoAlert::Core::GetErrorMessage(PeError error)
 {
 	switch (error)
 	{
@@ -104,6 +120,8 @@ constexpr std::string_view PotatoAlert::Core::GetErrorMessage(PeError error)
 			return "Invalid Resource Section Language Entry";
 		case PeError::InvalidResourceSectionDataEntry:
 			return "Invalid Resource Section Data Entry";
+		case PeError::InvalidImageResourceDirectoryEntry:
+			return "Invalid ImageResourceDirectoryEntry";
 		case PeError::InvalidVersionInfo:
 			break;
 		default:
@@ -446,11 +464,7 @@ Result<ResourceTable, PeError> ResourceTable::FromData(std::span<const Byte> dat
 
 	for (uint16_t i = 0; i < typeRoot.NumberOfIdEntries; i++)
 	{
-		ImageResourceDirectoryEntry typeEntry;
-		if (!TakeInto(data, typeEntry))
-		{
-			return PA_ERROR(PeError::InvalidResourceSectionTypeEntry);
-		}
+		PA_TRY(typeEntry, ImageResourceDirectoryEntry::FromData(data));
 
 		const ResourceType resourceType = static_cast<ResourceType>(typeEntry.Name);
 
@@ -479,11 +493,7 @@ Result<ResourceTable, PeError> ResourceTable::FromData(std::span<const Byte> dat
 			Resource resource;
 			resource.Type = resourceType;
 
-			ImageResourceDirectoryEntry nameEntry;
-			if (!TakeInto(nameData, nameEntry))
-			{
-				return PA_ERROR(PeError::InvalidResourceSectionNameEntry);
-			}
+			PA_TRY(nameEntry, ImageResourceDirectoryEntry::FromData(data));
 
 			if (nameEntry.Name & 1 << 31)
 			{
@@ -531,11 +541,7 @@ Result<ResourceTable, PeError> ResourceTable::FromData(std::span<const Byte> dat
 				return PA_ERROR(PeError::InvalidResourceSectionLangEntry);
 			}
 
-			ImageResourceDirectoryEntry langEntry;
-			if (!TakeInto(langData, langEntry))
-			{
-				return PA_ERROR(PeError::InvalidResourceSectionLangEntry);
-			}
+			PA_TRY(langEntry, ImageResourceDirectoryEntry::FromData(data));
 
 			resource.LanguageId = langEntry.Name;
 

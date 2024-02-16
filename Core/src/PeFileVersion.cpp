@@ -17,7 +17,7 @@ using PotatoAlert::Core::FileVersionReadErrorMisc;
 using PotatoAlert::Core::Result;
 using PotatoAlert::Core::Version;
 
-constexpr std::string_view PotatoAlert::Core::GetErrorMessage(FileVersionReadError error)
+std::string_view PotatoAlert::Core::GetErrorMessage(FileVersionReadError error)
 {
 	return std::visit([](auto&& e) -> std::string_view
 	{

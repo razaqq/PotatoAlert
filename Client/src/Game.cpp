@@ -48,7 +48,7 @@ bool GetBinPath(DirectoryStatus& status)
 		const auto res = ReadFileVersion(exe);
 		if (!res)
 		{
-			LOG_ERROR(STR("Failed to read file version from file '{}'"), exe);
+			LOG_ERROR(STR("Failed to read file version from '{}': {}"), exe, GetErrorMessage(res.error()));
 			continue;
 		}
 

@@ -33,10 +33,11 @@ enum class PeError
 	InvalidResourceSectionNameEntry,
 	InvalidResourceSectionLangEntry,
 	InvalidResourceSectionDataEntry,
+	InvalidImageResourceDirectoryEntry,
 	InvalidVersionInfo,
 };
 
-constexpr std::string_view GetErrorMessage(PeError error);
+std::string_view GetErrorMessage(PeError error);
 
 static constexpr uint32_t DosHeaderSize = 0x40;
 struct DosHeader

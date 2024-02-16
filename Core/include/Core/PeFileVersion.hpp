@@ -20,7 +20,7 @@ enum class FileVersionReadErrorMisc
 
 using FileVersionReadError = std::variant<PeError, FileVersionReadErrorMisc>;
 
-constexpr std::string_view GetErrorMessage(FileVersionReadError error);
+std::string_view GetErrorMessage(FileVersionReadError error);
 Result<Version, FileVersionReadError> ReadFileVersion(const std::filesystem::path& p);
 
 }  // namespace PotatoAlert::Core
