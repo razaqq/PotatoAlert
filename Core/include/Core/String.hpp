@@ -58,11 +58,6 @@ struct StringWrap
 
 	explicit StringWrap(const std::string& str) : Str(str) {}
 	explicit StringWrap(std::string&& str) noexcept : Str(str) {}
-
-	~StringWrap()
-	{
-		
-	}
 };
 
 template<>
