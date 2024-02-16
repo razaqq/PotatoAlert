@@ -118,7 +118,6 @@ File::Handle File::RawOpenW(std::wstring_view path, Flags flags)
 		extraFlags |= FILE_FLAG_NO_BUFFERING;
 
 	HANDLE hFile = CreateFileW(path.data(), params.access, params.share, nullptr, mode, extraFlags, nullptr);
-
 	if (hFile == INVALID_HANDLE_VALUE)
 	{
 		return Handle::Null;
@@ -325,34 +324,6 @@ std::string File::RawLastError()
 	LocalFree(lpMsgBuf);
 
 	return msg;
-}
-
-bool File::GetVersion(const fs::path& filePath, Version& outVersion)
-{
-	const DWORD size = GetFileVersionInfoSizeW(filePath.native().c_str(), nullptr);
-	if (size == 0)
-		return {};
-
-	const std::unique_ptr<char[]> versionInfo(new char[size]);
-	if (!GetFileVersionInfoW(filePath.native().c_str(), 0, 255, versionInfo.get()))
-	{
-		return false;
-	}
-
-	VS_FIXEDFILEINFO* out;
-	UINT outSize = 0;
-	if (!VerQueryValueW(&versionInfo[0], L"\\", reinterpret_cast<LPVOID*>(&out), &outSize) && outSize > 0)
-	{
-		return false;
-	}
-
-	outVersion = Version(fmt::format("{}.{}.{}.{}",
-									 (out->dwFileVersionMS >> 16) & 0xff,
-									 (out->dwFileVersionMS >> 0) & 0xff,
-									 (out->dwFileVersionLS >> 16) & 0xff,
-									 (out->dwFileVersionLS >> 0) & 0xff));
-
-	return true;
 }
 
 bool File::RawMove(std::string_view src, std::string_view dst)

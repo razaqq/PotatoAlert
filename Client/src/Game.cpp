@@ -3,9 +3,9 @@
 #include "Client/Config.hpp"
 #include "Client/Game.hpp"
 
-#include "Core/Encoding.hpp"
 #include "Core/File.hpp"
 #include "Core/Log.hpp"
+#include "Core/PeFileVersion.hpp"
 #include "Core/String.hpp"
 #include "Core/Version.hpp"
 #include "Core/Xml.hpp"
@@ -45,14 +45,14 @@ bool GetBinPath(DirectoryStatus& status)
 			continue;
 		}
 
-		Version version;
-		if (!File::GetVersion(exe, version) || !version)
+		const auto res = ReadFileVersion(exe);
+		if (!res)
 		{
-			LOG_ERROR(STR("Failed to read version info from file: {} - {}"), exe, StringWrap(File::LastError()));
+			LOG_ERROR(STR("Failed to read file version from file '{}'"), exe);
 			continue;
 		}
 
-		if (version == status.gameVersion)
+		if (*res == status.gameVersion)
 		{
 			status.directoryVersion = entry.path().filename().string();
 			status.binPath = fs::path(status.gamePath) / "bin" / status.directoryVersion;

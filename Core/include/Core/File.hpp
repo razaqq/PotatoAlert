@@ -176,8 +176,6 @@ public:
 		return RawExists(file);
 	}
 
-	static bool GetVersion(const std::filesystem::path& filePath, Version& outVersion);
-
 	[[nodiscard]] static std::string LastError()
 	{
 		return RawLastError();

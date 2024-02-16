@@ -369,12 +369,6 @@ std::string File::RawLastError()
 	}
 }
 
-bool File::GetVersion(const fs::path& filePath, Version& outVersion)
-{
-	// TODO:: this might not exist, but you can get the sha1 build id
-	return false;
-}
-
 bool File::RawMove(std::string_view src, std::string_view dst)
 {
 	if (rename(src.data(), dst.data()) == -1)
