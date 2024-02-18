@@ -1,5 +1,7 @@
 add_subdirectory(catch2)
 set(FMT_DOC OFF)
+add_subdirectory(date)
+set(FMT_DOC OFF)
 set(FMT_TEST OFF)
 set(FMT_FUZZ OFF)
 set(FMT_SYSTEM_HEADERS ON)
