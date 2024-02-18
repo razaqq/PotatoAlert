@@ -139,6 +139,7 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 
 			m_view->selectionModel()->clearSelection();
 			Refresh();
+			m_filter->BuildFilter(m_model->GetMatches());  // TODO: only build part of this filter
 		}
 	});
 
@@ -207,6 +208,7 @@ int MatchHistory::PageCount() const
 void MatchHistory::AddMatch(const Client::Match& match) const
 {
 	m_model->AddMatch(match);
+	m_filter->BuildFilter(m_model->GetMatches());  // TODO: only build part of this filter
 	Refresh();
 }
 

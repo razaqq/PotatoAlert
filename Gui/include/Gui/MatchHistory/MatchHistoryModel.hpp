@@ -49,7 +49,12 @@ public:
 
 	void AddMatch(const Client::Match& match)
 	{
-		m_matches.push_back(match);
+		m_matches.push_back(match);  // TODO: insert sorted
+	}
+
+	std::span<const Client::Match> GetMatches() const
+	{
+		return m_matches;
 	}
 
 	void SetMatches(std::vector<Client::Match>&& matches)
