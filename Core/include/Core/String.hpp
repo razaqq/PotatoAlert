@@ -2,10 +2,8 @@
 #pragma once
 
 #include "Core/Encoding.hpp"
+#include "Core/Format.hpp"
 #include "Core/Result.hpp"
-
-#include <fmt/xchar.h>
-#include <fmt/format.h>
 
 #include <charconv>
 #include <span>

@@ -1,9 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include <fmt/format.h>
-#include <fmt/std.h>
-#include <fmt/chrono.h>
+#include "Core/Format.hpp"
 
 #if WIN32
 	#ifndef SPDLOG_WCHAR_TO_UTF8_SUPPORT
