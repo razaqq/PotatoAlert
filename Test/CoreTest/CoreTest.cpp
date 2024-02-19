@@ -12,6 +12,7 @@
 #include "Core/Sha1.hpp"
 #include "Core/Sha256.hpp"
 #include "Core/String.hpp"
+#include "Core/Time.hpp"
 #include "Core/Version.hpp"
 #include "Core/Zlib.hpp"
 
@@ -353,6 +354,41 @@ TEST_CASE( "StringTest" )
 	REQUIRE_FALSE(String::StartsWith("", "textt"));
 	REQUIRE(String::StartsWith("text", ""));
 	REQUIRE(String::EndsWith("text", ""));
+}
+
+TEST_CASE( "TimeTest" )
+{
+	{
+		const std::string dt = "2018-12-09 23:12:45";
+		auto res = Time::StrToTime(dt, "%F %T");
+		REQUIRE(res);
+		auto s = Time::TimeToStr(*res, "{:%F %T}");
+		REQUIRE(dt == s);
+	}
+
+	{
+		const std::string dt = "2023-10-15 23:12:45";
+		auto res = Time::StrToTime(dt, "%Y-%m-%d %H:%M:%S");
+		REQUIRE(res);
+		auto s = Time::TimeToStr(*res, "{:%Y-%m-%d %H:%M:%S}");
+		REQUIRE(dt == s);
+	}
+
+	{
+		REQUIRE_FALSE(Time::StrToTime("2023-10-15", "%Y-%m-%d %H:%M:%S"));
+		REQUIRE_FALSE(Time::StrToTime("2023-10-15", "%Y-%m-%d %H"));
+		REQUIRE_FALSE(Time::StrToTime("2023-10-15", "%Y-%d"));
+		REQUIRE_FALSE(Time::StrToTime("2023-10-15", "%m-%d"));
+		REQUIRE(Time::StrToTime("2023-10-15", "%Y-%m-%d"));
+	}
+
+	{
+		const std::string dt = "2023-10-15 23:12:45";
+		auto res = Time::StrToTime(dt, "%Y-%m-%d %H:%M:%S");
+		REQUIRE(res);
+		auto s = Time::TimeToStr(*res, "{:%Y-%m-%d %H:%M}");
+		REQUIRE(s == "2023-10-15 23:12");
+	}
 }
 
 TEST_CASE( "VersionTest" )
