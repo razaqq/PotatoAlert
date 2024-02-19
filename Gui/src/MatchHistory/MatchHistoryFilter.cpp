@@ -25,72 +25,12 @@ using PotatoAlert::Gui::Filter;
 using PotatoAlert::Gui::FilterList;
 using PotatoAlert::Gui::MatchHistoryFilter;
 
-class FilterModel : public QAbstractListModel
-{
-public:
-	explicit FilterModel(Filter& filter) : m_filter(filter)
-	{
-	}
-
-	int rowCount(const QModelIndex& parent) const override
-	{
-		return static_cast<int>(m_filter.size());
-	}
-
-	QVariant data(const QModelIndex& index, int role) const override
-	{
-		if (!index.isValid())
-			return QVariant();
-
-		if (role == Qt::DisplayRole)
-			return std::next(m_filter.begin(), index.row())->first;
-
-		if (role == Qt::CheckStateRole)
-			return std::next(m_filter.begin(), index.row())->second ? Qt::Checked : Qt::Unchecked;
-
-		return QVariant();
-	}
-
-	bool setData(const QModelIndex& index, const QVariant& value, int role) override
-	{
-		if (!index.isValid())
-			return false;
-
-		if (role == Qt::CheckStateRole)
-		{
-			const Qt::CheckState state = static_cast<Qt::CheckState>(value.toInt());
-			m_filter.at(std::next(m_filter.begin(), index.row())->first) = state == Qt::Checked ? true : false;
-			emit dataChanged(index, index, { role });
-			return true;
-		}
-
-		return QAbstractListModel::setData(index, value, role);
-	}
-
-	Qt::ItemFlags flags(const QModelIndex& index) const override
-	{
-		if (!index.isValid())
-			return Qt::NoItemFlags;
-
-		return QAbstractListModel::flags(index) | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
-	}
-
-	void AllDataChanged()
-	{
-		emit dataChanged(QModelIndex(), QModelIndex());
-	}
-
-private:
-	Filter& m_filter;
-};
-
 FilterList::FilterList(Client::StringTable::StringTableKey key, QWidget* parent) : QWidget(parent), m_groupKey(key)
 {
 	qApp->installEventFilter(this);
 
 	QListView* view = new QListView();
-	FilterModel* model = new FilterModel(m_filter);
-	view->setModel(model);
+	view->setModel(m_model);
 
 	QVBoxLayout* layout = new QVBoxLayout();
 	layout->setContentsMargins(0, 0, 0, 0);
@@ -114,23 +54,23 @@ FilterList::FilterList(Client::StringTable::StringTableKey key, QWidget* parent)
 	buttonLayout->setContentsMargins(0, 0, 0, 0);
 
 	m_toggle->setObjectName("settingsButton");
-	connect(m_toggle, &QPushButton::clicked, [this, model](bool checked)
+	connect(m_toggle, &QPushButton::clicked, [this](bool checked)
 	{
-		const bool anyChecked = std::ranges::any_of(m_filter | std::views::values, [](auto& isChecked){ return isChecked; });
+		const bool anyChecked = std::ranges::any_of(m_filter | std::views::values, [](const FilterState& s){ return s.IsChecked; });
 		for (const QString& key : m_filter | std::views::keys)
 		{
-			m_filter.at(key) = !anyChecked;
+			m_filter.at(key).IsChecked = !anyChecked;
 		}
-		model->AllDataChanged();
+		m_model->AllDataChanged();
 	});
 
 	buttonLayout->addWidget(m_toggle);
 	layout->addLayout(buttonLayout);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0 ,0)
-	connect(model, &FilterModel::dataChanged, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QList<int>& roles)
+	connect(m_model, &FilterModel::dataChanged, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QList<int>& roles)
 #else
-	connect(model, &FilterModel::dataChanged, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
+	connect(m_model, &FilterModel::dataChanged, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
 #endif
 	{
 		emit FilterChanged();
@@ -202,11 +142,26 @@ void MatchHistoryFilter::BuildFilter(std::span<const Client::Match> matches) con
 
 	for (const Client::Match& match : matches)
 	{
-		m_shipList->AddItem(match.Ship);
-		m_mapList->AddItem(match.Map);
-		m_modeList->AddItem(match.MatchGroup);
-		m_statsModeList->AddItem(match.StatsMode);
-		m_playerList->AddItem(match.Player);
-		m_regionList->AddItem(match.Region);
+		Add(match);
 	}
+}
+
+void MatchHistoryFilter::Add(const Client::Match& match) const
+{
+	m_shipList->AddItem(match.Ship);
+	m_mapList->AddItem(match.Map);
+	m_modeList->AddItem(match.MatchGroup);
+	m_statsModeList->AddItem(match.StatsMode);
+	m_playerList->AddItem(match.Player);
+	m_regionList->AddItem(match.Region);
+}
+
+void MatchHistoryFilter::Remove(const Client::Match& match) const
+{
+	m_shipList->RemoveItem(match.Ship);
+	m_mapList->RemoveItem(match.Map);
+	m_modeList->RemoveItem(match.MatchGroup);
+	m_statsModeList->RemoveItem(match.StatsMode);
+	m_playerList->RemoveItem(match.Player);
+	m_regionList->RemoveItem(match.Region);
 }

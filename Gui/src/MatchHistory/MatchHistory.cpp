@@ -134,12 +134,12 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 			std::ranges::sort(removedMatches, [](int a, int b){ return a > b; });
 			for (int i : removedMatches)
 			{
+				m_filter->Remove(m_model->GetMatch(i));
 				m_model->DeleteMatch(i);
 			}
 
 			m_view->selectionModel()->clearSelection();
 			Refresh();
-			m_filter->BuildFilter(m_model->GetMatches());  // TODO: only build part of this filter
 		}
 	});
 
@@ -202,13 +202,15 @@ void MatchHistory::SwitchPage(int page) const
 int MatchHistory::PageCount() const
 {
 	m_sortFilter->ResetFilter();  // TODO: this is not ideal
-	return std::max(static_cast<int>(std::ceil(m_sortFilter->rowCount() / (float)EntriesPerPage)), 1);
+	return std::max(static_cast<int>(std::ceil((float)m_sortFilter->rowCount() / (float)EntriesPerPage)), 1);
 }
 
 void MatchHistory::AddMatch(const Client::Match& match) const
 {
 	m_model->AddMatch(match);
-	m_filter->BuildFilter(m_model->GetMatches());  // TODO: only build part of this filter
+	// rebuild the filter, otherwise a new ship type might be added, but there is no filter for it
+	// meaning it would be unselected and thus the new match would not show up
+	m_filter->Add(match);
 	Refresh();
 }
 

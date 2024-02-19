@@ -55,7 +55,7 @@ public:
 
 		auto isChecked = [](const Filter& filter, const QString& key) -> bool
 		{
-			return filter.contains(key) && filter.at(key);
+			return filter.contains(key) && filter.at(key).IsChecked;
 		};
 
 		return time >= m_from && time <= m_to
@@ -70,16 +70,17 @@ public:
 	void SetFilterRange(std::time_t from = std::numeric_limits<std::time_t>::min(), std::time_t to = std::numeric_limits<std::time_t>::max())
 	{
 		assert(to >= from);
-		m_from = from;
-		m_to = to;
-		invalidateFilter();
+		if (m_from != from || m_to != to)
+		{
+			m_from = from;
+			m_to = to;
+			invalidateFilter();
+		}
 	}
 
 	void ResetFilter()
 	{
-		m_from = std::numeric_limits<std::time_t>::min();
-		m_to = std::numeric_limits<std::time_t>::max();
-		invalidateFilter();
+		SetFilterRange();
 	}
 
 private:

@@ -49,7 +49,10 @@ public:
 
 	void AddMatch(const Client::Match& match)
 	{
-		m_matches.push_back(match);  // TODO: insert sorted
+		m_matches.insert(std::ranges::upper_bound(m_matches, match, [](const Client::Match& a, const Client::Match& b)
+		{
+			return a.Date > b.Date;
+		}), match);
 	}
 
 	std::span<const Client::Match> GetMatches() const
@@ -57,6 +60,7 @@ public:
 		return m_matches;
 	}
 
+	// matches have to be sorted
 	void SetMatches(std::vector<Client::Match>&& matches)
 	{
 		m_matches = std::move(matches);

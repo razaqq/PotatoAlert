@@ -6,6 +6,7 @@
 
 #include "Gui/FramelessDialog.hpp"
 
+#include <QAbstractListModel>
 #include <QGroupBox>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -18,7 +19,72 @@
 
 namespace PotatoAlert::Gui {
 
-using Filter = std::map<QString, bool>;
+struct FilterState
+{
+	size_t Count;
+	bool IsChecked;
+};
+
+using Filter = std::map<QString, FilterState>;
+
+class FilterModel : public QAbstractListModel
+{
+public:
+	explicit FilterModel(Filter& filter) : m_filter(filter)
+	{
+	}
+
+	int rowCount(const QModelIndex& parent) const override
+	{
+		return static_cast<int>(m_filter.size());
+	}
+
+	QVariant data(const QModelIndex& index, int role) const override
+	{
+		if (!index.isValid())
+			return QVariant();
+
+		if (role == Qt::DisplayRole)
+			return std::next(m_filter.begin(), index.row())->first;
+
+		if (role == Qt::CheckStateRole)
+			return std::next(m_filter.begin(), index.row())->second.IsChecked ? Qt::Checked : Qt::Unchecked;
+
+		return QVariant();
+	}
+
+	bool setData(const QModelIndex& index, const QVariant& value, int role) override
+	{
+		if (!index.isValid())
+			return false;
+
+		if (role == Qt::CheckStateRole)
+		{
+			const Qt::CheckState state = static_cast<Qt::CheckState>(value.toInt());
+			m_filter.at(std::next(m_filter.begin(), index.row())->first).IsChecked = state == Qt::Checked ? true : false;
+			emit dataChanged(index, index, { role });
+			return true;
+		}
+
+		return QAbstractListModel::setData(index, value, role);
+	}
+
+	Qt::ItemFlags flags(const QModelIndex& index) const override
+	{
+		if (!index.isValid())
+			return Qt::NoItemFlags;
+
+		return QAbstractListModel::flags(index) | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
+	}
+
+	void AllDataChanged()
+	{
+		emit dataChanged(QModelIndex(), QModelIndex());
+	}
+
+private:
+	Filter& m_filter;
+};
 
 class FilterList : public QWidget
 {
@@ -29,7 +95,27 @@ public:
 
 	void AddItem(std::string_view value, bool isChecked = true)
 	{
-		m_filter.emplace(value.data(), isChecked);
+		if (m_filter.contains(value.data()))
+		{
+			m_filter[value.data()].Count++;
+		}
+		else
+		{
+			m_filter.emplace(value.data(), FilterState{ 1, isChecked });
+			m_model->AllDataChanged();
+		}
+	}
+
+	void RemoveItem(std::string_view value)
+	{
+		if (m_filter.contains(value.data()))
+		{
+			if (--m_filter[value.data()].Count == 0)
+			{
+				m_filter.erase(value.data());
+				m_model->AllDataChanged();
+			}
+		}
 	}
 
 	void Clear()
@@ -45,10 +131,11 @@ public:
 	bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
+	Filter m_filter;
+	FilterModel* m_model = new FilterModel(m_filter);
 	Client::StringTable::StringTableKey m_groupKey;
 	QGroupBox* m_groupBox = new QGroupBox();
 	QPushButton* m_toggle = new QPushButton();
-	Filter m_filter;
 
 signals:
 	void FilterChanged();
@@ -63,6 +150,8 @@ public:
 
 	void AdjustPosition();
 	void BuildFilter(std::span<const Client::Match> matches) const;
+	void Add(const Client::Match& match) const;
+	void Remove(const Client::Match& match) const;
 
 	[[nodiscard]] const Filter& ShipFilter() const { return m_shipList->GetFilter(); }
 	[[nodiscard]] const Filter& MapFilter() const { return m_mapList->GetFilter(); }
