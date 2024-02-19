@@ -9,6 +9,7 @@
 #include "Core/Sqlite.hpp"
 #include "Core/String.hpp"
 #include "Core/Sqlite.hpp"
+#include "Core/Time.hpp"
 
 #include <optional>
 #include <span>
@@ -193,7 +194,26 @@ SqlResult<void> DatabaseManager::CreateTables() const
 
 SqlResult<void> DatabaseManager::MigrateTables() const
 {
-	// TODO: convert the time to YYYY-MM-DD HH:MM:SS
+	// convert the time to YYYY-MM-DD HH:MM:SS
+	SQLite::Statement stmt(m_db, PA_DB_SELECT_WITH_ID(MATCH_FIELDS) " FROM matches WHERE date LIKE '__.__.____ __:__:__'");
+	if (!stmt)
+	{
+		return PA_SQL_ERROR("Failed to prepare SQL migration statement: {}", m_db.GetLastError());
+	}
+	while (!stmt.IsDone())
+	{
+		stmt.ExecuteStep();
+		if (stmt.HasRow())
+		{
+			Match match = ParseMatch(stmt);
+			if (std::optional<Core::Time::TimePoint> tp = Core::Time::StrToTime(match.Date, "%d.%m.%Y %H:%M:%S"))
+			{
+				match.Date = Core::Time::TimeToStr(*tp, "{:%Y-%m-%d %H:%M:%S}");
+				PA_TRYV(UpdateMatch(match.Id, match));
+			}
+		}
+	}
+
 	return {};
 }
 
@@ -274,7 +294,7 @@ SqlResult<void> DatabaseManager::DeleteMatches(std::span<uint32_t> ids) const
 	std::ranges::copy(ids, std::ostream_iterator<int>(ss, ", "));
 	const std::string idString = ss.str();
 	const std::string x = idString.substr(0, idString.size() - 2);
-	std::string deleteQuery = fmt::format("DELETE FROM matches WHERE Id IN ({})", x);
+	const std::string deleteQuery = fmt::format("DELETE FROM matches WHERE Id IN ({})", x);
 
 	SQLite::Statement stmt(m_db, deleteQuery);
 
@@ -345,7 +365,7 @@ SqlResult<std::vector<Match>> DatabaseManager::GetMatches() const
 	std::vector<Match> matches;
 
 	static constexpr std::string_view selectQuery =
-			PA_DB_SELECT_WITH_ID(MATCH_FIELDS) " FROM matches";
+			PA_DB_SELECT_WITH_ID(MATCH_FIELDS) " FROM matches ORDER BY Date DESC";
 
 	SQLite::Statement stmt(m_db, selectQuery);
 

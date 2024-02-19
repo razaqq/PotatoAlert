@@ -5,6 +5,7 @@
 #include "Core/Format.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
+#include "Core/Time.hpp"
 
 #include <QApplication>
 #include <QGraphicsEffect>
@@ -630,6 +631,13 @@ JsonResult<StatsParseResult> pn::ParseMatch(const rapidjson::Value& j, const Mat
 	info.StatsMode = std::move(match.StatsMode);
 	info.Region = std::move(match.Region);
 	info.Map = std::move(match.Map);
+
+	// parse and convert dateTime
+	if (const std::optional<Core::Time::TimePoint> tp = Core::Time::StrToTime(match.DateTime, "%d.%m.%Y %H:%M:%S"))
+	{
+		match.DateTime = Core::Time::TimeToStr(*tp, "{:%Y-%m-%d %H:%M:%S}");
+	}
+
 	info.DateTime = std::move(match.DateTime);
 	info.Player = matchContext.PlayerName;
 	info.ShipIdent = matchContext.ShipIdent;

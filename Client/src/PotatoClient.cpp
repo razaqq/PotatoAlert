@@ -174,7 +174,7 @@ struct ServerResponse
 static inline std::string GetReplayName(const MatchType::InfoType& info)
 {
 	const std::vector<std::string> dateSplit = Split(info.DateTime, " ");
-	const std::vector<std::string> date = Split(dateSplit[0], ".");
+	const std::vector<std::string> date = Split(dateSplit[0], "-");
 	const std::vector<std::string> time = Split(dateSplit[1], ":");
 
 	return fmt::format("{}{}{}_{}{}{}_{}_{}.wowsreplay", date[2], date[1], date[0], time[0], time[1], time[2], info.ShipIdent, info.Map);

@@ -5,6 +5,9 @@
 #include "Client/ServiceProvider.hpp"
 #include "Client/StringTable.hpp"
 
+#include "Core/Time.hpp"
+#include "Core/Log.hpp"
+
 #include "Gui/Events.hpp"
 #include "Gui/MatchHistory/MatchHistoryModel.hpp"
 
@@ -24,6 +27,7 @@
 #include <vector>
 
 
+using PotatoAlert::Core::Time::TimePoint;
 using PotatoAlert::Gui::MatchHistoryModel;
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::ConfigKey;
@@ -52,10 +56,16 @@ void MatchHistoryModel::SetReplaySummary(uint32_t id, const ReplaySummary& summa
 
 std::time_t MatchHistoryModel::GetMatchTime(const Client::Match& match)
 {
-	std::tm tm = {};
-	std::stringstream ss(match.Date);
-	ss >> std::get_time(&tm, "%d.%m.%Y %H:%M:%S");
-	return std::chrono::system_clock::from_time_t(std::mktime(&tm)).time_since_epoch().count();
+	if (const std::optional<TimePoint> tp = Core::Time::StrToTime(match.Date, "%Y-%m-%d %H:%M:%S"))
+	{
+		return tp->time_since_epoch().count();
+	}
+	if (const std::optional<TimePoint> tp = Core::Time::StrToTime(match.Date, "%d.%m.%Y %H:%M:%S"))
+	{
+		return tp->time_since_epoch().count();
+	}
+	LOG_ERROR("Unknown Match::Date in MatchHistoryModel");
+	return 0;
 }
 
 QVariant MatchHistoryModel::data(const QModelIndex& index, int role) const
