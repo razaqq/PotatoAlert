@@ -319,7 +319,6 @@ public:
 	std::vector<PacketType> Packets;
 	std::vector<EntitySpec> Specs;
 
-	static ReplayResult<Replay> FromFile(std::string_view filePath, std::string_view gameFilePath);
 	static ReplayResult<Replay> FromFile(const std::filesystem::path& filePath, const std::filesystem::path& gameFilePath);
 	[[nodiscard]] ReplayResult<ReplaySummary> Analyze() const;
 

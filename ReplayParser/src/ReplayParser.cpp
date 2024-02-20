@@ -29,11 +29,6 @@ using namespace PotatoAlert::ReplayParser;
 namespace rp = PotatoAlert::ReplayParser;
 using PotatoAlert::ReplayParser::ReplayResult;
 
-ReplayResult<Replay> Replay::FromFile(std::string_view filePath, std::string_view gameFilePath)
-{
-	return FromFile(filePath, gameFilePath);
-}
-
 ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& gameFilePath)
 {
 	PA_PROFILE_FUNCTION();
