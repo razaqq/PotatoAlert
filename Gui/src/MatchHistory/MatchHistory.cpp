@@ -242,6 +242,11 @@ bool MatchHistory::eventFilter(QObject* watched, QEvent* event)
 	{
 		UpdateLayoutFont(layout());
 	}
+	else if (event->type() == QEvent::Move)
+	{
+		if (m_filter->isVisible())
+			m_filter->AdjustPosition();
+	}
 	return QWidget::eventFilter(watched, event);
 }
 

@@ -9,16 +9,9 @@
 
 using PotatoAlert::Gui::FramelessDialog;
 
-FramelessDialog::FramelessDialog(QWidget* parent) : QDialog(parent)
-{
-	this->setParent(parent);
-
-	this->setWindowFlags(this->windowFlags() | Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowStaysOnTopHint);
-	this->setWindowModality(Qt::WindowModal);
-}
-
 void FramelessDialog::showEvent(QShowEvent* event)
 {
+	QDialog::showEvent(event);
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -27,5 +20,5 @@ bool FramelessDialog::nativeEvent(const QByteArray& eventType, void* message, qi
 bool FramelessDialog::nativeEvent(const QByteArray& eventType, void* message, long* result)
 #endif
 {
-	return true;
+	return QDialog::nativeEvent(eventType, message, result);
 }

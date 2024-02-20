@@ -33,15 +33,11 @@ public:
 	bool eventFilter(QObject* watched, QEvent* event) override;
 	void hideEvent(QHideEvent* event) override;
 	void showEvent(QShowEvent* event) override;
-	void moveEvent(QMoveEvent* event) override
-	{
-		if (m_filter->isVisible())
-			m_filter->AdjustPosition();
-	}
 	void resizeEvent(QResizeEvent* event) override
 	{
 		if (m_filter->isVisible())
 			m_filter->AdjustPosition();
+		QWidget::resizeEvent(event);
 	}
 
 private:

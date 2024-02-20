@@ -21,14 +21,6 @@
 
 using PotatoAlert::Gui::FramelessDialog;
 
-FramelessDialog::FramelessDialog(QWidget* parent) : QDialog(parent)
-{
-	setParent(parent);
-
-	setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowStaysOnTopHint);
-	setWindowModality(Qt::WindowModal);
-}
-
 void FramelessDialog::showEvent(QShowEvent* event)
 {
 	// edit underlying native window
@@ -62,5 +54,5 @@ bool FramelessDialog::nativeEvent(const QByteArray& eventType, void* message, lo
 		*result = WVR_REDRAW;
 		return true;
 	}
-	return QWidget::nativeEvent(eventType, message, result);
+	return QDialog::nativeEvent(eventType, message, result);
 }
