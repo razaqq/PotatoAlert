@@ -4,6 +4,7 @@
 
 #include "Core/Directory.hpp"
 #include "Core/Log.hpp"
+#include "Core/Process.hpp"
 #include "Core/StandardPaths.hpp"
 #include "Core/Version.hpp"
 
@@ -52,6 +53,8 @@ static fs::path GetGamePath(Test t)
 			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "steam_non_versioned_exe";
 		case Test::svcwd:
 			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "steam_versioned_cwd";
+		default:
+			PotatoAlert::Core::ExitCurrentProcess(1);
 	}
 }
 

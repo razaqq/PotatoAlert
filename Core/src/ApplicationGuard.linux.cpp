@@ -33,7 +33,7 @@ ApplicationGuard::ApplicationGuard(std::string name) : m_name(std::move(name))
 
 ApplicationGuard::~ApplicationGuard()
 {
-	lockf(UnwrapHandle<int>(m_handle), F_UNLCK, 0);
+	[[maybe_unused]] int res = lockf(UnwrapHandle<int>(m_handle), F_UNLCK, 0);
 	close(UnwrapHandle<int>(m_handle));
 }
 
