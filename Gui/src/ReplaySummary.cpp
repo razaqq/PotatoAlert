@@ -154,7 +154,7 @@ protected:
 	void paintEvent(QPaintEvent* event) override
 	{
 		QPainter painter(this);
-		QPixmap map = QPixmap::fromImage(QImage(m_map));
+		const QPixmap map = QPixmap::fromImage(QImage(m_map));
 
 		QPixmapBlurFilter f;
 		f.setRadius(4);
@@ -191,7 +191,7 @@ public:
 class Ribbon : public QWidget
 {
 public:
-	Ribbon(QWidget* content, std::string_view title, std::string_view count = "", QWidget* parent = nullptr) : QWidget(parent)
+	explicit Ribbon(QWidget* content, std::string_view title, QWidget* parent = nullptr) : QWidget(parent)
 	{
 		setObjectName("ReplaySummary_Ribbon");
 		QVBoxLayout* layout = new QVBoxLayout();
@@ -225,7 +225,7 @@ private:
 class RibbonSmall : public Ribbon
 {
 public:
-	RibbonSmall(QWidget* content, std::string_view title, std::string_view count = "", QWidget* parent = nullptr) : Ribbon(content, title, count, parent)
+	explicit RibbonSmall(QWidget* content, std::string_view title, QWidget* parent = nullptr) : Ribbon(content, title, parent)
 	{
 		setObjectName("ReplaySummary_RibbonSmall");
 		m_titleLabel->setObjectName("ReplaySummary_RibbonTitleSmall");
@@ -325,7 +325,7 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 		scenarioInfo->setContentsMargins(0, 0, 0, 0);
 		scenarioInfo->setSpacing(0);
 		ShadowLabel* mapModeLabel = new ShadowLabel(
-			fmt::format("{} \u23AF  {}", match.Map, match.MatchGroup).c_str(), 0, 1, 4, QColor(0, 0, 0, 242));
+			fmt::format("{} \u23AF  {}", match.Map, match.MatchGroup), 0, 1, 4, QColor(0, 0, 0, 242));
 		ShadowLabel* startTimeLabel = new ShadowLabel(GetStringView(lang, StringTableKey::REPLAY_BATTLE_START_TIME), 0, 1, 4, QColor(0, 0, 0, 242));
 		ShadowLabel* startTime = new ShadowLabel(match.Date, 0, 1, 4, QColor(0, 0, 0, 242));
 		QHBoxLayout* timeLayout = new QHBoxLayout();
@@ -342,18 +342,7 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 		/* ----- PLAYER INFO ----- */
 		QHBoxLayout* playerInfo = new QHBoxLayout();
 		playerInfo->setContentsMargins(0 ,0 ,0 ,0);
-		// playerInfo->setContentsMargins()
 		playerInfo->setSpacing(0);
-
-		// ShadowLabel* killerName = new ShadowLabel("razaqq", 0, 1, 4);
-		// QLabel* killerShipClass = new QLabel();
-		// killerShipClass->setPixmap(QPixmap(fmt::format(":/{}.png", entry.ShipClass).c_str()));
-		// ShadowLabel* killerShipTier = new ShadowLabel(TierToString(5), 0, 1, 4);
-		// ShadowLabel* killerShipName = new ShadowLabel("Pensacola", 0, 1, 4);
-		// playerInfo->addWidget(killerName);
-		// playerInfo->addWidget(killerShipClass);
-		// playerInfo->addWidget(killerShipTier);
-		// playerInfo->addWidget(killerShipName);
 
 		ShadowLabel* playerName = new ShadowLabel(match.Player, 0, 1, 4);
 		playerName->setObjectName("ReplaySummary_playerInfoLabel");
@@ -425,12 +414,13 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 		battlePerformanceLabel->setObjectName("ReplaySummary_battlePerformanceLabel");
 
 		QFrame* battlePerformance = new QFrame();
-		battlePerformance->setObjectName("ReplaySummary_battlePerformance");
 		QGridLayout* bpLayout = new QGridLayout();
 		bpLayout->setContentsMargins(0, 0, 0, 0);
 		bpLayout->setSpacing(5);
 		bpLayout->setAlignment(Qt::AlignLeft);
+
 		ShadowLabel* dmgDone = new ShadowLabel(FormatDamageNumber(s.DamageDealt), 1, 1, 1);
+		dmgDone->setAlignment(Qt::AlignCenter);
 		dmgDone->setObjectName("ReplaySummary_DamageLabel");
 		bpLayout->addWidget(new Ribbon(dmgDone, GetStringView(lang, StringTableKey::REPLAY_DAMAGE)), 0, 0, Qt::AlignTop | Qt::AlignLeft);
 
@@ -515,7 +505,7 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 	});
 
 	hLayout->addStretch(1);
-	hLayout->addLayout(vLayout, 12);
+	hLayout->addLayout(vLayout, 13);
 	hLayout->addStretch(1);
 	m_background->setLayout(hLayout);
 }

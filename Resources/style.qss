@@ -355,7 +355,6 @@ QMainWindow::separator
   padding: 0px 0px 0px 0px;
   qproperty-indent: 0;
   color: #e7e9ea;
-  text-align: center;
   font-family: Warhelios;
   font-weight: bold;
   font-size: 40px;
