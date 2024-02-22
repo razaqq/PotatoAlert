@@ -171,13 +171,20 @@ struct ServerResponse
 	return {};
 }
 
-static inline std::string GetReplayName(const MatchType::InfoType& info)
+static inline std::optional<std::string> GetReplayName(const MatchType::InfoType& info)
 {
 	const std::vector<std::string> dateSplit = Split(info.DateTime, " ");
+
+	if (dateSplit.size() != 2)
+		return {};
+
 	const std::vector<std::string> date = Split(dateSplit[0], "-");
 	const std::vector<std::string> time = Split(dateSplit[1], ":");
 
-	return fmt::format("{}{}{}_{}{}{}_{}_{}.wowsreplay", date[2], date[1], date[0], time[0], time[1], time[2], info.ShipIdent, info.Map);
+	if (date.size() != 3 || time.size() != 3)
+		return {};
+
+	return fmt::format("{}_{}_{}_{}.wowsreplay", fmt::join(date, ""), fmt::join(time, ""), info.ShipIdent, info.Map);
 }
 
 }
@@ -347,10 +354,17 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 								rapidjson::Writer writer(buffer);
 								serverResponse.Result.value().Accept(writer);
 
+								const std::optional<std::string> replayName = GetReplayName(res.Match.Info);
+								if (!replayName)
+								{
+									LOG_ERROR("Failed to get replay name");
+									return;
+								}
+
 								Match match
 								{
 									.Hash = m_lastArenaInfoHash,
-									.ReplayName = GetReplayName(res.Match.Info),
+									.ReplayName = *replayName,
 									.Date = res.Match.Info.DateTime,
 									.Ship = res.Match.Info.ShipName,
 									.ShipNation = res.Match.Info.ShipNation,
