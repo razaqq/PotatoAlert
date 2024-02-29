@@ -8,8 +8,8 @@
 #include "Core/Result.hpp"
 #include "Core/Sqlite.hpp"
 #include "Core/String.hpp"
-#include "Core/Sqlite.hpp"
 #include "Core/Time.hpp"
+#include "Core/Version.hpp"
 
 #include <optional>
 #include <span>
@@ -21,6 +21,7 @@
 using PotatoAlert::Client::DatabaseManager;
 using PotatoAlert::Client::Match;
 using PotatoAlert::Client::NonAnalyzedMatch;
+using PotatoAlert::Client::SchemaInfo;
 using PotatoAlert::Client::SqlResult;
 using PotatoAlert::Core::SQLite;
 
@@ -152,13 +153,23 @@ static inline Match ParseMatch(const SQLite::Statement& stmt)
 #undef PARSE_FIELD
 }
 
+static inline SchemaInfo ParseSchemaInfo(const SQLite::Statement& stmt)
+{
+	int index = 0;
+
+#define PARSE_FIELD(Type, Name, SqlType) .Name = ParseValue<Type>(stmt, index++),
+	return SchemaInfo{ PARSE_FIELD(uint32_t, Id, "") SCHEMAINFO_FIELDS(PARSE_FIELD) };
+#undef PARSE_FIELD
+}
+
 }  // namespace
 
 DatabaseManager::DatabaseManager(SQLite& db) : m_db(db)
 {
-	if (!CreateTables())
+	SqlResult<void> create = CreateTables();
+	if (!create)
 	{
-		LOG_ERROR("Failed to create database tables");
+		LOG_ERROR("Failed to create database tables: {}", create.error());
 	}
 
 	SqlResult<void> migrate = MigrateTables();
@@ -182,11 +193,16 @@ DatabaseManager::~DatabaseManager()
 
 SqlResult<void> DatabaseManager::CreateTables() const
 {
-	static constexpr std::string_view createStatement = PA_DB_CREATE_TABLE_WITH_ID(matches, MATCH_FIELDS);
-
-	if (!m_db.Execute(createStatement))
+	static constexpr std::string_view matchesStmt = PA_DB_CREATE_TABLE_WITH_ID(matches, MATCH_FIELDS);
+	if (!m_db.Execute(matchesStmt))
 	{
-		return PA_SQL_ERROR("{}", m_db.GetLastError());
+		return PA_SQL_ERROR("Failed to create matches table: {}", m_db.GetLastError());
+	}
+
+	static constexpr std::string_view schemaStmt = PA_DB_CREATE_TABLE_WITH_ID(schemaInfo, SCHEMAINFO_FIELDS);
+	if (!m_db.Execute(schemaStmt))
+	{
+		return PA_SQL_ERROR("Failed to create schemaInfo table: {}", m_db.GetLastError());
 	}
 
 	return {};
@@ -194,23 +210,91 @@ SqlResult<void> DatabaseManager::CreateTables() const
 
 SqlResult<void> DatabaseManager::MigrateTables() const
 {
-	// convert the time to YYYY-MM-DD HH:MM:SS
-	SQLite::Statement stmt(m_db, PA_DB_SELECT_WITH_ID(MATCH_FIELDS) " FROM matches WHERE date LIKE '__.__.____ __:__:__'");
-	if (!stmt)
+	SQLite::Statement versionStmt(m_db, PA_DB_SELECT_WITH_ID(SCHEMAINFO_FIELDS) " FROM schemaInfo");
+	if (!versionStmt)
 	{
-		return PA_SQL_ERROR("Failed to prepare SQL migration statement: {}", m_db.GetLastError());
+		return PA_SQL_ERROR("Failed to read schemaInfo version: {}", m_db.GetLastError());
 	}
-	while (!stmt.IsDone())
+	versionStmt.ExecuteStep();
+	Version version(0, 0);
+	if (versionStmt.HasRow())
 	{
-		stmt.ExecuteStep();
-		if (stmt.HasRow())
+		version = Version(ParseSchemaInfo(versionStmt).Version);
+	}
+
+	// backup old database before any migration
+	const bool migrationNeeded = version != m_currentVersion;
+	if (migrationNeeded)
+	{
+		std::filesystem::path dst = m_db.GetPath();
+		dst.replace_filename(fmt::format("{}_{}.{}", dst.filename(), version.ToString(), dst.extension()));
+		std::error_code ec;
+		std::filesystem::copy_file(m_db.GetPath(), dst, std::filesystem::copy_options::overwrite_existing, ec);
+		if (ec)
 		{
-			Match match = ParseMatch(stmt);
-			if (std::optional<Core::Time::TimePoint> tp = Core::Time::StrToTime(match.Date, "%d.%m.%Y %H:%M:%S"))
+			return PA_SQL_ERROR("Failed to create database backup: {}", ec.message());
+		}
+	}
+
+	if (version < Version(1, 0))
+	{
+		// convert the time to YYYY-MM-DD HH:MM:SS
+		SQLite::Statement stmt(m_db, PA_DB_SELECT_WITH_ID(MATCH_FIELDS) " FROM matches WHERE Date LIKE '__.__.____ __:__:__'");
+		if (!stmt)
+		{
+			return PA_SQL_ERROR("Failed to prepare SQL migration statement: {}", m_db.GetLastError());
+		}
+		while (!stmt.IsDone())
+		{
+			stmt.ExecuteStep();
+			if (stmt.HasRow())
 			{
-				match.Date = Core::Time::TimeToStr(*tp, "{:%Y-%m-%d %H:%M:%S}");
-				PA_TRYV(UpdateMatch(match.Id, match));
+				Match match = ParseMatch(stmt);
+				if (std::optional<Core::Time::TimePoint> tp = Core::Time::StrToTime(match.Date, "%d.%m.%Y %H:%M:%S"))
+				{
+					match.Date = Core::Time::TimeToStr(*tp, "{:%Y-%m-%d %H:%M:%S}");
+					PA_TRYV(UpdateMatch(match.Id, match));
+				}
+				else
+				{
+					return PA_SQL_ERROR("Failed to perform date migration");
+				}
 			}
+		}
+
+		// we have to delete all matches that are not of the supported format
+		SQLite::Statement checkStmt(m_db, "SELECT Id FROM matches WHERE Date NOT LIKE '____-__-__ __:__:__'");
+		if (!checkStmt)
+		{
+			return PA_SQL_ERROR("Failed to prepare SQL migration statement: {}", m_db.GetLastError());
+		}
+		while (!checkStmt.IsDone())
+		{
+			checkStmt.ExecuteStep();
+			if (checkStmt.HasRow())
+			{
+				int id;
+				if (checkStmt.GetInt(0, id))
+				{
+					PA_TRYV(DeleteMatch(id));
+				}
+			}
+		}
+	}
+
+	// set current version
+	if (migrationNeeded)
+	{
+		SQLite::Statement schemaInsertStmt(m_db, "INSERT OR REPLACE INTO schemaInfo (" PA_DB_COLUMNS_WITH_ID(SCHEMAINFO_FIELDS) ") VALUES (1, ?)");
+		const std::string versionString = m_currentVersion.ToString(".", false);
+		if (!schemaInsertStmt || !schemaInsertStmt.Bind(1, versionString))
+		{
+			return PA_SQL_ERROR("Failed to prepare schemaInfo statement: {}", m_db.GetLastError());
+		}
+		schemaInsertStmt.ExecuteStep();
+		if (!schemaInsertStmt.IsDone())
+		{
+			return PA_SQL_ERROR("{}", m_db.GetLastError());
 		}
 	}
 

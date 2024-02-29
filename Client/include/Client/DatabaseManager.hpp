@@ -4,6 +4,7 @@
 #include "Core/Format.hpp"
 #include "Core/Result.hpp"
 #include "Core/Sqlite.hpp"
+#include "Core/Version.hpp"
 
 #include "ReplayParser/ReplayParser.hpp"
 
@@ -34,12 +35,21 @@ namespace PotatoAlert::Client {
 	X(bool, Analyzed, INTEGER DEFAULT FALSE) \
 	X(ReplaySummary, ReplaySummary, TEXT)
 
+#define SCHEMAINFO_FIELDS(X) \
+	X(std::string, Version, TEXT)
+
 #define DECL_STRUCT(Type, Name, SqlType) Type Name;
 
 struct Match
 {
 	uint32_t Id;
 	MATCH_FIELDS(DECL_STRUCT)
+};
+
+struct SchemaInfo
+{
+	uint32_t Id;
+	SCHEMAINFO_FIELDS(DECL_STRUCT)
 };
 
 struct NonAnalyzedMatch
@@ -85,6 +95,7 @@ public:
 	[[nodiscard]] SqlResult<bool> MatchExists(std::string_view hash) const;
 
 private:
+	static constexpr Version m_currentVersion = Version(1, 0);
 	Core::SQLite& m_db;
 	static constexpr std::string_view matchTable = "matches";
 };
