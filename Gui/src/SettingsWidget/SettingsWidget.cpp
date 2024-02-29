@@ -148,11 +148,11 @@ void SettingsWidget::Init()
 
 	generalLayout->addWidget(new HorizontalLine(), 2, 0, 1, 2);
 
-	AddSetting<SettingsSwitch, ConfigKey::UpdateNotifications>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_UPDATES, [](SettingsSwitch* form, bool checked) {});
-	AddSetting<SettingsSwitch, ConfigKey::MinimizeTray>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_MINIMIZETRAY, [](SettingsSwitch* form, bool checked) {});
-	AddSetting<SettingsSwitch, ConfigKey::MatchHistory>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SAVE_MATCHHISTORY, [](SettingsSwitch* form, bool checked) {});
-	AddSetting<SettingsSwitch, ConfigKey::SaveMatchCsv>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SAVE_CSV, [](SettingsSwitch* form, bool checked) {});
-	AddSetting<SettingsComboBox, ConfigKey::Language>(generalLayout, new SettingsComboBox(Languages), StringTableKey::SETTINGS_LANGUAGE, [this](SettingsComboBox* form, int id)
+	AddSetting<SettingsSwitch, ConfigKey::UpdateNotifications>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_UPDATES, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsSwitch, ConfigKey::MinimizeTray>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_MINIMIZETRAY, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsSwitch, ConfigKey::MatchHistory>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SAVE_MATCHHISTORY, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsSwitch, ConfigKey::SaveMatchCsv>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SAVE_CSV, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsComboBox, ConfigKey::Language>(generalLayout, new SettingsComboBox(Languages), StringTableKey::SETTINGS_LANGUAGE, [this](SettingsComboBox*, int id)
 	{
 		LanguageChangeEvent event(id);
 		QApplication::sendEvent(window(), &event);
@@ -160,29 +160,29 @@ void SettingsWidget::Init()
 
 	// DISPLAY
 	SettingsChoice* statsMode = new SettingsChoice(this, { "current mode", "randoms", "ranked", "coop" });  // TODO: localize
-	AddSetting<SettingsChoice, ConfigKey::StatsMode>(displayLayout, statsMode, StringTableKey::SETTINGS_STATS_MODE, [this](SettingsChoice* form, int id)
+	AddSetting<SettingsChoice, ConfigKey::StatsMode>(displayLayout, statsMode, StringTableKey::SETTINGS_STATS_MODE, [this](SettingsChoice*, int)
 	{
 		m_forceRun = true;
 	});
 	SettingsChoice* teamWinrateMode = new SettingsChoice(this, { "weighted", "average", "median" });  // TODO: localize
-	AddSetting<SettingsChoice, ConfigKey::TeamWinRateMode>(displayLayout, teamWinrateMode, StringTableKey::SETTINGS_TEAM_WIN_RATE_MODE, [this](SettingsChoice* form, int id)
+	AddSetting<SettingsChoice, ConfigKey::TeamWinRateMode>(displayLayout, teamWinrateMode, StringTableKey::SETTINGS_TEAM_WIN_RATE_MODE, [this](SettingsChoice*, int)
 	{
 		m_forceRun = true;
 	});
 	SettingsChoice* teamDamageMode = new SettingsChoice(this, { "weighted", "average", "median" });  // TODO: localize
-	AddSetting<SettingsChoice, ConfigKey::TeamDamageMode>(displayLayout, teamDamageMode, StringTableKey::SETTINGS_TEAM_DAMAGE_MODE, [this](SettingsChoice* form, int id)
+	AddSetting<SettingsChoice, ConfigKey::TeamDamageMode>(displayLayout, teamDamageMode, StringTableKey::SETTINGS_TEAM_DAMAGE_MODE, [this](SettingsChoice*, int)
 	{
 		m_forceRun = true;
 	});
-	AddSetting<SettingsSwitch, ConfigKey::ShowKarma>(displayLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SHOW_KARMA, [](SettingsSwitch* form, bool checked) {});
-	AddSetting<SettingsSwitch, ConfigKey::FontShadow>(displayLayout, new SettingsSwitch(), StringTableKey::SETTINGS_FONT_SHADOW, [](SettingsSwitch* form, bool checked) {});
+	AddSetting<SettingsSwitch, ConfigKey::ShowKarma>(displayLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SHOW_KARMA, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsSwitch, ConfigKey::FontShadow>(displayLayout, new SettingsSwitch(), StringTableKey::SETTINGS_FONT_SHADOW, [](SettingsSwitch*, bool) {});
 	SettingsChoice* tableLayout = new SettingsChoice(this, { "horizontal", "vertical" });
-	AddSetting<SettingsChoice, ConfigKey::TableLayout>(displayLayout, tableLayout, StringTableKey::SETTINGS_TABLE_LAYOUT, [this](SettingsChoice* form, int id)
+	AddSetting<SettingsChoice, ConfigKey::TableLayout>(displayLayout, tableLayout, StringTableKey::SETTINGS_TABLE_LAYOUT, [this](SettingsChoice*, int)
 	{
 		emit TableLayoutChanged();
 	});
-	AddSetting<SettingsSwitch, ConfigKey::AnonymizePlayers>(displayLayout, new SettingsSwitch(), StringTableKey::SETTINGS_ANONYMIZE_PLAYER_NAMES_SCREENSHOT, [](SettingsSwitch* form, bool checked) {});
-	AddSetting<SettingsComboBox, ConfigKey::Font>(displayLayout, new SettingsComboBox(Client::Fonts), StringTableKey::SETTINGS_FONT, [this](SettingsComboBox* form, int id)
+	AddSetting<SettingsSwitch, ConfigKey::AnonymizePlayers>(displayLayout, new SettingsSwitch(), StringTableKey::SETTINGS_ANONYMIZE_PLAYER_NAMES_SCREENSHOT, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsComboBox, ConfigKey::Font>(displayLayout, new SettingsComboBox(Client::Fonts), StringTableKey::SETTINGS_FONT, [](SettingsComboBox* form, int)
 	{
 		QFont font = QApplication::font();
 		font.setFamily(form->currentText());
@@ -191,7 +191,7 @@ void SettingsWidget::Init()
 
 	SettingsSlider* fontScaling = new SettingsSlider(50, 150);
 	fontScaling->setFixedWidth(250);
-	AddSetting<SettingsSlider, ConfigKey::FontScaling>(displayLayout, fontScaling, StringTableKey::SETTINGS_FONT_SCALING, [this](SettingsSlider* form, int value)
+	AddSetting<SettingsSlider, ConfigKey::FontScaling>(displayLayout, fontScaling, StringTableKey::SETTINGS_FONT_SCALING, [](SettingsSlider*, int value)
 	{
 		FontScalingChangeEvent event((float)value / 100.0f);
 		for (QWidget* w : qApp->allWidgets())

@@ -1,7 +1,12 @@
+// Copyright 2023 <github.com/razaqq>
+
 #include "Core/Format.hpp"
+#include "Core/Preprocessor.hpp"
 #include "Core/Time.hpp"
 
+PA_SUPPRESS_WARN_BEGIN
 #include <date/date.h>
+PA_SUPPRESS_WARN_END
 
 #include <chrono>
 #include <optional>

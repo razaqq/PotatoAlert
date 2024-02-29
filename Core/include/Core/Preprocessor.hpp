@@ -42,3 +42,17 @@
 #else
 	#define PA_FUNC_SIG "PA_FUNC_SIG unknown!"
 #endif
+
+#define PA_PRAGMA(X) _Pragma(#X)
+
+#define PA_SUPPRESS_WARN_BEGIN                       \
+	PA_PRAGMA(warning(push, 0))                      \
+	PA_PRAGMA(GCC diagnostic push)                   \
+	PA_PRAGMA(GCC diagnostic ignored "-Weverything") \
+	PA_PRAGMA(clang diagnostic push)                 \
+	PA_PRAGMA(clang diagnostic ignored "-Weverything")
+
+#define PA_SUPPRESS_WARN_END        \
+	PA_PRAGMA(GCC diagnostic pop)   \
+	PA_PRAGMA(clang diagnostic pop) \
+	PA_PRAGMA(warning(pop))

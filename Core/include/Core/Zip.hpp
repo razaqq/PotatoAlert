@@ -93,7 +93,7 @@ public:
 
 	bool WriteEntry(std::string_view entryName, const std::string& data) const;
 
-	[[nodiscard]] uint64_t SizeEntry(std::string_view entryName) const;
+	[[nodiscard]] uint64_t SizeEntry() const;
 	[[nodiscard]] int EntryCount() const;
 
 	template<typename T = void>

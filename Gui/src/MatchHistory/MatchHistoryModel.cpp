@@ -93,21 +93,21 @@ QVariant MatchHistoryModel::data(const QModelIndex& index, int role) const
 			switch (index.column())
 			{
 				case 0:
-					return QString::fromStdString(m_matches[index.row()].Date);
+					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].Date);
 				case 1:
-					return QString::fromStdString(m_matches[index.row()].Ship);
+					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].Ship);
 				case 2:
-					return QString::fromStdString(m_matches[index.row()].Map);
+					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].Map);
 				case 3:
-					return QString::fromStdString(m_matches[index.row()].MatchGroup);
+					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].MatchGroup);
 				case 4:
-					return QString::fromStdString(m_matches[index.row()].StatsMode);
+					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].StatsMode);
 				case 5:
-					return QString::fromStdString(m_matches[index.row()].Player);
+					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].Player);
 				case 6:
-					return QString::fromStdString(m_matches[index.row()].Region);
+					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].Region);
 				case 7:
-					return m_matches[index.row()].Analyzed;
+					return m_matches[static_cast<size_t>(index.row())].Analyzed;
 				default:
 					return QVariant();
 			}

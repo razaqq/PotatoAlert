@@ -2,13 +2,16 @@
 #pragma once
 
 #include "Core/Format.hpp"
+#include "Core/Preprocessor.hpp"
 #include "Core/Result.hpp"
 
 #include <expected>
 #include <filesystem>
 #include <string>
 
+PA_SUPPRESS_WARN_BEGIN
 #include <tinyxml2.h>
+PA_SUPPRESS_WARN_END
 
 
 namespace PotatoAlert::Core {

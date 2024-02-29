@@ -200,15 +200,19 @@ private:
 	template<typename T>
 	[[nodiscard]] constexpr size_t DataWidth(T&& value) const
 	{
-		constexpr bool hasSize = requires(T && t) { t.size(); };
+		constexpr bool hasSize = requires(T&& t) { t.size(); };
 
 		if constexpr (std::is_integral_v<std::decay_t<decltype(value)>>)
 		{
-			return value == 0 ? 1 : std::log10(value) + 1;
+			return value == 0 ? 1 : static_cast<size_t>(std::log10(value)) + 1ull;
 		}
 		else if constexpr (hasSize)
 		{
 			return value.size();
+		}
+		else
+		{
+			return 0;
 		}
 	}
 

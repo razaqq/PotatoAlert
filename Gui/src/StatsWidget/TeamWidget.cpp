@@ -47,7 +47,7 @@ TeamWidget::TeamWidget(Side side, QWidget* parent)
 	{
 		if (static_cast<size_t>(row) < m_wowsNumbers.size())
 		{
-			const QUrl url(m_wowsNumbers[row]);
+			const QUrl url(m_wowsNumbers[static_cast<size_t>(row)]);
 			if (url.isValid())
 				QDesktopServices::openUrl(url);
 		}
@@ -65,12 +65,12 @@ void TeamWidget::Update(const Team& team)
 	{
 		for (int col = 0; col < m_table->columnCount(); col++)
 		{
-			if (col >= player.size())
+			if (static_cast<size_t>(col) >= player.size())
 			{
 				break;
 			}
 
-			Client::StatsParser::FieldType field = player[col];
+			Client::StatsParser::FieldType field = player[static_cast<size_t>(col)];
 			if (std::holds_alternative<QTableWidgetItem*>(field))
 				m_table->setItem(row, col, std::get<QTableWidgetItem*>(field));
 			if (std::holds_alternative<QLabel*>(field))

@@ -40,7 +40,7 @@ public:
 		m_handle = Handle::Null;
 	}
 
-	explicit SQLite(Handle handle) : m_handle(handle) {}
+	explicit SQLite(Handle handle, std::filesystem::path path) : m_handle(handle), m_path(std::move(path)) {}
 
 	SQLite(SQLite&& src) noexcept
 	{
@@ -70,14 +70,14 @@ public:
 		return m_handle;
 	}
 
-	static SQLite Open(std::string_view path, Flags flags)
+	[[nodiscard]] const std::filesystem::path& GetPath() const
 	{
-		return SQLite(RawOpen(path, flags));
+		return m_path;
 	}
 
 	static SQLite Open(const std::filesystem::path& path, Flags flags)
 	{
-		return SQLite(RawOpen(path, flags));
+		return SQLite(RawOpen(path, flags), path);
 	}
 
 	void Close()
@@ -120,14 +120,14 @@ public:
 		Statement& operator=(const Statement&) = delete;
 		Statement&& operator=(Statement&&) = delete;
 		
-		bool Bind(int index, int value) const;
+		bool Bind(int index, int32_t value) const;
 		bool Bind(int index, uint32_t value) const;
 		bool Bind(int index, double value) const;
 		bool Bind(int index, const char* value) const;
 		bool Bind(int index, const std::string& value) const;
 		bool Bind(int index, std::string_view value) const;
 
-		bool Bind(std::string_view name, int value) const;
+		bool Bind(std::string_view name, int32_t value) const;
 		bool Bind(std::string_view name, uint32_t value) const;
 		bool Bind(std::string_view name, double value) const;
 		bool Bind(std::string_view name, const char* value) const;
@@ -148,11 +148,11 @@ public:
 
 		[[nodiscard]] const SQLite& GetDb() const { return m_db; }
 
-		operator bool() const { return m_valid; }
+		explicit operator bool() const { return m_valid; }
 
 	private:
 		const SQLite& m_db;
-		uintptr_t m_stmt;
+		void* m_stmt;
 		bool m_valid;
 		bool m_done = false;
 		bool m_hasRow = false;
@@ -176,8 +176,8 @@ public:
 
 private:
 	Handle m_handle;
+	std::filesystem::path m_path;
 
-	static Handle RawOpen(std::string_view path, Flags flags);
 	static Handle RawOpen(const std::filesystem::path& path, Flags flags);
 	static void RawClose(Handle handle);
 	static bool RawFlushBuffer(Handle handle);

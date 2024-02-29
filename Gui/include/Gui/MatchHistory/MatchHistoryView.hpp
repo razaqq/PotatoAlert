@@ -10,7 +10,7 @@ namespace PotatoAlert::Gui {
 class MatchHistoryView : public QTableView
 {
 public:
-	MatchHistoryView()
+	explicit MatchHistoryView(QWidget* parent = nullptr) : QTableView(parent)
 	{
 		qApp->installEventFilter(this);
 	}

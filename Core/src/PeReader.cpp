@@ -59,12 +59,12 @@ struct ImageResourceDirectoryEntry
 
 	[[nodiscard]] uint32_t GetOffset() const
 	{
-		return OffsetToData.to_ulong() & ~(1 << 31);
+		return OffsetToData.to_ulong() & ~(1ul << 31ul);
 	}
 
 	[[nodiscard]] bool GetBit() const
 	{
-		return OffsetToData.to_ulong() & 1 << 31;
+		return OffsetToData.to_ulong() & 1ul << 31ul;
 	}
 
 	static Result<ImageResourceDirectoryEntry, PeError> FromData(std::span<const Byte>& data)

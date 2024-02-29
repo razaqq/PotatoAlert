@@ -13,7 +13,9 @@
 #include "Gui/Pagination.hpp"
 
 #include <QLabel>
-#include <QPushButton>
+#include <QWidget>
+
+#include <cstdint>
 
 
 namespace PotatoAlert::Gui {

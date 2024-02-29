@@ -1,8 +1,11 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/Preprocessor.hpp"
 #include "Core/Sqlite.hpp"
 
-#include "sqlite3.h"
+PA_SUPPRESS_WARN_BEGIN
+#include <sqlite3.h>
+PA_SUPPRESS_WARN_END
 
 #include <cstdint>
 #include <filesystem>
@@ -12,6 +15,8 @@
 
 
 using PotatoAlert::Core::SQLite;
+
+namespace {
 
 static SQLite::Handle CreateHandle(sqlite3* handle)
 {
@@ -23,13 +28,6 @@ static sqlite3* UnwrapHandle(SQLite::Handle handle)
 	return reinterpret_cast<sqlite3*>(static_cast<uintptr_t>(handle));
 }
 
-SQLite::Handle SQLite::RawOpen(std::string_view path, Flags flags)
-{
-	sqlite3* db;
-	if (sqlite3_open_v2(path.data(), &db, static_cast<int>(flags), nullptr) == SQLITE_OK)
-		return CreateHandle(db);
-	else
-		return Handle::Null;
 }
 
 SQLite::Handle SQLite::RawOpen(const std::filesystem::path& path, Flags flags)
@@ -73,49 +71,51 @@ SQLite::Statement::Statement(const SQLite& db, std::string_view sql) : m_db(db)
 {
 	sqlite3_stmt* stmt;
 	m_valid = sqlite3_prepare_v2(UnwrapHandle(db.m_handle), sql.data(), -1, &stmt, nullptr) == SQLITE_OK;
-	m_stmt = reinterpret_cast<uintptr_t>(stmt);
+	m_stmt = stmt;
 	m_columnCount = sqlite3_column_count(stmt);
 }
 
 SQLite::Statement::~Statement()
 {
-	sqlite3_finalize(reinterpret_cast<sqlite3_stmt*>(m_stmt));
+	sqlite3_finalize(static_cast<sqlite3_stmt*>(m_stmt));
 }
 
 
-bool SQLite::Statement::Bind(int index, int value) const
+bool SQLite::Statement::Bind(int index, int32_t value) const
 {
-	return sqlite3_bind_int(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value) == SQLITE_OK;
+	return sqlite3_bind_int(static_cast<sqlite3_stmt*>(m_stmt), index, value) == SQLITE_OK;
 }
 
 bool SQLite::Statement::Bind(int index, uint32_t value) const
 {
-	return sqlite3_bind_int(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value) == SQLITE_OK;
+	if (value > std::numeric_limits<int>::max())
+		return false;
+	return sqlite3_bind_int(static_cast<sqlite3_stmt*>(m_stmt), index, static_cast<int>(value)) == SQLITE_OK;
 }
 
 bool SQLite::Statement::Bind(int index, double value) const
 {
-	return sqlite3_bind_double(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value) == SQLITE_OK;
+	return sqlite3_bind_double(static_cast<sqlite3_stmt*>(m_stmt), index, value) == SQLITE_OK;
 }
 
 bool SQLite::Statement::Bind(int index, const char* value) const
 {
-	return sqlite3_bind_text(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value, -1, nullptr) == SQLITE_OK;
+	return sqlite3_bind_text(static_cast<sqlite3_stmt*>(m_stmt), index, value, -1, nullptr) == SQLITE_OK;
 }
 
 bool SQLite::Statement::Bind(int index, const std::string& value) const
 {
-	return sqlite3_bind_text(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value.c_str(), -1, nullptr) == SQLITE_OK;
+	return sqlite3_bind_text(static_cast<sqlite3_stmt*>(m_stmt), index, value.c_str(), -1, nullptr) == SQLITE_OK;
 }
 
 bool SQLite::Statement::Bind(int index, std::string_view value) const
 {
-	return sqlite3_bind_text(reinterpret_cast<sqlite3_stmt*>(m_stmt), index, value.data(), -1, nullptr) == SQLITE_OK;
+	return sqlite3_bind_text(static_cast<sqlite3_stmt*>(m_stmt), index, value.data(), -1, nullptr) == SQLITE_OK;
 }
 
-bool SQLite::Statement::Bind(std::string_view name, int value) const
+bool SQLite::Statement::Bind(std::string_view name, int32_t value) const
 {
-	if (const int index = sqlite3_bind_parameter_index(reinterpret_cast<sqlite3_stmt*>(m_stmt), name.data()))
+	if (const int index = sqlite3_bind_parameter_index(static_cast<sqlite3_stmt*>(m_stmt), name.data()))
 	{
 		return Bind(index, value);
 	}
@@ -124,7 +124,7 @@ bool SQLite::Statement::Bind(std::string_view name, int value) const
 
 bool SQLite::Statement::Bind(std::string_view name, uint32_t value) const
 {
-	if (const int index = sqlite3_bind_parameter_index(reinterpret_cast<sqlite3_stmt*>(m_stmt), name.data()))
+	if (const int index = sqlite3_bind_parameter_index(static_cast<sqlite3_stmt*>(m_stmt), name.data()))
 	{
 		return Bind(index, value);
 	}
@@ -133,7 +133,7 @@ bool SQLite::Statement::Bind(std::string_view name, uint32_t value) const
 
 bool SQLite::Statement::Bind(std::string_view name, double value) const
 {
-	if (const int index = sqlite3_bind_parameter_index(reinterpret_cast<sqlite3_stmt*>(m_stmt), name.data()))
+	if (const int index = sqlite3_bind_parameter_index(static_cast<sqlite3_stmt*>(m_stmt), name.data()))
 	{
 		return Bind(index, value);
 	}
@@ -142,7 +142,7 @@ bool SQLite::Statement::Bind(std::string_view name, double value) const
 
 bool SQLite::Statement::Bind(std::string_view name, const char* value) const
 {
-	if (const int index = sqlite3_bind_parameter_index(reinterpret_cast<sqlite3_stmt*>(m_stmt), name.data()))
+	if (const int index = sqlite3_bind_parameter_index(static_cast<sqlite3_stmt*>(m_stmt), name.data()))
 	{
 		return Bind(index, value);
 	}
@@ -151,7 +151,7 @@ bool SQLite::Statement::Bind(std::string_view name, const char* value) const
 
 bool SQLite::Statement::Bind(std::string_view name, const std::string& value) const
 {
-	if (const int index = sqlite3_bind_parameter_index(reinterpret_cast<sqlite3_stmt*>(m_stmt), name.data()))
+	if (const int index = sqlite3_bind_parameter_index(static_cast<sqlite3_stmt*>(m_stmt), name.data()))
 	{
 		return Bind(index, value);
 	}
@@ -160,7 +160,7 @@ bool SQLite::Statement::Bind(std::string_view name, const std::string& value) co
 
 bool SQLite::Statement::Bind(std::string_view name, std::string_view value) const
 {
-	if (const int index = sqlite3_bind_parameter_index(reinterpret_cast<sqlite3_stmt*>(m_stmt), name.data()))
+	if (const int index = sqlite3_bind_parameter_index(static_cast<sqlite3_stmt*>(m_stmt), name.data()))
 	{
 		return Bind(index, value);
 	}
@@ -169,8 +169,7 @@ bool SQLite::Statement::Bind(std::string_view name, std::string_view value) cons
 
 void SQLite::Statement::ExecuteStep()
 {
-	int ret = sqlite3_step(reinterpret_cast<sqlite3_stmt*>(m_stmt));
-	switch (ret)
+	switch (sqlite3_step(static_cast<sqlite3_stmt*>(m_stmt)))
 	{
 		case SQLITE_DONE:
 			m_hasRow = false;
@@ -194,7 +193,7 @@ bool SQLite::Statement::GetText(int index, std::string& outStr) const
 		return false;
 	}
 
-	auto stmt = reinterpret_cast<sqlite3_stmt*>(m_stmt);
+	sqlite3_stmt* stmt = static_cast<sqlite3_stmt*>(m_stmt);
 	// careful this only works if the string is all ASCII, which we know it is
 	const char* text = reinterpret_cast<const char*>(sqlite3_column_text(stmt, index));
 	outStr = std::string(text, sqlite3_column_bytes(stmt, index));
@@ -210,7 +209,7 @@ bool SQLite::Statement::GetInt(int index, T& outInt) const
 		return false;
 	}
 
-	auto stmt = reinterpret_cast<sqlite3_stmt*>(m_stmt);
+	sqlite3_stmt* stmt = static_cast<sqlite3_stmt*>(m_stmt);
 	int out = sqlite3_column_int(stmt, index);
 
 	if (out >= std::numeric_limits<T>::min() && out <= std::numeric_limits<T>::max())
@@ -237,7 +236,7 @@ bool SQLite::Statement::GetInt64(int index, T& outInt) const
 		return false;
 	}
 
-	auto stmt = reinterpret_cast<sqlite3_stmt*>(m_stmt);
+	sqlite3_stmt* stmt = static_cast<sqlite3_stmt*>(m_stmt);
 	sqlite3_int64 out = sqlite3_column_int64(stmt, index);
 
 	if (out >= std::numeric_limits<T>::min() && out <= std::numeric_limits<T>::max())
@@ -264,7 +263,7 @@ bool SQLite::Statement::GetBool(int index, bool& outBool) const
 		return false;
 	}
 
-	auto stmt = reinterpret_cast<sqlite3_stmt*>(m_stmt);
+	sqlite3_stmt* stmt = static_cast<sqlite3_stmt*>(m_stmt);
 	int v = sqlite3_column_int(stmt, index);
 	if (v == 0)
 	{
@@ -286,7 +285,7 @@ bool SQLite::Statement::GetDouble(int index, double& outDouble) const
 		return false;
 	}
 
-	auto stmt = reinterpret_cast<sqlite3_stmt*>(m_stmt);
+	sqlite3_stmt* stmt = static_cast<sqlite3_stmt*>(m_stmt);
 	outDouble = sqlite3_column_double(stmt, index);
 	return false;
 }

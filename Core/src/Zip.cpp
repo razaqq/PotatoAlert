@@ -1,11 +1,15 @@
 // Copyright 2021 <github.com/razaqq>
 
 #include "Core/Encoding.hpp"
+#include "Core/Preprocessor.hpp"
 #include "Core/Result.hpp"
 #include "Core/Zip.hpp"
 
-#include "zip.h"
+PA_SUPPRESS_WARN_BEGIN
+#include <zip.h>
+PA_SUPPRESS_WARN_END
 
+#include <cstdint>
 #include <filesystem>
 #include <optional>
 #include <span>
@@ -99,7 +103,7 @@ std::optional<bool> Zip::EntryIsDir() const
 
 bool Zip::WriteEntry(std::string_view entryName, const std::string& data) const
 {
-	auto zip = UnwrapHandle<zip_t*>(m_handle);
+	zip_t* const zip = UnwrapHandle<zip_t*>(m_handle);
 
 	if (!zip_entry_open(zip, entryName.data()))
 	{
@@ -127,7 +131,7 @@ bool Zip::RawExtract(const char* file, const char* dir, int (*callback)(const ch
 	return zip_extract(file, dir, callback, context) == 0;
 }
 
-uint64_t Zip::SizeEntry(std::string_view entryName) const
+uint64_t Zip::SizeEntry() const
 {
 	return zip_entry_size(UnwrapHandle<zip_t*>(m_handle));
 }

@@ -1,9 +1,13 @@
 // Copyright 2022 <github.com/razaqq>
 
+#include "Core/Preprocessor.hpp"
 #include "Core/Sha256.hpp"
 
-#include <string>
+PA_SUPPRESS_WARN_BEGIN
 #include <openssl/evp.h>
+PA_SUPPRESS_WARN_END
+
+#include <string>
 
 
 namespace p = PotatoAlert::Core;

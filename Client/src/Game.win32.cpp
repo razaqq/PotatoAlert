@@ -32,7 +32,7 @@ std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
 	DWORD cSubKeys = 0;
 	DWORD cbMaxSubKeyLen = 0;
 
-	if (RegQueryInfoKeyW(hKey, NULL, NULL, NULL, &cSubKeys, &cbMaxSubKeyLen, NULL, NULL, NULL, NULL, NULL, NULL) != ERROR_SUCCESS)
+	if (RegQueryInfoKeyW(hKey, nullptr, nullptr, nullptr, &cSubKeys, &cbMaxSubKeyLen, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr) != ERROR_SUCCESS)
 	{
 		return {};
 	}
@@ -42,7 +42,7 @@ std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
 
 	for (DWORD i = 0; i < cSubKeys; i++)
 	{
-		if (RegEnumKeyExW(hKey, i, subKeyName, &subKeyNameLength, NULL, NULL, NULL, NULL) == ERROR_SUCCESS)
+		if (RegEnumKeyExW(hKey, i, subKeyName, &subKeyNameLength, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
 		{
 			HKEY subKey;
 			auto defer2 = MakeDefer([&subKey]
@@ -53,25 +53,25 @@ std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
 			if (RegOpenKeyExW(hKey, subKeyName, 0, KEY_READ, &subKey) == ERROR_SUCCESS)
 			{
 				DWORD cbDataDisplayName;
-				if (RegQueryValueExW(subKey, L"DisplayName", NULL, NULL, NULL, &cbDataDisplayName) != ERROR_SUCCESS)
+				if (RegQueryValueExW(subKey, L"DisplayName", nullptr, nullptr, nullptr, &cbDataDisplayName) != ERROR_SUCCESS)
 				{
 					continue;
 				}
 
 				WCHAR displayName[cbDataDisplayName];
-				if (RegQueryValueExW(subKey, L"DisplayName", NULL, NULL, (LPBYTE)displayName, &cbDataDisplayName) != ERROR_SUCCESS)
+				if (RegQueryValueExW(subKey, L"DisplayName", nullptr, nullptr, (LPBYTE)displayName, &cbDataDisplayName) != ERROR_SUCCESS)
 				{
 					continue;
 				}
 
 				DWORD cbDataPublisherName;
-				if (RegQueryValueExW(subKey, L"Publisher", NULL, NULL, NULL, &cbDataPublisherName) != ERROR_SUCCESS)
+				if (RegQueryValueExW(subKey, L"Publisher", nullptr, nullptr, nullptr, &cbDataPublisherName) != ERROR_SUCCESS)
 				{
 					continue;
 				}
 
 				WCHAR publisher[cbDataPublisherName];
-				if (RegQueryValueExW(subKey, L"Publisher", NULL, NULL, (LPBYTE)publisher, &cbDataPublisherName) != ERROR_SUCCESS)
+				if (RegQueryValueExW(subKey, L"Publisher", nullptr, nullptr, (LPBYTE)publisher, &cbDataPublisherName) != ERROR_SUCCESS)
 				{
 					continue;
 				}
@@ -80,12 +80,12 @@ std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
 				{
 					DWORD installLocationSize = MAX_PATH;
 					WCHAR installLocation[MAX_PATH];
-					if (RegQueryValueExW(subKey, L"InstallLocation", NULL, NULL, (LPBYTE)installLocation, &installLocationSize) == ERROR_SUCCESS)
+					if (RegQueryValueExW(subKey, L"InstallLocation", nullptr, nullptr, (LPBYTE)installLocation, &installLocationSize) == ERROR_SUCCESS)
 					{
-						const fs::path gamePath(installLocation);
+						fs::path gamePath(installLocation);
 						if (fs::exists(gamePath) && !gamePath.empty())
 						{
-							return gamePath;
+							return std::move(gamePath);
 						}
 						return {};
 					}

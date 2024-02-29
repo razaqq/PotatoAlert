@@ -46,10 +46,10 @@ void ThreadPool::WaitUntilNothingInFlight()
 
 void ThreadPool::StartWorker(size_t id, const std::unique_lock<std::mutex>& lock)
 {
-	assert(lock.owns_lock() && lock.mutex() == &this->m_queueMutex);
-	assert(id <= this->m_threads.size());
+	assert(lock.owns_lock() && lock.mutex() == &m_queueMutex);
+	assert(id <= m_threads.size());
 
-	auto worker_func = [this, id]()
+	auto workerFunc = [this, id]()
 	{
 		while (true)
 		{
@@ -57,8 +57,8 @@ void ThreadPool::StartWorker(size_t id, const std::unique_lock<std::mutex>& lock
 			bool notify;
 
 			{
-				std::unique_lock<std::mutex> lock(m_queueMutex);
-				m_conditionConsumers.wait(lock, [this, id]()
+				std::unique_lock<std::mutex> l(m_queueMutex);
+				m_conditionConsumers.wait(l, [this]()
 				{
 					return m_isStopping || !m_tasks.empty();
 				});
@@ -93,14 +93,14 @@ void ThreadPool::StartWorker(size_t id, const std::unique_lock<std::mutex>& lock
 			{
 				if (std::atomic_fetch_sub_explicit(&m_inFlight, 1, std::memory_order_acq_rel) == 1)
 				{
-					std::unique_lock<std::mutex> guard(m_inFlightMutex);
+					std::unique_lock<std::mutex> l(m_inFlightMutex);
 					m_inFlightCondition.notify_all();
 				}
 			});
 
 			if (notify)
 			{
-				std::unique_lock<std::mutex> lock(m_queueMutex);
+				std::unique_lock<std::mutex> l(m_queueMutex);
 				m_conditionProducers.notify_all();
 			}
 
@@ -114,11 +114,11 @@ void ThreadPool::StartWorker(size_t id, const std::unique_lock<std::mutex>& lock
 		// start only if not already running
 		if (!worker.joinable())
 		{
-			worker = std::thread(worker_func);
+			worker = std::thread(workerFunc);
 		}
 	}
 	else
 	{
-		m_threads.emplace_back(std::thread(worker_func));
+		m_threads.emplace_back(workerFunc);
 	}
 }

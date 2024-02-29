@@ -10,6 +10,7 @@
 #include <QString>
 #include <QVariant>
 
+#include <cstddef>
 #include <vector>
 
 
@@ -44,7 +45,7 @@ public:
 
 	void DeleteMatch(size_t idx)
 	{
-		m_matches.erase(m_matches.begin() + idx);
+		m_matches.erase(m_matches.begin() + static_cast<ptrdiff_t>(idx));
 	}
 
 	void AddMatch(const Client::Match& match)

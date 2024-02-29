@@ -5,13 +5,15 @@
 #include "Core/Math.hpp"
 #include "Core/Preprocessor.hpp"
 
-#include "ReplayParser/GameFiles.hpp"
 #include "ReplayParser/NestedProperty.hpp"
 #include "ReplayParser/Types.hpp"
 
 #include <string>
 #include <variant>
 #include <vector>
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdocumentation"
 
 
 using PotatoAlert::Core::Byte;
@@ -65,9 +67,9 @@ struct UnknownPacket : Packet
  *	This function is called when we get a new player entity.
  *	The data on the stream contains only properties provided by the base.
  *
- *	@param	id			entity id.
- *	@param	type		entity type id.
- *	@param	data		entity data.
+ *	\param	id			entity id.
+ *	\param	type		entity type id.
+ *	\param	data		entity data.
  **/
 struct BasePlayerCreatePacket : Packet
 {
@@ -80,14 +82,14 @@ struct BasePlayerCreatePacket : Packet
  *	This function is called to create the call part of the player entity.
  *	The data on the stream contains only properties provided by the cell.
  *
- *	@param	id			entity id.
- *	@param	spaceID		id of space where to create the entity in.
- *	@param	vehicleID	id of an entity to use as vehicle.
- *	@param	position	position of entity.
- *	@param	yaw			yaw of entity.
- *	@param	pitch		pitch of entity.
- *	@param	roll		roll of entity.
- *	@param	data		entity's data.
+ *	\param	id			entity id.
+ *	\param	spaceID		id of space where to create the entity in.
+ *	\param	vehicleID	id of an entity to use as vehicle.
+ *	\param	position	position of entity.
+ *	\param	yaw			yaw of entity.
+ *	\param	pitch		pitch of entity.
+ *	\param	roll		roll of entity.
+ *	\param	data		entity's data.
  **/
 struct CellPlayerCreatePacket : Packet
 {
@@ -104,8 +106,8 @@ struct CellPlayerCreatePacket : Packet
  *	This function is called to tell us that we may now control the given
  *	entity (or not as the case may be).
  *
- *	@param	id			entity id.
- *	@param	control		true if entity is now controlled, false otherwise.
+ *	\param	id			entity id.
+ *	\param	control		true if entity is now controlled, false otherwise.
  **/
 struct EntityControlPacket : Packet
 {
@@ -119,9 +121,9 @@ struct EntityControlPacket : Packet
  *
  *	It is complicated because it may be called out of order.
  *
- *	@param	id			entity id.
- *	@param	spaceID		id of space where to create the entity in.
- *	@param	vehicleID	id of an entity to use as vehicle.
+ *	\param	id			entity id.
+ *	\param	spaceID		id of space where to create the entity in.
+ *	\param	vehicleID	id of an entity to use as vehicle.
  **/
 struct EntityEnterPacket : Packet
 {
@@ -134,8 +136,8 @@ struct EntityEnterPacket : Packet
  *	This function is called when the server indicates that an entity has left
  *	the player's AoI. It is complicated because it may be called out of order.
  *
- *	@param	id				entity id.
- *	@param	cacheStamps		Unused parameter.
+ *	\param	id				entity id.
+ *	\param	cacheStamps		Unused parameter.
  **/
 struct EntityLeavePacket : Packet
 {
@@ -147,15 +149,15 @@ struct EntityLeavePacket : Packet
  *	necessary to create an entity here. The minimum data it could send
  *	is the type of the entity, but for the moment it sends everything.
  *
- *	@param	id			entity id.
- *	@param	type		entity type id.
- *	@param	spaceID		id of space where to create the entity in.
- *	@param	vehicleID	id of an entity to use as vehicle.
- *	@param	position	position of entity.
- *	@param	yaw			yaw of entity.
- *	@param	pitch		pitch of entity.
- *	@param	roll		roll of entity.
- *	@param	data		entity's data.
+ *	\param	id			entity id.
+ *	\param	type		entity type id.
+ *	\param	spaceID		id of space where to create the entity in.
+ *	\param	vehicleID	id of an entity to use as vehicle.
+ *	\param	position	position of entity.
+ *	\param	yaw			yaw of entity.
+ *	\param	pitch		pitch of entity.
+ *	\param	roll		roll of entity.
+ *	\param	data		entity's data.
  *
  *	type - index of python class stored in entities.xml
  *	state - really strange thing... I've tried to understood how data is stored, but have no luck. I guess it is a strange form of PyDict.
@@ -175,9 +177,9 @@ struct EntityCreatePacket : Packet
  *	This method is called when we receive a script method call message
  *	for one of our client-side entities from the server.
  *
- *	@param	id				entity id.
- *	@param	messageID		message id.
- *	@param	data			message data.
+ *	\param	id				entity id.
+ *	\param	messageID		message id.
+ *	\param	data			message data.
  **/
 struct EntityMethodPacket : Packet
 {
@@ -191,9 +193,9 @@ struct EntityMethodPacket : Packet
  *	This method is called when we receive a property update message
  *	for one of our client-side entities from the server, aka server wants us to change a property on a client.
  *
- *	@param	id				entity id.
- *	@param	messageID		message id.
- *	@param	data			message data.
+ *	\param	id				entity id.
+ *	\param	messageID		message id.
+ *	\param	data			message data.
  **/
 struct EntityPropertyPacket : Packet
 {
@@ -315,3 +317,5 @@ typedef std::variant<
 > PacketType;
 
 }  // namespace PotatoAlert::ReplayParser
+
+#pragma clang diagnostic pop

@@ -27,7 +27,7 @@ void Version::Parse(std::string_view str)
 		{                                                  \
 			return;                                        \
 		}                                                  \
-		m_version |= value << (0x18 - (i - 1) * 0x08);     \
+		m_version |= value << (0x18u - (i - 1u) * 0x08u);  \
 	}                                                      \
 	m_success = true
 
