@@ -135,10 +135,8 @@ public:
 		bool Bind(std::string_view name, std::string_view value) const;
 
 		bool GetText(int index, std::string& outStr) const;
-		template<typename T>
-		bool GetInt(int index, T& outInt) const;
-		template<typename T>
-		bool GetInt64(int index, T& outInt) const;
+		bool GetInt(int index, int32_t& outInt) const;
+		bool GetInt64(int index, int64_t& outInt) const;
 		bool GetBool(int index, bool& outBool) const;
 		bool GetDouble(int index, double& outDouble) const;
 

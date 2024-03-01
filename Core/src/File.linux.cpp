@@ -230,7 +230,7 @@ bool File::RawWrite(Handle handle, std::span<const T> data, bool resetFilePointe
 		return false;
 	}
 
-	if (bytesWritten != data.size())
+	if (static_cast<size_t>(bytesWritten) != data.size())
 	{
 		// TODO: handle error
 		return false;
@@ -267,7 +267,7 @@ bool File::RawWriteString(Handle handle, std::string_view data, bool resetFilePo
 		return false;
 	}
 
-	if (bytesWritten != data.size())
+	if (static_cast<size_t>(bytesWritten) != data.size())
 	{
 		// TODO: handle error
 		return false;

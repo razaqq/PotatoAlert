@@ -102,13 +102,13 @@ static ReplayResult<EntityMethodPacket> ParseEntityMethodPacket(std::span<const 
 	const uint16_t entityType = parser.Entities.at(packet.EntityId).Type;
 
 	const int specId = entityType - 1;
-	if (specId < 0 || specId >= parser.Specs.size())
+	if (specId < 0 || static_cast<size_t>(specId) >= parser.Specs.size())
 	{
 		return PA_REPLAY_ERROR("Missing EntitySpec {} for EntityMethodPacket", specId);
 	}
 	const EntitySpec& spec = parser.Specs[specId];
 
-	if (packet.MethodId >= spec.ClientMethods.size())
+	if (static_cast<size_t>(packet.MethodId) >= spec.ClientMethods.size())
 	{
 		return PA_REPLAY_ERROR("Invalid methodId {} for EntityMethodPacket", packet.MethodId);
 	}
@@ -178,7 +178,7 @@ static ReplayResult<EntityCreatePacket> ParseEntityCreatePacket(std::span<const 
 	}
 
 	const int specId = packet.EntityType - 1;
-	if (specId < 0 || specId >= parser.Specs.size())
+	if (specId < 0 || static_cast<size_t>(specId) >= parser.Specs.size())
 	{
 		return PA_REPLAY_ERROR("Missing EntitySpec {} for EntityCreatePacket", specId);
 	}
@@ -254,13 +254,13 @@ static ReplayResult<EntityPropertyPacket> ParseEntityPropertyPacket(std::span<co
 	const uint16_t entityType = parser.Entities.at(packet.EntityId).Type;
 
 	const int specId = entityType - 1;
-	if (specId < 0 || specId >= parser.Specs.size())
+	if (specId < 0 || static_cast<size_t>(specId) >= parser.Specs.size())
 	{
 		return PA_REPLAY_ERROR("Missing EntitySpec {} for EntityPropertyPacket", specId);
 	}
 	const EntitySpec& spec = parser.Specs[specId];
 
-	if (packet.MethodId >= spec.ClientProperties.size())
+	if (static_cast<size_t>(packet.MethodId) >= spec.ClientProperties.size())
 	{
 		return PA_REPLAY_ERROR("Invalid methodId {} for EntityPropertyPacket", packet.MethodId);
 	}
@@ -304,7 +304,7 @@ static ReplayResult<BasePlayerCreatePacket> ParseBasePlayerCreatePacket(std::spa
 		return err();
 
 	const int specId = packet.EntityType - 1;
-	if (specId < 0 || specId >= parser.Specs.size())
+	if (specId < 0 || static_cast<size_t>(specId) >= parser.Specs.size())
 	{
 		return PA_REPLAY_ERROR("Missing EntitySpec {} for BasePlayerCreatePacket", specId);
 	}
@@ -376,7 +376,7 @@ static ReplayResult<CellPlayerCreatePacket> ParseCellPlayerCreatePacket(std::spa
 	const uint16_t entityType = parser.Entities.at(packet.EntityId).Type;
 
 	const int specId = entityType - 1;
-	if (specId < 0 || specId >= parser.Specs.size())
+	if (specId < 0 || static_cast<size_t>(specId) >= parser.Specs.size())
 	{
 		return PA_REPLAY_ERROR("Missing EntitySpec {} for CellPlayerCreatePacket", specId);
 	}
@@ -530,7 +530,7 @@ static ReplayResult<NestedPropertyUpdatePacket> ParseNestedPropertyUpdatePacket(
 	}
 
 	const int propIndex = bitReader.Get(BitReader::BitsRequired(static_cast<int>(spec.ClientProperties.size())));
-	if (propIndex >= spec.ClientProperties.size())
+	if (static_cast<size_t>(propIndex) >= spec.ClientProperties.size())
 	{
 		return PA_REPLAY_ERROR("Property index out of range ({}) for spec in NestedPropertyUpdatePacket", propIndex);
 	}

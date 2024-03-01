@@ -48,7 +48,7 @@
 #define PA_SUPPRESS_WARN_BEGIN                       \
 	PA_PRAGMA(warning(push, 0))                      \
 	PA_PRAGMA(GCC diagnostic push)                   \
-	PA_PRAGMA(GCC diagnostic ignored "-Weverything") \
+	PA_PRAGMA(GCC diagnostic ignored "-Wall")        \
 	PA_PRAGMA(clang diagnostic push)                 \
 	PA_PRAGMA(clang diagnostic ignored "-Weverything")
 
