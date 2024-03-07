@@ -45,13 +45,13 @@ NativeWindow::NativeWindow(const Client::ServiceProvider& serviceProvider, QMain
 
 void NativeWindow::hideEvent(QHideEvent* event)
 {
-	Config& config = m_services.Get<Config>();
-
 	// ignore minimize events
 	if (isMinimized())
 	{
 		return;
 	}
+
+	Config& config = m_services.Get<Config>();
 
 	if (config.Get<ConfigKey::MinimizeTray>())
 	{
@@ -76,6 +76,11 @@ void NativeWindow::hideEvent(QHideEvent* event)
 
 void NativeWindow::showEvent(QShowEvent* event)
 {
+	if (!m_isInitialShow)
+	{
+		return;
+	}
+
 	const Config& config = m_services.Get<Config>();
 
 	setGeometry(
@@ -103,6 +108,8 @@ void NativeWindow::showEvent(QShowEvent* event)
 	{
 		windowHandle()->setPosition(100, 100);
 	}
+
+	m_isInitialShow = false;
 }
 
 void NativeWindow::Init()

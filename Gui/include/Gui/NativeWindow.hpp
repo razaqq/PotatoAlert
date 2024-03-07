@@ -35,6 +35,7 @@ private:
 
 	QMainWindow* m_mainWindow;
 	TitleBar* m_titleBar = new TitleBar(this);
+	bool m_isInitialShow = true;
 };
 
 }  // namespace PotatoAlert::Gui
