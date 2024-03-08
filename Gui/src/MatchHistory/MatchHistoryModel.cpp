@@ -75,7 +75,7 @@ QVariant MatchHistoryModel::data(const QModelIndex& index, int role) const
 		return QVariant();
 	}
 
-	if (index.row() >= m_matches.size() || index.column() >= m_columnCount)
+	if (static_cast<size_t>(index.row()) >= m_matches.size() || index.column() >= m_columnCount)
 		return QVariant();
 
 	switch (static_cast<Qt::ItemDataRole>(role))

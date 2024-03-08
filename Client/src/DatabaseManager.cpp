@@ -64,9 +64,9 @@ static inline T ParseValue(const SQLite::Statement& stmt, int index)
 	}
 	else if constexpr (std::is_integral_v<Value>)
 	{
-		if (T value; stmt.GetInt64(index, value))
+		if (int64_t value; stmt.GetInt64(index, value))
 		{
-			return value;
+			return static_cast<Value>(value);
 		}
 	}
 	else if constexpr (std::is_floating_point_v<Value>)

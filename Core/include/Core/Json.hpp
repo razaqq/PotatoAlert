@@ -37,7 +37,7 @@ template<typename T>
 using JsonResult = Result<T, JsonError>;
 #define PA_JSON_ERROR(...) (::std::unexpected(::PotatoAlert::Core::JsonError(fmt::format(__VA_ARGS__))))
 
-static rapidjson::GenericStringRef<char> ToRef(std::string_view str)
+[[maybe_unused]] static rapidjson::GenericStringRef<char> ToRef(std::string_view str)
 {
 	return { str.data(), str.size() };
 }
