@@ -57,6 +57,7 @@ namespace fs = std::filesystem;
 // needs libssl-1_1-x64.dll and libcrypto-1_1-x64.dll from OpenSSL
 static constexpr std::string_view g_updateURL = "https://github.com/razaqq/PotatoAlert/releases/latest/download/{}";
 static constexpr std::string_view g_versionURL = "https://api.github.com/repos/razaqq/PotatoAlert/releases/latest";
+// TODO: beta https://api.github.com/repos/razaqq/PotatoAlert/releases
 
 
 namespace {

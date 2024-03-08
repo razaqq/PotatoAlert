@@ -25,7 +25,7 @@ static int RunMain(int argc, char* argv[])
 {
 	Q_INIT_RESOURCE(PotatoUpdater);
 
-	AppDirectories appDirs("PotatoAlert");
+	const AppDirectories appDirs("PotatoAlert");
 
 	PotatoAlert::Core::Log::Init(appDirs.AppDir / "PotatoUpdater.log");
 	
@@ -40,7 +40,7 @@ static int RunMain(int argc, char* argv[])
 
 	QFile file(":/style.qss");
 	file.open(QFile::ReadOnly | QFile::Text);
-	QString style = QLatin1String(file.readAll());
+	const QString style = QLatin1String(file.readAll());
 	QApplication::setStyle("fusion");
 	QApplication::setPalette(PotatoAlert::Gui::DarkPalette());
 	app.setStyleSheet(style);
