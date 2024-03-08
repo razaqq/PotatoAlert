@@ -1,4 +1,3 @@
-# find_package(Qt6Core REQUIRED)
 find_package(Qt6 COMPONENTS Core QUIET)
 if (NOT Qt6_FOUND)
     find_package(Qt5 COMPONENTS Core REQUIRED)
@@ -7,10 +6,6 @@ endif()
 get_target_property(_qmake_executable Qt::qmake IMPORTED_LOCATION)
 get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
 find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
-# find_package(Python)
-
-# find_program(BINARYCREATOR_EXECUTABLE binarycreator HINTS "${_qt_bin_dir}" ${CPACK_IFW_ROOT}/bin)
-# mark_as_advanced(WINDEPLOYQT_EXECUTABLE)
 
 # Qt DLLs
 function(WinDeployQt target)
@@ -67,104 +62,3 @@ function(CopyReplayScripts target)
         COMMENT "Copying Replay Version Files..."
     )
 endfunction()
-
-#[[
-# Qt Installer Framework
-function(makeinstaller target)
-    set(CPACK_PACKAGE_VENDOR "Example_vendor")
-    set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
-    set(CPACK_PACKAGE_CONTACT "Example_vendor <example@example.com>")
-    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_DESCRIPTION}")
-    set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README.md")
-    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
-    set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-    set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
-    set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
-
-    set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}")
-    set(CPACK_PACKAGE_DIRECTORY "${CMAKE_BINARY_DIR}")
-
-    # set human names to execuables
-    set(CPACK_PACKAGE_EXECUTABLES "${PROJECT_NAME}" "Example Apps")
-    set(CPACK_CREATE_DESKTOP_LINKS "${PROJECT_NAME}")
-    set(CPACK_STRIP_FILES TRUE)
-
-    #------------------------------------------------------------------------------
-    # include CPack, so we get target for packages
-    set(CPACK_OUTPUT_CONFIG_FILE "${CMAKE_BINARY_DIR}/BundleConfig.cmake")
-
-    add_custom_target(bundle
-            COMMAND ${CMAKE_CPACK_COMMAND} "--config" "${CMAKE_BINARY_DIR}/BundleConfig.cmake"
-            COMMENT "Running CPACK. Please wait..."
-            DEPENDS ${PROJECT_NAME})
-    set(CPACK_GENERATOR)
-
-    # Qt IFW packaging framework
-    if(BINARYCREATOR_EXECUTABLE)
-        list(APPEND CPACK_GENERATOR IFW)
-        message(STATUS "   + Qt Installer Framework               YES ")
-    else()
-        message(STATUS "   + Qt Installer Framework                NO ")
-    endif()
-
-    list(APPEND CPACK_GENERATOR ZIP)
-    message(STATUS "Package generation - Windows")
-    message(STATUS "   + ZIP                                  YES ")
-
-    set(PACKAGE_ICON "${CMAKE_SOURCE_DIR}/resources/icon.ico")
-
-    # NSIS windows installer
-    find_program(NSIS_PATH nsis PATH_SUFFIXES nsis)
-    if(NSIS_PATH)
-        list(APPEND CPACK_GENERATOR NSIS)
-        message(STATUS "   + NSIS                                 YES ")
-
-        set(CPACK_NSIS_DISPLAY_NAME ${CPACK_PACKAGE_NAME})
-        # Icon of the installer
-        file(TO_NATIVE_PATH "${PACKAGE_ICON}" CPACK_NSIS_MUI_ICON)
-        file(TO_NATIVE_PATH "${PACKAGE_ICON}" CPACK_NSIS_MUI_HEADERIMAGE_BITMAP)
-        set(CPACK_NSIS_CONTACT "${CPACK_PACKAGE_CONTACT}")
-        set(CPACK_NSIS_MODIFY_PATH ON)
-    else()
-        message(STATUS "   + NSIS                                 NO ")
-    endif()
-endfunction()
-
-function(makeinstaller target)
-    install(
-            TARGETS ${target}
-            RUNTIME DESTINATION ${target}
-            COMPONENT qt_cpackifw_installer
-            BUNDLE DESTINATION ${target}
-            COMPONENT qt_cpackifw_installer
-    )
-
-    set(CPACK_PACKAGE_NAME ${target})
-    set(CPACK_PACKAGE_FILE_NAME installer)
-    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
-    set(CPACK_PACKAGE_VERSION "1.0.0") # Version of installer
-    set(CPACK_COMPONENTS_ALL qt_cpackifw_installer)
-    set(CPACK_IFW_PACKAGE_START_MENU_DIRECTORY Qt_CPackIFW)
-    set(CPACK_GENERATOR IFW)
-    set(CPACK_IFW_VERBOSE ON)
-
-    include(CPack REQUIRED)
-    include(CPackIFW REQUIRED)
-
-    cpack_add_component(
-            qt_cpackifw_installer
-            DISPLAY_NAME "Qt CPackIFW"
-            DESCRIPTION "Install me"
-            REQUIRED
-    )
-
-    cpack_ifw_configure_component(
-            qt_cpackifw_installer
-            FORCED_INSTALLATION
-            NAME qt.cpackifw.installer
-            VERSION ${PROJECT_VERSION} # Version of component
-            LICENSES License ${qt_cpackifw_SOURCE_DIR}/LICENSE
-            DEFAULT TRUE
-    )
-endfunction()
-]]

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17)
-project(PotatoAlert)
+project(PotatoAlert VERSION 3.1.17)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 23)
@@ -44,15 +44,15 @@ add_definitions(-DQT_MESSAGELOGCONTEXT)  # qt log messages context
 
 include(generate_product_version)
 generate_product_version(
-        VersionFilesOutputVariable
-        NAME "${PROJECT_NAME}"
-        FILE_DESCRIPTION "PotatoAlert"
-        COMPANY_NAME "github.com/razaqq"
-        ICON ${PROJECT_SOURCE_DIR}/Resources/potato.ico
-        VERSION_MAJOR 3
-        VERSION_MINOR 1
-        VERSION_PATCH 17
-        VERSION_REVISION ${BUILD_REVISION}
+    VersionFilesOutputVariable
+    NAME "${PROJECT_NAME}"
+    FILE_DESCRIPTION "PotatoAlert"
+    COMPANY_NAME "github.com/razaqq"
+    ICON ${PROJECT_SOURCE_DIR}/Resources/potato.ico
+    VERSION_MAJOR ${CMAKE_PROJECT_VERSION_MAJOR}
+    VERSION_MINOR ${CMAKE_PROJECT_VERSION_MINOR}
+    VERSION_PATCH ${CMAKE_PROJECT_VERSION_PATCH}
+    VERSION_REVISION ${CMAKE_PROJECT_VERSION_TWEAK}
 )
 
 # generate stringtable headers
@@ -82,6 +82,37 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/Gui)
 add_subdirectory(${PROJECT_SOURCE_DIR}/PotatoAlert)
 add_subdirectory(${PROJECT_SOURCE_DIR}/ReplayParser)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Test)
+
 if(WIN32)
     add_subdirectory(${PROJECT_SOURCE_DIR}/Updater)
+
+    set(CPACK_GENERATOR "WIX")
+    set(CPACK_PACKAGE_NAME "PotatoAlert")
+    set(CPACK_PACKAGE_VENDOR "razaqq")
+    set(CPACK_PACKAGE_VERSION ${CMAKE_PROJECT_VERSION})
+    set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/razaqq/PotatoAlert")
+    find_package(Qt6 QUIET)
+    if (Qt6_FOUND)
+        set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
+    else()
+        set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-win7")
+    endif()
+    set(CPACK_WIX_UPGRADE_GUID "E3D9B068-8320-484E-9F97-0C40E264B665")
+    set(CPACK_WIX_PRODUCT_ICON "${PROJECT_SOURCE_DIR}/Resources/potato.ico")
+    set(CPACK_PACKAGE_ICON "${PROJECT_SOURCE_DIR}/Resources/potato.ico")
+    set(CPACK_WIX_UI_BANNER "${PROJECT_SOURCE_DIR}/Resources/Installer/WixBanner.png")
+    set(CPACK_WIX_UI_DIALOG "${PROJECT_SOURCE_DIR}/Resources/Installer/WixDialog.png")
+
+    configure_file("${PROJECT_SOURCE_DIR}/LICENSE" "${PROJECT_BINARY_DIR}/LICENSE.txt" COPYONLY)
+    set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_BINARY_DIR}/LICENSE.txt")
+    set(CPACK_WIX_CULTURES "en-US;de-DE;ja-JP;it-IT;pt-BR;zh-CN;zh-TW")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "PotatoAlert")
+    set(CPACK_COMPONENT_UNSPECIFIED_HIDDEN TRUE)
+    set(CPACK_COMPONENT_UNSPECIFIED_REQUIRED TRUE)
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CPACK_STRIP_FILES TRUE)
+    endif()
+    set(CPACK_COMPONENTS_ALL PotatoAlert)
+    include(CPack)
+    cpack_add_component(PotatoAlert HIDDEN)
 endif()

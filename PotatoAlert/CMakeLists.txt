@@ -42,3 +42,6 @@ if(WIN32)
     endif()
 endif()
 # makeinstaller(PotatoAlert)
+
+install(DIRECTORY "${CMAKE_BINARY_DIR}/bin/" DESTINATION . COMPONENT PotatoAlert)
+set_property(INSTALL "$<TARGET_FILE_NAME:PotatoAlert>" PROPERTY CPACK_START_MENU_SHORTCUTS "PotatoAlert")
