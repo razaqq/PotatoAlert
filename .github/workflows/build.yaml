@@ -90,7 +90,7 @@ jobs:
         prerelease: true
         files: |
           ${{ matrix.zipfile }}
-          .\build\PotatoAlert-*.msi
+          build/PotatoAlert-*.msi
 
   build-linux:
     name: Build Linux Qt6
