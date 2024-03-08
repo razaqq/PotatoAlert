@@ -169,13 +169,13 @@ jobs:
 
     - name: Create Release Archive
       run: |
-        7z a -mx9 -r PotatoAlert.zip .\build\bin\*
+        7z a -mx9 -r PotatoAlert_linux.zip .\build\bin\*
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
         name: PotatoAlert
-        path: PotatoAlert.zip
+        path: PotatoAlert_linux.zip
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
