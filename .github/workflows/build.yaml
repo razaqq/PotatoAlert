@@ -80,7 +80,7 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: PotatoAlert
+        name: ${{ matrix.zipfile }}
         path: ${{ matrix.zipfile }}
 
     - name: Create Release
@@ -90,7 +90,7 @@ jobs:
         draft: true
         files: |
           ${{ matrix.zipfile }}
-          PotatoAlert-*.msi
+          .\build\PotatoAlert-*.msi
 
   build-linux:
     name: Build Linux Qt6
@@ -174,7 +174,7 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: PotatoAlert
+        name: PotatoAlert_linux.zip
         path: PotatoAlert_linux.zip
 
     - name: Create Release
