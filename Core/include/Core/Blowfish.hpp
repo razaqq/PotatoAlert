@@ -8,9 +8,6 @@
 #include <span>
 
 
-// static constexpr int MAXKEYBYTES = 56;
-static constexpr int N = 16;
-
 namespace PotatoAlert::Core {
 
 class Blowfish
@@ -37,6 +34,9 @@ public:
 	static constexpr uint32_t BlockSize() { return 8; }
 
 	static void ReverseByteOrder(uint32_t& x);
+
+public:
+	static constexpr int N = 16;
 
 private:
 	std::array<uint32_t, N + 2> m_pArray;
