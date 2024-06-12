@@ -69,12 +69,12 @@ public:
 		RawClose(std::exchange(m_handle, Handle::Null));
 	}
 
-	void* Map(Flags flags, uint64_t offset, size_t size)
+	void* Map(Flags flags, uint64_t offset, size_t size) const
 	{
 		return RawMap(m_handle, flags, offset, size);
 	}
 
-	void Unmap(const void* view, size_t size)
+	void Unmap(const void* view, size_t size) const
 	{
 		return RawUnmap(m_handle, view, size);
 	}
