@@ -3,6 +3,7 @@
 
 #include "Core/String.hpp"
 
+#include "ReplayParser/Result.hpp"
 #include "ReplayParser/Types.hpp"
 
 #include <filesystem>
@@ -99,8 +100,8 @@ struct DefFile
 	std::vector<std::string> Implements = {};
 };
 
-DefFile ParseDef(const fs::path& file, const AliasType& aliases);
-DefFile MergeDefs(const std::vector<DefFile>& defs);
-void ParseInterfaces(const fs::path& root, const AliasType& aliases, const DefFile& def, std::vector<DefFile>& out);
+ReplayResult<DefFile> ParseDef(const fs::path& file, const AliasType& aliases);
+ReplayResult<DefFile> MergeDefs(const std::vector<DefFile>& defs);
+ReplayResult<void> ParseInterfaces(const fs::path& root, const AliasType& aliases, const DefFile& def, std::vector<DefFile>& out);
 
 }  // namespace PotatoAlert::ReplayParser

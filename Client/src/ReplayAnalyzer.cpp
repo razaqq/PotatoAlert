@@ -5,6 +5,7 @@
 
 #include "Core/Encoding.hpp"
 #include "Core/File.hpp"
+#include "Core/Log.hpp"
 #include "Core/String.hpp"
 
 #include "GameFileUnpack/GameFileUnpack.hpp"
@@ -62,7 +63,7 @@ void ReplayAnalyzer::AnalyzeReplay(const fs::path& path, std::chrono::seconds re
 
 		PA_TRY_OR_ELSE(summary, ReplayParser::AnalyzeReplay(file, m_gameFilePath),
 		{
-			LOG_ERROR("{}", error);
+			LOG_ERROR(STR("Failed to analyze replay file {}: {}"), file, StringWrap(error));
 			return;
 		});
 

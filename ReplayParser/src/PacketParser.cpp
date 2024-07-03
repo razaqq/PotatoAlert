@@ -118,14 +118,11 @@ static ReplayResult<EntityMethodPacket> ParseEntityMethodPacket(std::span<const 
 	packet.Values.reserve(method.Args.size());
 	for (const ArgType& argType : method.Args)
 	{
-		if (std::optional<ArgValue> value = ParseValue(data, argType))
+		PA_TRY_OR_ELSE(value, ParseValue(data, argType),
 		{
-			packet.Values.emplace_back(value.value());
-		}
-		else
-		{
-			return PA_REPLAY_ERROR("Failed to parse value for EntityMethodPacket");
-		}
+			return PA_REPLAY_ERROR("Failed to parse value for EntityMethodPacket: {}", error);
+		});
+		packet.Values.emplace_back(value);
 	}
 
 	parser.Callbacks.Invoke(packet);
@@ -200,15 +197,13 @@ static ReplayResult<EntityCreatePacket> ParseEntityCreatePacket(std::span<const 
 		{
 			const auto& [name, type, flag] = spec.ClientProperties[propertyId].get();
 
-			if (std::optional<ArgValue> value = ParseValue(data, type))
+			PA_TRY_OR_ELSE(value, ParseValue(data, type),
 			{
-				packet.Values[name] = value.value();
-				clientPropertyValues.insert_or_assign(name, value.value());
-			}
-			else
-			{
-				return PA_REPLAY_ERROR("Failed to parse value for EntityCreatePacket");
-			}
+				return PA_REPLAY_ERROR("Failed to parse value for EntityCreatePacket: {}", error);
+			});
+
+			packet.Values[name] = value;
+			clientPropertyValues.insert_or_assign(name, value);
 		}
 		else
 		{
@@ -273,15 +268,13 @@ static ReplayResult<EntityPropertyPacket> ParseEntityPropertyPacket(std::span<co
 	}
 	Entity& entity = parser.Entities.at(packet.EntityId);
 
-	if (std::optional<ArgValue> value = ParseValue(data, property.Type))
+	PA_TRY_OR_ELSE(value, ParseValue(data, property.Type),
 	{
-		packet.Value = value.value();
-		entity.ClientPropertiesValues.insert_or_assign(property.Name, value.value());
-	}
-	else
-	{
-		return PA_REPLAY_ERROR("Failed to parse value for EntityPropertyPacket");
-	}
+		return PA_REPLAY_ERROR("Failed to parse value for EntityPropertyPacket: {}", error);
+	});
+
+	packet.Value = value;
+	entity.ClientPropertiesValues.insert_or_assign(property.Name, value);
 
 	parser.Callbacks.Invoke(packet);
 	return packet;
@@ -318,14 +311,12 @@ static ReplayResult<BasePlayerCreatePacket> ParseBasePlayerCreatePacket(std::spa
 	{
 		const auto& [name, type, flag] = spec.BaseProperties[i].get();
 
-		if (std::optional<ArgValue> value = ParseValue(data, type))
+		PA_TRY_OR_ELSE(value, ParseValue(data, type),
 		{
-			basePropertyValues.emplace(name, value.value());
-		}
-		else
-		{
-			return PA_REPLAY_ERROR("Failed to parse value for EntityCreatePacket");
-		}
+			return PA_REPLAY_ERROR("Failed to parse value for EntityCreatePacket: {}", error);
+		});
+
+		basePropertyValues.emplace(name, value);
 	}
 
 	parser.Entities.emplace(packet.EntityId, Entity{ packet.EntityType, spec, basePropertyValues, {} });  // TODO: parse the state
@@ -391,15 +382,13 @@ static ReplayResult<CellPlayerCreatePacket> ParseCellPlayerCreatePacket(std::spa
 	packet.Values.reserve(spec.ClientPropertiesInternal.size());
 	for (auto property : spec.ClientPropertiesInternal)
 	{
-		if (std::optional<ArgValue> value = ParseValue(data, property.get().Type))
+		PA_TRY_OR_ELSE(value, ParseValue(data, property.get().Type),
 		{
-			packet.Values[property.get().Name] = value.value();
-			parser.Entities.at(packet.EntityId).ClientPropertiesValues.emplace(property.get().Name, value.value());
-		}
-		else
-		{
-			return PA_REPLAY_ERROR("Failed to parse value for CellPlayerCreatePacket");
-		}
+			return PA_REPLAY_ERROR("Failed to parse value for CellPlayerCreatePacket: {}", error);
+		});
+
+		packet.Values[property.get().Name] = value;
+		parser.Entities.at(packet.EntityId).ClientPropertiesValues.emplace(property.get().Name, value);
 	}
 
 	bool unknown;

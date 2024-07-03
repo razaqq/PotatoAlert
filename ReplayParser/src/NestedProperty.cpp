@@ -1,7 +1,6 @@
 // Copyright 2022 <github.com/razaqq>
 
 #include "Core/Bytes.hpp"
-#include "Core/Log.hpp"
 
 #include "ReplayParser/BitReader.hpp"
 #include "ReplayParser/NestedProperty.hpp"
@@ -47,7 +46,7 @@ ReplayResult<PropertyNesting> GetNestedUpdateCommand(bool isSlice, const ArgType
 			std::span<const Byte> remaining = bitReader.GetAll();
 
 			const FixedDictProperty prop = arg.Properties[entryIndex];
-			const ArgValue propValue = ParseValue(remaining, *prop.Type);
+			PA_TRY(propValue, ParseValue(remaining, *prop.Type));
 
 			// we can safely use std::get here
 			std::unordered_map<std::string, ArgValue>& value = std::get<std::unordered_map<std::string, ArgValue>>(*argValue);
@@ -66,7 +65,9 @@ ReplayResult<PropertyNesting> GetNestedUpdateCommand(bool isSlice, const ArgType
 				const size_t idx1 = bitReader.Get(idxBits);
 				const size_t idx2 = bitReader.Get(idxBits);
 				if (idx1 > idx2)
+				{
 					return PA_REPLAY_ERROR("FixedDict ArrayType has idx1 > idx2: {} > {}", idx1, idx2);
+				}
 
 				while (bitReader.Remaining() % 8 != 0)
 				{
@@ -98,7 +99,8 @@ ReplayResult<PropertyNesting> GetNestedUpdateCommand(bool isSlice, const ArgType
 				std::vector<ArgValue> newValues;
 				while (!remaining.empty())
 				{
-					newValues.emplace_back(ParseValue(remaining, *arg.SubType));
+					PA_TRY(newValue, ParseValue(remaining, *arg.SubType));
+					newValues.emplace_back(std::move(newValue));
 				}
 
 				SliceInsert(idx1, idx2, value, newValues);
@@ -116,12 +118,15 @@ ReplayResult<PropertyNesting> GetNestedUpdateCommand(bool isSlice, const ArgType
 
 				std::span<const Byte> remaining = bitReader.GetAll();
 				if (remaining.empty())
+				{
 					return PA_REPLAY_ERROR("FixedDict ArrayType has no data remaining");
+				}
 
 				std::vector<ArgValue> newValues;
 				while (!remaining.empty())
 				{
-					newValues.emplace_back(ParseValue(remaining, *arg.SubType));
+					PA_TRY(newValue, ParseValue(remaining, *arg.SubType));
+					newValues.emplace_back(std::move(newValue));
 				}
 				newValues.erase(newValues.begin());
 
@@ -185,12 +190,12 @@ ReplayResult<PropertyNesting> rp::GetNestedPropertyPath(bool isSlice, const ArgT
 
 			if (propIndex == arr.size())
 			{
-				arr.push_back(GetDefaultValue(*arg.SubType));
+				PA_TRY(value, GetDefaultValue(*arg.SubType));
+				arr.push_back(std::move(value));
 			}
 			else if (propIndex > arr.size())
 			{
-				LOG_ERROR("Array property accessed out of bounds (index {} - size {})", propIndex, arr.size());
-				return PropertyNesting{};  // TODO: handle this properly
+				return PA_REPLAY_ERROR("Array property accessed out of bounds (index {} - size {})", propIndex, arr.size());
 			}
 
 			PA_TRY(nesting, GetNestedPropertyPath(isSlice, *arg.SubType, &arr[propIndex], bitReader));

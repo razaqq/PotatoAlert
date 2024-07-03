@@ -1,8 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
-#include "Core/Encoding.hpp"
 #include "Core/Format.hpp"
-#include "Core/Log.hpp"
 #include "Core/String.hpp"
 #include "Core/Xml.hpp"
 
@@ -19,7 +17,9 @@ namespace rp = PotatoAlert::ReplayParser;
 using namespace PotatoAlert::ReplayParser;
 using namespace PotatoAlert;
 
-static std::vector<Method> ParseMethodList(XMLElement* elem, const AliasType& aliases)
+namespace {
+
+static ReplayResult<std::vector<Method>> ParseMethodList(XMLElement* elem, const AliasType& aliases)
 {
 	std::vector<Method> methods;
 
@@ -33,14 +33,16 @@ static std::vector<Method> ParseMethodList(XMLElement* elem, const AliasType& al
 			std::string name = Core::String::Trim(argElem->Name());
 			if (name == "Arg")
 			{
-				args.push_back(ParseType(argElem, aliases));
+				PA_TRY(type, ParseType(argElem, aliases));
+				args.push_back(type);
 			}
 
 			if (name == "Args")
 			{
 				for (XMLElement* argsElem = argElem->FirstChildElement(); argsElem != nullptr; argsElem = argsElem->NextSiblingElement())
 				{
-					args.push_back(ParseType(argsElem, aliases));
+					PA_TRY(type, ParseType(argsElem, aliases));
+					args.push_back(type);
 				}
 			}
 
@@ -55,7 +57,7 @@ static std::vector<Method> ParseMethodList(XMLElement* elem, const AliasType& al
 	return methods;
 }
 
-static std::vector<Property> ParseProperties(XMLElement* elem, const AliasType& aliases)
+static ReplayResult<std::vector<Property>> ParseProperties(XMLElement* elem, const AliasType& aliases)
 {
 	std::vector<Property> properties;
 
@@ -65,7 +67,8 @@ static std::vector<Property> ParseProperties(XMLElement* elem, const AliasType& 
 		XMLElement* typeElem = propElem->FirstChildElement("Type");
 		if (flagElem && typeElem)
 		{
-			properties.emplace_back(Property{ propElem->Name(), ParseType(typeElem, aliases), ParseFlag(flagElem->GetText()) });
+			PA_TRY(type, ParseType(typeElem, aliases));
+			properties.emplace_back(Property{ propElem->Name(), type, ParseFlag(flagElem->GetText()) });
 		}
 	}
 
@@ -84,7 +87,9 @@ static std::vector<std::string> ParseImplements(XMLElement* elem)
 	return implements;
 }
 
-DefFile rp::ParseDef(const fs::path& file, const AliasType& aliases)
+}
+
+ReplayResult<DefFile> rp::ParseDef(const fs::path& file, const AliasType& aliases)
 {
 	DefFile defFile;
 
@@ -92,46 +97,44 @@ DefFile rp::ParseDef(const fs::path& file, const AliasType& aliases)
 	Core::XmlResult<void> res = Core::LoadXml(doc, file);
 	if (!res)
 	{
-		LOG_ERROR(STR("Failed to open entity definition file ({}): {}."), file, StringWrap(res.error()));
-		return defFile;
+		return PA_REPLAY_ERROR("Failed to open entity definition file ({}): {}.", file, StringWrap(res.error()));
 	}
 
 	XMLNode* root = doc.RootElement();
 	if (root == nullptr)
 	{
-		LOG_ERROR("{} is empty.", file);
-		return defFile;
+		return PA_REPLAY_ERROR("{} is empty.", file);
 	}
 
 	if (XMLElement* baseMethodElem = root->FirstChildElement("BaseMethods"))
 	{
-		defFile.BaseMethods = ParseMethodList(baseMethodElem, aliases);
+		PA_TRYA(defFile.BaseMethods, ParseMethodList(baseMethodElem, aliases));
 	}
 
 	if (XMLElement* cellMethodsElem = root->FirstChildElement("CellMethods"))
 	{
-		defFile.CellMethods = ParseMethodList(cellMethodsElem, aliases);
+		PA_TRYA(defFile.CellMethods, ParseMethodList(cellMethodsElem, aliases));
 	}
 
 	if (XMLElement* clientMethodsElem = root->FirstChildElement("ClientMethods"))
 	{
-		defFile.ClientMethods = ParseMethodList(clientMethodsElem, aliases);
+		PA_TRYA(defFile.ClientMethods, ParseMethodList(clientMethodsElem, aliases));
 	}
 
 	if (XMLElement* propertiesElem = root->FirstChildElement("Properties"))
 	{
-		defFile.Properties = ParseProperties(propertiesElem, aliases);
+		PA_TRYA(defFile.Properties, ParseProperties(propertiesElem, aliases));
 	}
 
 	if (XMLElement* implementsElem = root->FirstChildElement("Implements"))
 	{
-		defFile.Implements = ParseImplements(implementsElem);
+		defFile.Implements = std::move(ParseImplements(implementsElem));
 	}
 
 	return defFile;
 }
 
-DefFile rp::MergeDefs(const std::vector<DefFile>& defs)
+ReplayResult<DefFile> rp::MergeDefs(const std::vector<DefFile>& defs)
 {
 	DefFile defFile;
 
@@ -142,24 +145,23 @@ DefFile rp::MergeDefs(const std::vector<DefFile>& defs)
 		defFile.ClientMethods.insert(defFile.ClientMethods.end(), def.ClientMethods.begin(), def.ClientMethods.end());
 		defFile.Properties.insert(defFile.Properties.end(), def.Properties.begin(), def.Properties.end());
 
-#ifndef NDEBUG
-		assert(defFile.Implements.empty());
-#else
 		if (!defFile.Implements.empty())
 		{
-			LOG_ERROR("DefFile implements is not empty");
+			return PA_REPLAY_ERROR("DefFile implements is not empty");
 		}
-#endif
 	}
 
 	return defFile;
 }
 
-void rp::ParseInterfaces(const fs::path& root, const AliasType& aliases, const DefFile& def, std::vector<DefFile>& out)
+ReplayResult<void> rp::ParseInterfaces(const fs::path& root, const AliasType& aliases, const DefFile& def, std::vector<DefFile>& out)
 {
 	for (const std::string& imp : def.Implements)
 	{
-		out.emplace_back(ParseDef(root / fmt::format("{}.def", imp), aliases));
-		ParseInterfaces(root, aliases, out.back(), out);
+		PA_TRY(defFile, ParseDef(root / fmt::format("{}.def", imp), aliases));
+		out.emplace_back(std::move(defFile));
+		PA_TRYV(ParseInterfaces(root, aliases, out.back(), out));
 	}
+
+	return {};
 }

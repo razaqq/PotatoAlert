@@ -125,17 +125,18 @@ TEST_CASE( "ReplayGameFileTest" )
 {
 	const fs::path gameFilePath = GetModuleRootPath().value() / "ReplayVersions";
 
-	const std::vector<EntitySpec> spec = ParseScripts(Version(0, 10, 8, 0), gameFilePath);
-	REQUIRE(spec.size() == 13);
-	REQUIRE(spec[0].Name == "Avatar");
-	REQUIRE(spec[0].ClientProperties.size() == 17);
-	REQUIRE(spec[0].BaseMethods.size() == 33);
-	REQUIRE(spec[0].CellMethods.size() == 56);
-	REQUIRE(spec[0].ClientMethods.size() == 153);
-	REQUIRE(spec[0].AllProperties.size() == 20);
-	REQUIRE(spec[0].ClientProperties.size() == 17);
-	REQUIRE(spec[0].ClientPropertiesInternal.size() == 16);
-	REQUIRE(spec[0].CellProperties.size() == 3);
-	REQUIRE(spec[0].BaseProperties.size() == 1);
-	REQUIRE(spec[0].Name == "Avatar");
+	const auto spec = ParseScripts(Version(0, 10, 8, 0), gameFilePath);
+	REQUIRE(spec);
+	REQUIRE(spec->size() == 13);
+	REQUIRE(spec->at(0).Name == "Avatar");
+	REQUIRE(spec->at(0).ClientProperties.size() == 17);
+	REQUIRE(spec->at(0).BaseMethods.size() == 33);
+	REQUIRE(spec->at(0).CellMethods.size() == 56);
+	REQUIRE(spec->at(0).ClientMethods.size() == 153);
+	REQUIRE(spec->at(0).AllProperties.size() == 20);
+	REQUIRE(spec->at(0).ClientProperties.size() == 17);
+	REQUIRE(spec->at(0).ClientPropertiesInternal.size() == 16);
+	REQUIRE(spec->at(0).CellProperties.size() == 3);
+	REQUIRE(spec->at(0).BaseProperties.size() == 1);
+	REQUIRE(spec->at(0).Name == "Avatar");
 }

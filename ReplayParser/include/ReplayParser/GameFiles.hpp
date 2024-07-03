@@ -4,6 +4,7 @@
 #include "Core/Version.hpp"
 
 #include "ReplayParser/Entity.hpp"
+#include "ReplayParser/Result.hpp"
 
 #include <filesystem>
 #include <functional>
@@ -26,6 +27,6 @@ struct EntitySpec
 	std::vector<std::reference_wrapper<const Property>> BaseProperties;
 };
 
-std::vector<EntitySpec> ParseScripts(Core::Version version, const fs::path& gameFilePath);
+ReplayResult<std::vector<EntitySpec>> ParseScripts(Core::Version version, const fs::path& gameFilePath);
 
 }  // namespace PotatoAlert::ReplayParser

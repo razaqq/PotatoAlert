@@ -167,7 +167,7 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 	decrypted.clear();
 	decrypted.shrink_to_fit();
 
-	replay.Specs = ParseScripts(replay.Meta.ClientVersionFromExe, gameFilePath);
+	PA_TRYA(replay.Specs, ParseScripts(replay.Meta.ClientVersionFromExe, gameFilePath));
 
 	if (replay.Specs.empty())
 	{
@@ -202,5 +202,5 @@ ReplayResult<ReplaySummary> rp::AnalyzeReplay(const fs::path& file, const fs::pa
 
 bool rp::HasGameScripts(Version gameVersion, const fs::path& gameFilePath)
 {
-	return !ParseScripts(gameVersion, gameFilePath).empty();
+	return ParseScripts(gameVersion, gameFilePath).has_value();
 }
