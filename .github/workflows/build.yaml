@@ -19,78 +19,73 @@ jobs:
     runs-on: windows-2022
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Setup Visual Studio Shell
-      uses: egor-tensin/vs-shell@v2
-      with:
-        arch: x64
+      - name: Setup Visual Studio Shell
+        uses: egor-tensin/vs-shell@v2
+        with:
+          arch: x64
 
-    - name: Setup Rust
-      uses: ATiltedTree/setup-rust@v1
-      with:
-        rust-version: stable
+      - name: Setup Ninja
+        uses: ashutoshvarma/setup-ninja@master
+        with:
+          version: 1.11.1
 
-    - name: Setup Ninja
-      uses: ashutoshvarma/setup-ninja@master
-      with:
-        version: 1.11.1
+      - name: Install Qt${{ matrix.qt-major-version }}
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ matrix.qt-version }}
+          cache: true
 
-    - name: Install Qt${{ matrix.qt-major-version }}
-      uses: jurplel/install-qt-action@v3
-      with:
-        version: ${{ matrix.qt-version }}
-        cache: true
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "17"
 
-    - name: Install LLVM and Clang
-      uses: KyleMayes/install-llvm-action@v1
-      with:
-        version: "17"
+      - name: CMake Version
+        run: cmake --version
 
-    - name: CMake Version
-      run: cmake --version
+      - name: Clang Version
+        run: clang-cl --version
 
-    - name: Clang Version
-      run: clang-cl --version
+      - name: Run CMake
+        env:
+          CC: "${{ env.LLVM_PATH }}\\bin\\clang-cl"
+          CXX: "${{ env.LLVM_PATH }}\\bin\\clang-cl"
+        run: cmake -S . -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release
 
-    - name: Run CMake
-      env:
-        CC: "${{ env.LLVM_PATH }}\\bin\\clang-cl"
-        CXX: "${{ env.LLVM_PATH }}\\bin\\clang-cl"
-      run: cmake -S . -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release
+      - name: Run Build
+        run: cmake --build build --config Release --target PotatoAlert PotatoUpdater CoreTest GameFileUnpackTest GameTest ReplayTest
 
-    - name: Run Build
-      run: cmake --build build --config Release --target PotatoAlert PotatoUpdater CoreTest GameFileUnpackTest GameTest ReplayTest
+      - name: Run CTest
+        working-directory: ${{env.GITHUB_WORKSPACE}}/build
+        env:
+          CTEST_OUTPUT_ON_FAILURE: 1
+        run: ctest
 
-    - name: Run CTest
-      working-directory: ${{env.GITHUB_WORKSPACE}}/build
-      env:
-        CTEST_OUTPUT_ON_FAILURE: 1
-      run: ctest
+      - name: Create Release Archive
+        run: |
+          7z a -mx9 -r ${{ matrix.zipfile }} .\build\bin\*
 
-    - name: Create Release Archive
-      run: |
-        7z a -mx9 -r ${{ matrix.zipfile }} .\build\bin\*
+      - name: Create Installer
+        working-directory: ${{env.GITHUB_WORKSPACE}}/build
+        run: cpack
 
-    - name: Create Installer
-      working-directory: ${{env.GITHUB_WORKSPACE}}/build
-      run: cpack
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.zipfile }}
+          path: ${{ matrix.zipfile }}
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ matrix.zipfile }}
-        path: ${{ matrix.zipfile }}
-
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        prerelease: true
-        files: |
-          ${{ matrix.zipfile }}
-          build/PotatoAlert-*.msi
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          prerelease: true
+          files: |
+            ${{ matrix.zipfile }}
+            build/PotatoAlert-*.msi
 
   build-linux:
     name: Build Linux Qt6
@@ -102,84 +97,84 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Setup Ninja
-      run: sudo apt install -y ninja-build
+      - name: Setup Ninja
+        run: sudo apt install -y ninja-build
 
-    - name: Ninja Version
-      run: ninja --version
+      - name: Ninja Version
+        run: ninja --version
 
-    - name: Install Dependencies
-      run: >
-        sudo apt install -y
-        libfontconfig1-dev
-        libfreetype6-dev
-        libx11-dev
-        libx11-xcb-dev
-        libxext-dev
-        libxfixes-dev
-        libxi-dev
-        libxrender-dev
-        libxcb1-dev
-        libxcb-cursor-dev
-        libxcb-glx0-dev
-        libxcb-keysyms1-dev
-        libxcb-image0-dev
-        libxcb-shm0-dev
-        libxcb-icccm4-dev
-        libxcb-sync-dev
-        libxcb-xfixes0-dev
-        libxcb-shape0-dev
-        libxcb-randr0-dev
-        libxcb-render-util0-dev
-        libxcb-util-dev
-        libxcb-xinerama0-dev
-        libxcb-xkb-dev
-        libxkbcommon-dev
-        libxkbcommon-x11-dev
+      - name: Install Dependencies
+        run: >
+          sudo apt install -y
+          libfontconfig1-dev
+          libfreetype6-dev
+          libx11-dev
+          libx11-xcb-dev
+          libxext-dev
+          libxfixes-dev
+          libxi-dev
+          libxrender-dev
+          libxcb1-dev
+          libxcb-cursor-dev
+          libxcb-glx0-dev
+          libxcb-keysyms1-dev
+          libxcb-image0-dev
+          libxcb-shm0-dev
+          libxcb-icccm4-dev
+          libxcb-sync-dev
+          libxcb-xfixes0-dev
+          libxcb-shape0-dev
+          libxcb-randr0-dev
+          libxcb-render-util0-dev
+          libxcb-util-dev
+          libxcb-xinerama0-dev
+          libxcb-xkb-dev
+          libxkbcommon-dev
+          libxkbcommon-x11-dev
 
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v2
-      with:
-        version: 6.6.0
-        cache: true
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: 6.6.0
+          cache: true
 
-    - name: CMake Version
-      run: cmake --version
+      - name: CMake Version
+        run: cmake --version
 
-    - name: GCC Version
-      run: g++-${{ matrix.gcc-version }} --version
+      - name: GCC Version
+        run: g++-${{ matrix.gcc-version }} --version
 
-    - name: Run CMake
-      env:
-        CC: gcc-${{ matrix.gcc-version }}
-        CXX: g++-${{ matrix.gcc-version }}
-      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - name: Run CMake
+        env:
+          CC: gcc-${{ matrix.gcc-version }}
+          CXX: g++-${{ matrix.gcc-version }}
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
-    - name: Run Build
-      run: cmake --build build --config Release --target PotatoAlert CoreTest GameFileUnpackTest GameTest ReplayTest
+      - name: Run Build
+        run: cmake --build build --config Release --target PotatoAlert CoreTest GameFileUnpackTest GameTest ReplayTest
 
-    - name: Run CTest
-      working-directory: build
-      env:
-        CTEST_OUTPUT_ON_FAILURE: 1
-      run: ctest
+      - name: Run CTest
+        working-directory: build
+        env:
+          CTEST_OUTPUT_ON_FAILURE: 1
+        run: ctest
 
-    - name: Create Release Archive
-      run: |
-        7z a -mx9 -r PotatoAlert_linux.zip ./build/bin/*
+      - name: Create Release Archive
+        run: |
+          7z a -mx9 -r PotatoAlert_linux.zip ./build/bin/*
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: PotatoAlert_linux.zip
-        path: PotatoAlert_linux.zip
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: PotatoAlert_linux.zip
+          path: PotatoAlert_linux.zip
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        prerelease: true
-        files: PotatoAlert_linux.zip
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          prerelease: true
+          files: PotatoAlert_linux.zip
