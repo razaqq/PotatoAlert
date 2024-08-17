@@ -34,25 +34,29 @@ bool PotatoAlert::Core::CaptureScreenshot(QWidget* window, const fs::path& dir, 
 	if (!window)
 		return false;
 
-	QPixmap pix(window->size());
-	window->render(&pix);
+	QPixmap pix = window->grab();
+	const QRect rect = pix.rect();
+	const QSize size = pix.size();
 
 	if (!blurRects.empty())
 	{
-		QGraphicsScene* scene = new QGraphicsScene();
+		QGraphicsScene* scene = new QGraphicsScene(rect);
 		scene->addPixmap(pix);
 
 		QGraphicsBlurEffect* effect = new QGraphicsBlurEffect();
 		effect->setBlurHints(QGraphicsBlurEffect::BlurHint::QualityHint);
 		effect->setBlurRadius(15);
 
-		QGraphicsScene* blurScene = new QGraphicsScene();
+		QGraphicsScene* blurScene = new QGraphicsScene(rect);
 		QGraphicsPixmapItem* pixItem = blurScene->addPixmap(pix);
 		pixItem->setGraphicsEffect(effect);
+
 		QGraphicsView* blurView = new QGraphicsView(blurScene);
 		blurView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 		blurView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-		const QPixmap blurPix = blurView->grab(blurView->sceneRect().toRect());
+		QPixmap blurPix(size);
+		QPainter blurPainter(&blurPix);
+		blurView->render(&blurPainter, blurPix.rect(), rect);
 
 		for (const QRect& r : blurRects)
 		{
@@ -63,9 +67,9 @@ bool PotatoAlert::Core::CaptureScreenshot(QWidget* window, const fs::path& dir, 
 		QGraphicsView* view = new QGraphicsView(scene);
 		view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 		view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-		pix = view->grab(view->sceneRect().toRect());
+		QPainter pixPainter(&pix);
+		view->render(&pixPainter, pix.rect(), rect);
 	}
-
 	const std::string fileName = GetFileName();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	if (pix.save(QDir(dir).absoluteFilePath(fileName.c_str()), "PNG", 100))
