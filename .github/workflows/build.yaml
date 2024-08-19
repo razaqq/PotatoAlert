@@ -10,7 +10,7 @@ jobs:
         qt-major-version: [6, 5]
         include:
           - qt-major-version: 6
-            qt-version: 6.6.0
+            qt-version: 6.7.2
             zipfile: PotatoAlert.zip
           - qt-major-version: 5
             qt-version: 5.15.2
@@ -30,7 +30,7 @@ jobs:
       - name: Setup Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
         with:
-          version: 1.11.1
+          version: 1.12.1
 
       - name: Install Qt${{ matrix.qt-major-version }}
         uses: jurplel/install-qt-action@v4
@@ -38,11 +38,10 @@ jobs:
           version: ${{ matrix.qt-version }}
           cache: true
 
-
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v2
         with:
-          version: "17"
+          version: "18"
 
       - name: CMake Version
         run: cmake --version
@@ -139,7 +138,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.6.0
+          version: 6.7.2
           cache: true
 
       - name: CMake Version
