@@ -11,9 +11,11 @@ jobs:
         include:
           - qt-major-version: 6
             qt-version: 6.7.2
+            clang-version: 18
             zipfile: PotatoAlert.zip
           - qt-major-version: 5
             qt-version: 5.15.2
+            clang-version: 17  # until Qt 5.15.2 fixes qsizepolicy.h(137,38): error : invalid bitwise operation between different enumeration types ('Policy' and 'QSizePolicy::PolicyFlag')
             zipfile: PotatoAlert_win7.zip
 
     runs-on: windows-2022
@@ -41,7 +43,7 @@ jobs:
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v2
         with:
-          version: "18"
+          version: ${{ matrix.clang-version }}
 
       - name: CMake Version
         run: cmake --version
