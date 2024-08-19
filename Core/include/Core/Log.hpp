@@ -3,7 +3,7 @@
 
 #include "Core/Format.hpp"
 
-#if WIN32
+#ifdef WIN32
 	#ifndef SPDLOG_WCHAR_TO_UTF8_SUPPORT
 		#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
 	#endif

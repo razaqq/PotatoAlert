@@ -242,11 +242,6 @@ static const std::array<std::array<uint32_t, 256>, 4> S = {
 	}
 };
 
-
-#if !defined(__LITTLE_ENDIAN__) and !defined(__BIG_ENDIAN__)
-#define __LITTLE_ENDIAN__
-#endif
-
 Blowfish::Blowfish(std::span<const Byte> key) : m_pArray({}), m_sBoxes({})
 {
 	std::memcpy(m_pArray.data(), P.data(), sizeof(P));

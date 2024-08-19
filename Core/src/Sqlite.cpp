@@ -196,7 +196,7 @@ bool SQLite::Statement::GetText(int index, std::string& outStr) const
 	sqlite3_stmt* stmt = static_cast<sqlite3_stmt*>(m_stmt);
 	// careful this only works if the string is all ASCII, which we know it is
 	const char* text = reinterpret_cast<const char*>(sqlite3_column_text(stmt, index));
-	outStr = std::string(text, sqlite3_column_bytes(stmt, index));
+	outStr = std::string(text, (size_t)sqlite3_column_bytes(stmt, index));
 	return true;
 }
 
