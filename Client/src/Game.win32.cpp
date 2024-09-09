@@ -11,7 +11,6 @@
 #include <filesystem>
 
 
-using PotatoAlert::Core::MakeDefer;
 using PotatoAlert::Core::Result;
 
 namespace fs = std::filesystem;
@@ -19,10 +18,10 @@ namespace fs = std::filesystem;
 std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
 {
 	HKEY hKey;
-	auto defer = MakeDefer([&hKey]
+	PA_DEFER
 	{
 		RegCloseKey(hKey);
-	});
+	};
 
 	if (RegOpenKeyExW(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall)", 0, KEY_READ, &hKey) != ERROR_SUCCESS)
 	{
@@ -45,10 +44,10 @@ std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
 		if (RegEnumKeyExW(hKey, i, subKeyName, &subKeyNameLength, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
 		{
 			HKEY subKey;
-			auto defer2 = MakeDefer([&subKey]
+			PA_DEFER
 			{
 				RegCloseKey(subKey);
-			});
+			};
 
 			if (RegOpenKeyExW(hKey, subKeyName, 0, KEY_READ, &subKey) == ERROR_SUCCESS)
 			{

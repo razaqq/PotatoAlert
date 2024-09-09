@@ -89,14 +89,14 @@ void ThreadPool::StartWorker(size_t id, const std::unique_lock<std::mutex>& lock
 				}
 			}
 
-			auto defer = MakeDefer([this]()
+			PA_DEFER
 			{
 				if (std::atomic_fetch_sub_explicit(&m_inFlight, 1, std::memory_order_acq_rel) == 1)
 				{
 					std::unique_lock<std::mutex> l(m_inFlightMutex);
 					m_inFlightCondition.notify_all();
 				}
-			});
+			};
 
 			if (notify)
 			{

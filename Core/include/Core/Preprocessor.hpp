@@ -25,6 +25,8 @@
 #define PA_CHAIN_COMMA_1_END
 #define PA_CHAIN_COMMA_2_END
 
+#define PA_ANONYMOUS(name) PA_CAT(name, PA_COUNTER)
+
 #if defined(__GNUC__) || (defined(__MWERKS__) && (__MWERKS__ >= 0x3000)) || (defined(__ICC) && (__ICC >= 600)) || defined(__ghs__)
 	#define PA_FUNC_SIG __PRETTY_FUNCTION__
 #elif defined(__DMC__) && (__DMC__ >= 0x810)

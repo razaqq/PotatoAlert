@@ -85,8 +85,7 @@ static Result<TempArenaInfoResult, std::string> ReadArenaInfo(const fs::path& fi
 		return PA_ERROR(fmt::format("Failed to open arena info file: {}", File::LastError()));
 	}
 
-	// close the file when the scope ends
-	auto defer = MakeDefer([&file]() { if (file) file.Close(); });
+	PA_DEFER { if (file) file.Close(); };
 
 	startTime = std::chrono::high_resolution_clock::now();
 	now = std::chrono::high_resolution_clock::now();

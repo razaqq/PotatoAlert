@@ -1,5 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/Defer.hpp"
 #include "Core/Directory.hpp"
 #include "Core/Encoding.hpp"
 #include "Core/Format.hpp"
@@ -321,6 +322,10 @@ Updater::ElevationInfo Updater::GetElevationInfo()
 	HANDLE hToken;
 	if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
 	{
+		PA_DEFER
+		{
+			CloseHandle(hToken);
+		};
 		TOKEN_ELEVATION_TYPE tet;
 		DWORD returnLength = 0;
 		if (GetTokenInformation(hToken, TokenElevationType, &tet, sizeof(tet), &returnLength))
@@ -328,9 +333,7 @@ Updater::ElevationInfo Updater::GetElevationInfo()
 			assert(returnLength == sizeof(tet));
 			return {tet == TokenElevationTypeFull, tet == TokenElevationTypeLimited};
 		}
-
 	}
-	CloseHandle(hToken);
 	return {false, false};
 }
 

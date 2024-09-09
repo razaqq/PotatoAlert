@@ -1,6 +1,9 @@
 // Copyright 2022 <github.com/razaqq>
 #pragma once
 
+#include "Core/Preprocessor.hpp"
+
+#include <concepts>
 #include <functional>
 #include <type_traits>
 #include <utility>
@@ -8,45 +11,41 @@
 
 namespace PotatoAlert::Core {
 
-template<typename Callable>
+namespace Detail {
+
+template<std::invocable Callable>
 class Defer
 {
 public:
-	[[nodiscard]] explicit Defer(Callable&& callback) : m_callback(callback), m_engaged(true)
+	[[nodiscard]] Defer(std::convertible_to<Callable> auto&& callback)
+		: m_callback(std::move(callback))
 	{
-		static_assert(std::is_convertible_v<Callable, std::function<void()>>,
-					  "Callback needs to be convertible to std::function<void()>");
-	}
-
-	Defer(Defer&& defer) noexcept : m_callback(std::move(defer.m_callback)), m_engaged(defer.m_engaged)
-	{
-		defer.Release();
 	}
 
 	Defer(const Defer&) = delete;
-	Defer& operator=(Defer&&) = delete;
 	Defer& operator=(const Defer&) = delete;
-
-	void Release()
-	{
-		m_engaged = false;
-	}
 
 	~Defer()
 	{
-		if (m_engaged)
-			m_callback();
+		std::move(m_callback)();
 	}
 private:
 	Callable m_callback;
-	bool m_engaged;
 };
+
+template<typename Callable>
+Defer(Callable&&) -> Defer<std::remove_reference_t<Callable>>;
+
+}  // namespace Detail
 
 
 template<typename Callable>
-[[nodiscard]] constexpr Defer<std::decay_t<Callable>> MakeDefer(Callable&& callable)
+[[nodiscard]] auto MakeDefer(std::invocable auto&& callable)
 {
-	return Defer(std::forward<std::decay_t<Callable>>(callable));
+	return Detail::Defer(std::forward<std::decay_t<Callable>>(callable));
 }
+
+#define PA_DEFER \
+	::PotatoAlert::Core::Detail::Defer PA_ANONYMOUS(pa_detail_defer) = [&]() noexcept -> void
 
 }  // namespace PotatoAlert::Core
