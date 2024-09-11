@@ -428,7 +428,7 @@ static JsonResult<void> FromJson(const rapidjson::Value& j, Player& p)
 
 	PA_TRYA(p.WowsNumbers, Core::FromJson<std::string>(j, "wows_numbers_link"));
 
-	if (j.HasMember("karma"))
+	if (j.HasMember("karma") && !j["karma"].IsNull())
 	{
 		Stat karma;
 		PA_TRYV(FromJson(j, "karma", karma));
