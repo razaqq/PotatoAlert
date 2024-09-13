@@ -134,10 +134,29 @@ PA_JSON_SERIALIZE_ENUM(RequestStatus,
 	{ RequestStatus::Error, "error" },
 })
 
+enum ServerErrorCategory
+{
+	WargamingApiError,
+	WowsNumbersApiError,
+	MatchBuilderError,
+	RequestHandlerError,
+	UnknownError
+};
+
+PA_JSON_SERIALIZE_ENUM(ServerErrorCategory,
+{
+	{ WargamingApiError, "WargamingApiError"},
+	{ WowsNumbersApiError, "WowsNumbersApiError" },
+	{ MatchBuilderError, "MatchBuilderError"},
+	{ RequestHandlerError, "RequestHandlerError"},
+	{ UnknownError, "UnknownError" }
+});
+
 struct ServerResponse
 {
 	RequestStatus Status;
 	std::optional<std::string> Error;
+	std::optional<ServerErrorCategory> ErrorCategory;
 	std::optional<std::string> IssuedAt;
 	std::optional<std::string> CompletedAt;
 	std::optional<rapidjson::Document> Result;
@@ -151,6 +170,15 @@ struct ServerResponse
 	if (j.HasMember("error"))
 	{
 		PA_TRYA(r.Error, PotatoAlert::Core::FromJson<std::string>(j, "error"));
+	}
+	if (j.HasMember("error_category"))
+	{
+		ServerErrorCategory category;
+		if (FromJson(j["error_category"], category))
+		{
+			r.ErrorCategory = category;
+		}
+
 	}
 	if (j.HasMember("issued_at"))
 	{
@@ -247,7 +275,7 @@ void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& ma
 
 			PA_TRY_OR_ELSE(json, ParseJson(content.toUtf8().toStdString()),
 			{
-				LOG_ERROR("Failed to parse server response as JSON.");
+				LOG_ERROR("Failed to parse server submit response as JSON.");
 				emit StatusReady(Status::Error, "JSON Parse Error");
 				return;
 			});
@@ -293,7 +321,7 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 
 				PA_TRY_OR_ELSE(json, ParseJson(lookupResponseString),
 				{
-					LOG_ERROR("Failed to parse server response as JSON.");
+					LOG_ERROR("Failed to parse lookup response as JSON.");
 					emit StatusReady(Status::Error, "JSON Parse Error");
 					return;
 				});
@@ -301,7 +329,7 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 				ServerResponse serverResponse;
 				PA_TRYV_OR_ELSE(FromJson(json, serverResponse),
 				{
-					LOG_ERROR("Failed to parse json as ServerResponse");
+					LOG_ERROR("Failed to parse server lookup response as JSON.");
 					emit StatusReady(Status::Error, "JSON Parse Error");
 					return;
 				});
@@ -328,7 +356,7 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 						const int fontScaling = m_services.Get<Config>().Get<ConfigKey::FontScaling>();
 						PA_TRY_OR_ELSE(res, ParseMatch(serverResponse.Result.value(), matchContext, { showKarma, fontShadow, (float)fontScaling / 100.0f }),
 						{
-							LOG_ERROR("Failed to parse server response as JSON: {}", error);
+							LOG_ERROR("Failed to parse server match response as JSON: {}", error);
 							emit StatusReady(Status::Error, "JSON Parse Error");
 							return;
 						});
@@ -420,13 +448,38 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 					}
 					case Error:
 					{
+						if (serverResponse.ErrorCategory)
+						{
+							switch (*serverResponse.ErrorCategory)
+							{
+								case WargamingApiError:
+								{
+									emit StatusReady(Status::Error, "WG API Error");
+									break;
+								}
+								case WowsNumbersApiError:
+								{
+									emit StatusReady(Status::Error, "WOWS-NBRS API Error");
+									break;
+								}
+								case MatchBuilderError:
+								case RequestHandlerError:
+								case UnknownError:
+								{
+									emit StatusReady(Status::Error, "Server Error");
+									break;
+								}
+							}
+							LOG_ERROR("Server error - {}", serverResponse.Error.value());
+							return;
+						}
 						emit StatusReady(Status::Error, "Server Error");
 						if (!serverResponse.Error)
 						{
 							LOG_ERROR("Server says ResponseStatus is error, but is missing error field");
 							return;
 						}
-						LOG_ERROR("Server error: {}", serverResponse.Error.value());
+						LOG_ERROR("Server error - {}", serverResponse.Error.value());
 						break;
 					}
 				}
@@ -492,7 +545,7 @@ void PotatoClient::HandleReply(QNetworkReply* reply, auto& successHandler)
 			emit StatusReady(Status::Error, "Request Error");
 			break;
 	}
-	LOG_ERROR("Server reponded with error to submit: {}", reply->errorString().toStdString());
+	LOG_ERROR("Server responded with error to submit: {}", reply->errorString().toStdString());
 }
 
 // triggers a run with the current replays folders
