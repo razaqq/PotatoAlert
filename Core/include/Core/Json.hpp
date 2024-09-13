@@ -527,7 +527,7 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 
 #define PA_JSON_SERIALIZE_ENUM(ENUM_TYPE, ...)                                                              \
 	template<typename OutputStream = rapidjson::StringBuffer>                                               \
-	inline bool ToJson(rapidjson::Writer<OutputStream>& writer, const ENUM_TYPE& e)                         \
+	[[maybe_unused]] inline bool ToJson(rapidjson::Writer<OutputStream>& writer, const ENUM_TYPE& e)        \
 	{                                                                                                       \
 		static_assert(std::is_enum_v<ENUM_TYPE>, #ENUM_TYPE " must be an enum!");                           \
 		static const std::pair<ENUM_TYPE, std::string_view> m[] = __VA_ARGS__;                              \
@@ -538,7 +538,7 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 									   });                                                                  \
 		return ::PotatoAlert::Core::ToJson(writer, ((it != std::end(m)) ? it : std::begin(m))->second);     \
 	}                                                                                                       \
-	inline rapidjson::GenericStringRef<char> ToJson(const ENUM_TYPE& e)                                     \
+	[[maybe_unused]] inline rapidjson::GenericStringRef<char> ToJson(const ENUM_TYPE& e)                    \
 	{                                                                                                       \
 		static_assert(std::is_enum_v<ENUM_TYPE>, #ENUM_TYPE " must be an enum!");                           \
 		static const std::pair<ENUM_TYPE, std::string_view> m[] = __VA_ARGS__;                              \
@@ -549,7 +549,7 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 									   });                                                                  \
 		return ::PotatoAlert::Core::ToRef((it != std::end(m) ? it : std::begin(m))->second);                \
 	}                                                                                                       \
-	inline bool FromJson(const rapidjson::Value& j, ENUM_TYPE& e)                                           \
+	[[maybe_unused]] inline bool FromJson(const rapidjson::Value& j, ENUM_TYPE& e)                          \
 	{                                                                                                       \
 		static_assert(std::is_enum_v<ENUM_TYPE>, #ENUM_TYPE " must be an enum!");                           \
 		static const std::pair<ENUM_TYPE, std::string_view> m[] = __VA_ARGS__;                              \
@@ -569,7 +569,7 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 
 #define PA_JSON_SERIALIZE_ENUM_PAIRS(ENUM_TYPE, PAIRS)                                                          \
 	template<typename OutputStream = rapidjson::StringBuffer>                                                   \
-	inline bool ToJson(rapidjson::Writer<OutputStream>& writer, const ENUM_TYPE& e)                             \
+	[[maybe_unused]] inline bool ToJson(rapidjson::Writer<OutputStream>& writer, const ENUM_TYPE& e)            \
 	{                                                                                                           \
 		static_assert(std::is_enum_v<ENUM_TYPE>, #ENUM_TYPE " must be an enum!");                               \
 		auto it = std::ranges::find_if(PAIRS,                                                                   \
@@ -579,7 +579,7 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 									   });                                                                      \
 		return ::PotatoAlert::Core::ToJson(writer, ((it != std::end(PAIRS)) ? it : std::begin(PAIRS))->second); \
 	}                                                                                                           \
-	inline bool FromJson(const rapidjson::Value& j, ENUM_TYPE& e)                                               \
+	[[maybe_unused]] inline bool FromJson(const rapidjson::Value& j, ENUM_TYPE& e)                              \
 	{                                                                                                           \
 		static_assert(std::is_enum_v<ENUM_TYPE>, #ENUM_TYPE " must be an enum!");                               \
 		if (!j.IsString())                                                                                      \
@@ -598,7 +598,7 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 
 #define PA_JSON_SERIALIZE_ENUM_MAP(ENUM_TYPE, MAP)                                                          \
 	template<typename OutputStream = rapidjson::StringBuffer>                                               \
-	inline bool ToJson(rapidjson::Writer<OutputStream>& writer, const ENUM_TYPE& e)                         \
+	[[maybe_unused]] inline bool ToJson(rapidjson::Writer<OutputStream>& writer, const ENUM_TYPE& e)        \
 	{                                                                                                       \
 		static_assert(std::is_enum_v<ENUM_TYPE>, #ENUM_TYPE " must be an enum!");                           \
 		if ((MAP).contains(e))                                                                              \
@@ -610,7 +610,7 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 			return ::PotatoAlert::Core::ToJson(writer, (MAP).begin()->second);                              \
 		}                                                                                                   \
 	}                                                                                                       \
-	inline bool FromJson(const rapidjson::Value& j, ENUM_TYPE& e)                                           \
+	[[maybe_unused]] inline bool FromJson(const rapidjson::Value& j, ENUM_TYPE& e)                          \
 	{                                                                                                       \
 		static_assert(std::is_enum_v<ENUM_TYPE>, #ENUM_TYPE " must be an enum!");                           \
 		if (!j.IsString())                                                                                  \
