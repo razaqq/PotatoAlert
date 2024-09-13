@@ -323,14 +323,20 @@ ReplayResult<ArgType> rp::ParseType(XMLElement* elem, const AliasType& aliases)
 	{
 		if (XMLElement* typeElem = elem->FirstChildElement("Type"))
 		{
+			// TODO: is this correct?
+			bool isNullable = false;
+			if (XMLElement* implElem = elem->FirstChildElement("implementedBy"))
+			{
+				isNullable = Core::String::StartsWith(implElem->GetText(), "NullableDef");
+			}
 			const char* text = typeElem->GetText();
 			if (types.contains(text))
 			{
-				return UserType{ std::make_shared<ArgType>(PrimitiveType{ types.at(text) }) };
+				return UserType{ std::make_shared<ArgType>(PrimitiveType{ types.at(text) }), isNullable };
 			}
 			else if (aliases.contains(text))
 			{
-				return UserType{ std::make_shared<ArgType>(aliases.at(typeName)) };
+				return UserType{ std::make_shared<ArgType>(aliases.at(typeName)), isNullable };
 			}
 		}
 		else
@@ -445,9 +451,17 @@ std::string rp::PrintType(const ArgType& type)
 			dict += "]>";
 			return dict;
 		}
-		return "";
-		},
-	type);
+		else if constexpr (std::is_same_v<T, TupleType>)
+		{
+			return fmt::format("TupleType<{} - Size {}>", PrintType(*t.SubType), t.Size);
+		}
+		else if constexpr (std::is_same_v<T, UserType>)
+		{
+			return fmt::format("UserType<{}>", PrintType(*t.Type));
+		}
+
+		return "Unknown Type";
+	}, type);
 }
 #endif
 
@@ -535,7 +549,15 @@ ReplayResult<ArgValue> rp::ParseValue(std::span<const Byte>& data, const ArgType
 					return ParseValue(data, *t.Type);
 				}
 			}
+			if (data.size() == 0)
+			{
+				return PA_REPLAY_ERROR("UserType did not have size > 1");
+			}
 			Take(data, 1);
+			if (t.IsNullable && data.size() == 0)  // TODO: is this correct?
+			{
+				return {};
+			}
 			return ParseValue(data, *t.Type);
 		}
 		return {};

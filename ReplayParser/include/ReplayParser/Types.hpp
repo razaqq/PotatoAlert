@@ -142,6 +142,7 @@ struct TupleType
 struct UserType
 {
 	std::shared_ptr<ArgType> Type;
+	bool IsNullable;
 };
 
 struct UnknownType {};

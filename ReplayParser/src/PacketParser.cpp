@@ -886,7 +886,7 @@ ReplayResult<PacketType> PotatoAlert::ReplayParser::ParsePacket(std::span<const 
 	if (IsPacket(PacketBaseType::EntityLeave, type, version))
 		return ParseEntityLeavePacket(raw, parser, clock);
 
-#ifndef NDEBUG
+#ifdef PA_PARSE_EXTRA_PACKETS
 	if (IsPacket(PacketBaseType::Version, type, version))
 		return ParseVersionPacket(raw, parser, clock);
 	if (IsPacket(PacketBaseType::EntityControl, type, version))
