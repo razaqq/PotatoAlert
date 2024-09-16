@@ -18,13 +18,13 @@ using PotatoAlert::Gui::QuestionDialog;
 
 QuestionDialog::QuestionDialog(int language, QWidget* parent, const QString& questionText) : FramelessDialog(parent)
 {
-	auto buttonBox = new QDialogButtonBox();
+	QDialogButtonBox* buttonBox = new QDialogButtonBox();
 	buttonBox->setAttribute(Qt::WA_TranslucentBackground);
 
-	auto yesButton = new QPushButton(GetStringView(language, StringTableKey::YES).data(), buttonBox);
+	QPushButton* yesButton = new QPushButton(GetStringView(language, StringTableKey::YES).data(), buttonBox);
 	yesButton->setObjectName("confirmButton");
 
-	auto noButton = new QPushButton(GetStringView(language, StringTableKey::NO).data(), buttonBox);
+	QPushButton* noButton = new QPushButton(GetStringView(language, StringTableKey::NO).data(), buttonBox);
 	noButton->setObjectName("confirmButton");
 
 	connect(yesButton, &QPushButton::clicked, [this]([[maybe_unused]] bool checked)
@@ -40,17 +40,17 @@ QuestionDialog::QuestionDialog(int language, QWidget* parent, const QString& que
 	buttonBox->addButton(noButton, QDialogButtonBox::ActionRole);
 	buttonBox->setCenterButtons(true);
 
-	auto textField = new QLabel(questionText);
+	QLabel* textField = new QLabel(questionText);
 	textField->setWordWrap(true);
 
-	auto icon = new QIcon(QApplication::style()->standardIcon(QStyle::SP_MessageBoxQuestion));
-	auto iconLabel = new QLabel();
-	iconLabel->setPixmap(icon->pixmap(100, 100));
+	const QIcon icon(QApplication::style()->standardIcon(QStyle::SP_MessageBoxQuestion));
+	QLabel* iconLabel = new QLabel();
+	iconLabel->setPixmap(icon.pixmap(40, 40));
 
-	auto layout = new QVBoxLayout();
+	QVBoxLayout* layout = new QVBoxLayout();
 	layout->setContentsMargins(15, 15, 15, 10);
 
-	auto textLayout = new QHBoxLayout();
+	QHBoxLayout* textLayout = new QHBoxLayout();
 	textLayout->addWidget(iconLabel, 0, Qt::AlignRight);
 	textLayout->addWidget(textField, 0, Qt::AlignLeft);
 
