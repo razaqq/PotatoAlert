@@ -62,7 +62,7 @@ private:
 	ReplayAnalyzer& m_replayAnalyzer;
 	QNetworkAccessManager* m_networkAccessManager = new QNetworkAccessManager();
 
-	signals:
+signals:
 	void MatchReady(const StatsParser::MatchType& match);
 	void MatchHistoryNewMatch(const Match& match);
 	void ReplaySummaryChanged(uint32_t id, const ReplaySummary& summary);
