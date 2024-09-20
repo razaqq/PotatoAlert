@@ -1,4 +1,5 @@
 add_subdirectory(catch2)
+add_subdirectory(ctre)
 add_subdirectory(date)
 set(FMT_DOC OFF)
 set(FMT_TEST OFF)
