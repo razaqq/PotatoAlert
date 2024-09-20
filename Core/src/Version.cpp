@@ -4,7 +4,8 @@
 #include "Core/String.hpp"
 #include "Core/Version.hpp"
 
-#include <regex>
+#include <ctre/ctre.hpp>
+
 #include <string>
 
 
@@ -17,42 +18,46 @@ Version::Version(std::string_view versionString) : m_success(false), m_version(0
 
 void Version::Parse(std::string_view str)
 {
-	std::match_results<std::string_view::const_iterator> matches;
-
-#define PARSE(matches)                                     \
-	for (size_t i = 1; i < (matches).size(); i++)          \
-	{                                                      \
-		uint8_t value;                                     \
-		if (!String::ParseNumber((matches).str(i), value)) \
-		{                                                  \
-			return;                                        \
-		}                                                  \
-		m_version |= value << (0x18u - (i - 1u) * 0x08u);  \
-	}                                                      \
-	m_success = true
-
-	const std::regex re4(R"regex((\d+)[., ]+(\d+)[., ]+(\d+)[., ]+(\d+))regex");
-	if (std::regex_search(str.begin(), str.end(), matches, re4) && matches.size() == 5)
+	auto parse = [this](std::string_view number, uint32_t offset) -> bool
 	{
-		PARSE(matches);
+		uint8_t value;
+		if (!String::ParseNumber(number, value))
+		{
+			return false;
+		}
+		m_version |= value << offset;
+		return true;
+	};
+
+	if (auto [whole, major, minor, patch, build] = ctre::search<R"((\d+)[., ]+(\d+)[., ]+(\d+)[., ]+(\d+))">(str); whole)
+	{
+		if (!parse(major.to_view(), 0x18)) return;
+		if (!parse(minor.to_view(), 0x10)) return;
+		if (!parse(patch.to_view(), 0x08)) return;
+		if (!parse(build.to_view(), 0x00)) return;
+		m_success = true;
 	}
 
-	const std::regex re3(R"regex((\d+)[., ]+(\d+)[., ]+(\d+))regex");
-	if (std::regex_search(str.begin(), str.end(), matches, re3) && matches.size() == 4)
+	if (auto [whole, major, minor, patch] = ctre::search<R"((\d+)[., ]+(\d+)[., ]+(\d+))">(str); whole)
 	{
-		PARSE(matches);
+		if (!parse(major.to_view(), 0x18)) return;
+		if (!parse(minor.to_view(), 0x10)) return;
+		if (!parse(patch.to_view(), 0x08)) return;
+		m_success = true;
 	}
 
-	const std::regex re2(R"regex((\d+)[., ]+(\d+))regex");
-	if (std::regex_search(str.begin(), str.end(), matches, re2) && matches.size() == 3)
+
+	if (auto [whole, major, minor] = ctre::search<R"((\d+)[., ]+(\d+))">(str); whole)
 	{
-		PARSE(matches);
+		if (!parse(major.to_view(), 0x18)) return;
+		if (!parse(minor.to_view(), 0x10)) return;
+		m_success = true;
 	}
 
-	const std::regex re1(R"regex((\d+))regex");
-	if (std::regex_search(str.begin(), str.end(), matches, re3) && matches.size() == 2)
+	if (auto [whole, major] = ctre::search<R"((\d+))">(str); whole)
 	{
-		PARSE(matches);
+		if (!parse(major.to_view(), 0x18)) return;
+		m_success = true;
 	}
 }
 
