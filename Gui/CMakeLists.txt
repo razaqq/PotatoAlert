@@ -11,6 +11,7 @@ target_sources(
 
     src/AboutWidget.cpp
     src/Events.cpp
+    src/ExpandingWidget.cpp
     src/MainWindow.cpp
     src/NativeWindow.cpp
     src/Pagination.cpp
@@ -25,7 +26,7 @@ target_sources(
     src/MatchHistory/MatchHistoryView.cpp
     src/MatchHistory/MatchHistoryModel.cpp
 
-    src/SettingsWidget/FolderStatus.cpp
+    src/SettingsWidget/GameInstalls.cpp
     src/SettingsWidget/HorizontalLine.cpp
     src/SettingsWidget/SettingsChoice.cpp
     src/SettingsWidget/SettingsSwitch.cpp
@@ -51,6 +52,7 @@ target_sources(
     include/Gui/NativeWindow.hpp
     include/Gui/Pagination.hpp
     include/Gui/ReplaySummary.hpp
+    include/Gui/SettingsWidget/GameInstalls.hpp
     include/Gui/SettingsWidget/SettingsChoice.hpp
     include/Gui/SettingsWidget/SettingsChoiceButton.hpp
     include/Gui/SettingsWidget/SettingsSlider.hpp

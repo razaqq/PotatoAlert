@@ -13,7 +13,7 @@
 #include "Gui/Fonts.hpp"
 #include "Gui/IconButton.hpp"
 #include "Gui/ScalingLabel.hpp"
-#include "Gui/SettingsWidget/FolderStatus.hpp"
+#include "Gui/SettingsWidget/GameInstalls.hpp"
 #include "Gui/SettingsWidget/HorizontalLine.hpp"
 #include "Gui/SettingsWidget/SettingsChoice.hpp"
 #include "Gui/SettingsWidget/SettingsComboBox.hpp"
@@ -32,7 +32,6 @@
 #include <QSize>
 #include <QSizePolicy>
 #include <QTabWidget>
-#include <QToolButton>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -97,54 +96,42 @@ void SettingsWidget::Init()
 	Config& config = m_services.Get<Config>();
 	Client::PotatoClient& potatoClient = m_services.Get<Client::PotatoClient>();
 
-	connect(&potatoClient, &Client::PotatoClient::DirectoryStatusChanged, m_folderStatusGui, &FolderStatus::Update);
+	connect(&potatoClient, &Client::PotatoClient::GameInfosChanged, m_gameInstalls, &GameInstalls::SetInstalls);
+	connect(m_gameInstalls, &GameInstalls::RemoveGameInstall, [&config, &potatoClient](const Client::GameDirectory& game)
+	{
+		auto gameInstalls = config.Get<ConfigKey::GameDirectories>();
+		if (const auto it = gameInstalls.find(game.Path); it != gameInstalls.end())
+		{
+			gameInstalls.erase(it);
+			config.Set<ConfigKey::GameDirectories>(gameInstalls);
+			potatoClient.UpdateGameInstalls();
+		}
+	});
 
 	// GENERAL
 	ScalingLabel* gamePathLabel = new ScalingLabel(labelFont);
 
-	QLineEdit* gamePathEdit = new QLineEdit();
-	connect(gamePathEdit, &QLineEdit::selectionChanged, [gamePathEdit]()
-	{
-		gamePathEdit->deselect();
-	});
-	gamePathEdit->setProperty(FontSizeProperty, gamePathEdit->font().pointSizeF());
-	gamePathEdit->setFixedHeight(ROW_HEIGHT);
-	gamePathEdit->setFixedWidth(250);
-	gamePathEdit->setReadOnly(true);
-	gamePathEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-	gamePathEdit->setFocusPolicy(Qt::NoFocus);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-	gamePathEdit->setText(QDir(config.Get<ConfigKey::GameDirectory>().make_preferred()).absolutePath());
-#else
-	gamePathEdit->setText(FromFilesystemPath(config.Get<ConfigKey::GameDirectory>().make_preferred()).absolutePath());
-#endif
-
-	IconButton* gamePathButton = new IconButton(":/Folder.svg", ":/FolderHover.svg", QSize(ROW_HEIGHT, ROW_HEIGHT));
-	connect(gamePathButton, &QToolButton::clicked, [this, &config, &potatoClient, gamePathEdit]()
+	generalLayout->addWidget(gamePathLabel, 0, 0, Qt::AlignLeft);
+	IconButton* gameAddButton = new IconButton(":/Plus.svg", ":/PlusHover.svg", QSize(ROW_HEIGHT, ROW_HEIGHT));
+	connect(gameAddButton, &IconButton::clicked, [this, &config, &potatoClient](bool _)
 	{
 		QString dir = QFileDialog::getExistingDirectory(this, "Select Game Directory", "", QFileDialog::ShowDirsOnly);
 		if (dir != "")
 		{
-			gamePathEdit->setText(dir);
+			auto gameInstalls = config.Get<ConfigKey::GameDirectories>();
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-			config.Set<ConfigKey::GameDirectory>(QDir(dir).filesystemAbsolutePath().make_preferred());
+			gameInstalls.emplace(QDir(dir).filesystemAbsolutePath().make_preferred());
 #else
-			config.Set<ConfigKey::GameDirectory>(ToFilesystemAbsolutePath(QDir(dir)).make_preferred());
+			gameInstalls.emplace(ToFilesystemAbsolutePath(QDir(dir)).make_preferred());
 #endif
-			potatoClient.CheckPath();
+			config.Set<ConfigKey::GameDirectories>(gameInstalls);
+			potatoClient.UpdateGameInstalls();
 		}
 	});
-
-	QHBoxLayout* gamePathLayout = new QHBoxLayout();
-	gamePathLayout->setContentsMargins(0, 0, 0, 0);
-	gamePathLayout->setSpacing(5);
-	gamePathLayout->addStretch();
-	gamePathLayout->addWidget(gamePathEdit, 0, Qt::AlignVCenter | Qt::AlignRight);
-	gamePathLayout->addWidget(gamePathButton, 0, Qt::AlignVCenter | Qt::AlignRight);
 	generalLayout->addWidget(gamePathLabel, 0, 0, Qt::AlignLeft);
-	generalLayout->addLayout(gamePathLayout, 0, 1);
-
-	generalLayout->addWidget(m_folderStatusGui, 1, 0, Qt::AlignLeft | Qt::AlignVCenter);
+	generalLayout->addWidget(gameAddButton, 0, 1, Qt::AlignRight);
+	generalLayout->addWidget(m_gameInstalls, 1, 0, Qt::AlignLeft | Qt::AlignVCenter);
 
 	generalLayout->addWidget(new HorizontalLine(), 2, 0, 1, 2);
 
@@ -195,7 +182,9 @@ void SettingsWidget::Init()
 	{
 		FontScalingChangeEvent event((float)value / 100.0f);
 		for (QWidget* w : qApp->allWidgets())
+		{
 			QApplication::sendEvent(w, &event);
+		}
 	});
 
 	TabWidget* tabWidget = new TabWidget();
@@ -236,7 +225,7 @@ void SettingsWidget::Init()
 		}
 
 		config.Save();
-		potatoClient.CheckPath();
+		potatoClient.UpdateGameInstalls();
 		emit Done();
 	});
 	connect(cancelButton, &QPushButton::clicked, [this, &config, &potatoClient]()
@@ -244,7 +233,7 @@ void SettingsWidget::Init()
 		m_forceRun = false;
 		config.Load();
 		emit Reset();
-		potatoClient.CheckPath();
+		potatoClient.UpdateGameInstalls();
 		QEvent event(QEvent::LanguageChange);
 		QApplication::sendEvent(window(), &event);
 		emit Done();
@@ -253,7 +242,7 @@ void SettingsWidget::Init()
 	{
 		saveButton->setText(GetString(lang, StringTableKey::SETTINGS_SAVE));
 		cancelButton->setText(GetString(lang, StringTableKey::SETTINGS_CANCEL));
-		gamePathLabel->setText(GetString(lang, StringTableKey::SETTINGS_GAME_DIRECTORY));
+		gamePathLabel->setText(GetString(lang, StringTableKey::SETTINGS_GAME_DIRECTORIES));
 		tabWidget->setTabText(0, GetString(lang, StringTableKey::SETTINGS_GENERAL));
 		tabWidget->setTabText(1, GetString(lang, StringTableKey::SETTINGS_DISPLAY));
 	});

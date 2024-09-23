@@ -493,6 +493,21 @@ QFrame#hLine
   background-color: palette(window);
 }
 
+#GameInstall
+{
+  border: 1px solid palette(window);
+}
+
+#ExpandingWidget_Title
+{
+  background-color: palette(window);
+}
+
+#ExpandingWidget_Content
+{
+  border-top: 1px solid palette(window);
+}
+
 /* Button used for yes/no in dialogs */
 #confirmButton
 {

@@ -72,9 +72,9 @@
         <繁體中文>保存戰鬥記錄</繁體中文>
         <日本語>戦闘履歴を保存</日本語>
     </Key>
-    <Key ID="SETTINGS_GAME_DIRECTORY">
-        <English>Game Directory</English>
-        <Deutsch>Spiel Verzeichnis</Deutsch>
+    <Key ID="SETTINGS_GAME_DIRECTORIES">
+        <English>Game Directories</English>
+        <Deutsch>Spiel Verzeichnisse</Deutsch>
         <简体中文>游戏目录</简体中文>
         <繁體中文>遊戲目錄</繁體中文>
         <日本語>ゲームディレクトリ</日本語>

@@ -3,16 +3,21 @@
 #include "Client/Config.hpp"
 #include "Client/Game.hpp"
 
+#include "Core/Defer.hpp"
+#include "Core/Directory.hpp"
 #include "Core/File.hpp"
+#include "Core/FileMapping.hpp"
+#include "Core/Format.hpp"
 #include "Core/Log.hpp"
 #include "Core/PeFileVersion.hpp"
 #include "Core/String.hpp"
 #include "Core/Version.hpp"
 #include "Core/Xml.hpp"
 
+#include <ctre/ctre.hpp>
+
 #include <filesystem>
 #include <ranges>
-#include <regex>
 #include <string>
 #include <vector>
 
@@ -22,342 +27,383 @@ namespace fs = std::filesystem;
 
 namespace PotatoAlert::Client::Game {
 
-bool GetBinPath(DirectoryStatus& status)
+namespace {
+
+struct PreferencesResult
+{
+	Version GameVersion;
+	std::string Region;
+};
+
+Result<PreferencesResult> ReadPreferences(const fs::path& path)
+{
+	// For some reason preferences.xml is not valid xml, and so we have to parse it with regex instead of xml
+	const fs::path preferencesPath = fs::path(path) / "preferences.xml";
+
+	if (!PathExists(preferencesPath))
+	{
+		LOG_TRACE(STR("Cannot find preferences.xml for reading in path: {}"), preferencesPath);
+		return PA_ERROR(MakeErrorCode(GameError::PreferencesXmlMissing));
+	}
+
+	const File file = File::Open(preferencesPath, File::Flags::Open | File::Flags::Read);
+	if (!file)
+	{
+		return PA_ERROR(MakeErrorCode(GameError::PreferencesXmlFailedToMap));
+	}
+	uint64_t size = file.Size();
+	FileMapping mapping = FileMapping::Open(file, FileMapping::Flags::Read, size);
+	if (!mapping)
+	{
+		return PA_ERROR(MakeErrorCode(GameError::PreferencesXmlFailedToMap));
+	}
+	void* filePtr = mapping.Map(FileMapping::Flags::Read, 0, size);
+	if (!filePtr)
+	{
+		return PA_ERROR(MakeErrorCode(GameError::PreferencesXmlFailedToMap));
+	}
+	PA_DEFER { mapping.Unmap(filePtr, size); };
+
+	std::string_view preferences(static_cast<const char*>(filePtr), size);
+
+	PreferencesResult result;
+	if (auto [whole, version] = ctre::search<R"(<clientVersion>\s*([ ,0-9]*)\s*<\/clientVersion>)">(preferences); whole)
+	{
+		result.GameVersion = Version(version.to_view());
+	}
+	else
+	{
+		return PA_ERROR(MakeErrorCode(GameError::PreferencesXmlMissingVersion));
+	}
+
+	std::string server;
+	if (auto [whole, region] = ctre::search<R"(<active_server>([a-z,A-Z,0-9,\s]*)<\/active_server>)">(preferences); whole)
+	{
+		result.Region = String::ToLower(String::Trim(region.to_view()));
+	}
+	else
+	{
+		return PA_ERROR(MakeErrorCode(GameError::PreferencesXmlMissingRegion));
+	}
+
+	if (result.Region.starts_with("&#"))
+	{
+		std::string_view r(result.Region);
+		std::string out;
+		out.reserve(2 * result.Region.size());
+		while (true)
+		{
+			if (r.size() >= 2 && r[0] == '&' && result.Region[1] == '#')
+			{
+				const size_t j = r.find_first_not_of("0123456789", 2);
+				if (j == std::string_view::npos)
+				{
+					PA_ERROR(MakeErrorCode(GameError::PreferencesXmlInvalidRegion));
+				}
+
+				if (r[j] != ';')
+				{
+					PA_ERROR(MakeErrorCode(GameError::PreferencesXmlInvalidRegion));
+				}
+
+				unsigned char c;
+				if (!String::ParseNumber(r.substr(2, j - 2), c))
+				{
+					PA_ERROR(MakeErrorCode(GameError::PreferencesXmlInvalidRegion));
+				}
+				out.push_back(static_cast<char>(c));
+
+				r = r.substr(j + 1);
+			}
+			else if (!r.empty())
+			{
+				out.push_back(r[0]);
+				r = r.substr(1);
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		if (out == "\u041C\u0418\u0420 \u041A\u041E\u0420\u0410\u0411\u041B\u0415\u0419")
+		{
+			result.Region = "ru";
+		}
+	}
+	else
+	{
+		String::ReplaceAll(result.Region, "wows ", "");
+		String::ReplaceAll(result.Region, "cis", "ru");
+		String::ReplaceAll(result.Region, "360", "china");
+	}
+
+	return result;
+}
+
+Result<fs::path> GetBinPath(const fs::path& gamePath, const Version gameVersion)
 {
 	// get newest folder version inside /bin folder
 
-	const fs::path binPath = status.gamePath / "bin";
-	if (!fs::exists(binPath))
+	const fs::path binPath = gamePath / "bin";
+	PA_TRY(exists, PathExists(binPath));
+	if (!exists)
 	{
-		LOG_ERROR(STR("Bin folder does not exist: {}"), binPath);
-		return false;
+		return PA_ERROR(MakeErrorCode(GameError::BinPathMissing));
 	}
 
 	// try to find matching exe version to game version
-	for (const auto& entry : fs::directory_iterator(binPath))
+	for (const fs::directory_entry& entry : fs::directory_iterator(binPath))
 	{
 		if (!entry.is_directory())
 			continue;
 
-		const fs::path exe = entry.path() / "bin32" / "WorldOfWarships32.exe";
+		const fs::path exe = entry.path() / "bin64" / "WorldOfWarships64.exe";
 		if (!fs::exists(exe))
 		{
 			continue;
 		}
 
-		const auto res = ReadFileVersion(exe);
-		if (!res)
+		const auto fileVersion = ReadFileVersion(exe);
+		if (!fileVersion)
 		{
-			LOG_ERROR(STR("Failed to read file version from '{}': {}"), exe, StringWrap(std::string(GetErrorMessage(res.error()))));
-			continue;
+			return PA_ERROR(MakeErrorCode(GameError::BinPathFailedToReadPeVersion));
 		}
 
-		if (*res == status.gameVersion)
+		if (*fileVersion == gameVersion)
 		{
-			status.directoryVersion = entry.path().filename().string();
-			status.binPath = fs::path(status.gamePath) / "bin" / status.directoryVersion;
-			return fs::exists(status.binPath);
+			std::string directoryVersion = entry.path().filename().string();
+
+			return binPath / entry.path().filename().string();
 		}
 	}
 
-	// fallback, take biggest version number
-	int folderVersion = -1;
+	// fallback, take the biggest version number
+	int32_t folderVersion = -1;
 	for (const auto& entry : fs::directory_iterator(binPath))
 	{
 		if (!entry.is_directory())
+		{
 			continue;
+		}
 
 		std::string fileName = entry.path().filename().string();
 
-		if (int v = 0; String::ParseNumber<int>(fileName, v))
+		if (int32_t v = 0; String::ParseNumber<int32_t>(fileName, v))
+		{
 			if (v > folderVersion)
+			{
 				folderVersion = v;
+			}
+		}
 	}
 
 	if (folderVersion != -1)
 	{
-		status.directoryVersion = std::to_string(folderVersion);
-		status.binPath = fs::path(status.gamePath) / "bin" / status.directoryVersion;
-		return fs::exists(status.binPath);
+		return binPath / std::to_string(folderVersion);
 	}
 
-	LOG_ERROR("Could not find a valid res folder!");
-	return false;
+	return PA_ERROR(MakeErrorCode(GameError::BinPathFailedToDetermine));
 }
 
-// reads the engine config and sets values
-bool ReadEngineConfig(DirectoryStatus& status, const fs::path& resFolder)
+struct EngineConfigResult
 {
-	fs::path engineConfig(status.binPath / resFolder / "engine_config.xml");
-	if (!fs::exists(engineConfig))
+	bool ReplaysVersioned;
+	std::string ReplaysPathBase;
+	std::string ReplaysDirPath;
+	std::string PreferencesPathBase;
+};
+
+Result<EngineConfigResult> ReadEngineConfig(const fs::path& file)
+{
+	if (!fs::exists(file))
 	{
-		LOG_TRACE(STR("No engine_config.xml in path: {}"), resFolder);
-		return false;
+		return PA_ERROR(MakeErrorCode(GameError::EngineConfigXmlMissing));
 	}
 
 	tinyxml2::XMLDocument doc;
-	XmlResult<void> res = LoadXml(doc, engineConfig);
+	XmlResult<void> res = LoadXml(doc, file);
 	if (!res)
 	{
-		LOG_TRACE("Failed to load engine_config.xml: {}", res.error());
-		return false;
+		return PA_ERROR(MakeErrorCode(GameError::EngineConfigXmlFailedLoading));
 	}
 
 	tinyxml2::XMLNode* root = doc.FirstChildElement("engine_config.xml");
 	if (root == nullptr)
 	{
-		LOG_TRACE("engine_config.xml seems to be empty.");
-		return false;
+		return PA_ERROR(MakeErrorCode(GameError::EngineConfigXmlEmpty));
 	}
 
 	// get replays node
 	tinyxml2::XMLElement* replays = root->FirstChildElement("replays");
 	if (replays == nullptr)
 	{
-		LOG_ERROR("Key 'replays' is missing in engine_config.xml");
-		return false;
+		return PA_ERROR(MakeErrorCode(GameError::EngineConfigXmlMissingReplays));
 	}
 
 	// get dir path
 	tinyxml2::XMLElement* replaysDirPath = replays->FirstChildElement("dirPath");
 	if (replaysDirPath == nullptr)
 	{
-		LOG_ERROR("Key 'dirPath' is missing in engine_config.xml");
-		return false;
+		return PA_ERROR(MakeErrorCode(GameError::EngineConfigXmlMissingDirPath));
 	}
-	status.replaysDirPath = String::ToLower(replaysDirPath->GetText());
+	const std::string dirPath = String::ToLower(replaysDirPath->GetText());
 
 	// get base path
 	tinyxml2::XMLElement* replaysPathBase = replays->FirstChildElement("pathBase");
 	if (replaysPathBase == nullptr)
 	{
-		LOG_ERROR("Key 'pathBase' is missing in engine_config.xml");
-		return false;
+		return PA_ERROR(MakeErrorCode(GameError::EngineConfigXmlMissingPathBase));
 	}
-	status.replaysPathBase = String::ToLower(replaysPathBase->GetText());
+	const std::string pathBase = String::ToLower(replaysPathBase->GetText());
 
 	// check for versioned replays
 	tinyxml2::XMLElement* versionedReplays = replays->FirstChildElement("versioned");
 	if (versionedReplays == nullptr)
 	{
-		LOG_ERROR("Key 'versioned' is missing in engine_config.xml");
-		return false;
+		return PA_ERROR(MakeErrorCode(GameError::EngineConfigXmlMissingVersioned));
 	}
 
 	bool versioned;
 	if (!String::ParseBool(versionedReplays->GetText(), versioned))
 	{
-		LOG_ERROR("Cannot parse versionedReplays string to bool: '{}'", versionedReplays->GetText());
-	}
-	else
-	{
-		status.versionedReplays = versioned;
+		return PA_ERROR(MakeErrorCode(GameError::EngineConfigXmlVersionedInvalid));
 	}
 
 	// get preferences node
 	tinyxml2::XMLElement* preferences = root->FirstChildElement("preferences");
 	if (preferences == nullptr)
 	{
-		LOG_ERROR("Key 'preferences' is missing in engine_config.xml");
-		return false;
+		return PA_ERROR(MakeErrorCode(GameError::EngineConfigXmlMissingPreferences));
 	}
 
 	// get preferences base path
-	tinyxml2::XMLElement* preferencesPathBase = replays->FirstChildElement("pathBase");
+	tinyxml2::XMLElement* preferencesPathBase = preferences->FirstChildElement("pathBase");
 	if (preferencesPathBase == nullptr)
 	{
-		LOG_ERROR("Key 'pathBase' is missing in engine_config.xml");
-		return false;
+		return PA_ERROR(MakeErrorCode(GameError::EngineConfigXmlMissingPreferencesPathBase));
 	}
-	status.preferencesPathBase = String::ToLower(preferencesPathBase->GetText());
+	const std::string prefPathBase = String::ToLower(preferencesPathBase->GetText());
 
-	return true;
+	return EngineConfigResult
+	{
+		.ReplaysVersioned = versioned,
+		.ReplaysPathBase = pathBase,
+		.ReplaysDirPath = dirPath,
+		.PreferencesPathBase = prefPathBase,
+	};
 }
 
-// reads game version and region from preferences.xml
-bool ReadPreferences(DirectoryStatus& status, const fs::path& basePath)
-{
-	// For some reason preferences.xml is not valid xml and so we have to parse it with regex instead of xml
-	const fs::path preferencesPath = fs::path(basePath) / "preferences.xml";
-
-	if (!fs::exists(preferencesPath))
-	{
-		LOG_TRACE(STR("Cannot find preferences.xml for reading in path: {}"), preferencesPath);
-		return false;
-	}
-
-	std::string pref;
-	if (const File file = File::Open(preferencesPath, File::Flags::Open | File::Flags::Read); file)
-	{
-		if (!file.ReadAllString(pref))
-		{
-			LOG_ERROR("Failed to read preferences.xml: {}", File::LastError());
-			return false;
-		}
-	}
-	else
-	{
-		LOG_ERROR("Failed to open preferences.xml for reading: {}", File::LastError());
-		return false;
-	}
-
-	static const std::regex versionRegex(R"regex(<clientVersion>([\s,0-9]*)<\/clientVersion>)regex");
-	static const std::regex regionRegex(R"regex(<active_server>(.*)<\/active_server>)regex");
-	std::smatch versionMatch;
-	std::smatch regionMatch;
-
-	if (std::regex_search(pref, versionMatch, versionRegex) && versionMatch.size() > 1)
-	{
-		status.gameVersion = Version(versionMatch.str(1));
-		// std::replace(status.gameVersion.begin(), status.gameVersion.end(), ',', '.');
-	}
-	else
-	{
-		LOG_ERROR("Cannot find version string in preferences.xml.");
-		return false;
-	}
-
-	if (std::regex_search(pref, regionMatch, regionRegex) && regionMatch.size() > 1)
-	{
-		std::string region = String::ToLower(String::Trim(regionMatch.str(1)));
-		if (region.starts_with("&#"))
-		{
-			std::string_view r(region);
-			std::string out;
-			out.reserve(2 * region.size());
-			while (true)
-			{
-				if (r.size() >= 2 && r[0] == '&' && region[1] == '#')
-				{
-					const size_t j = r.find_first_not_of("0123456789", 2);
-					if (j == std::string_view::npos)
-					{
-						return false;
-					}
-
-					if (r[j] != ';')
-					{
-						return false;
-					}
-
-					unsigned char c;
-					if (!String::ParseNumber(r.substr(2, j - 2), c))
-					{
-						return false;
-					}
-					out.push_back(static_cast<char>(c));
-
-					r = r.substr(j+1);
-				}
-				else if (!r.empty())
-				{
-					out.push_back(r[0]);
-					r = r.substr(1);
-				}
-				else
-				{
-					break;
-				}
-			}
-
-			if (out == "\u041C\u0418\u0420 \u041A\u041E\u0420\u0410\u0411\u041B\u0415\u0419")
-			{
-				status.region = "ru";
-			}
-		}
-		else
-		{
-			region = std::regex_replace(region, std::regex("wows "), "");  // remove 'WOWS '
-			region = std::regex_replace(region, std::regex("cis"), "ru");  // cis server to ru
-			region = std::regex_replace(region, std::regex("360"), "china");  // 360 to china
-			status.region = region;
-		}
-	}
-	else
-	{
-		LOG_ERROR("Cannot find region string in preferences.xml.");
-		return false;
-	}
-
-	return true;
 }
 
-// sets the replays folder
-void SetReplaysFolder(DirectoryStatus& status)
+const char* Detail::GameCategoryT::name() const noexcept
 {
-	if (status.replaysPathBase == "cwd")
+	return nullptr;
+}
+
+std::string Detail::GameCategoryT::message(int const code) const
+{
+	switch (static_cast<GameError>(code))
 	{
-		status.replaysPath = { fs::path(status.gamePath) / status.replaysDirPath };
+		using enum GameError;
+
+		case DirectoryNotFound:
+			return "Directory Not Found";
+		case PreferencesXmlMissing:
+			return "No preferences.xml";
+		case PreferencesXmlFailedToMap:
+			return "Failed to map preferences.xml";
+		case PreferencesXmlMissingVersion:
+			return "No version in preferences.xml";
+		case PreferencesXmlMissingRegion:
+			return "No region in preferences.xml";
+		case PreferencesXmlInvalidRegion:
+			return "Invalid region in preferences.xml";
+		case BinPathMissing:
+			return "Missing bin path";
+		case BinPathFailedToReadPeVersion:
+			return "Failed to read PE Version";
+		case BinPathFailedToDetermine:
+			return "Failed to determine bin path";
+		case EngineConfigXmlMissing:
+			return "Missing engine_config.xml";
+		case EngineConfigXmlFailedLoading:
+			return "Failed to read engine_config.xml";
+		case EngineConfigXmlEmpty:
+			return "Empty engine_config.xml";
+		case EngineConfigXmlMissingReplays:
+			return "engine_config.xml missing 'replays'";
+		case EngineConfigXmlMissingDirPath:
+			return "engine_config.xml missing 'dirPath'";
+		case EngineConfigXmlMissingPathBase:
+			return "engine_config.xml missing 'pathBase'";
+		case EngineConfigXmlMissingVersioned:
+			return "engine_config.xml missing 'versioned'";
+		case EngineConfigXmlMissingPreferences:
+			return "engine_config.xml missing 'preferences'";
+		case EngineConfigXmlMissingPreferencesPathBase:
+			return "engine_config.xml missing 'preferences/pathBase'";
+		case EngineConfigXmlVersionedInvalid:
+			return "engine_config.xml invalid 'versioned'";
 	}
-	else if (status.replaysPathBase == "exe_path")
+
+	return fmt::format("GameError{:08x}", static_cast<uint32_t>(code));
+}
+
+Detail::GameCategoryT const Detail::g_gameCategory;
+
+
+Result<GameInfo> ReadGameInfo(const fs::path& path)
+{
+	PA_TRY(exists, Core::PathExists(path));
+	if (!exists)
 	{
-		status.replaysPath = {
-			status.binPath / "bin32" / status.replaysDirPath,
-			status.binPath / "bin64" / status.replaysDirPath
+		return PA_ERROR(MakeErrorCode(GameError::DirectoryNotFound));
+	}
+
+	PA_TRY(preferences, ReadPreferences(path));
+	PA_TRY(binPath, GetBinPath(path, preferences.GameVersion));
+	PA_TRY(engineConfig, ReadEngineConfig(binPath / "res" / "engine_config.xml"));
+
+	const fs::path idxPath = binPath / "idx";
+	const fs::path pkgPath = path / "res_packages";
+
+	std::vector<fs::path> replaysPaths;
+	if (engineConfig.ReplaysPathBase == "cwd")
+	{
+		replaysPaths = { path / engineConfig.ReplaysDirPath };
+	}
+	else if (engineConfig.ReplaysPathBase == "exe_path")
+	{
+		replaysPaths = {
+			binPath / "bin32" / engineConfig.ReplaysDirPath,
+			binPath / "bin64" / engineConfig.ReplaysDirPath
 		};
 	}
-	if (status.versionedReplays)
+
+	if (engineConfig.ReplaysVersioned)
 	{
-		std::vector<fs::path> newReplaysPath;
-		newReplaysPath.reserve(status.replaysPath.size());
-		for (auto& path : status.replaysPath)
+		for (fs::path& p : replaysPaths)
 		{
-			newReplaysPath.emplace_back(path / status.gameVersion.ToString());
+			 p = p / preferences.GameVersion.ToString();
 		}
-		status.replaysPath = newReplaysPath;
-	}
-}
-
-bool CheckPath(const fs::path& selectedPath, DirectoryStatus& status)
-{
-	status.gamePath = selectedPath;
-	
-	// check that the game path exists
-	std::error_code ec;
-	bool exists = fs::exists(status.gamePath, ec);
-	if (ec)
-	{
-		LOG_ERROR("Failed to check if game path exists: {}", ec);
-		return false;
-	}
-	if (status.gamePath.empty() || !exists)
-		return false;
-
-	ReadPreferences(status, status.gamePath);
-	if (!GetBinPath(status))
-	{
-		status.statusText = "Failed to get bin path";
-		return false;
 	}
 
-	status.idxPath = status.binPath / "idx";
-	status.pkgPath = status.gamePath / "res_packages";
-
-	if (!ReadEngineConfig(status, fs::path("res")))
+	std::erase_if(replaysPaths, [](const fs::path& p)
 	{
-		status.statusText = "Failed to read engine config";
-		return false;
-	}
+		return !fs::exists(p);
+	});
 
-	ReadEngineConfig(status, status.binPath / "res_mods");
-	SetReplaysFolder(status);
-
-	// get rid of all replays folders that don't exist
-	status.replaysPath.erase(std::ranges::remove_if(status.replaysPath, [](const fs::path& p)
+	return GameInfo
 	{
-		if (!fs::exists(p))
-		{
-			LOG_TRACE(STR("Removing replays folder {}, because it doesn't exist."), p);
-			return true;
-		}
-		return false;
-	}).begin(), status.replaysPath.end());
-
-	status.found = !status.replaysPath.empty();
-	// TODO: localize
-	status.statusText = status.found ? "Found" : "Replays folder doesn't exist";
-
-	return true;
+		.GameVersion = preferences.GameVersion,
+		.BinPath = binPath,
+		.IdxPath = idxPath,
+		.PkgPath = pkgPath,
+		.VersionedReplays = engineConfig.ReplaysVersioned,
+		.ReplaysPaths = std::move(replaysPaths),
+		.Region = preferences.Region,
+	};
 }
 
 }  // namespace PotatoAlert::Client::Game

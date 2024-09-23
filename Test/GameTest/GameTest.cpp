@@ -5,14 +5,17 @@
 #include "Core/Directory.hpp"
 #include "Core/Log.hpp"
 #include "Core/Process.hpp"
+#include "Core/Result.hpp"
 #include "Core/StandardPaths.hpp"
 #include "Core/Version.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
 #include <filesystem>
+#include <vector>
 
 
+using PotatoAlert::Core::Result;
 using PotatoAlert::Core::Version;
 using namespace PotatoAlert::Client::Game;
 namespace fs = std::filesystem;
@@ -29,10 +32,10 @@ static struct test_init
 
 enum class Test
 {
-	nsnv,    // non steam non versioned
-	nsv,     // non steam versioned
-	snvexe,  // steam non versioned exe
-	svcwd    // steam versioned cwd
+	NonSteamNonVersioned,
+	NonSteamVersioned,
+	NonSteamNonVersionedExe,
+	SteamVersionedCwd
 };
 
 static fs::path GetGamePath(Test t)
@@ -45,13 +48,13 @@ static fs::path GetGamePath(Test t)
 
 	switch (t)
 	{
-		case Test::nsnv:
+		case Test::NonSteamNonVersioned:
 			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "non_steam_non_versioned";
-		case Test::nsv:
+		case Test::NonSteamVersioned:
 			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "non_steam_versioned";
-		case Test::snvexe:
+		case Test::NonSteamNonVersionedExe:
 			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "steam_non_versioned_exe";
-		case Test::svcwd:
+		case Test::SteamVersionedCwd:
 			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "steam_versioned_cwd";
 	}
 	PotatoAlert::Core::ExitCurrentProcess(1);
@@ -59,143 +62,61 @@ static fs::path GetGamePath(Test t)
 
 }
 
-TEST_CASE( "GameTest_CheckPathTest" )
+TEST_CASE( "GameTest" )
 {
 	{
-		DirectoryStatus d;
-		REQUIRE( CheckPath(GetGamePath(Test::nsnv), d) );
-		REQUIRE( d.gamePath == GetGamePath(Test::nsnv) );
-		REQUIRE( d.replaysPath == std::vector<fs::path>{ GetGamePath(Test::nsnv) / "replays" } );
+		const fs::path p = GetGamePath(Test::NonSteamNonVersioned);
+		const Result<GameInfo> info = ReadGameInfo(p);
+		REQUIRE(info);
+		REQUIRE(info->GameVersion == Version("0.9.4.0"));
+		REQUIRE(info->BinPath == p / "bin" / "2666186");
+		REQUIRE(info->IdxPath == info->BinPath / "idx");
+		REQUIRE(info->PkgPath == p / "res_packages");
+		REQUIRE_FALSE(info->VersionedReplays);
+		REQUIRE(info->ReplaysPaths == std::vector<fs::path>{ p / "replays" });
+		REQUIRE(info->Region == "eu");
 	}
 
 	{
-		DirectoryStatus d;
-		REQUIRE( CheckPath(GetGamePath(Test::nsv), d) );
-		REQUIRE(d.replaysPath == std::vector<fs::path>{ GetGamePath(Test::nsv) / "replays" / "0.9.4.0" });
+		const fs::path p = GetGamePath(Test::NonSteamVersioned);
+		const Result<GameInfo> info = ReadGameInfo(p);
+		REQUIRE(info);
+		REQUIRE(info->GameVersion == Version("0.9.4.0"));
+		REQUIRE(info->BinPath == p / "bin" / "2666186");
+		REQUIRE(info->IdxPath == info->BinPath / "idx");
+		REQUIRE(info->PkgPath == p / "res_packages");
+		REQUIRE(info->VersionedReplays);
+		REQUIRE(info->ReplaysPaths == std::vector<fs::path>{ p / "replays" / "0.9.4.0" });
+		REQUIRE(info->Region == "eu");
 	}
 
 	{
-		DirectoryStatus d;
-		REQUIRE( CheckPath(GetGamePath(Test::snvexe), d) );
-		REQUIRE(d.replaysPath == std::vector<fs::path>{
-			GetGamePath(Test::snvexe) / "bin" / "1427460" / "bin32" / "replays",
-			GetGamePath(Test::snvexe) / "bin" / "1427460" / "bin64" / "replays"
+		const fs::path p = GetGamePath(Test::NonSteamNonVersionedExe);
+		const Result<GameInfo> info = ReadGameInfo(p);
+		REQUIRE(info);
+		REQUIRE(info->GameVersion == Version("0.9.4.0"));
+		REQUIRE(info->BinPath == p / "bin" / "1427460");
+		REQUIRE(info->IdxPath == info->BinPath / "idx");
+		REQUIRE(info->PkgPath == p / "res_packages");
+		REQUIRE_FALSE(info->VersionedReplays);
+		REQUIRE(info->Region == "eu");
+		REQUIRE(info->ReplaysPaths == std::vector<fs::path>{
+			p / "bin" / "1427460" / "bin32" / "replays",
+			p / "bin" / "1427460" / "bin64" / "replays"
 		});
+		REQUIRE(info->Region == "eu");
 	}
 
 	{
-		DirectoryStatus d;
-		REQUIRE(CheckPath(GetGamePath(Test::svcwd), d));
-		REQUIRE(d.replaysPath == std::vector<fs::path>{ GetGamePath(Test::svcwd) / "replays" / "0.9.4.0" });
-	}
-}
-
-TEST_CASE( "GameTest_ReadPreferencesTest" )
-{
-	DirectoryStatus status =
-	{
-		GetGamePath(Test::nsnv),
-		Version(""), "", "", "", "cwd", "", "", "", {},
-		"", false
-	};
-	REQUIRE(ReadPreferences(status, status.gamePath));
-	REQUIRE(status.gameVersion == Version("0.9.4.0"));
-	REQUIRE(status.region == "eu");
-}
-
-TEST_CASE( "GameTest_GetResFolderPathTest" )
-{
-	DirectoryStatus status =
-	{
-		GetGamePath(Test::nsnv),
-		Version(""), "", "", "", "", "", "", "", {},
-		"", false
-	};
-	REQUIRE(GetBinPath(status));
-	REQUIRE(status.binPath == GetGamePath(Test::nsnv) / "bin" / "2666186");
-
-	status.gamePath = GetGamePath(Test::snvexe);
-	REQUIRE(GetBinPath(status));
-	REQUIRE(status.directoryVersion == "1427460");
-	REQUIRE(status.binPath == GetGamePath(Test::snvexe) / "bin" / "1427460");
-}
-
-TEST_CASE( "GameTest_ReadEngineConfigTest" )
-{
-	{
-		// non steam non versioned
-		DirectoryStatus d = {
-			GetGamePath(Test::nsnv),
-			Version(""), "", "", "", "", "", "", "", {},
-			"", false
-		};
-		REQUIRE(GetBinPath(d));
-		REQUIRE(ReadEngineConfig(d, "res"));
-		REQUIRE(d.replaysDirPath == "replays");
-		REQUIRE(d.replaysPathBase == "cwd");
-		REQUIRE(!d.versionedReplays);
-	}
-
-	{
-		// steam non versioned
-		DirectoryStatus d = {
-			GetGamePath(Test::snvexe),
-			Version(""), "", "", "", "", "", "", "", {},
-			"", false
-		};
-		REQUIRE( GetBinPath(d) );
-		REQUIRE( ReadEngineConfig(d, "res") );
-		REQUIRE( d.replaysDirPath == "replays" );
-		REQUIRE( d.replaysPathBase == "exe_path" );
-		REQUIRE( !d.versionedReplays );
-	}
-}
-
-TEST_CASE( "GameTest_SetReplaysFolderTest" )
-{
-	{
-		DirectoryStatus d = {
-			GetGamePath(Test::nsnv),
-			Version("0.9.4.0"), GetGamePath(Test::nsnv) / "bin" / "1427460", "", "", "", "", "cwd", "replays",
-			{}, "eu", false
-		};
-		SetReplaysFolder(d);
-		REQUIRE(d.replaysPath == std::vector<fs::path>{ GetGamePath(Test::nsnv) / "replays" });
-	}
-
-	{
-		DirectoryStatus d = {
-			GetGamePath(Test::snvexe),
-			Version("0.9.4.0"), GetGamePath(Test::snvexe) / "bin" / "1427460", "", "", "", "", "cwd", "replays",
-			{}, "eu", false
-		};
-		SetReplaysFolder(d);
-		REQUIRE(d.replaysPath == std::vector<fs::path>{ GetGamePath(Test::snvexe) / "replays" });
-	}
-
-	{
-		DirectoryStatus d = {
-			GetGamePath(Test::snvexe),
-			Version("0.9.4.0"), GetGamePath(Test::snvexe) / "bin" / "1427460", "", "", "", "1427460", "exe_path", "replays",
-			{}, "eu", false
-		};
-		SetReplaysFolder(d);
-		REQUIRE(d.replaysPath == std::vector<fs::path>{
-			GetGamePath(Test::snvexe) / "bin" / d.directoryVersion / "bin32" / "replays",
-			GetGamePath(Test::snvexe) / "bin" / d.directoryVersion / "bin64" / "replays"
-		});
-	}
-
-	{
-		DirectoryStatus d = {
-			GetGamePath(Test::svcwd),
-			Version("0.9.4.0"), GetGamePath(Test::svcwd) / "bin" / "1427460", "", "", "", "1427460", "exe_path", "replays",
-			{}, "eu", true
-		};
-		SetReplaysFolder(d);
-		REQUIRE(d.replaysPath == std::vector<fs::path>{
-				GetGamePath(Test::svcwd) / "bin" / d.directoryVersion / "bin32" / "replays" / d.gameVersion.ToString(),
-				GetGamePath(Test::svcwd) / "bin" / d.directoryVersion / "bin64" / "replays" / d.gameVersion.ToString()
-		});
+		const fs::path p = GetGamePath(Test::SteamVersionedCwd);
+		const Result<GameInfo> info = ReadGameInfo(p);
+		REQUIRE(info);
+		REQUIRE(info->GameVersion == Version("0.9.4.0"));
+		REQUIRE(info->BinPath == p / "bin" / "1427460");
+		REQUIRE(info->IdxPath == info->BinPath / "idx");
+		REQUIRE(info->PkgPath == p / "res_packages");
+		REQUIRE(info->VersionedReplays);
+		REQUIRE(info->ReplaysPaths == std::vector<fs::path>{ p / "replays" / "0.9.4.0" });
+		REQUIRE(info->Region == "eu");
 	}
 }

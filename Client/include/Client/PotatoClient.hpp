@@ -22,10 +22,17 @@
 
 
 using PotatoAlert::Client::Config;
-using PotatoAlert::Client::Game::DirectoryStatus;
+using PotatoAlert::Client::Game::GameInfo;
 using PotatoAlert::Client::StatsParser::MatchContext;
 
 namespace PotatoAlert::Client {
+
+struct GameDirectory
+{
+	std::filesystem::path Path;
+	std::string Status;
+	std::optional<GameInfo> Info;
+};
 
 enum class Status
 {
@@ -46,7 +53,7 @@ public:
 	void Init();
 	void TriggerRun();
 	void ForceRun();
-	DirectoryStatus CheckPath();
+	void UpdateGameInstalls();
 
 private:
 	void OnFileChanged(const std::filesystem::path& file);
@@ -58,7 +65,7 @@ private:
 	const ServiceProvider& m_services;
 	Core::DirectoryWatcher m_watcher;
 	std::string m_lastArenaInfoHash;
-	DirectoryStatus m_dirStatus;
+	std::vector<GameDirectory> m_gameInfos;
 	ReplayAnalyzer& m_replayAnalyzer;
 	QNetworkAccessManager* m_networkAccessManager = new QNetworkAccessManager();
 
@@ -67,7 +74,7 @@ signals:
 	void MatchHistoryNewMatch(const Match& match);
 	void ReplaySummaryChanged(uint32_t id, const ReplaySummary& summary);
 	void StatusReady(Status status, std::string_view statusText);
-	void DirectoryStatusChanged(const DirectoryStatus& status);
+	void GameInfosChanged(std::span<const GameDirectory> infos);
 };
 
 }  // namespace PotatoAlert::Client

@@ -51,7 +51,7 @@ if (NOT Qt6_FOUND)
 endif()
 
 set_target_properties(Client PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
-target_link_libraries(Client PRIVATE tinyxml2 Win32)
+target_link_libraries(Client PRIVATE ctre tinyxml2 Win32)
 target_link_libraries(Client PUBLIC Core GameFileUnpack ReplayParser fmt::fmt Qt::Core Qt::Network Qt::Widgets)
 target_include_directories(Client PUBLIC ${PROJECT_SOURCE_DIR}/Resources include)
 include(CompilerFlags)

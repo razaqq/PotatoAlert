@@ -9,7 +9,6 @@
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
 #include "Core/Process.hpp"
-#include "Core/Singleton.hpp"
 #include "Core/StandardPaths.hpp"
 
 #include <filesystem>
@@ -22,7 +21,7 @@ namespace fs = std::filesystem;
 
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::ConfigKey;
-using PotatoAlert::Client::Game::GetGamePath;
+using PotatoAlert::Client::Game::GetDefaultGamePaths;
 
 namespace {
 
@@ -42,7 +41,7 @@ static std::unordered_map<ConfigKey, std::string_view> g_keyNames =
 	{ ConfigKey::WindowX,                  "window_x" },
 	{ ConfigKey::WindowY,                  "window_y" },
 	{ ConfigKey::WindowState,              "window_state" },
-	{ ConfigKey::GameDirectory,            "game_directory" },
+	{ ConfigKey::GameDirectories,          "game_directories" },
 	{ ConfigKey::Language,                 "language" },
 	{ ConfigKey::MenuBarLeft,              "menubar_left" },
 	{ ConfigKey::ShowKarma,                "show_karma" },
@@ -77,13 +76,16 @@ Config::Config(const fs::path& filePath) : m_filePath(filePath)
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowState]), Qt::WindowState::WindowActive, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::Font]), "Roboto", a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::FontScaling]), 100, a);
-	std::string gamePathStr = "";
-	if (const std::optional<fs::path> gamePath = GetGamePath())
+
+	rapidjson::Value gameInstalls = rapidjson::Value(rapidjson::kArrayType);
+	for (const fs::path& gamePath : GetDefaultGamePaths())
 	{
-		if (Result<std::string> path = Core::PathToUtf8(gamePath.value()))
-			gamePathStr = path.value();
+		if (Result<std::string> path = Core::PathToUtf8(gamePath))
+		{
+			gameInstalls.PushBack(rapidjson::Value(path->c_str(), a).Move(), a);
+		}
 	}
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::GameDirectory]), gamePathStr, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::GameDirectories]), gameInstalls, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::Language]), 0, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::MenuBarLeft]), true, a);
 
@@ -119,7 +121,6 @@ void Config::Load()
 	{
 		LOG_ERROR("Failed to open config file: {}", File::LastError());
 		Core::ExitCurrentProcessWithError(1);
-		return;
 	}
 
 	std::string str;
@@ -127,7 +128,6 @@ void Config::Load()
 	{
 		LOG_ERROR("Failed to read config file: {}", File::LastError());
 		Core::ExitCurrentProcessWithError(1);
-		return;
 	}
 
 	PA_TRY_OR_ELSE(json, Core::ParseJson(str),
@@ -285,7 +285,7 @@ void Config::Validate()
 			|| (IsType(key, ConfigType::Bool) && !m_json[name.data()].IsBool())
 			|| (IsType(key, ConfigType::Int) && !m_json[name.data()].IsInt())
 			|| (IsType(key, ConfigType::Float) && !m_json[name.data()].IsFloat())
-			|| (IsType(key, ConfigType::Path) && !m_json[name.data()].IsString())
+			|| (IsType(key, ConfigType::SetPath) && !m_json[name.data()].IsArray())
 			|| (IsType(key, ConfigType::StatsMode) && !m_json[name.data()].IsString())
 			|| (IsType(key, ConfigType::TableLayout) && !m_json[name.data()].IsString())
 			|| (IsType(key, ConfigType::TeamStatsMode) && !m_json[name.data()].IsString()))
@@ -337,16 +337,29 @@ void Config::ApplyUpdates()
 {
 	auto renameKey = [&](std::string_view from, std::string_view to)
 	{
-		if (auto it = m_json.FindMember(from.data()); it != m_json.MemberEnd())
+		if (const auto it = m_json.FindMember(from.data()); it != m_json.MemberEnd())
 		{
 			it->name.SetString(to.data(), to.size());
 		}
 	};
-	renameKey("game_folder", g_keyNames[ConfigKey::GameDirectory]);
 	renameKey("menubar_leftside", g_keyNames[ConfigKey::MenuBarLeft]);
 	m_json.RemoveMember("api_key");
 	m_json.RemoveMember("use_ga");
 	m_json.RemoveMember("save_csv");
+
+	if (m_json.HasMember("game_directory"))
+	{
+		auto arr = m_json[g_keyNames[ConfigKey::GameDirectories].data()].GetArray();
+		const auto it = std::ranges::find_if(arr, [this](const rapidjson::Value& v)
+		{
+			return std::strcmp(v.GetString(), m_json["game_directory"].GetString()) == 0;
+		});
+		if (it == arr.end())
+		{
+			m_json[g_keyNames[ConfigKey::GameDirectories].data()].PushBack(m_json["game_directory"], m_json.GetAllocator());
+		}
+		m_json.RemoveMember("game_directory");
+	}
 }
 
 std::string_view Config::GetKeyName(ConfigKey key)

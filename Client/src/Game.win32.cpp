@@ -3,19 +3,45 @@
 #include "Client/Game.hpp"
 
 #include "Core/Defer.hpp"
+#include "Core/String.hpp"
 #include "Core/Result.hpp"
 
 #include "win32.h"
 
-#include <optional>
 #include <filesystem>
+#include <optional>
+#include <string>
 
 
 using PotatoAlert::Core::Result;
 
 namespace fs = std::filesystem;
 
-std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
+namespace {
+
+static std::optional<std::wstring> GetRegistryString(HKEY key, std::wstring_view valueName, DWORD sizeBytes = 0)
+{
+	if (sizeBytes == 0)
+	{
+		if (RegQueryValueExW(key, valueName.data(), nullptr, nullptr, nullptr, &sizeBytes) != ERROR_SUCCESS)
+		{
+			return {};
+		}
+	}
+
+	std::wstring lpData;
+	lpData.resize(sizeBytes / sizeof(WCHAR));
+	if (RegQueryValueExW(key, valueName.data(), nullptr, nullptr, (LPBYTE)lpData.data(), &sizeBytes) != ERROR_SUCCESS)
+	{
+		return {};
+	}
+
+	return lpData;
+}
+
+}
+
+std::vector<fs::path> PotatoAlert::Client::Game::GetDefaultGamePaths()
 {
 	HKEY hKey;
 	PA_DEFER
@@ -36,12 +62,16 @@ std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
 		return {};
 	}
 
-	WCHAR subKeyName[cbMaxSubKeyLen + 1];
-	DWORD subKeyNameLength = cbMaxSubKeyLen + 1;
+	std::wstring subKeyName;
+	subKeyName.resize(cbMaxSubKeyLen + 1);
+	const DWORD subKeyNameLength = cbMaxSubKeyLen + 1;
+
+	std::vector<fs::path> out;
 
 	for (DWORD i = 0; i < cSubKeys; i++)
 	{
-		if (RegEnumKeyExW(hKey, i, subKeyName, &subKeyNameLength, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
+		DWORD cchName = subKeyNameLength;
+		if (RegEnumKeyExW(hKey, i, subKeyName.data(), &cchName, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
 		{
 			HKEY subKey;
 			PA_DEFER
@@ -49,49 +79,38 @@ std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
 				RegCloseKey(subKey);
 			};
 
-			if (RegOpenKeyExW(hKey, subKeyName, 0, KEY_READ, &subKey) == ERROR_SUCCESS)
+			if (RegOpenKeyExW(hKey, subKeyName.data(), 0, KEY_READ, &subKey) == ERROR_SUCCESS)
 			{
-				DWORD cbDataDisplayName;
-				if (RegQueryValueExW(subKey, L"DisplayName", nullptr, nullptr, nullptr, &cbDataDisplayName) != ERROR_SUCCESS)
+				std::optional displayName = GetRegistryString(subKey, L"DisplayName");
+				if (!displayName)
 				{
 					continue;
 				}
 
-				WCHAR displayName[cbDataDisplayName];
-				if (RegQueryValueExW(subKey, L"DisplayName", nullptr, nullptr, (LPBYTE)displayName, &cbDataDisplayName) != ERROR_SUCCESS)
+				std::optional publisher = GetRegistryString(subKey, L"Publisher");
+				if (!publisher)
 				{
 					continue;
 				}
 
-				DWORD cbDataPublisherName;
-				if (RegQueryValueExW(subKey, L"Publisher", nullptr, nullptr, nullptr, &cbDataPublisherName) != ERROR_SUCCESS)
-				{
-					continue;
-				}
+				Core::String::TrimExtraNulls(*publisher);
+				Core::String::TrimExtraNulls(*displayName);
 
-				WCHAR publisher[cbDataPublisherName];
-				if (RegQueryValueExW(subKey, L"Publisher", nullptr, nullptr, (LPBYTE)publisher, &cbDataPublisherName) != ERROR_SUCCESS)
-				{
-					continue;
-				}
+				const bool game = Core::String::StartsWith<wchar_t>(*displayName, L"World_of_Warships");
 
-				if (wcscmp(publisher, L"Wargaming.net") == 0 && wcscmp(displayName, L"World_of_Warships") == 0)
+				if (*publisher == L"Wargaming.net" && game)
 				{
-					DWORD installLocationSize = MAX_PATH;
-					WCHAR installLocation[MAX_PATH];
-					if (RegQueryValueExW(subKey, L"InstallLocation", nullptr, nullptr, (LPBYTE)installLocation, &installLocationSize) == ERROR_SUCCESS)
+					if (std::optional installLocation = GetRegistryString(subKey, L"InstallLocation"))
 					{
-						fs::path gamePath(installLocation);
+						fs::path gamePath(*installLocation);
 						if (fs::exists(gamePath) && !gamePath.empty())
 						{
-							return std::move(gamePath);
+							out.emplace_back(std::move(gamePath));
 						}
-						return {};
 					}
-					return {};
 				}
 			}
 		}
 	}
-	return {};
+	return out;
 }

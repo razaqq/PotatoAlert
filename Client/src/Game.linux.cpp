@@ -3,13 +3,13 @@
 #include "Client/Game.hpp"
 
 #include <filesystem>
-#include <optional>
 #include <string>
+#include <vector>
 
 
 namespace fs = std::filesystem;
 
-std::optional<fs::path> PotatoAlert::Client::Game::GetGamePath()
+std::vector<fs::path> PotatoAlert::Client::Game::GetDefaultGamePaths()
 {
 	return {};
 }

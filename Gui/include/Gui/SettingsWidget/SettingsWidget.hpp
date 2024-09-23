@@ -4,7 +4,7 @@
 #include "Client/Config.hpp"
 #include "Client/StringTable.hpp"
 
-#include "Gui/SettingsWidget/FolderStatus.hpp"
+#include "Gui/SettingsWidget/GameInstalls.hpp"
 
 #include <QEvent>
 #include <QGridLayout>
@@ -28,9 +28,7 @@ private:
 
 private:
 	const Client::ServiceProvider& m_services;
-
-	FolderStatus* m_folderStatusGui = new FolderStatus(this);
-
+	GameInstalls* m_gameInstalls = new GameInstalls();
 	bool m_forceRun = false;
 
 signals:

@@ -1,0 +1,11 @@
+<preferences.xml>
+	<scriptsPreferences>
+		<net_credentials>
+			<active_server>	WOWS EU	</active_server>
+			<demo />
+			<external />
+		</net_credentials>
+	</scriptsPreferences>
+	<consoleHistory />
+	<clientVersion>	0,9,4,0	</clientVersion>
+</preferences.xml>

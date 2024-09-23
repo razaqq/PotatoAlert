@@ -19,7 +19,7 @@ using PotatoAlert::Core::DirectoryWatcher;
 DirectoryWatcher::DirectoryWatcher()
 {
 	connect(
-		&m_watcher, &QFileSystemWatcher::directoryChanged, 
+		&m_watcher, &QFileSystemWatcher::directoryChanged,
 		this, &DirectoryWatcher::OnDirectoryChanged
 	);
 }

@@ -10,6 +10,7 @@
 #include "Client/StatsParser.hpp"
 
 #include "Core/Defer.hpp"
+#include "Core/Directory.hpp"
 #include "Core/Format.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
@@ -223,7 +224,7 @@ void PotatoClient::Init()
 
 	connect(&m_replayAnalyzer, &ReplayAnalyzer::ReplaySummaryReady, this, &PotatoClient::ReplaySummaryChanged);
 
-	CheckPath();
+	UpdateGameInstalls();
 }
 
 void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& matchContext)
@@ -551,7 +552,6 @@ void PotatoClient::HandleReply(QNetworkReply* reply, auto& successHandler)
 // triggers a run with the current replays folders
 void PotatoClient::TriggerRun()
 {
-	m_watcher.ForceDirectoryChanged();
 	m_watcher.ForceFileChanged("tempArenaInfo.json");
 }
 
@@ -564,7 +564,7 @@ void PotatoClient::ForceRun()
 // triggered whenever a file gets modified in a replays path
 void PotatoClient::OnFileChanged(const std::filesystem::path& file)
 {
-	LOG_TRACE("Directory changed.");
+	LOG_TRACE("File changed: {}", file);
 
 	if (file.filename() != fs::path("tempArenaInfo.json") || !File::Exists(file))
 	{
@@ -589,7 +589,24 @@ void PotatoClient::OnFileChanged(const std::filesystem::path& file)
 		return;
 	m_lastArenaInfoHash = arenaInfo.Hash;
 
-	if (m_dirStatus.region.empty())
+	GameInfo const* game = nullptr;
+	for (const GameDirectory& gameDir : m_gameInfos)
+	{
+		Result<bool> eq = IsSubdirectory(file, gameDir.Path);
+		if (eq && *eq && gameDir.Info)
+		{
+			game = &*gameDir.Info;
+		}
+	}
+
+	if (game == nullptr)
+	{
+		LOG_ERROR("Arena info path is not inside any game directory.");
+		emit StatusReady(Status::Error, "Arena Info Path");
+		return;
+	}
+
+	if (game->Region.empty())
 	{
 		LOG_ERROR("No region set in DirectoryStatus");
 		emit StatusReady(Status::Error, "No Region Set");
@@ -602,7 +619,7 @@ void PotatoClient::OnFileChanged(const std::filesystem::path& file)
 	rapidjson::MemoryPoolAllocator<> a = request.GetAllocator();
 	request.AddMember("Guid", "placeholder123", a);
 	request.AddMember("Player", arenaInfo.PlayerName, a);
-	request.AddMember("Region", m_dirStatus.region, a);
+	request.AddMember("Region", game->Region, a);
 	request.AddMember("StatsMode", ToJson(m_services.Get<Config>().Get<ConfigKey::StatsMode>()), a);
 	request.AddMember("TeamDamageMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamDamageMode>()), a);
 	request.AddMember("TeamWinRateMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamWinRateMode>()), a);
@@ -618,26 +635,37 @@ void PotatoClient::OnFileChanged(const std::filesystem::path& file)
 		MatchContext{arenaInfo.Raw, arenaInfo.PlayerName, arenaInfo.PlayerVehicle});
 }
 
-// checks the game path for a valid replays folder and triggers a new match run
-DirectoryStatus PotatoClient::CheckPath()
+void PotatoClient::UpdateGameInstalls()
 {
-	DirectoryStatus dirStatus;
-
+	m_gameInfos.clear();
 	m_watcher.ClearDirectories();
 
-	const Result<fs::path> gamePath = m_services.Get<Config>().Get<ConfigKey::GameDirectory>();
-	if (!gamePath)
+	for (const fs::path& game : m_services.Get<Config>().Get<ConfigKey::GameDirectories>())
 	{
-		emit DirectoryStatusChanged(dirStatus);
-		return dirStatus;
-	}
-
-	if (Game::CheckPath(gamePath.value(), dirStatus))
-	{
-		m_dirStatus = dirStatus;
+		const Result<GameInfo> gameInfo = Game::ReadGameInfo(game);
+		if (gameInfo)
+		{
+			m_gameInfos.emplace_back(GameDirectory
+			{
+				.Path = game,
+				.Status = "Found",  // TODO: localize
+				.Info = std::move(*gameInfo),
+			});
+		}
+		else
+		{
+			LOG_ERROR("Failed to read game info from {}: {}", game, StringWrap(gameInfo.error().message()));
+			m_gameInfos.emplace_back(GameDirectory
+			{
+				.Path = game,
+				.Status = gameInfo.error().message(),
+				.Info = std::nullopt,
+			});
+			continue;
+		}
 
 		// start watching all replays paths
-		for (const fs::path& folder : dirStatus.replaysPath)
+		for (const fs::path& folder : gameInfo->ReplaysPaths)
 		{
 			if (!folder.empty())
 			{
@@ -646,12 +674,12 @@ DirectoryStatus PotatoClient::CheckPath()
 		}
 
 		// make sure we have up-to-date game files
-		const std::string gameVersion = dirStatus.gameVersion.ToString(".", true);
-		if (!m_replayAnalyzer.HasGameFiles(dirStatus.gameVersion))
+		const std::string gameVersion = gameInfo->GameVersion.ToString(".", true);
+		if (!m_replayAnalyzer.HasGameFiles(gameInfo->GameVersion))
 		{
 			LOG_INFO("Missing game files for version {} detected, trying to unpack...", gameVersion);
 			const fs::path dst = AppDataPath("PotatoAlert") / "ReplayVersions" / gameVersion;
-			GameFileUnpack::UnpackResult<void> unpackResult = ReplayAnalyzer::UnpackGameFiles(dst, dirStatus.pkgPath, dirStatus.idxPath);
+			const UnpackResult<void> unpackResult = ReplayAnalyzer::UnpackGameFiles(dst, gameInfo->PkgPath, gameInfo->IdxPath);
 			if (!unpackResult)
 			{
 				LOG_ERROR("Failed to unpack game files for version '{}': {}", gameVersion, unpackResult.error());
@@ -662,18 +690,11 @@ DirectoryStatus PotatoClient::CheckPath()
 			LOG_INFO("Game files for version {} found", gameVersion);
 		}
 
-		// lets check the entire game folder, replays might be hiding everywhere
-		m_replayAnalyzer.AnalyzeDirectory(gamePath.value());
-
-		emit StatusReady(Status::Ready, "Ready");
-
-		TriggerRun();
-	}
-	else
-	{
-		emit StatusReady(Status::Error, "Game Directory");
+		// let's check the entire game folder, replays might be hiding everywhere
+		m_replayAnalyzer.AnalyzeDirectory(game);
 	}
 
-	emit DirectoryStatusChanged(dirStatus);
-	return dirStatus;
+	emit GameInfosChanged(m_gameInfos);
+	emit StatusReady(Status::Ready, "Ready");
+	TriggerRun();
 }
