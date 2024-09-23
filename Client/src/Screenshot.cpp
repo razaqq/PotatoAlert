@@ -75,7 +75,7 @@ bool PotatoAlert::Client::CaptureScreenshot(QWidget* window, const fs::path& dir
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	if (pix.save(QDir(dir).absoluteFilePath(fileName.c_str()), "PNG", 100))
 #else
-	if (pix.save(FromFilesystemPath(dir).absoluteFilePath(fileName.c_str()), "PNG", 100))
+	if (pix.save(Core::FromFilesystemPath(dir).absoluteFilePath(fileName.c_str()), "PNG", 100))
 #endif
 	{
 		LOG_TRACE("Saved screenshot {}", fileName);
