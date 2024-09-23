@@ -10,6 +10,7 @@ target_sources(
     PRIVATE
 
     src/Blowfish.cpp
+    src/Directory.cpp
     src/DirectoryWatcher.cpp
     src/Log.cpp
     src/PeFileVersion.cpp
