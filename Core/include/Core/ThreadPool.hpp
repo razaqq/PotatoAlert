@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include <functional>
 #include <future>
 #include <mutex>
 #include <queue>
