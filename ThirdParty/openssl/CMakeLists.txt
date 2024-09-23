@@ -7,7 +7,7 @@ if (WIN32)
 			optimized ${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/libcrypto.lib
 	)
 	target_include_directories(OpenSSL INTERFACE include)
-elseif (LINUX)
+elseif (UNIX)
 	find_package(OpenSSL REQUIRED)
 	target_link_libraries(OpenSSL INTERFACE ${OPENSSL_CRYPTO_LIBRARY})
 	target_include_directories(OpenSSL INTERFACE ${OPENSSL_INCLUDE_DIR})
