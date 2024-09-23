@@ -32,6 +32,7 @@ static inline constexpr std::string_view ErrorMessage(ReaderError error)
 		case ReaderError::OutOfBoundsRead:
 			return "Out of bounds read";
 	}
+	return "Unknown Error";
 }
 
 enum class SeekOrigin

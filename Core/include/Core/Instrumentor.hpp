@@ -1,11 +1,11 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include "AsciiTable.hpp"
-#include "Log.hpp"
-#include "Preprocessor.hpp"
-#include "Singleton.hpp"
-#include "String.hpp"
+#include "Core/AsciiTable.hpp"
+#include "Core/Log.hpp"
+#include "Core/Preprocessor.hpp"
+#include "Core/Singleton.hpp"
+#include "Core/String.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -57,8 +57,8 @@ private:
 		{
 			MicrosRep total = std::accumulate(timings.begin(), timings.end(), MicrosRep{ 0 });
 			MicrosRep avg = total / static_cast<MicrosRep>(timings.size());
-			MicrosRep min = *std::min_element(timings.begin(), timings.end());
-			MicrosRep max = *std::max_element(timings.begin(), timings.end());
+			MicrosRep min = *std::ranges::min_element(timings);
+			MicrosRep max = *std::ranges::max_element(timings);
 			table.AddRow(name, avg, min, max, total, timings.size());
 		}
 

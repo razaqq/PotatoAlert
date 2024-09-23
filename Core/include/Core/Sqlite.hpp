@@ -1,7 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include "Flags.hpp"
+#include "Core/Flags.hpp"
 
 #include <cstdint>
 #include <filesystem>

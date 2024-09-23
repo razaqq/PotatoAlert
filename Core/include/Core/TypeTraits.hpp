@@ -21,4 +21,4 @@ inline constexpr bool is_any_of_v = (std::is_same_v<T, Ts> || ...);
 template<typename T, typename... Ts>
 using is_any_of = std::bool_constant<is_any_of_v<T, Ts...>>;
 
-}
+}  // namespace PotatoAlert::Core

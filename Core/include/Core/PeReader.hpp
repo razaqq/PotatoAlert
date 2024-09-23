@@ -4,7 +4,6 @@
 #include "Core/Bytes.hpp"
 #include "Core/Result.hpp"
 
-#include <bitset>
 #include <cstdint>
 #include <optional>
 #include <span>

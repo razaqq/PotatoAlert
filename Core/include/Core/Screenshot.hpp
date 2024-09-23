@@ -1,6 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
+#include <QRect>
+#include <QList>
 #include <QWidget>
 
 #include <filesystem>

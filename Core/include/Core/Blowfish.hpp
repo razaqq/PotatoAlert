@@ -4,7 +4,7 @@
 #include "Core/Bytes.hpp"
 
 #include <array>
-#include <memory>
+#include <cstdint>
 #include <span>
 
 
@@ -17,7 +17,7 @@ class Blowfish
 {
 public:
 	Blowfish() : m_pArray({}), m_sBoxes({}) {}
-	Blowfish(std::span<const Byte> key);
+	explicit Blowfish(std::span<const Byte> key);
 	Blowfish(Blowfish const&) = delete;
 	Blowfish(Blowfish&&) = delete;
 

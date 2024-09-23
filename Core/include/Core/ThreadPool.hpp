@@ -13,7 +13,7 @@ namespace PotatoAlert::Core {
 class ThreadPool
 {
 public:
-	ThreadPool(size_t threadCount = std::max(2u, std::thread::hardware_concurrency()));
+	explicit ThreadPool(size_t threadCount = std::max(2u, std::thread::hardware_concurrency()));
 
 	ThreadPool(const ThreadPool&) = delete;
 	ThreadPool(ThreadPool&&) = delete;
