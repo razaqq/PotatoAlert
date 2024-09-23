@@ -327,7 +327,7 @@ ReplayResult<ArgType> rp::ParseType(XMLElement* elem, const AliasType& aliases)
 			bool isNullable = false;
 			if (XMLElement* implElem = elem->FirstChildElement("implementedBy"))
 			{
-				isNullable = Core::String::StartsWith(implElem->GetText(), "NullableDef");
+				isNullable = Core::String::StartsWith<char>(implElem->GetText(), "NullableDef");
 			}
 			const char* text = typeElem->GetText();
 			if (types.contains(text))

@@ -76,7 +76,7 @@ concept is_number = (std::is_floating_point_v<T> || std::is_integral_v<T>) && !i
 static_assert(std::is_integral_v<bool>);
 
 template<typename T>
-concept is_primitive_serializable = is_bool<T> || is_number<T> || is_string<T>;
+concept is_primitive_serializable = is_bool<T> || is_number<T> || is_std_string<T>;
 
 template<typename T, typename OutputStream = rapidjson::StringBuffer>
 concept is_serializable = is_primitive_serializable<T> || requires (T a, rapidjson::Writer<OutputStream> writer)
@@ -133,14 +133,14 @@ static inline bool ToJson(rapidjson::Writer<OutputStream>& writer, std::string_v
 	return writer.String(str.data());
 }
 
-template<is_string T, typename OutputStream = rapidjson::StringBuffer>
+template<is_std_string T, typename OutputStream = rapidjson::StringBuffer>
 static inline bool ToJson(rapidjson::Writer<OutputStream>& writer, const T& str)
 	requires(str.c_str())
 {
 	return writer.String(str.c_str());
 }
 
-template<is_string T, typename OutputStream = rapidjson::StringBuffer>
+template<is_std_string T, typename OutputStream = rapidjson::StringBuffer>
 static inline bool ToJson(rapidjson::Writer<OutputStream>& writer, const T& str)
 {
 	return writer.String(str);
@@ -160,7 +160,7 @@ static inline bool ToJson(rapidjson::Writer<rapidjson::StringBuffer>& writer, co
 	return start && end;
 }
 
-template<is_string T>
+template<is_std_string T>
 static inline T FromJson(const rapidjson::Value& v)
 {
 	T str(v.GetString(), v.GetStringLength());
@@ -471,7 +471,7 @@ static inline JsonResult<T> FromJson(const rapidjson::Value& json, std::string_v
 		if (!json[key.data()].IsNumber())
 			return PA_JSON_ERROR("Json value '{}' is not of type '{}'", key, typeid(D).name());
 	}
-	else if constexpr (is_string<D>)
+	else if constexpr (is_std_string<D>)
 	{
 		if (!json[key.data()].IsString())
 			return PA_JSON_ERROR("Json value '{}' is not of type '{}'", key, typeid(D).name());
@@ -491,7 +491,7 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 	if (!json.HasMember(key.data()))
 		return PA_JSON_ERROR("Json object has no key '{}'", key);
 
-	if constexpr (is_string<D>)
+	if constexpr (is_std_string<D>)
 	{
 		if (!json[key.data()].IsString())
 			return PA_JSON_ERROR("Json value '{}' is not of type '{}'", key, typeid(D).name());

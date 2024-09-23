@@ -93,7 +93,7 @@ std::string FormatBytes(const T& data)
 	return result.str();
 }
 
-template<is_byte TIn, is_string TStr>
+template<is_byte TIn, is_std_string TStr>
 [[maybe_unused]] static bool TakeString(std::span<TIn>& data, TStr& str, size_t size)
 {
 	if (data.size() >= size)

@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Core/Concepts.hpp"
 #include "Core/Encoding.hpp"
 #include "Core/Format.hpp"
 #include "Core/Result.hpp"
@@ -13,10 +14,23 @@
 
 namespace PotatoAlert::Core {
 
-template<typename T>
-concept is_string = std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring>;
+#undef STR
+#ifdef WIN32
+	#define STR(String) L##String
+#else
+	#define STR(String) String
+#endif
 
 namespace String {
+
+template<character Char>
+void TrimExtraNulls(std::basic_string<Char>& str)
+{
+	if (size_t i = str.find_last_not_of((Char)0); i != std::string::npos)
+	{
+		str.resize(i+1);
+	}
+}
 
 std::string Trim(std::string_view str);
 std::string ToUpper(std::string_view str);
@@ -27,7 +41,14 @@ std::string Join(std::span<std::string_view> v, std::string_view del);
 std::string Join(std::span<const std::string> v, std::string_view del);
 void ReplaceAll(std::string& str, std::string_view before, std::string_view after);
 bool Contains(std::string_view str, std::string_view part);
-bool StartsWith(std::string_view str, std::string_view start);
+
+template<character Char>
+bool StartsWith(std::basic_string_view<Char> str, std::basic_string_view<Char> start)
+{
+	if (start.size() > str.size()) return false;
+	return str.substr(0, start.size()) == start;
+}
+
 bool EndsWith(std::string_view str, std::string_view end);
 
 template<typename T>
@@ -39,13 +60,6 @@ bool ParseNumber(std::string_view str, T& value) requires std::is_integral_v<T> 
 
 bool ParseBool(std::string_view str, bool& value);
 
-#undef STR
-#ifdef WIN32
-	#define STR(String) L##String
-#else
-	#define STR(String) String
-#endif
-
 }  // namespace String
 
 }  // namespace PotatoAlert::Core::String
@@ -55,7 +69,7 @@ struct StringWrap
 	std::string Str;
 
 	explicit StringWrap(const std::string& str) : Str(str) {}
-	explicit StringWrap(std::string&& str) noexcept : Str(str) {}
+	explicit StringWrap(std::string&& str) noexcept : Str(std::move(str)) {}
 };
 
 template<>

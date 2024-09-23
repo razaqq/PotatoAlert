@@ -11,9 +11,11 @@
 
 namespace s = PotatoAlert::Core::String;
 
+namespace {
+
 static std::string_view g_whitespaces = " \n\r\t\f\v";
 
-static std::string ltrim(std::string_view str)
+static std::string LTrim(std::string_view str)
 {
 	if (size_t i = str.find_first_not_of(g_whitespaces); i != std::string::npos)
 	{
@@ -22,7 +24,7 @@ static std::string ltrim(std::string_view str)
 	return "";
 }
 
-static std::string rtrim(std::string_view str)
+static std::string RTrim(std::string_view str)
 {
 	if (size_t i = str.find_last_not_of(g_whitespaces); i != std::string::npos)
 	{
@@ -31,28 +33,29 @@ static std::string rtrim(std::string_view str)
 	return "";
 }
 
-std::string s::Trim(std::string_view str)
-{
-	return rtrim(ltrim(str));
-}
-
-typedef std::string::value_type char_t;
-
-static char_t upChar(char_t c)
+using char_t = std::string::value_type;
+static char_t UpChar(char_t c)
 {
 	return std::use_facet<std::ctype<char_t>>(std::locale()).toupper(c);
 }
 
-static char_t lowerChar(char_t c)
+static char_t LowerChar(char_t c)
 {
 	return std::use_facet<std::ctype<char_t>>(std::locale()).tolower(c);
+}
+
+}
+
+std::string s::Trim(std::string_view str)
+{
+	return RTrim(LTrim(str));
 }
 
 std::string s::ToUpper(std::string_view str)
 {
 	std::string result;
 	result.resize(str.size());
-	std::transform(str.begin(), str.end(), result.begin(), upChar);
+	std::transform(str.begin(), str.end(), result.begin(), UpChar);
 	return result;
 }
 
@@ -60,7 +63,7 @@ std::string s::ToLower(std::string_view str)
 {
 	std::string result;
 	result.resize(str.size());
-	std::transform(str.begin(), str.end(), result.begin(), lowerChar);
+	std::transform(str.begin(), str.end(), result.begin(), LowerChar);
 	return result;
 }
 
@@ -150,12 +153,6 @@ std::string s::Join(std::span<const std::string> v, std::string_view del)
 bool s::Contains(std::string_view str, std::string_view part)
 {
 	return str.find(part) != std::string_view::npos;
-}
-
-bool s::StartsWith(std::string_view str, std::string_view start)
-{
-	if (start.size() > str.size()) return false;
-	return str.substr(0, start.size()) == start;
 }
 
 bool s::EndsWith(std::string_view str, std::string_view end)

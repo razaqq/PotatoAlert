@@ -197,7 +197,7 @@ public:
 	}
 
 	// reads n bytes into the string, string will be resized
-	template<is_string TStr>
+	template<is_std_string TStr>
 	Result<size_t, ReaderError> ReadToString(TStr& str, size_t n)
 	{
 		if (n > Size())
