@@ -11,9 +11,6 @@
 #include <iostream>
 #include <string>
 
-#include <fmt/xchar.h>
-#include <fmt/std.h>
-
 
 using PotatoAlert::Core::Result;
 
