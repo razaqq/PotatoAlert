@@ -20,7 +20,7 @@ void ToHex(unsigned char* src, size_t size, std::string& out)
 
 	for (size_t i = 0; i < size; i++)
 	{
-		std::snprintf(out.data() + 2 * i, out.size(), "%.2x", src[i]);
+		(void)std::snprintf(out.data() + 2 * i, out.size(), "%.2x", src[i]);
 	}
 }
 

@@ -70,7 +70,7 @@ static constexpr bool IsPacket(PacketBaseType type, uint32_t id, Version version
 	return false;
 }
 
-static ReplayResult<EntityMethodPacket> ParseEntityMethodPacket(std::span<const Byte>& data, PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<EntityMethodPacket> ParseEntityMethodPacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	EntityMethodPacket packet;
 	packet.Type = PacketBaseType::EntityMethod;
@@ -129,7 +129,7 @@ static ReplayResult<EntityMethodPacket> ParseEntityMethodPacket(std::span<const 
 	return packet;
 }
 
-static ReplayResult<EntityCreatePacket> ParseEntityCreatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<EntityCreatePacket> ParseEntityCreatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	EntityCreatePacket packet;
 	packet.Type = PacketBaseType::EntityCreate;
@@ -217,7 +217,7 @@ static ReplayResult<EntityCreatePacket> ParseEntityCreatePacket(std::span<const 
 	return packet;
 }
 
-static ReplayResult<EntityPropertyPacket> ParseEntityPropertyPacket(std::span<const Byte>& data, PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<EntityPropertyPacket> ParseEntityPropertyPacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	EntityPropertyPacket packet;
 	packet.Clock = clock;
@@ -280,7 +280,7 @@ static ReplayResult<EntityPropertyPacket> ParseEntityPropertyPacket(std::span<co
 	return packet;
 }
 
-static ReplayResult<BasePlayerCreatePacket> ParseBasePlayerCreatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<BasePlayerCreatePacket> ParseBasePlayerCreatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	BasePlayerCreatePacket packet;
 	packet.Clock = clock;
@@ -328,7 +328,7 @@ static ReplayResult<BasePlayerCreatePacket> ParseBasePlayerCreatePacket(std::spa
 	return packet;
 }
 
-static ReplayResult<CellPlayerCreatePacket> ParseCellPlayerCreatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<CellPlayerCreatePacket> ParseCellPlayerCreatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	CellPlayerCreatePacket packet;
 	packet.Type = PacketBaseType::CellPlayerCreate;
@@ -403,7 +403,7 @@ static ReplayResult<CellPlayerCreatePacket> ParseCellPlayerCreatePacket(std::spa
 	return packet;
 }
 
-static ReplayResult<EntityControlPacket> ParseEntityControlPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<EntityControlPacket> ParseEntityControlPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	EntityControlPacket packet;
 	packet.Type = PacketBaseType::EntityControl;
@@ -428,7 +428,7 @@ static ReplayResult<EntityControlPacket> ParseEntityControlPacket(std::span<cons
 	return packet;
 }
 
-static ReplayResult<EntityEnterPacket> ParseEntityEnterPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<EntityEnterPacket> ParseEntityEnterPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	EntityEnterPacket packet;
 	packet.Type = PacketBaseType::EntityEnter;
@@ -455,7 +455,7 @@ static ReplayResult<EntityEnterPacket> ParseEntityEnterPacket(std::span<const By
 	return packet;
 }
 
-static ReplayResult<EntityLeavePacket> ParseEntityLeavePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<EntityLeavePacket> ParseEntityLeavePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	EntityLeavePacket packet;
 	packet.Type = PacketBaseType::EntityLeave;
@@ -475,7 +475,7 @@ static ReplayResult<EntityLeavePacket> ParseEntityLeavePacket(std::span<const By
 	return packet;
 }
 
-static ReplayResult<NestedPropertyUpdatePacket> ParseNestedPropertyUpdatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<NestedPropertyUpdatePacket> ParseNestedPropertyUpdatePacket(std::span<const Byte>& data, PacketParser& parser, float clock)
 {
 	NestedPropertyUpdatePacket packet;
 	packet.Type = PacketBaseType::NestedPropertyUpdate;
@@ -546,7 +546,7 @@ static ReplayResult<NestedPropertyUpdatePacket> ParseNestedPropertyUpdatePacket(
 	return packet;
 }
 
-static ReplayResult<PlayerOrientationPacket> ParsePlayerOrientationPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<PlayerOrientationPacket> ParsePlayerOrientationPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	PlayerOrientationPacket packet;
 	packet.Type = PacketBaseType::PlayerOrientation;
@@ -575,7 +575,7 @@ static ReplayResult<PlayerOrientationPacket> ParsePlayerOrientationPacket(std::s
 	return packet;
 }
 
-static ReplayResult<PlayerPositionPacket> ParsePlayerPositionPacketPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<PlayerPositionPacket> ParsePlayerPositionPacketPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	PlayerPositionPacket packet;
 	packet.Type = PacketBaseType::PlayerOrientation;
@@ -608,7 +608,7 @@ static ReplayResult<PlayerPositionPacket> ParsePlayerPositionPacketPacket(std::s
 	return packet;
 }
 
-static ReplayResult<CameraPacket> ParseCameraPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<CameraPacket> ParseCameraPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	CameraPacket packet;
 	packet.Type = PacketBaseType::Camera;
@@ -648,7 +648,7 @@ static ReplayResult<CameraPacket> ParseCameraPacket(std::span<const Byte>& data,
 	return packet;
 }
 
-static ReplayResult<MapPacket> ParseMapPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<MapPacket> ParseMapPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	MapPacket packet;
 	packet.Type = PacketBaseType::Map;
@@ -689,7 +689,7 @@ static ReplayResult<MapPacket> ParseMapPacket(std::span<const Byte>& data, const
 	return packet;
 }
 
-static ReplayResult<VersionPacket> ParseVersionPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<VersionPacket> ParseVersionPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	VersionPacket packet;
 	packet.Type = PacketBaseType::Version;
@@ -716,7 +716,7 @@ static ReplayResult<VersionPacket> ParseVersionPacket(std::span<const Byte>& dat
 	return packet;
 }
 
-static ReplayResult<PlayerEntityPacket> ParsePlayerEntityPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<PlayerEntityPacket> ParsePlayerEntityPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	PlayerEntityPacket packet;
 	packet.Type = PacketBaseType::PlayerEntity;
@@ -739,7 +739,7 @@ static ReplayResult<PlayerEntityPacket> ParsePlayerEntityPacket(std::span<const 
 	return packet;
 }
 
-static ReplayResult<CameraModePacket> ParseCameraModePacket(std::span<const Byte>& data, const PacketParser& parser, float clock, Version version)
+[[maybe_unused]] static ReplayResult<CameraModePacket> ParseCameraModePacket(std::span<const Byte>& data, const PacketParser& parser, float clock, Version version)
 {
 	CameraModePacket packet;
 	packet.Type = PacketBaseType::CameraMode;
@@ -783,7 +783,7 @@ static ReplayResult<CameraModePacket> ParseCameraModePacket(std::span<const Byte
 	return packet;
 }
 
-static ReplayResult<CruiseStatePacket> ParseCruiseStatePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<CruiseStatePacket> ParseCruiseStatePacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	CruiseStatePacket packet;
 	packet.Type = PacketBaseType::CruiseState;
@@ -809,7 +809,7 @@ static ReplayResult<CruiseStatePacket> ParseCruiseStatePacket(std::span<const By
 	return packet;
 }
 
-static ReplayResult<CameraFreeLookPacket> ParseCameraFreeLookPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
+[[maybe_unused]] static ReplayResult<CameraFreeLookPacket> ParseCameraFreeLookPacket(std::span<const Byte>& data, const PacketParser& parser, float clock)
 {
 	CameraFreeLookPacket packet;
 	packet.Type = PacketBaseType::CameraFreeLook;
@@ -832,7 +832,7 @@ static ReplayResult<CameraFreeLookPacket> ParseCameraFreeLookPacket(std::span<co
 	return packet;
 }
 
-static ReplayResult<ResultPacket> ParseResultPacket(std::span<const Byte>&data, const PacketParser &parser, float clock)
+[[maybe_unused]] static ReplayResult<ResultPacket> ParseResultPacket(std::span<const Byte>&data, const PacketParser &parser, float clock)
 {
 	ResultPacket packet;
 	packet.Type = PacketBaseType::Result;

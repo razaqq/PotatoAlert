@@ -91,7 +91,7 @@ public:
 		{
 			case SeekOrigin::Start:
 			{
-				if (offset < m_data.size())
+				if (offset < (int64_t)m_data.size())
 				{
 					m_pos = offset;
 					return m_pos;
@@ -100,7 +100,7 @@ public:
 			}
 			case SeekOrigin::End:
 			{
-				if (offset <= 0 && -offset < m_data.size())
+				if (offset <= 0 && -offset < (int64_t)m_data.size())
 				{
 					m_pos = m_data.size() + offset;
 					return m_pos;
@@ -111,7 +111,7 @@ public:
 			{
 				if (offset < 0)
 				{
-					if (-offset <= m_pos)
+					if (-offset <= (int64_t)m_pos)
 					{
 						m_pos += offset;
 						return m_pos;
@@ -120,7 +120,7 @@ public:
 				}
 				else
 				{
-					if (offset <= (m_data.size() - m_pos))
+					if (offset <= (int64_t)(m_data.size() - m_pos))
 					{
 						m_pos += offset;
 						return m_pos;
@@ -128,9 +128,8 @@ public:
 					return PA_ERROR(ReaderError::OutOfBoundsSeek);
 				}
 			}
-			default:
-				return PA_ERROR(ReaderError::InvalidSeek);
 		}
+		return PA_ERROR(ReaderError::InvalidSeek);
 	}
 
 	// consumes n bytes from the buffer, stream pos will saturate at bounds, not overflow
