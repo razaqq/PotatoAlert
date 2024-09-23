@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 from typing import List, Tuple
 from os import walk, path
 from gitignore_parser import parse_gitignore
@@ -15,12 +16,16 @@ def include(file: str) -> bool:
 
 
 if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser.add_argument('-o', '--output_path', type=str, required=True)
+
+    args = parser.parse_args()
+
     all_files: List[Tuple[str, str]] = []
 
     script_root = path.dirname(path.abspath(__file__))
 
     for root, dirs, files in walk(script_root):
-        rel_path = path.relpath(root, script_root)
         rcignore = path.join(root, '.rcignore')
         if path.exists(rcignore):
             matches = parse_gitignore(rcignore)
@@ -28,12 +33,12 @@ if __name__ == '__main__':
                 if matches(path.join(root, file)) or not include(file):
                     continue
                 else:
-                    all_files.append((file, path.join(rel_path if rel_path != '.' else '', file)))
+                    all_files.append((file, path.join(root, file)))
         else:
-            all_files.extend([(file, path.join(rel_path if rel_path != '.' else '', file)) for file in files if include(file)])
+            all_files.extend([(file, path.join(root, file)) for file in files if include(file)])
         pass
 
-    with open('PotatoAlert.qrc', 'w') as f:
+    with open(path.join(args.output_path, 'PotatoAlert.qrc'), 'w') as f:
         f.write(qrc_prefix)
         f.write('\n')
         for name, path in all_files:

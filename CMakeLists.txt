@@ -58,16 +58,20 @@ generate_product_version(
 # generate stringtable headers
 find_package(Python3 3.7 COMPONENTS Interpreter REQUIRED)
 message(STATUS "Generating stringtable...")
-execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Resources/generate_translations.py"
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                RESULT_VARIABLE GENERATE_STRINGTABLE_RESULT)
+execute_process(
+    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Resources/generate_translations.py" "-o${CMAKE_BINARY_DIR}"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    RESULT_VARIABLE GENERATE_STRINGTABLE_RESULT
+)
 if(NOT GENERATE_STRINGTABLE_RESULT EQUAL "0")
     message(FATAL_ERROR "Failed to generate stringtable")
 endif()
 message(STATUS "Generating resource qrc...")
-execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Resources/generate_qrc.py"
-                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Resources"
-                RESULT_VARIABLE GENERATE_QRC_RESULT)
+execute_process(
+    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Resources/generate_qrc.py" "-o${CMAKE_BINARY_DIR}"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Resources"
+    RESULT_VARIABLE GENERATE_QRC_RESULT
+)
 if(NOT GENERATE_QRC_RESULT EQUAL "0")
     message(FATAL_ERROR "Failed to generate resource qrc")
 endif()

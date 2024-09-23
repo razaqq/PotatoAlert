@@ -8,7 +8,7 @@ if (NOT Qt6_FOUND)
     find_package(Qt5 COMPONENTS Widgets REQUIRED)
 endif()
 
-add_executable(PotatoAlert ${PROJECT_SOURCE_DIR}/Resources/PotatoAlert.qrc ${VersionFilesOutputVariable})
+add_executable(PotatoAlert ${CMAKE_BINARY_DIR}/PotatoAlert.qrc ${VersionFilesOutputVariable})
 set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 
 if(WIN32)
