@@ -1,9 +1,10 @@
 // Copyright 2020 <github.com/razaqq>
 
+#include "Client/Screenshot.hpp"
+
 #include "Core/Directory.hpp"
 #include "Core/Format.hpp"
 #include "Core/Log.hpp"
-#include "Core/Screenshot.hpp"
 #include "Core/Time.hpp"
 
 #include <QGraphicsBlurEffect>
@@ -29,7 +30,7 @@ static std::string GetFileName()
 
 }
 
-bool PotatoAlert::Core::CaptureScreenshot(QWidget* window, const fs::path& dir, const QList<QRect>& blurRects)
+bool PotatoAlert::Client::CaptureScreenshot(QWidget* window, const fs::path& dir, const QList<QRect>& blurRects)
 {
 	if (!window)
 		return false;

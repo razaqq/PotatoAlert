@@ -3,10 +3,10 @@
 #include "Client/AppDirectories.hpp"
 #include "Client/Config.hpp"
 #include "Client/PotatoClient.hpp"
+#include "Client/Screenshot.hpp"
 #include "Client/StringTable.hpp"
 
 #include "Core/Directory.hpp"
-#include "Core/Screenshot.hpp"
 
 #include "Gui/Fonts.hpp"
 #include "Gui/MainWindow.hpp"
@@ -102,7 +102,7 @@ void MainWindow::SwitchTab(MenuEntry i)
 		{
 			const bool doBlur = m_activeWidget == m_statsWidget && m_services.Get<Config>().Get<ConfigKey::AnonymizePlayers>();
 			const fs::path screenshotDir = m_services.Get<Client::AppDirectories>().ScreenshotsDir;
-			Core::CaptureScreenshot(window(), screenshotDir, doBlur ? m_statsWidget->GetPlayerColumnRects(dynamic_cast<QWidget*>(parent())) : QList<QRect>());
+			Client::CaptureScreenshot(window(), screenshotDir, doBlur ? m_statsWidget->GetPlayerColumnRects(dynamic_cast<QWidget*>(parent())) : QList<QRect>());
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(screenshotDir).absolutePath()));
 #else

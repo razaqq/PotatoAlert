@@ -15,7 +15,6 @@ target_sources(
     src/Log.cpp
     src/PeFileVersion.cpp
     src/PeReader.cpp
-    src/Screenshot.cpp
     src/Sha1.cpp
     src/Sha256.cpp
     src/String.cpp

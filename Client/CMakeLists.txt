@@ -14,6 +14,7 @@ target_sources(
     src/Game.cpp
     src/PotatoClient.cpp
     src/ReplayAnalyzer.cpp
+    src/Screenshot.cpp
     src/StatsParser.cpp
 )
 
