@@ -11,11 +11,9 @@
 #include <string>
 
 
-namespace fs = std::filesystem;
-
 namespace PotatoAlert::Core {
 
-inline fs::path AppDataPath(std::string_view appName)
+inline std::filesystem::path AppDataPath(std::string_view appName)
 {
 	const QDir appData = QDir(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
 		.append(QDir::separator())

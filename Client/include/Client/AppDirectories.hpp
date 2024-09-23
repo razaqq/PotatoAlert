@@ -15,7 +15,6 @@
 #include <fmt/std.h>
 
 
-namespace fs = std::filesystem;
 using PotatoAlert::Core::Result;
 
 namespace PotatoAlert::Client {
@@ -40,20 +39,20 @@ public:
 	}
 
 	std::string_view AppName;
-	fs::path AppDir;
+	std::filesystem::path AppDir;
 
-	fs::path MatchesDir;
-	fs::path ScreenshotsDir;
-	fs::path ReplayVersionsDir;
-	fs::path ConfigFile;
-	fs::path LogFile;
-	fs::path DatabaseFile;
+	std::filesystem::path MatchesDir;
+	std::filesystem::path ScreenshotsDir;
+	std::filesystem::path ReplayVersionsDir;
+	std::filesystem::path ConfigFile;
+	std::filesystem::path LogFile;
+	std::filesystem::path DatabaseFile;
 
 private:
-	static void CreateAppDir(const fs::path& dir)
+	static void CreateAppDir(const std::filesystem::path& dir)
 	{
 		std::error_code ec;
-		const bool exists = fs::exists(dir, ec);
+		const bool exists = std::filesystem::exists(dir, ec);
 		if (ec)
 		{
 			fmt::println(stderr, STR("Failed to check if app dir '{}' exists, reason: '{}'"), dir, ec);
@@ -62,7 +61,7 @@ private:
 
 		if (!exists)
 		{
-			fs::create_directories(dir, ec);
+			std::filesystem::create_directories(dir, ec);
 			if (ec)
 			{
 				fmt::println(stderr, STR("Failed to create app dir '{}', reason: '{}'"), dir, ec);
