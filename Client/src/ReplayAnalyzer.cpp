@@ -67,6 +67,8 @@ void ReplayAnalyzer::AnalyzeReplay(const fs::path& path, std::chrono::seconds re
 			return;
 		});
 
+		LOG_TRACE(STR("Replay analysis complete of file: {}"), file);
+
 		const DatabaseManager& dbm = m_services.Get<DatabaseManager>();
 
 		PA_TRY_OR_ELSE(match, dbm.GetMatch(summary.Hash),
@@ -83,7 +85,10 @@ void ReplayAnalyzer::AnalyzeReplay(const fs::path& path, std::chrono::seconds re
 				return;
 			});
 			emit ReplaySummaryReady(match.value().Id, summary);
+			LOG_TRACE(STR("Set replay summary for replay: {}"), file);
+			return;
 		}
+		LOG_TRACE("Cannot find replay to set summary with hash '{}'", summary.Hash);
 	};
 
 	// if this replay was never analyzed or analyzing finished, analyze it
