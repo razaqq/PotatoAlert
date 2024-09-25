@@ -77,6 +77,9 @@ public:
 			m_gameVersion->setText(info.GameVersion.ToString().c_str());
 			info.VersionedReplays ? m_versionedReplays->setText(GetString(lang, StringTableKey::YES))
 								  : m_versionedReplays->setText(GetString(lang, StringTableKey::NO));
+
+			// TODO: remove this once gcc has this
+#if __cpp_lib_ranges_join_with
 			const std::string replaysPaths =
 				info.ReplaysPaths | std::views::transform([](const fs::path& p)
 				{
@@ -84,6 +87,18 @@ public:
 					path.make_preferred();
 					return path.native();
 				}) | std::views::join_with('\n') | std::ranges::to<std::string>();
+#else
+
+			std::string replaysPaths;
+			std::ranges::copy(
+					info.ReplaysPaths | std::views::transform([](const fs::path& p)
+					{
+						fs::path path = p;
+						path.make_preferred();
+						return path.native();
+					}) | std::views::join_with('\n'),
+					std::back_inserter(replaysPaths));
+#endif
 
 			m_replaysFolders->setText(QString::fromStdString(replaysPaths));
 		}
