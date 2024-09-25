@@ -94,7 +94,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - gcc-version: 12
+          - gcc-version: 13
 
     runs-on: ubuntu-latest
 
