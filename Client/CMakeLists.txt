@@ -24,6 +24,7 @@ if(WIN32)
         PRIVATE
 
         src/Game.win32.cpp
+        src/SysInfo.win32.cpp
     )
 endif(WIN32)
 
@@ -33,6 +34,7 @@ if(UNIX)
         PRIVATE
 
         src/Game.linux.cpp
+        src/SysInfo.linux.cpp
     )
 endif(UNIX)
 

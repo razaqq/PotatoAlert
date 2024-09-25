@@ -135,17 +135,21 @@ void SettingsWidget::Init()
 
 	generalLayout->addWidget(new HorizontalLine(), 2, 0, 1, 2);
 
-	AddSetting<SettingsSwitch, ConfigKey::UpdateNotifications>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_UPDATES, [](SettingsSwitch*, bool) {});
-	AddSetting<SettingsSwitch, ConfigKey::MinimizeTray>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_MINIMIZETRAY, [](SettingsSwitch*, bool) {});
 	AddSetting<SettingsSwitch, ConfigKey::MatchHistory>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SAVE_MATCHHISTORY, [](SettingsSwitch*, bool) {});
 	AddSetting<SettingsSwitch, ConfigKey::SaveMatchCsv>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SAVE_CSV, [](SettingsSwitch*, bool) {});
-	AddSetting<SettingsComboBox, ConfigKey::Language>(generalLayout, new SettingsComboBox(Languages), StringTableKey::SETTINGS_LANGUAGE, [this](SettingsComboBox*, int id)
+
+	generalLayout->addWidget(new HorizontalLine(), 5, 0, 1, 2);
+	
+	AddSetting<SettingsSwitch, ConfigKey::MinimizeTray>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_MINIMIZETRAY, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsSwitch, ConfigKey::UpdateNotifications>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_UPDATES, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsSwitch, ConfigKey::AllowSendingUsageStats>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_ALLOW_SENDING_USAGE_STATS, [](SettingsSwitch*, bool) {});
+
+	// DISPLAY
+	AddSetting<SettingsComboBox, ConfigKey::Language>(displayLayout, new SettingsComboBox(Languages), StringTableKey::SETTINGS_LANGUAGE, [this](SettingsComboBox*, int id)
 	{
 		LanguageChangeEvent event(id);
 		QApplication::sendEvent(window(), &event);
 	});
-
-	// DISPLAY
 	SettingsChoice* statsMode = new SettingsChoice(this, { "current mode", "randoms", "ranked", "coop" });  // TODO: localize
 	AddSetting<SettingsChoice, ConfigKey::StatsMode>(displayLayout, statsMode, StringTableKey::SETTINGS_STATS_MODE, [this](SettingsChoice*, int)
 	{

@@ -49,6 +49,7 @@ static std::unordered_map<ConfigKey, std::string_view> g_keyNames =
 	{ ConfigKey::AnonymizePlayers,         "anonymize_player_names_screenshots" },
 	{ ConfigKey::Font,                     "font" },
 	{ ConfigKey::FontScaling,              "font_scaling" },
+	{ ConfigKey::AllowSendingUsageStats,   "allow_sending_usage_stats" },
 };
 
 }
@@ -76,6 +77,7 @@ Config::Config(const fs::path& filePath) : m_filePath(filePath)
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowState]), Qt::WindowState::WindowActive, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::Font]), "Roboto", a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::FontScaling]), 100, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::AllowSendingUsageStats]), true, a);
 
 	rapidjson::Value gameInstalls = rapidjson::Value(rapidjson::kArrayType);
 	for (const fs::path& gamePath : GetDefaultGamePaths())

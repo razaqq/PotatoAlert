@@ -8,6 +8,7 @@
 #include "Client/ReplayAnalyzer.hpp"
 #include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
+#include "Client/SysInfo.hpp"
 
 #include "Core/Defer.hpp"
 #include "Core/Directory.hpp"
@@ -40,10 +41,10 @@ using PotatoAlert::Client::StatsParser::MatchType;
 using PotatoAlert::GameFileUnpack::UnpackResult;
 using namespace PotatoAlert::Core;
 
-// static constexpr std::string_view g_submitUrl = "http://127.0.0.1:10001/queue/submit";
-// static constexpr std::string_view g_lookupUrl = "http://127.0.0.1:10001{}";
-static constexpr std::string_view g_submitUrl = "https://potatoalert.perry-swift.de/queue/submit";
-static constexpr std::string_view g_lookupUrl = "https://potatoalert.perry-swift.de{}";
+static constexpr std::string_view g_submitUrl = "http://127.0.0.1:10001/queue/submit";
+static constexpr std::string_view g_lookupUrl = "http://127.0.0.1:10001{}";
+//static constexpr std::string_view g_submitUrl = "https://potatoalert.perry-swift.de/queue/submit";
+//static constexpr std::string_view g_lookupUrl = "https://potatoalert.perry-swift.de{}";
 static constexpr int g_transferTimeout = 10000;
 
 namespace {
@@ -219,6 +220,16 @@ static inline std::optional<std::string> GetReplayName(const MatchType::InfoType
 
 void PotatoClient::Init()
 {
+	auto sysInfo = GetSysInfo();
+	if (sysInfo)
+	{
+		m_sysInfo = *sysInfo;
+	}
+	else
+	{
+		LOG_ERROR("Failed to get SysInfo: {}", sysInfo.error().message());
+	}
+
 	connect(&m_watcher, &DirectoryWatcher::FileChanged, this, &PotatoClient::OnFileChanged);
 	connect(&m_watcher, &DirectoryWatcher::FileChanged, &m_replayAnalyzer, &ReplayAnalyzer::OnFileChanged);
 
@@ -624,6 +635,16 @@ void PotatoClient::OnFileChanged(const std::filesystem::path& file)
 	request.AddMember("TeamDamageMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamDamageMode>()), a);
 	request.AddMember("TeamWinRateMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamWinRateMode>()), a);
 	request.AddMember("ArenaInfo", arenaInfo.Json, a);
+	
+	request.AddMember("ClientInfo", rapidjson::Value(rapidjson::kObjectType), a);
+	rapidjson::Value& clientInfo = request["ClientInfo"];
+	clientInfo.AddMember("ClientVersion", QApplication::applicationVersion().toStdString(), a);
+	if (m_services.Get<Config>().Get<ConfigKey::AllowSendingUsageStats>() && m_sysInfo)
+	{
+		clientInfo.AddMember("SysInfo", rapidjson::Value(rapidjson::kObjectType), a);
+		rapidjson::Value& sysInfo = clientInfo["SysInfo"];
+		ToJson(sysInfo, *m_sysInfo, a);
+	}
 
 	rapidjson::StringBuffer buffer;
 	rapidjson::Writer writer(buffer);

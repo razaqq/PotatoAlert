@@ -7,6 +7,7 @@
 #include "Client/ReplayAnalyzer.hpp"
 #include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
+#include "Client/SysInfo.hpp"
 
 #include "Core/DirectoryWatcher.hpp"
 
@@ -18,7 +19,9 @@
 #include <QNetworkReply>
 
 #include <filesystem>
+#include <optional>
 #include <string>
+#include <vector>
 
 
 using PotatoAlert::Client::Config;
@@ -67,6 +70,7 @@ private:
 	std::string m_lastArenaInfoHash;
 	std::vector<GameDirectory> m_gameInfos;
 	ReplayAnalyzer& m_replayAnalyzer;
+	std::optional<SysInfo> m_sysInfo;
 	QNetworkAccessManager* m_networkAccessManager = new QNetworkAccessManager();
 
 signals:

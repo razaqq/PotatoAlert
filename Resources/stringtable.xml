@@ -198,6 +198,13 @@
         <繁體中文>顯示</繁體中文>
         <日本語>ディスプレイ</日本語>
     </Key>
+    <Key ID="SETTINGS_ALLOW_SENDING_USAGE_STATS">
+        <English>Allow Sending Usage Statistics</English>
+        <Deutsch>Senden von Nutzungsstatistiken zulassen</Deutsch>
+        <简体中文>允许发送使用情况统计信息</简体中文>
+        <繁體中文>允許發送使用統計訊息</繁體中文>
+        <日本語>使用統計の送信を許可する</日本語>
+    </Key>
 
     <!-- STATS TABLES -->
     <Key ID="LABEL_WINRATE">
