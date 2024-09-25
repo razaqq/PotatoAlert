@@ -14,6 +14,7 @@
 
 
 using PotatoAlert::Core::Result;
+using PotatoAlert::Core::String::TrimExtraNulls;
 
 namespace fs = std::filesystem;
 
@@ -36,6 +37,7 @@ static std::optional<std::wstring> GetRegistryString(HKEY key, std::wstring_view
 		return {};
 	}
 
+	TrimExtraNulls(lpData);
 	return lpData;
 }
 
@@ -92,9 +94,6 @@ std::vector<fs::path> PotatoAlert::Client::Game::GetDefaultGamePaths()
 				{
 					continue;
 				}
-
-				Core::String::TrimExtraNulls(*publisher);
-				Core::String::TrimExtraNulls(*displayName);
 
 				const bool game = Core::String::StartsWith<wchar_t>(*displayName, L"World_of_Warships");
 
