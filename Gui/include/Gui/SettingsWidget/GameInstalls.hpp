@@ -16,7 +16,7 @@ class GameInstalls : public QWidget
 
 public:
 	explicit GameInstalls(QWidget* parent = nullptr);
-	void SetInstalls(std::span<const Client::GameDirectory> infos);
+	void SetInstalls(std::span<const Client::GameDirectory> infos) const;
 
 protected:
 	bool eventFilter(QObject* watched, QEvent* event) override;
@@ -25,7 +25,7 @@ private:
 	int m_currentLang = 0;
 
 signals:
-	void RemoveGameInstall(const Client::GameDirectory& game);
+	void RemoveGameInstall(const Client::GameDirectory& game) const;
 };
 
 }  // namespace PotatoAlert::Gui

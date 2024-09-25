@@ -154,9 +154,9 @@ GameInstalls::GameInstalls(QWidget* parent) : QWidget(parent)
 	setLayout(layout);
 }
 
-void GameInstalls::SetInstalls(std::span<const GameDirectory> infos)
+void GameInstalls::SetInstalls(std::span<const GameDirectory> infos) const
 {
-	while (QLayoutItem const* item = layout()->takeAt(0))
+	while (QLayoutItem* item = layout()->takeAt(0))
 	{
 		delete item->widget();
 		delete item;
