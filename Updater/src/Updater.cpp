@@ -143,7 +143,7 @@ bool Updater::UpdateAvailable()
 #endif
 
 	QEventLoop loop;
-	auto manager = new QNetworkAccessManager();
+	QNetworkAccessManager* manager = new QNetworkAccessManager();
 
 	QNetworkRequest request;
 	request.setUrl(QUrl(std::string(g_versionURL).c_str()));
