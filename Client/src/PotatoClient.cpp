@@ -669,7 +669,7 @@ void PotatoClient::UpdateGameInstalls()
 		}
 		else
 		{
-			LOG_ERROR("Failed to read game info from {}: {}", game, StringWrap(gameInfo.error().message()));
+			LOG_ERROR(STR("Failed to read game info from {}: {}"), game, StringWrap(gameInfo.error().message()));
 			m_gameInfos.emplace_back(GameDirectory
 			{
 				.Path = game,
