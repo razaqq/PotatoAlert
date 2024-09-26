@@ -165,8 +165,7 @@ Result<DosHeader, PeError> DosHeader::FromData(std::span<const Byte> data)
 
 Result<DosStub, PeError> DosStub::FromData(std::span<const Byte> data)
 {
-	// TODO
-	return {};
+	return DosStub{ .Code = data };
 }
 
 Result<PeHeader, PeError> PeHeader::FromData(std::span<const Byte> data)
@@ -176,7 +175,11 @@ Result<PeHeader, PeError> PeHeader::FromData(std::span<const Byte> data)
 
 	PeHeader h;
 	PA_TRYA(h.DosHeader, DosHeader::FromData(Take(data, DosHeaderSize)));
-	PA_TRYA(h.DosStub, DosStub::FromData(data));
+
+	const uint32_t stubSize = h.DosHeader.CoffHeaderPointer - DosHeaderSize;
+	if (data.size() < stubSize)
+		return PA_ERROR(PeError::InvalidPeHeader);
+	PA_TRYA(h.DosStub, DosStub::FromData(Take(data, stubSize)));
 	
 	return h;
 }

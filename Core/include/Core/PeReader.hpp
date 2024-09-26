@@ -65,9 +65,7 @@ struct DosHeader
 
 struct DosStub
 {
-	std::vector<uint8_t> Code;
-	std::string Message;
-	std::string Data;
+	std::span<const Byte> Code;
 
 	static Result<DosStub, PeError> FromData(std::span<const Byte> data);
 };
