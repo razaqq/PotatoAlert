@@ -11,6 +11,8 @@
 #include "ReplayParser/ReplayParser.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/reporters/catch_reporter_event_listener.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
 
 #include <filesystem>
 #include <numeric>
@@ -27,14 +29,6 @@ namespace fs = std::filesystem;
 
 namespace {
 
-static struct test_init
-{
-	test_init()
-	{
-		PotatoAlert::Core::Log::Init(PotatoAlert::Core::AppDataPath("PotatoAlert") / "ReplayTest.log");
-	}
-} test_init_instance;
-
 static fs::path GetReplay(std::string_view name)
 {
 	if (Result<fs::path> rootPath = GetModuleRootPath())
@@ -46,6 +40,18 @@ static fs::path GetReplay(std::string_view name)
 }
 
 }
+
+class TestRunListener : public Catch::EventListenerBase
+{
+public:
+	using Catch::EventListenerBase::EventListenerBase;
+
+	void testRunStarting(Catch::TestRunInfo const&) override
+	{
+		PotatoAlert::Core::Log::Init(PotatoAlert::Core::AppDataPath("PotatoAlert") / "ReplayTest.log");
+	}
+};
+CATCH_REGISTER_LISTENER(TestRunListener)
 
 TEST_CASE( "ReplayTest" )
 {
@@ -115,7 +121,7 @@ TEST_CASE( "ReplayTest" )
 		REQUIRE((int)std::round(result7->DamagePotential) == 1616598);
 		REQUIRE(result7->Achievements.size() == 2);
 		REQUIRE(result7->Ribbons.size() == 10);
-		uint32_t count = std::accumulate(result7->Ribbons.begin(), result7->Ribbons.end(), 0, [](int current, const auto& ribbon)
+		uint32_t count = std::accumulate(result7->Ribbons.begin(), result7->Ribbons.end(), (uint32_t)0, [](uint32_t current, const auto& ribbon)
 		{
 			return current + ribbon.second;
 		});

@@ -20,13 +20,6 @@
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include <spdlog/spdlog.h>
 
-#if 0
-#include <fmt/core.h>
-#include <fmt/xchar.h>
-#endif
-
-#include <QDir>
-
 #include <filesystem>
 #include <string>
 #include <memory>

@@ -78,13 +78,14 @@ QVariant MatchHistoryModel::data(const QModelIndex& index, int role) const
 	if (static_cast<size_t>(index.row()) >= m_matches.size() || index.column() >= m_columnCount)
 		return QVariant();
 
+	const size_t row = static_cast<size_t>(index.row());
 	switch (static_cast<Qt::ItemDataRole>(role))
 	{
 		case Qt::UserRole:
 		{
 			if (index.column() == 0)
 			{
-				return static_cast<qulonglong>(GetMatchTime(m_matches[index.row()]));
+				return static_cast<qulonglong>(GetMatchTime(m_matches[row]));
 			}
 			return QVariant();
 		}
@@ -93,28 +94,28 @@ QVariant MatchHistoryModel::data(const QModelIndex& index, int role) const
 			switch (index.column())
 			{
 				case 0:
-					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].Date);
+					return QString::fromStdString(m_matches[row].Date);
 				case 1:
-					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].Ship);
+					return QString::fromStdString(m_matches[row].Ship);
 				case 2:
-					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].Map);
+					return QString::fromStdString(m_matches[row].Map);
 				case 3:
-					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].MatchGroup);
+					return QString::fromStdString(m_matches[row].MatchGroup);
 				case 4:
-					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].StatsMode);
+					return QString::fromStdString(m_matches[row].StatsMode);
 				case 5:
-					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].Player);
+					return QString::fromStdString(m_matches[row].Player);
 				case 6:
-					return QString::fromStdString(m_matches[static_cast<size_t>(index.row())].Region);
+					return QString::fromStdString(m_matches[row].Region);
 				case 7:
-					return m_matches[static_cast<size_t>(index.row())].Analyzed;
+					return m_matches[row].Analyzed;
 				default:
 					return QVariant();
 			}
 		}
 		case Qt::BackgroundRole:
 		{
-			switch (m_matches[index.row()].ReplaySummary.Outcome)
+			switch (m_matches[row].ReplaySummary.Outcome)
 			{
 				case ReplayParser::MatchOutcome::Win:
 					return QColor::fromRgb(23, 209, 51, 50);

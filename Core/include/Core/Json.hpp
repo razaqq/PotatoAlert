@@ -180,19 +180,19 @@ static inline T FromJson(const rapidjson::Value& v)
 	using D = std::decay_t<T>;
 	if constexpr (std::is_same_v<D, int8_t>)
 	{
-		return v.GetInt();
+		return static_cast<int8_t>(v.GetInt());
 	}
 	if constexpr (std::is_same_v<D, uint8_t>)
 	{
-		return v.GetUint();
+		return static_cast<uint8_t>(v.GetUint());
 	}
 	if constexpr (std::is_same_v<D, int16_t>)
 	{
-		return v.GetInt();
+		return static_cast<int16_t>(v.GetInt());
 	}
 	if constexpr (std::is_same_v<D, uint16_t>)
 	{
-		return v.GetUint();
+		return static_cast<uint16_t>(v.GetUint());
 	}
 	if constexpr (std::is_same_v<D, int32_t>)
 	{
@@ -228,13 +228,13 @@ static inline rapidjson::Value ToJson(std::string_view str, rapidjson::MemoryPoo
 	return { str.data(), str.size(), allocator };
 }
 
-static inline rapidjson::Value ToJson(bool v, rapidjson::MemoryPoolAllocator<>& allocator)
+static inline rapidjson::Value ToJson(bool v, [[maybe_unused]] rapidjson::MemoryPoolAllocator<>& allocator)
 {
 	return rapidjson::Value(v);
 }
 
 template<is_number T>
-static inline rapidjson::Value ToJson(T t, rapidjson::MemoryPoolAllocator<>& allocator)
+static inline rapidjson::Value ToJson(T t, [[maybe_unused]] rapidjson::MemoryPoolAllocator<>& allocator)
 {
 	rapidjson::Value value;
 

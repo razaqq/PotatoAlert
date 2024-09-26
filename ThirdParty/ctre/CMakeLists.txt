@@ -8,6 +8,6 @@ set(PROJECT_DESCRIPTION "Fast compile-time regular expressions with support for 
 
 add_library(ctre INTERFACE)
 target_include_directories(ctre
-	INTERFACE
+	SYSTEM INTERFACE
 		include
 )

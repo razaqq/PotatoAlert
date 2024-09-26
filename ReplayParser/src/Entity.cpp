@@ -128,7 +128,7 @@ ReplayResult<DefFile> rp::ParseDef(const fs::path& file, const AliasType& aliase
 
 	if (XMLElement* implementsElem = root->FirstChildElement("Implements"))
 	{
-		defFile.Implements = std::move(ParseImplements(implementsElem));
+		defFile.Implements = ParseImplements(implementsElem);
 	}
 
 	return defFile;

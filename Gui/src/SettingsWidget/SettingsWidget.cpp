@@ -113,7 +113,7 @@ void SettingsWidget::Init()
 
 	generalLayout->addWidget(gamePathLabel, 0, 0, Qt::AlignLeft);
 	IconButton* gameAddButton = new IconButton(":/Plus.svg", ":/PlusHover.svg", QSize(ROW_HEIGHT, ROW_HEIGHT));
-	connect(gameAddButton, &IconButton::clicked, [this, &config, &potatoClient](bool _)
+	connect(gameAddButton, &IconButton::clicked, [this, &config, &potatoClient]([[maybe_unused]] bool checked)
 	{
 		QString dir = QFileDialog::getExistingDirectory(this, "Select Game Directory", "", QFileDialog::ShowDirsOnly);
 		if (dir != "")

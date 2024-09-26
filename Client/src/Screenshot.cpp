@@ -7,6 +7,7 @@
 #include "Core/Log.hpp"
 #include "Core/Time.hpp"
 
+#include <QDir>
 #include <QGraphicsBlurEffect>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsScene>

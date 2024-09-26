@@ -9,6 +9,8 @@
 #include <GameFileUnpack/GameFileUnpack.hpp>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/reporters/catch_reporter_event_listener.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
 
 #include <filesystem>
 
@@ -24,15 +26,6 @@ typedef DirectoryTree::TreeNode TreeNode;
 using PotatoAlert::GameFileUnpack::Unpacker;
 
 namespace {
-
-static struct test_init
-{
-	test_init()
-	{
-		PotatoAlert::Core::Log::Init(PotatoAlert::Core::AppDataPath("PotatoAlert") / "GameFileUnpackTest.log");
-	}
-} test_init_instance;
-
 
 static fs::path GetGameFileRootPath()
 {
@@ -66,6 +59,18 @@ static fs::path GetGameFilePath(std::string_view fileName)
 }
 
 }
+
+class TestRunListener : public Catch::EventListenerBase
+{
+public:
+	using Catch::EventListenerBase::EventListenerBase;
+
+	void testRunStarting(Catch::TestRunInfo const&) override
+	{
+		PotatoAlert::Core::Log::Init(PotatoAlert::Core::AppDataPath("PotatoAlert") / "GameFileUnpackTest.log");
+	}
+};
+CATCH_REGISTER_LISTENER(TestRunListener)
 
 TEST_CASE("GameFileUnpackTest_DirectoryTreeTest")
 {

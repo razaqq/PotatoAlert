@@ -57,7 +57,7 @@ public:
 		QApplication::style()->drawControl(QStyle::CE_PushButtonLabel, &button, painter);
 	}
 
-	bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override
+	bool editorEvent(QEvent* event, [[maybe_unused]] QAbstractItemModel* model, [[maybe_unused]] const QStyleOptionViewItem& option, const QModelIndex& index) override
 	{
 		// don't do anything if not analyzed
 		if (!index.data(Qt::DisplayRole).toBool())
@@ -77,7 +77,7 @@ public:
 		return true;
 	}
 
-	QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override
+	QSize sizeHint([[maybe_unused]] const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const override
 	{
 		return { m_width, m_height };
 	}

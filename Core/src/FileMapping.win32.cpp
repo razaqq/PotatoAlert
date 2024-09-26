@@ -99,7 +99,7 @@ void* FileMapping::RawMap(Handle handle, Flags flags, uint64_t offset, size_t si
 		access, offset >> 32, static_cast<DWORD>(offset), size);
 }
 
-void FileMapping::RawUnmap(Handle handle, const void* view, size_t size)
+void FileMapping::RawUnmap([[maybe_unused]] Handle handle, const void* view, [[maybe_unused]] size_t size)
 {
 	UnmapViewOfFile(view);
 }

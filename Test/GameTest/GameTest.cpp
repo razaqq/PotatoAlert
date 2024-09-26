@@ -10,6 +10,8 @@
 #include "Core/Version.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/reporters/catch_reporter_event_listener.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
 
 #include <filesystem>
 #include <vector>
@@ -21,14 +23,6 @@ using namespace PotatoAlert::Client::Game;
 namespace fs = std::filesystem;
 
 namespace {
-
-static struct test_init
-{
-	test_init()
-	{
-		PotatoAlert::Core::Log::Init(PotatoAlert::Core::AppDataPath("PotatoAlert") / "GameTest.log");
-	}
-} test_init_instance;
 
 enum class Test
 {
@@ -61,6 +55,18 @@ static fs::path GetGamePath(Test t)
 }
 
 }
+
+class TestRunListener : public Catch::EventListenerBase
+{
+public:
+	using Catch::EventListenerBase::EventListenerBase;
+
+	void testRunStarting(Catch::TestRunInfo const&) override
+	{
+		PotatoAlert::Core::Log::Init(PotatoAlert::Core::AppDataPath("PotatoAlert") / "GameTest.log");
+	}
+};
+CATCH_REGISTER_LISTENER(TestRunListener)
 
 TEST_CASE( "GameTest" )
 {

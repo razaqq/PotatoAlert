@@ -1,7 +1,7 @@
 function(SetCompilerFlags target)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         if ("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")  # clang-cl
-            target_compile_options(${target} PRIVATE $<$<CONFIG:DEBUG>:/Wall -Wno-unknown-pragmas -Wno-error=unused-variable -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-unsafe-buffer-usage -Wno-dollar-in-identifier-extension -Wno-old-style-cast -Wno-c++20-compat -Wno-unused-parameter -Wno-double-promotion /Ob0 /Od>)
+            target_compile_options(${target} PRIVATE $<$<CONFIG:DEBUG>:/W4 /Ob0 /Od>)
             target_compile_options(${target} PRIVATE $<$<CONFIG:RELEASE>:/O2 /Ob2>)
         elseif("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU")  # clang
             target_compile_options(${target} PRIVATE -fno-exceptions)
@@ -9,7 +9,7 @@ function(SetCompilerFlags target)
             target_compile_options(${target} PRIVATE $<$<CONFIG:RELEASE>:-O3>)
         endif()
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-        target_compile_options(${target} PRIVATE $<$<CONFIG:DEBUG>:/Wall /Od /Ob0>)  # TODO: completely untested
+        target_compile_options(${target} PRIVATE $<$<CONFIG:DEBUG>:/W4 /Od /Ob0>)  # TODO: completely untested
         target_compile_options(${target} PRIVATE $<$<CONFIG:RELEASE>:/O2 /Ob2>)
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         target_compile_options(${target} PRIVATE -fno-exceptions -fms-extensions -Wno-attributes)

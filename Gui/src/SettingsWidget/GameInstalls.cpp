@@ -175,7 +175,7 @@ void GameInstalls::SetInstalls(std::span<const GameDirectory> infos) const
 		titleLayout->addWidget(titleLabel, 0, Qt::AlignLeft);
 		titleLayout->addStretch();
 		IconButton* deleteButton = new IconButton(":/Close.svg", ":/CloseHover.svg", QSize(20, 20), false);
-		connect(deleteButton, &IconButton::clicked, [this, &game](bool _)
+		connect(deleteButton, &IconButton::clicked, [this, &game]([[maybe_unused]] bool checked)
 		{
 			emit RemoveGameInstall(game);
 		});

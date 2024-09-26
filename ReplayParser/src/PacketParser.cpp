@@ -211,7 +211,7 @@ static constexpr bool IsPacket(PacketBaseType type, uint32_t id, Version version
 		}
 	}
 
-	parser.Entities.insert_or_assign(packet.EntityId, Entity{ packet.EntityType, spec, {}, clientPropertyValues });
+	parser.Entities.insert_or_assign(packet.EntityId, Entity{ packet.EntityType, spec, {}, clientPropertyValues, {} });
 
 	parser.Callbacks.Invoke(packet);
 	return packet;
@@ -319,7 +319,7 @@ static constexpr bool IsPacket(PacketBaseType type, uint32_t id, Version version
 		basePropertyValues.emplace(name, value);
 	}
 
-	parser.Entities.emplace(packet.EntityId, Entity{ packet.EntityType, spec, basePropertyValues, {} });  // TODO: parse the state
+	parser.Entities.emplace(packet.EntityId, Entity{ packet.EntityType, spec, basePropertyValues, {}, {} });  // TODO: parse the state
 
 	std::span<const Byte> state = Take(data, data.size());
 	packet.Data = { state.begin(), state.end() };
@@ -376,7 +376,7 @@ static constexpr bool IsPacket(PacketBaseType type, uint32_t id, Version version
 	if (!parser.Entities.contains(packet.EntityId))
 	{
 		LOG_WARN("CellPlayerCreatePacket created non-existing entity {}", packet.EntityId);
-		parser.Entities.emplace(packet.EntityId, Entity{ entityType, spec, {} });
+		parser.Entities.emplace(packet.EntityId, Entity{ entityType, spec, {}, {}, {} });
 	}
 
 	packet.Values.reserve(spec.ClientPropertiesInternal.size());
@@ -518,8 +518,8 @@ static constexpr bool IsPacket(PacketBaseType type, uint32_t id, Version version
 		return PA_REPLAY_ERROR("Invalid first bit {:#04x} in NestedPropertyUpdatePacket payload", cont);
 	}
 
-	const int propIndex = bitReader.Get(BitReader::BitsRequired(static_cast<int>(spec.ClientProperties.size())));
-	if (static_cast<size_t>(propIndex) >= spec.ClientProperties.size())
+	const size_t propIndex = static_cast<size_t>(bitReader.Get((size_t)BitReader::BitsRequired(spec.ClientProperties.size())));
+	if (propIndex >= spec.ClientProperties.size())
 	{
 		return PA_REPLAY_ERROR("Property index out of range ({}) for spec in NestedPropertyUpdatePacket", propIndex);
 	}

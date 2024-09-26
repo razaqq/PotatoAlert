@@ -152,7 +152,7 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 						return PA_REPLAY_ERROR("receiveDamageStat Values were not size 1");
 					}
 
-					return VariantGet<std::vector<Byte>>(packet, 0, [&replayData, &packet](const std::vector<Byte>& data) -> ReplayResult<void>
+					return VariantGet<std::vector<Byte>>(packet, 0, [&replayData](const std::vector<Byte>& data) -> ReplayResult<void>
 					{
 						ReceiveDamageStatResult result = ParseReceiveDamageStat(data);
 
@@ -197,11 +197,11 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 						return {};  // just ignore this packet if the ids dont match
 					}
 
-					return VariantGet<std::vector<ArgValue>>(packet, 0, [&replayData, &packet](const std::vector<ArgValue>& vec) -> ReplayResult<void>
+					return VariantGet<std::vector<ArgValue>>(packet, 0, [&replayData](const std::vector<ArgValue>& vec) -> ReplayResult<void>
 					{
 						for (const ArgValue& elem : vec)
 						{
-							VariantGet<std::unordered_map<std::string, ArgValue>>(elem, [&replayData, &packet](const std::unordered_map<std::string, ArgValue>& dict) -> ReplayResult<void>
+							VariantGet<std::unordered_map<std::string, ArgValue>>(elem, [&replayData](const std::unordered_map<std::string, ArgValue>& dict) -> ReplayResult<void>
 							{
 								// other field is 'vehicleID' int32_t of the aggressor
 								if (dict.contains("damage"))

@@ -105,7 +105,7 @@ public:
 	template<is_byte T>
 	bool ReadAll(std::vector<T>& out, bool resetFilePointer = true) const
 	{
-		return RawReadAll(m_handle, out, resetFilePointer);
+		return RawReadAll<T>(m_handle, out, resetFilePointer);
 	}
 
 	bool ReadAllString(std::string& out, uint64_t size, bool resetFilePointer = true) const
@@ -121,7 +121,7 @@ public:
 	template<is_byte T>
 	bool Write(std::span<const T> data, bool resetFilePointer = true) const
 	{
-		return RawWrite(m_handle, data, resetFilePointer);
+		return RawWrite<T>(m_handle, data, resetFilePointer);
 	}
 
 	bool WriteString(std::string_view data, bool resetFilePointer = true) const

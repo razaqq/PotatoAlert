@@ -124,10 +124,8 @@ std::string_view PotatoAlert::Core::GetErrorMessage(PeError error)
 			return "Invalid ImageResourceDirectoryEntry";
 		case PeError::InvalidVersionInfo:
 			break;
-		default:
-			return "Unknown Error";
 	}
-	return "";
+	return "Unknown Error";
 }
 
 Result<DosHeader, PeError> DosHeader::FromData(std::span<const Byte> data)
@@ -421,7 +419,7 @@ Result<VsVersionInfo, PeError> VsVersionInfo::FromData(std::span<const Byte> dat
 		return PA_ERROR(PeError::InvalidVersionInfo);
 	}
 
-	const size_t padding1Size = offsetof(VsVersionInfo, Value) - offsetof(VsVersionInfo, Key) - 16 * sizeof(char16_t);
+	constexpr size_t padding1Size = offsetof(VsVersionInfo, Value) - offsetof(VsVersionInfo, Key) - 16 * sizeof(char16_t);
 	if (data.size() < padding1Size)
 	{
 		return PA_ERROR(PeError::InvalidVersionInfo);
@@ -431,7 +429,7 @@ Result<VsVersionInfo, PeError> VsVersionInfo::FromData(std::span<const Byte> dat
 	{
 		return PA_ERROR(PeError::InvalidVersionInfo);
 	}
-	const size_t padding2Size = offsetof(VsVersionInfo, Children) - offsetof(VsVersionInfo, Value) - sizeof(VsFixedFileInfo);
+	constexpr size_t padding2Size = offsetof(VsVersionInfo, Children) - offsetof(VsVersionInfo, Value) - sizeof(VsFixedFileInfo);
 	if (data.size() < padding2Size)
 	{
 		return PA_ERROR(PeError::InvalidVersionInfo);
@@ -495,9 +493,9 @@ Result<ResourceTable, PeError> ResourceTable::FromData(std::span<const Byte> dat
 
 			PA_TRY(nameEntry, ImageResourceDirectoryEntry::FromData(nameData));
 
-			if (nameEntry.Name & 1 << 31)
+			if (nameEntry.Name & 1u << 31u)
 			{
-				uint32_t offset = nameEntry.Name & ~(1 << 31);
+				uint32_t offset = nameEntry.Name & ~(1u << 31u);
 				if (offset >= rtData.size())
 				{
 					return PA_ERROR(PeError::InvalidResourceSectionNameEntry);

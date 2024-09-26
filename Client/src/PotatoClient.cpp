@@ -41,10 +41,10 @@ using PotatoAlert::Client::StatsParser::MatchType;
 using PotatoAlert::GameFileUnpack::UnpackResult;
 using namespace PotatoAlert::Core;
 
-static constexpr std::string_view g_submitUrl = "http://127.0.0.1:10001/queue/submit";
-static constexpr std::string_view g_lookupUrl = "http://127.0.0.1:10001{}";
-//static constexpr std::string_view g_submitUrl = "https://potatoalert.perry-swift.de/queue/submit";
-//static constexpr std::string_view g_lookupUrl = "https://potatoalert.perry-swift.de{}";
+// static constexpr std::string_view g_submitUrl = "http://127.0.0.1:10001/queue/submit";
+// static constexpr std::string_view g_lookupUrl = "http://127.0.0.1:10001{}";
+static constexpr std::string_view g_submitUrl = "https://potatoalert.perry-swift.de/queue/submit";
+static constexpr std::string_view g_lookupUrl = "https://potatoalert.perry-swift.de{}";
 static constexpr int g_transferTimeout = 10000;
 
 namespace {
@@ -95,7 +95,7 @@ static Result<TempArenaInfoResult, std::string> ReadArenaInfo(const fs::path& fi
 	{
 		if (!File::Exists(filePath))
 		{
-			// we have to assume its not an error, because the game sometimes touches it at the end of a match
+			// we have to assume it's not an error, because the game sometimes touches it at the end of a match
 			// when its about to get deleted
 			return TempArenaInfoResult{ "" };
 		}
@@ -250,9 +250,9 @@ void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& ma
 
 	connect(submitReply, &QNetworkReply::finished, [this, submitReply, matchContext = std::move(matchContext)]()
 	{
-		auto handler = [this, &matchContext](QNetworkReply* submitReply)
+		auto handler = [this, &matchContext](QNetworkReply* reply)
 		{
-			const QString content = QString::fromUtf8(submitReply->readAll());
+			const QString content = QString::fromUtf8(reply->readAll());
 			if (content.isNull() || content == "null")
 			{
 				LOG_ERROR("Server responded with null to submit request");
@@ -262,7 +262,7 @@ void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& ma
 
 			LOG_TRACE("Got submitReply from server: {}", content.toStdString());
 
-			const QByteArray locationHeader = submitReply->rawHeader("Location");
+			const QByteArray locationHeader = reply->rawHeader("Location");
 			if (locationHeader.isEmpty())
 			{
 				LOG_ERROR("Server responded with an invalid location header");
@@ -319,9 +319,9 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 		QNetworkReply* lookupReply = m_networkAccessManager->get(lookupRequest);
 		connect(lookupReply, &QNetworkReply::finished, [this, lookupReply, url, authToken, &matchContext]()
 		{
-			auto handler = [this, &url = url, authToken, &matchContext](QNetworkReply* lookupReply)
+			auto handler = [this, &url = url, authToken, &matchContext](QNetworkReply* reply)
 			{
-				const QString content = QString::fromUtf8(lookupReply->readAll());
+				const QString content = QString::fromUtf8(reply->readAll());
 				if (content.isNull() || content == "null")
 				{
 					emit StatusReady(Status::Error, "NULL Response");

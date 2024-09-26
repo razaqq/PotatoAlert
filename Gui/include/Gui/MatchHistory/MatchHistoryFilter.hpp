@@ -34,7 +34,7 @@ public:
 	{
 	}
 
-	int rowCount(const QModelIndex& parent) const override
+	int rowCount([[maybe_unused]] const QModelIndex& parent) const override
 	{
 		return static_cast<int>(m_filter.size());
 	}

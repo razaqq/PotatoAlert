@@ -38,9 +38,8 @@ std::string_view PotatoAlert::Core::GetErrorMessage(FileVersionReadError error)
 					return "Missing resource table";
 				case FileVersionReadErrorMisc::MissingResourceVersionEntry:
 					return "Resource table has no version entry";
-				default:
-					return "Unknown Error";
 			}
+			return "Unknown Error";
 		}
 		else
 		{

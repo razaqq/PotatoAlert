@@ -101,7 +101,7 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 
 	setLayout(horLayout);
 
-	connect(m_deleteButton, &QPushButton::clicked, [this](bool _)
+	connect(m_deleteButton, &QPushButton::clicked, [this]([[maybe_unused]] bool checked)
 	{
 		const QItemSelection sourceSelection = m_sortFilter->mapSelectionToSource(m_view->selectionModel()->selection());
 
@@ -144,7 +144,7 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 	});
 
 	m_filter->setVisible(false);
-	connect(m_filterButton, &QPushButton::clicked, [this](bool _)
+	connect(m_filterButton, &QPushButton::clicked, [this]([[maybe_unused]] bool checked)
 	{
 		m_filter->setVisible(!m_filter->isVisible());
 		m_filter->AdjustPosition();
@@ -164,7 +164,7 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 		emit ReplaySelected(res.Match);
 	});
 
-	connect(m_view->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselection)
+	connect(m_view->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselection)
 	{
 		m_deleteButton->setEnabled(!selected.empty());
 	});
@@ -250,12 +250,12 @@ bool MatchHistory::eventFilter(QObject* watched, QEvent* event)
 	return QWidget::eventFilter(watched, event);
 }
 
-void MatchHistory::hideEvent(QHideEvent* event)
+void MatchHistory::hideEvent([[maybe_unused]] QHideEvent* event)
 {
 	m_filter->setVisible(false);
 }
 
-void MatchHistory::showEvent(QShowEvent* event)
+void MatchHistory::showEvent([[maybe_unused]] QShowEvent* event)
 {
 	if (m_filterButton->isChecked())
 		m_filter->setVisible(true);

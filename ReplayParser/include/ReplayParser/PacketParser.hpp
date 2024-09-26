@@ -26,7 +26,7 @@ struct Entity
 struct PacketParser
 {
 	std::vector<EntitySpec> Specs;
-	std::unordered_map<uint32_t, Entity> Entities;
+	std::unordered_map<TypeEntityId, Entity> Entities;
 	PacketCallbacks Callbacks;
 };
 

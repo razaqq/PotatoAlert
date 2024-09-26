@@ -232,7 +232,7 @@ struct NestedPropertyUpdatePacket : Packet
 {
 	TypeEntityId EntityId;
 	std::string PropertyName;
-	int PropertyIndex;
+	size_t PropertyIndex;
 	PropertyNesting Nesting;
 	Entity* EntityPtr;
 };

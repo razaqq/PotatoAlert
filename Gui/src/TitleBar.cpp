@@ -58,11 +58,11 @@ void TitleBar::Init()
 	m_btnClose->setObjectName("btnClose");
 
 	connect(m_btnClose, &QToolButton::clicked, m_parentWindow, &QWidget::hide);
-	connect(m_btnMinimize, &QToolButton::clicked, [this](bool _)
+	connect(m_btnMinimize, &QToolButton::clicked, [this]([[maybe_unused]] bool checked)
 	{
 		m_parentWindow->showMinimized();
 	});
-	connect(m_btnMaximize, &QToolButton::clicked, [this](bool _)
+	connect(m_btnMaximize, &QToolButton::clicked, [this]([[maybe_unused]] bool checked)
 	{
 		if (m_parentWindow->windowState().testFlag(Qt::WindowMaximized))
 		{

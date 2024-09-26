@@ -117,7 +117,7 @@ public:
 	}
 
 private:
-	void paintEvent(QPaintEvent* event) override
+	void paintEvent([[maybe_unused]] QPaintEvent* event) override
 	{
 		QPainter painter(this);
 

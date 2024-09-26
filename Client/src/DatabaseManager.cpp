@@ -11,6 +11,7 @@
 #include "Core/Time.hpp"
 #include "Core/Version.hpp"
 
+#include <cstdint>
 #include <optional>
 #include <span>
 #include <string>
@@ -273,10 +274,10 @@ SqlResult<void> DatabaseManager::MigrateTables() const
 			checkStmt.ExecuteStep();
 			if (checkStmt.HasRow())
 			{
-				int id;
+				int32_t id;
 				if (checkStmt.GetInt(0, id))
 				{
-					PA_TRYV(DeleteMatch(id));
+					PA_TRYV(DeleteMatch(static_cast<uint32_t>(id)));
 				}
 			}
 		}
@@ -323,7 +324,7 @@ SqlResult<void> DatabaseManager::AddMatch(Match& match) const
 		return PA_SQL_ERROR("{}", m_db.GetLastError());
 	}
 
-	match.Id = m_db.GetLastRowId();
+	match.Id = static_cast<uint32_t>(m_db.GetLastRowId());
 
 	return {};
 }

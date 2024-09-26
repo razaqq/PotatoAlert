@@ -84,7 +84,7 @@ Semaphore::Handle Semaphore::RawOpen(std::string_view name)
 	return CreateHandle<Handle>(hSem);
 }
 
-bool Semaphore::RawRemove(std::string_view name)
+bool Semaphore::RawRemove([[maybe_unused]] std::string_view name)
 {
 	// there is no way to do this in windows
 	return true;

@@ -54,12 +54,12 @@ FilterList::FilterList(Client::StringTable::StringTableKey key, QWidget* parent)
 	buttonLayout->setContentsMargins(0, 0, 0, 0);
 
 	m_toggle->setObjectName("settingsButton");
-	connect(m_toggle, &QPushButton::clicked, [this](bool checked)
+	connect(m_toggle, &QPushButton::clicked, [this]([[maybe_unused]] bool checked)
 	{
 		const bool anyChecked = std::ranges::any_of(m_filter | std::views::values, [](const FilterState& s){ return s.IsChecked; });
-		for (const QString& key : m_filter | std::views::keys)
+		for (const QString& k : m_filter | std::views::keys)
 		{
-			m_filter.at(key).IsChecked = !anyChecked;
+			m_filter.at(k).IsChecked = !anyChecked;
 		}
 		m_model->AllDataChanged();
 	});
@@ -68,7 +68,7 @@ FilterList::FilterList(Client::StringTable::StringTableKey key, QWidget* parent)
 	layout->addLayout(buttonLayout);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0 ,0)
-	connect(m_model, &FilterModel::dataChanged, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QList<int>& roles)
+	connect(m_model, &FilterModel::dataChanged, [this]([[maybe_unused]] const QModelIndex& topLeft, [[maybe_unused]] const QModelIndex& bottomRight, [[maybe_unused]] const QList<int>& roles)
 #else
 	connect(m_model, &FilterModel::dataChanged, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
 #endif

@@ -81,15 +81,6 @@ static void ClearLayout(QLayout* layout)
 	}
 }
 
-static constexpr std::string_view GetMatchGroupName(std::string_view matchGroup)
-{
-	if (matchGroup == "pvp")
-	{
-
-	}
-	return matchGroup;
-}
-
 static constexpr std::string_view GetRibbonName(int lang, RibbonType ribbon)
 {
 	switch (GetParent(ribbon))
@@ -208,7 +199,7 @@ public:
 	}
 
 protected:
-	void paintEvent(QPaintEvent* _) override
+	void paintEvent([[maybe_unused]] QPaintEvent* event) override
 	{
 		// support styling on custom QWidget
 		QStyleOption opt;
@@ -232,7 +223,7 @@ public:
 	}
 };
 
-void ReplaySummaryGui::paintEvent(QPaintEvent* _)
+void ReplaySummaryGui::paintEvent([[maybe_unused]] QPaintEvent* event)
 {
 	// support styling on custom QWidget
 	QStyleOption opt;

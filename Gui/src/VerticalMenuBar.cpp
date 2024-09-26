@@ -85,5 +85,5 @@ void VerticalMenuBar::SetChecked(MenuEntry entry) const
 	{
 		menuEntry->setChecked(false);
 	}
-	m_menuEntries[static_cast<int>(entry)]->setChecked(true);
+	m_menuEntries[static_cast<size_t>(entry)]->setChecked(true);
 }

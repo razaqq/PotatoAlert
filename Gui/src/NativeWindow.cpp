@@ -74,7 +74,7 @@ void NativeWindow::hideEvent(QHideEvent* event)
 	}
 }
 
-void NativeWindow::showEvent(QShowEvent* event)
+void NativeWindow::showEvent([[maybe_unused]] QShowEvent* event)
 {
 	if (!m_isInitialShow)
 	{

@@ -37,7 +37,7 @@ public:
 
 	void WriteResult(const ProfileResult& result)
 	{
-		std::lock_guard lock(m_mutex);
+		std::lock_guard<std::mutex> lock(m_mutex);
 
 		LOG_INFO("Name: {}, TID: {}, Start: {}, Duration: {}",
 			result.name, result.threadId, result.startTime.count(), result.elapsedTime.count());

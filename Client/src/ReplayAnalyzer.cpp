@@ -55,11 +55,11 @@ void ReplayAnalyzer::OnFileChanged(const std::filesystem::path& file)
 
 void ReplayAnalyzer::AnalyzeReplay(const fs::path& path, std::chrono::seconds readDelay)
 {
-	auto analyze = [this](const fs::path& file, std::chrono::seconds readDelay) -> void
+	auto analyze = [this](const fs::path& file, std::chrono::seconds delay) -> void
 	{
 		// this is honestly not ideal, but i don't see another way of fixing it
-		LOG_TRACE(STR("Analyzing replay file {} after {} delay..."), file, readDelay);
-		std::this_thread::sleep_for(readDelay);
+		LOG_TRACE(STR("Analyzing replay file {} after {} delay..."), file, delay);
+		std::this_thread::sleep_for(delay);
 
 		PA_TRY_OR_ELSE(summary, ReplayParser::AnalyzeReplay(file, m_gameFilePath),
 		{

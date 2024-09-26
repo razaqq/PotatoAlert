@@ -113,7 +113,7 @@ void StatsHeaderFriendly::SetStatus(Client::Status status, std::string_view text
 	}
 }
 
-StatsHeaderEnemy::StatsHeaderEnemy(QWidget* parent)
+StatsHeaderEnemy::StatsHeaderEnemy(QWidget* parent) : QWidget(parent)
 {
 	Init();
 }

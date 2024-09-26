@@ -163,7 +163,7 @@ ReplayResult<PropertyNesting> rp::GetNestedPropertyPath(bool isSlice, const ArgT
 
 			const ArgValue* newArgValue;
 
-			ReplayResult<void> setRes = VariantGet<std::unordered_map<std::string, ArgValue>>(*argValue, [&prop, &newArgValue, &arg](const auto& value) -> ReplayResult<void>
+			ReplayResult<void> setRes = VariantGet<std::unordered_map<std::string, ArgValue>>(*argValue, [&prop, &newArgValue](const auto& value) -> ReplayResult<void>
 			{
 				if (value.contains(prop.Name))
 				{

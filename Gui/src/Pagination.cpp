@@ -58,12 +58,12 @@ Pagination::Pagination(QWidget* parent) : QFrame(parent)
 		SetCurrentPage(m_pageNumbers[id]);
 	});
 
-	connect(m_previousButton, &QPushButton::clicked, [this](bool checked)
+	connect(m_previousButton, &QPushButton::clicked, [this]([[maybe_unused]] bool checked)
 	{
 		PreviousPage();
 	});
 
-	connect(m_nextButton, &QPushButton::clicked, [this](bool checked)
+	connect(m_nextButton, &QPushButton::clicked, [this]([[maybe_unused]] bool checked)
 	{
 		NextPage();
 	});
