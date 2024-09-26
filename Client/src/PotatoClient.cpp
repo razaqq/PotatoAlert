@@ -673,7 +673,7 @@ void PotatoClient::UpdateGameInstalls()
 			m_gameInfos.emplace_back(GameDirectory
 			{
 				.Path = game,
-				.Status = gameInfo.error().message(),
+				.Status = "Not A WoWs Directory",  // TODO: localize
 				.Info = std::nullopt,
 			});
 			continue;
