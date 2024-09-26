@@ -34,6 +34,19 @@ set_target_properties(PotatoAlert
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
+if(NOT DEFINED PA_LOOKUP_URL)
+    message(FATAL_ERROR "Missing cmake variable 'PA_LOOKUP_URL'")
+endif()
+if(NOT DEFINED PA_SUBMIT_URL)
+    message(FATAL_ERROR "Missing cmake variable 'PA_SUBMIT_URL'")
+endif()
+target_compile_definitions(
+    PotatoAlert
+    PRIVATE
+        PA_LOOKUP_URL="${PA_LOOKUP_URL}"
+        PA_SUBMIT_URL="${PA_SUBMIT_URL}"
+)
+
 include(Packaging)
 if(WIN32)
     WinDeployQt(PotatoAlert)

@@ -41,12 +41,6 @@ using PotatoAlert::Client::StatsParser::MatchType;
 using PotatoAlert::GameFileUnpack::UnpackResult;
 using namespace PotatoAlert::Core;
 
-// static constexpr std::string_view g_submitUrl = "http://127.0.0.1:10001/queue/submit";
-// static constexpr std::string_view g_lookupUrl = "http://127.0.0.1:10001{}";
-static constexpr std::string_view g_submitUrl = "https://potatoalert.perry-swift.de/queue/submit";
-static constexpr std::string_view g_lookupUrl = "https://potatoalert.perry-swift.de{}";
-static constexpr int g_transferTimeout = 10000;
-
 namespace {
 
 struct TempArenaInfoResult
@@ -243,9 +237,9 @@ void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& ma
 	LOG_TRACE("Sending request with content: {}", requestString);
 
 	QNetworkRequest submitRequest;
-	submitRequest.setUrl(QUrl(g_submitUrl.data()));
+	submitRequest.setUrl(QUrl(m_options.SubmitUrl.data()));
 	submitRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-	submitRequest.setTransferTimeout(g_transferTimeout);
+	submitRequest.setTransferTimeout(m_options.TransferTimeout);
 	QNetworkReply* submitReply = m_networkAccessManager->post(submitRequest, QByteArray(requestString.data(), static_cast<int>(requestString.size())));
 
 	connect(submitReply, &QNetworkReply::finished, [this, submitReply, matchContext = std::move(matchContext)]()
@@ -269,7 +263,7 @@ void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& ma
 				emit StatusReady(Status::Error, "Invalid Response");
 				return;
 			}
-			const std::string lookupUrl = fmt::format(g_lookupUrl, locationHeader.toStdString());
+			const std::string lookupUrl = fmt::format("{}{}", m_options.LookupUrl, locationHeader.toStdString());
 
 			/* TODO: this should be working, but isn't
 			const QVariant locationHeader = submitReply->header(QNetworkRequest::LocationHeader);
@@ -312,7 +306,7 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 	QNetworkRequest lookupRequest;
 	lookupRequest.setUrl(QUrl(url.c_str()));
 	lookupRequest.setRawHeader("auth-token", authToken.c_str());
-	lookupRequest.setTransferTimeout(g_transferTimeout);
+	lookupRequest.setTransferTimeout(m_options.TransferTimeout);
 
 	QTimer::singleShot(1000, [this, url, authToken, lookupRequest, &matchContext]()
 	{

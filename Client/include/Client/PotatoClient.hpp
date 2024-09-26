@@ -44,13 +44,20 @@ enum class Status
 	Error
 };
 
+struct ClientOptions
+{
+	std::string_view SubmitUrl;
+	std::string_view LookupUrl;
+	int32_t TransferTimeout;
+};
+
 class PotatoClient : public QObject
 {
 	Q_OBJECT
 
 public:
-	explicit PotatoClient(const ServiceProvider& serviceProvider)
-		: m_services(serviceProvider), m_replayAnalyzer(serviceProvider.Get<ReplayAnalyzer>()) {}
+	explicit PotatoClient(ClientOptions&& clientOptions, const ServiceProvider& serviceProvider)
+		: m_options(std::move(clientOptions)), m_services(serviceProvider), m_replayAnalyzer(serviceProvider.Get<ReplayAnalyzer>()) {}
 	~PotatoClient() override = default;
 
 	void Init();
@@ -65,6 +72,7 @@ private:
 	void LookupResult(const std::string& url, const std::string& authToken, const MatchContext& matchContext);
 
 private:
+	ClientOptions m_options;
 	const ServiceProvider& m_services;
 	Core::DirectoryWatcher m_watcher;
 	std::string m_lastArenaInfoHash;

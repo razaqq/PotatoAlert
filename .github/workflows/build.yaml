@@ -55,7 +55,7 @@ jobs:
         env:
           CC: "${{ env.LLVM_PATH }}\\bin\\clang-cl"
           CXX: "${{ env.LLVM_PATH }}\\bin\\clang-cl"
-        run: cmake -S . -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S . -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release -DPA_SUBMIT_URL=${{ secrets.PA_SUBMIT_URL }} -DPA_LOOKUP_URL=${{ secrets.PA_LOOKUP_URL }}
 
       - name: Run Build
         run: cmake --build build --config Release --target PotatoAlert PotatoUpdater CoreTest GameFileUnpackTest GameTest ReplayTest
@@ -153,7 +153,7 @@ jobs:
         env:
           CC: gcc-${{ matrix.gcc-version }}
           CXX: g++-${{ matrix.gcc-version }}
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DPA_SUBMIT_URL=${{ secrets.PA_SUBMIT_URL }} -DPA_LOOKUP_URL=${{ secrets.PA_LOOKUP_URL }}
 
       - name: Run Build
         run: cmake --build build --config Release --target PotatoAlert CoreTest GameFileUnpackTest GameTest ReplayTest
