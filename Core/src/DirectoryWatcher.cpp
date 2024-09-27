@@ -86,19 +86,19 @@ void DirectoryWatcher::OnDirectoryChanged(const QString& path)
 	emit DirectoryChanged(path.toStdString());
 
 	const QDir dir(path);
-	const QFileInfoList watchedList = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::Files);
+	const QFileInfoList files = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::Files);
 
-	std::unordered_set<QString> missing(m_lastModified.size());
-	for (const auto& file : m_lastModified | std::views::keys)
-		missing.insert(file);
-
-	for (const QFileInfo& fileInfo : watchedList)
+	auto beforeFiles = m_lastModified | std::views::keys | std::views::filter([&path](const QString& m) -> bool
 	{
-		QString filePath = fileInfo.absoluteFilePath();
-		QDateTime lastModified = fileInfo.lastModified();
+		return m.startsWith(path);
+	}) | std::ranges::to<std::unordered_set<QString>>();
 
-		const bool contains = m_lastModified.contains(filePath);
-		if (!contains || m_lastModified[filePath] < lastModified)
+	for (const QFileInfo& fileInfo : files)
+	{
+		const QString filePath = fileInfo.absoluteFilePath();
+		const QDateTime lastModified = fileInfo.lastModified();
+
+		if (!m_lastModified.contains(filePath) || m_lastModified[filePath] < lastModified)
 		{
 			m_lastModified[filePath] = lastModified;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -108,13 +108,15 @@ void DirectoryWatcher::OnDirectoryChanged(const QString& path)
 #endif
 		}
 
-		if (missing.contains(filePath))
+		// remove it from the list if it still exists
+		if (beforeFiles.contains(filePath))
 		{
-			missing.erase(filePath);
+			beforeFiles.erase(filePath);
 		}
 	}
 
-	for (const QString& file : missing)
+	// these files were removed
+	for (const QString& file : beforeFiles)
 	{
 		m_lastModified.erase(file);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
