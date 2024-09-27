@@ -391,11 +391,6 @@ Result<GameInfo> ReadGameInfo(const fs::path& path)
 		}
 	}
 
-	std::erase_if(replaysPaths, [](const fs::path& p)
-	{
-		return !fs::exists(p);
-	});
-
 	return GameInfo
 	{
 		.GameVersion = preferences.GameVersion,
