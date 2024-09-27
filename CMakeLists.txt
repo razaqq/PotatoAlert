@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17)
-project(PotatoAlert VERSION 3.1.22)
+project(PotatoAlert VERSION 3.1.23)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 23)
