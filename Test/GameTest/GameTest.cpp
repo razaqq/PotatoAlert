@@ -29,7 +29,8 @@ enum class Test
 	NonSteamNonVersioned,
 	NonSteamVersioned,
 	NonSteamNonVersionedExe,
-	SteamVersionedCwd
+	SteamVersionedCwd,
+	ResModsVersioned,
 };
 
 static fs::path GetGamePath(Test t)
@@ -50,6 +51,8 @@ static fs::path GetGamePath(Test t)
 			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "steam_non_versioned_exe";
 		case Test::SteamVersionedCwd:
 			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "steam_versioned_cwd";
+		case Test::ResModsVersioned:
+			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "res_mods_versioned";
 	}
 	PotatoAlert::Core::ExitCurrentProcess(1);
 }
@@ -124,5 +127,18 @@ TEST_CASE( "GameTest" )
 		REQUIRE(info->VersionedReplays);
 		REQUIRE(info->ReplaysPaths == std::vector<fs::path>{ p / "replays" / "0.9.4.0" });
 		REQUIRE(info->Region == "eu");
+	}
+
+	{
+		const fs::path p = GetGamePath(Test::ResModsVersioned);
+		const Result<GameInfo> info = ReadGameInfo(p);
+		REQUIRE(info);
+		REQUIRE(info->GameVersion == Version("13.8.0.0"));
+		REQUIRE(info->BinPath == p / "bin" / "8893005");
+		REQUIRE(info->IdxPath == info->BinPath / "idx");
+		REQUIRE(info->PkgPath == p / "res_packages");
+		REQUIRE(info->VersionedReplays);
+		REQUIRE(info->ReplaysPaths == std::vector<fs::path>{ p / "replays" / "13.8.0.0" });
+		REQUIRE(info->Region == "asia");
 	}
 }

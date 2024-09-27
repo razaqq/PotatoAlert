@@ -363,7 +363,9 @@ Result<GameInfo> ReadGameInfo(const fs::path& path)
 
 	PA_TRY(preferences, ReadPreferences(path));
 	PA_TRY(binPath, GetBinPath(path, preferences.GameVersion));
-	PA_TRY(engineConfig, ReadEngineConfig(binPath / "res" / "engine_config.xml"));
+	// engine config in res_mods takes precedence
+	const fs::path resModsEngineCfg = binPath / "res_mods" / "engine_config.xml";
+	PA_TRY(engineConfig, ReadEngineConfig(File::Exists(resModsEngineCfg) ? resModsEngineCfg : binPath / "res" / "engine_config.xml"));
 
 	const fs::path idxPath = binPath / "idx";
 	const fs::path pkgPath = path / "res_packages";

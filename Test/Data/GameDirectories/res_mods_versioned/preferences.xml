@@ -1,0 +1,11 @@
+<preferences.xml>
+	<scriptsPreferences>
+		<net_credentials>
+			<active_server>	WOWS ASIA	</active_server>
+			<last_server_version>	13,8,0,8893005	</last_server_version>
+			<demo />
+			<external />
+		</net_credentials>
+	</scriptsPreferences>
+	<clientVersion>	13,8,0,0	</clientVersion>
+</preferences.xml>
