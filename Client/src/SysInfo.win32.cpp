@@ -6,8 +6,12 @@
 #include "Core/Result.hpp"
 #include "Core/String.hpp"
 
-#include "win32.h"
-#include "VersionHelpers.h"
+//#define WIN32_USER
+//#include "win32.h"
+//#include <Windows.h>
+#include <atlbase.h>
+#include <wbemidl.h>
+#pragma comment(lib, "wbemuuid.lib")
 
 #include <optional>
 #include <string>
@@ -20,54 +24,54 @@ using PotatoAlert::Core::String::TrimExtraNulls;
 
 namespace {
 
-#if 0
-typedef LONG NTSTATUS;
-#define STATUS_SUCCESS (0x00000000)
+#define CheckHRes(hRes)                                                 \
+	if (FAILED(hRes))                                                   \
+	{                                                                   \
+		return PA_ERROR(std::error_code(hRes, std::system_category())); \
+	}                                                                   \
+	void
 
-typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
-
-RTL_OSVERSIONINFOW GetRealOSVersion()
+Result<std::string> WmiGetOsCaption()
 {
-	if (HMODULE hMod = ::GetModuleHandleW(L"ntdll.dll"))
+	HRESULT hRes = ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+	if (hRes != S_OK && hRes != S_FALSE)
 	{
-		if (RtlGetVersionPtr fxPtr = (RtlGetVersionPtr)::GetProcAddress(hMod, "RtlGetVersion"))
-		{
-			RTL_OSVERSIONINFOW rovi = { 0 };
-			rovi.dwOSVersionInfoSize = sizeof(rovi);
-			if (STATUS_SUCCESS == fxPtr(&rovi))
-			{
-				return rovi;
-			}
-		}
+		return PA_ERROR(std::error_code(hRes, std::system_category()));
 	}
-	RTL_OSVERSIONINFOW rovi = { 0 };
-	return rovi;
-}
-#endif
+	hRes = ::CoInitializeSecurity(nullptr, -1, nullptr, nullptr,
+								  RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE,
+								  nullptr, EOAC_NONE, nullptr);
+	CheckHRes(hRes);
 
-static std::optional<std::string> GetRegistryString(HKEY key, std::string_view valueName, DWORD sizeBytes = 0)
-{
-	if (sizeBytes == 0)
-	{
-		if (RegQueryValueExA(key, valueName.data(), nullptr, nullptr, nullptr, &sizeBytes) != ERROR_SUCCESS)
-		{
-			return {};
-		}
-	}
+	CComPtr<IWbemLocator> pLocator;
+	hRes = pLocator.CoCreateInstance(CLSID_WbemLocator);
+	CheckHRes(hRes);
 
-	std::string lpData;
-	lpData.resize(sizeBytes / sizeof(CHAR));
-	if (RegQueryValueExA(key, valueName.data(), nullptr, nullptr, (LPBYTE)lpData.data(), &sizeBytes) != ERROR_SUCCESS)
-	{
-		return {};
-	}
+	CComPtr<IWbemServices> pService;
+	hRes = pLocator->ConnectServer(CComBSTR(L"root\\cimv2"), nullptr, nullptr, nullptr, WBEM_FLAG_CONNECT_USE_MAX_WAIT,
+								   nullptr, nullptr, &pService);
+	CheckHRes(hRes);
 
-	TrimExtraNulls(lpData);
-	return lpData;
-}
 
+	CComPtr<IEnumWbemClassObject> pEnum;
+	hRes = pService->ExecQuery(CComBSTR(L"WQL"), CComBSTR(L"Select Caption from Win32_OperatingSystem"), WBEM_FLAG_FORWARD_ONLY, nullptr, &pEnum);
+	CheckHRes(hRes);
+
+	ULONG uObjectCount = 0;
+	CComPtr<IWbemClassObject> pWmiObject;
+	hRes = pEnum->Next(WBEM_INFINITE, 1, &pWmiObject, &uObjectCount);
+	CheckHRes(hRes);
+
+	CComVariant cvtCaption;
+	hRes = pWmiObject->Get(L"Caption", 0, &cvtCaption, nullptr, nullptr);
+	CheckHRes(hRes);
+
+	CoUninitialize();
+
+	return CW2A(cvtCaption.bstrVal).m_psz;
 }
 
+}
 
 Result<SysInfo> PotatoAlert::Client::GetSysInfo()
 {
@@ -79,20 +83,7 @@ Result<SysInfo> PotatoAlert::Client::GetSysInfo()
 		return PA_ERROR(std::error_code((int)GetLastError(), std::system_category()));
 	}
 
-	HKEY hKey;
-	PA_DEFER
-	{
-		RegCloseKey(hKey);
-	};
-	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion)", 0, KEY_READ, &hKey) != ERROR_SUCCESS)
-	{
-		return PA_ERROR(std::error_code((int)GetLastError(), std::system_category()));
-	}
-	std::optional productName = GetRegistryString(hKey, "ProductName");
-	if (!productName)
-	{
-		return PA_ERROR(std::error_code((int)GetLastError(), std::system_category()));
-	}
+	PA_TRY(productName, WmiGetOsCaption());
 
 	SYSTEM_INFO sysInfo;
 	GetNativeSystemInfo(&sysInfo);
@@ -121,6 +112,6 @@ Result<SysInfo> PotatoAlert::Client::GetSysInfo()
 	{
 		.Os = OsType::Windows,
 		.Arch = arch,
-		.Release = *productName,
+		.Release = productName,
 	};
 }
