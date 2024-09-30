@@ -107,6 +107,7 @@ void NativeWindow::showEvent([[maybe_unused]] QShowEvent* event)
 	if (!reachable)
 	{
 		windowHandle()->setPosition(100, 100);
+		move(100, 100);
 	}
 
 	m_isInitialShow = false;
