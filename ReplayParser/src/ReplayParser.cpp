@@ -2,6 +2,7 @@
 
 #include "Core/Blowfish.hpp"
 #include "Core/Bytes.hpp"
+#include "Core/Defer.hpp"
 #include "Core/File.hpp"
 #include "Core/FileMagic.hpp"
 #include "Core/FileMapping.hpp"
@@ -46,9 +47,21 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 	{
 		return PA_REPLAY_ERROR("Failed to map replay file: {}", fileMapping.LastError());
 	}
+	PA_DEFER
+	{
+		fileMapping.Close();
+	};
 
-	void* mapping = fileMapping.Map(FileMapping::Flags::Read, 0, fileSize);
-	std::span<const Byte> data{ static_cast<const Byte*>(mapping), fileSize };
+	void* dataPtr = fileMapping.Map(FileMapping::Flags::Read, 0, fileSize);
+	if (!dataPtr)
+	{
+		return PA_REPLAY_ERROR("Failed to map replay file: {}", fileMapping.LastError());
+	}
+	PA_DEFER
+	{
+		fileMapping.Unmap(dataPtr, fileSize);
+	};
+	std::span<const Byte> data{ static_cast<const Byte*>(dataPtr), fileSize };
 
 	Replay replay;
 

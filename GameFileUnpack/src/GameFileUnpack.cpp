@@ -1,6 +1,7 @@
 // Copyright 2022 <github.com/razaqq>
 
 #include "Core/Bytes.hpp"
+#include "Core/Defer.hpp"
 #include "Core/File.hpp"
 #include "Core/FileMagic.hpp"
 #include "Core/FileMapping.hpp"
@@ -268,6 +269,12 @@ UnpackResult<void> Unpacker::ExtractFile(const FileRecord& fileRecord, const fs:
 		{
 			if (const void* dataPtr = mapping.Map(FileMapping::Flags::Read, 0, fileSize))
 			{
+				PA_DEFER
+				{
+					mapping.Unmap(dataPtr, fileSize);
+					mapping.Close();
+				};
+
 				if (fileRecord.Offset + fileRecord.Size > fileSize)
 				{
 					return PA_UNPACK_ERROR("Got offset ({} - {}) out of size bounds ({})",
@@ -287,7 +294,6 @@ UnpackResult<void> Unpacker::ExtractFile(const FileRecord& fileRecord, const fs:
 					}
 					return WriteFileData(dst, std::span{ inflated });
 				}
-
 				return WriteFileData(dst, data.subspan(fileRecord.Offset, fileRecord.Size));
 			}
 			return PA_UNPACK_ERROR("Failed to map PkgFile into memory: {}", FileMapping::LastError());
