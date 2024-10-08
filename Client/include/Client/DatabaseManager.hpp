@@ -95,7 +95,7 @@ public:
 	[[nodiscard]] SqlResult<bool> MatchExists(std::string_view hash) const;
 
 private:
-	static constexpr Version m_currentVersion = Version(1, 0);
+	static constexpr Core::Version m_currentVersion = Core::Version(1, 0);
 	Core::SQLite& m_db;
 	static constexpr std::string_view matchTable = "matches";
 };

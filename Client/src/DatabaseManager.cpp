@@ -25,6 +25,7 @@ using PotatoAlert::Client::NonAnalyzedMatch;
 using PotatoAlert::Client::SchemaInfo;
 using PotatoAlert::Client::SqlResult;
 using PotatoAlert::Core::SQLite;
+using PotatoAlert::Core::Version;
 
 #define PA_DB_COLUMNS_WITH_ID_X_ENTRY(Type, Name, SqlType) ", " #Name
 #define PA_DB_COLUMNS_WITH_ID(Columns) "Id" Columns(PA_DB_COLUMNS_WITH_ID_X_ENTRY)

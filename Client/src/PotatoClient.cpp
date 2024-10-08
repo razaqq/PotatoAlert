@@ -38,6 +38,7 @@
 
 using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Client::StatsParser::MatchType;
+using PotatoAlert::Core::String::Split;
 using PotatoAlert::GameFileUnpack::UnpackResult;
 using namespace PotatoAlert::Core;
 
