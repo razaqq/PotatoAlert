@@ -92,12 +92,14 @@ class DirectoryTree
 public:
 	struct TreeNode
 	{
+		std::string Path;
 		std::unordered_map<std::string, TreeNode> Nodes;
 		std::optional<FileRecord> File;
 	};
 
 	void Insert(const FileRecord& fileRecord);
 	[[nodiscard]] std::optional<TreeNode> Find(std::string_view path) const;
+	[[nodiscard]] const TreeNode& GetRoot() const;
 
 private:
 	TreeNode m_root;
@@ -111,6 +113,7 @@ public:
 	explicit Unpacker(std::filesystem::path pkgPath, std::filesystem::path idxPath);
 	UnpackResult<void> Parse();
 	UnpackResult<void> Extract(std::string_view node, const std::filesystem::path& dst, bool preservePath = true) const;
+	[[nodiscard]] const DirectoryTree& GetDirectoryTree() const;
 
 private:
 	DirectoryTree m_directoryTree;

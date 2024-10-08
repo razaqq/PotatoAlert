@@ -106,11 +106,17 @@ std::optional<DirectoryTree::TreeNode> DirectoryTree::Find(std::string_view path
 	return *current;
 }
 
+const TreeNode& DirectoryTree::GetRoot() const
+{
+	return m_root;
+}
+
 void DirectoryTree::Insert(const FileRecord& fileRecord)
 {
 	if (const size_t pos = fileRecord.Path.rfind('/'); pos != std::string::npos)
 	{
 		TreeNode& node = CreatePath(fileRecord.Path);
+		node.Path = fileRecord.Path;
 		node.File = fileRecord;
 	}
 	else
@@ -122,8 +128,12 @@ void DirectoryTree::Insert(const FileRecord& fileRecord)
 DirectoryTree::TreeNode& DirectoryTree::CreatePath(std::string_view path)
 {
 	TreeNode* current = &m_root;
-	for (std::string_view part : Core::String::Split(path, "/"))
+	const std::vector<std::string> pathSplit = Core::String::Split(path, "/");
+
+	for (size_t i = 0; i < pathSplit.size(); i++)
 	{
+		std::string_view part = pathSplit[i];
+
 		if (part.empty()) continue;
 		if (auto it = current->Nodes.find(part.data()); it != current->Nodes.end())
 		{
@@ -133,6 +143,7 @@ DirectoryTree::TreeNode& DirectoryTree::CreatePath(std::string_view path)
 		{
 			// can ignore the 2nd value since we already checked if it exists
 			auto [node, _] = current->Nodes.emplace(part, TreeNode{});
+			node->second.Path = std::span(pathSplit).subspan(0, i + 1) | std::views::join_with('/') | std::ranges::to<std::string>();
 			current = &node->second;
  		}
 	}
@@ -241,6 +252,11 @@ UnpackResult<void> Unpacker::Extract(std::string_view nodeName, const fs::path& 
 	}
 
 	return {};
+}
+
+const DirectoryTree& Unpacker::GetDirectoryTree() const
+{
+	return m_directoryTree;
 }
 
 UnpackResult<void> Unpacker::ExtractFile(const FileRecord& fileRecord, const fs::path& dst) const
