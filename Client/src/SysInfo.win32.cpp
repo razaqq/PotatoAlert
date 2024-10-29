@@ -13,7 +13,6 @@
 #include <wbemidl.h>
 #pragma comment(lib, "wbemuuid.lib")
 
-#include <optional>
 #include <string>
 #include <system_error>
 
@@ -66,9 +65,9 @@ Result<std::string> WmiGetOsCaption()
 	hRes = pWmiObject->Get(L"Caption", 0, &cvtCaption, nullptr, nullptr);
 	CheckHRes(hRes);
 
-	CoUninitialize();
+	::CoUninitialize();
 
-	return CW2A(cvtCaption.bstrVal).m_psz;
+	return CW2A(cvtCaption.bstrVal, CP_UTF8).m_psz;
 }
 
 }
