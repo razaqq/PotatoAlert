@@ -148,11 +148,36 @@ TEST_CASE( "ReplayTest" )
 		REQUIRE(res.has_value());
 		REQUIRE(res->Packets.size() == 123807);
 	}
-
 	{
 		ReplayResult<Replay> res = Replay::FromFile(GetReplay("20240907_212325_PFSD018-L-Aventurier_41_Conquest.wowsreplay"), gameFilePath);
 		REQUIRE(res.has_value());
 		REQUIRE(res->Packets.size() == 61455);
+	}
+
+	// 13.10.0
+	{
+		ReplayResult<Replay> res = Replay::FromFile(GetReplay("20241107_152602_PWSD108-Oland_45_Zigzag.wowsreplay"), gameFilePath);
+		REQUIRE(res.has_value());
+		REQUIRE(res->Packets.size() == 141911);
+		ReplayResult<ReplaySummary> result = res->Analyze();
+		REQUIRE(result);
+		REQUIRE(result->Outcome == MatchOutcome::Win);
+	}
+	{
+		ReplayResult<Replay> res = Replay::FromFile(GetReplay("20241108_110342_PASC003-Albany-1898_10_NE_big_race.wowsreplay"), gameFilePath);
+		REQUIRE(res.has_value());
+		REQUIRE(res->Packets.size() == 126191);
+		ReplayResult<ReplaySummary> result = res->Analyze();
+		REQUIRE(result);
+		REQUIRE(result->Outcome == MatchOutcome::Win);
+	}
+	{
+		ReplayResult<Replay> res = Replay::FromFile(GetReplay("20241108_111729_PBSB503-Dreadnought_10_NE_big_race.wowsreplay"), gameFilePath);
+		REQUIRE(res.has_value());
+		REQUIRE(res->Packets.size() == 96437);
+		ReplayResult<ReplaySummary> result = res->Analyze();
+		REQUIRE(result);
+		REQUIRE(result->Outcome == MatchOutcome::Win);
 	}
 }
 
