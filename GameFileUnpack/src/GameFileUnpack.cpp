@@ -150,7 +150,14 @@ UnpackResult<void> Unpacker::Parse()
 		return PA_UNPACK_ERROR("IdxPath does not exist: {}", m_idxPath);
 	}
 
-	for (const auto& entry : fs::recursive_directory_iterator(m_idxPath))
+	std::error_code ec;
+	auto it = fs::recursive_directory_iterator(m_idxPath, ec);
+	if (ec)
+	{
+		return PA_UNPACK_ERROR("Failed to iterate IdxPath: {}", ec.message());
+	}
+
+	for (const fs::directory_entry& entry : it)
 	{
 		if (entry.is_regular_file() && entry.path().extension() == ".idx")
 		{

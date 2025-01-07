@@ -119,7 +119,15 @@ void ReplayAnalyzer::AnalyzeDirectory(const fs::path& directory)
 		return left.ReplayName < right.ReplayName;
 	});
 
-	for (const auto& entry : fs::recursive_directory_iterator(directory))
+	std::error_code ec;
+	auto it = fs::recursive_directory_iterator(directory, ec);
+	if (ec)
+	{
+		LOG_ERROR("Failed to iterate replay directory '{}': {}", directory, ec.message());
+		return;
+	}
+
+	for (const fs::directory_entry& entry : it)
 	{
 		if (entry.is_regular_file() && entry.path().extension() == ".wowsreplay")
 		{
