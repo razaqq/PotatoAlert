@@ -15,7 +15,7 @@ struct IdxHeader
     if (Endianness != 0x2000000)
         std::error("Invalid endianness");
     
-    u32 MurmurHash;    
+    u32 MurmurHash;
     
     u32 Version;
     if (Version != 0x40)
