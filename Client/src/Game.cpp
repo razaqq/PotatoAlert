@@ -14,7 +14,7 @@
 #include "Core/Version.hpp"
 #include "Core/Xml.hpp"
 
-#include <ctre/ctre.hpp>
+#include <ctre.hpp>
 
 #include <filesystem>
 #include <ranges>

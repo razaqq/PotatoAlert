@@ -6,7 +6,7 @@
 #include "Core/Zip.hpp"
 
 PA_SUPPRESS_WARN_BEGIN
-#include <zip.h>
+#include <zip/zip.h>
 PA_SUPPRESS_WARN_END
 
 #include <cstdint>
@@ -138,5 +138,5 @@ uint64_t Zip::SizeEntry() const
 
 int Zip::EntryCount() const
 {
-	return zip_total_entries(UnwrapHandle<zip_t*>(m_handle));
+	return zip_entries_total(UnwrapHandle<zip_t*>(m_handle));
 }

@@ -1,4 +1,5 @@
 add_executable(ReplayTest ReplayTest.cpp)
+find_package(Catch2 REQUIRED)
 target_link_libraries(ReplayTest PRIVATE Core Catch2::Catch2WithMain ReplayParser)
 set_target_properties(ReplayTest
     PROPERTIES

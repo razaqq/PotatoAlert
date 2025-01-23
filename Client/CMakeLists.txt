@@ -53,8 +53,12 @@ if (NOT Qt6_FOUND)
     find_package(Qt5 COMPONENTS Core Network Widgets REQUIRED)
 endif()
 
+find_package(ctre REQUIRED)
+find_package(fmt REQUIRED)
+find_package(tinyxml2 REQUIRED)
+
 set_target_properties(Client PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
-target_link_libraries(Client PRIVATE ctre tinyxml2 Win32)
+target_link_libraries(Client PRIVATE ctre::ctre tinyxml2::tinyxml2 Win32)
 target_link_libraries(Client PUBLIC Core GameFileUnpack ReplayParser fmt::fmt Qt::Core Qt::Network Qt::Widgets)
 target_include_directories(Client PUBLIC ${PROJECT_SOURCE_DIR}/Resources include)
 include(CompilerFlags)

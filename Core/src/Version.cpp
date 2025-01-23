@@ -4,7 +4,7 @@
 #include "Core/String.hpp"
 #include "Core/Version.hpp"
 
-#include <ctre/ctre.hpp>
+#include <ctre.hpp>
 
 #include <string>
 

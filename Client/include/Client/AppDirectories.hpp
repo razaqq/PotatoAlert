@@ -52,7 +52,7 @@ private:
 		const bool exists = std::filesystem::exists(dir, ec);
 		if (ec)
 		{
-			fmt::println(stderr, STR("Failed to check if app dir '{}' exists, reason: '{}'"), dir, ec);
+			fmt::println(stderr, "Failed to check if app dir '{}' exists, reason: '{}'", dir, ec);
 			Core::ExitCurrentProcessWithError((uint32_t)ec.value());
 		}
 
@@ -61,7 +61,7 @@ private:
 			std::filesystem::create_directories(dir, ec);
 			if (ec)
 			{
-				fmt::println(stderr, STR("Failed to create app dir '{}', reason: '{}'"), dir, ec);
+				fmt::println(stderr, "Failed to create app dir '{}', reason: '{}'", dir, ec);
 				Core::ExitCurrentProcessWithError((uint32_t)ec.value());
 			}
 		}

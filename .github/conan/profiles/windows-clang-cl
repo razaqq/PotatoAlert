@@ -1,0 +1,22 @@
+[settings]
+arch=x86_64
+build_type=Release
+compiler=clang
+compiler.cppstd=23
+compiler.runtime=dynamic
+compiler.runtime_type=Release
+compiler.runtime_version=v144
+compiler.version=17
+os=Windows
+openssl/*:compiler=msvc
+openssl/*:compiler.cppstd=17
+openssl/*:compiler.runtime=dynamic
+openssl/*:compiler.runtime_type=Release
+openssl/*:compiler.version=194
+
+[conf]
+tools.cmake.cmake_layout:build_folder_vars=['settings.compiler']
+tools.cmake.cmaketoolchain:generator=Ninja
+!openssl*:tools.build:compiler_executables={'cpp': 'clang-cl', 'c': 'clang-cl'}
+!openssl*:tools.build:exelinkflags=['clang_rt.builtins-x86_64.lib']
+!openssl*:tools.build:sharedlinkflags=['clang_rt.builtins-x86_64.lib']

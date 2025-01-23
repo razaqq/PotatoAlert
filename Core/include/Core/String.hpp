@@ -81,7 +81,7 @@ struct fmt::formatter<StringWrap, wchar_t>
 		return ctx.begin();
 	}
 
-	auto format(const StringWrap& val, buffer_context<wchar_t>& ctx) const -> buffer_context<wchar_t>::iterator
+	auto format(const StringWrap& val, buffered_context<wchar_t>& ctx) const -> buffered_context<wchar_t>::iterator
 	{
 		if (const PotatoAlert::Core::Result<size_t> length = PotatoAlert::Core::Utf8ToWide(val.Str))
 		{
