@@ -424,7 +424,7 @@ bool Updater::RenameToTrash()
 		const bool regularFile = p.is_regular_file(ec);
 		if (ec)
 		{
-			LOG_ERROR(STR("Failed to check if {} is regular file: {}"), path, ec);
+			LOG_ERROR("Failed to check if {} is regular file: {}", path, ec);
 			return false;
 		}
 
@@ -435,7 +435,7 @@ bool Updater::RenameToTrash()
 			fs::rename(p, path, ec);
 			if (ec)
 			{
-				LOG_ERROR(STR("Failed to rename {} to .trash: {}"), path, ec);
+				LOG_ERROR("Failed to rename {} to .trash: {}", path, ec);
 				return false;
 			}
 		}
@@ -463,13 +463,13 @@ void Updater::RemoveTrash()
 	{
 		const bool regularFile = p.is_regular_file(ec);
 		if (ec)
-			LOG_ERROR(STR("Failed to check if {} is regular file: {}"), p.path(), ec);
+			LOG_ERROR("Failed to check if {} is regular file: {}", p.path(), ec);
 
 		if (regularFile && p.path().extension().string() == ".trash")
 		{
 			fs::remove(p, ec);
 			if (ec)
-				LOG_ERROR(STR("Failed to remove file {}: {}"), p.path(), ec);
+				LOG_ERROR("Failed to remove file {}: {}", p.path(), ec);
 		}
 	}
 }

@@ -4,19 +4,12 @@ on: [push]
 
 jobs:
   build-windows:
-    name: Build Windows Qt${{ matrix.qt-major-version }}
-    strategy:
-      matrix:
-        qt-major-version: [6, 5]
-        include:
-          - qt-major-version: 6
-            qt-version: 6.7.2
-            clang-version: 18
-            zipfile: PotatoAlert.zip
-          - qt-major-version: 5
-            qt-version: 5.15.2
-            clang-version: 17  # until Qt 5.15.2 fixes qsizepolicy.h(137,38): error : invalid bitwise operation between different enumeration types ('Policy' and 'QSizePolicy::PolicyFlag')
-            zipfile: PotatoAlert_win7.zip
+    name: Build Windows Qt6
+    env:
+      qt-major-version: 6
+      qt-version: 6.8.1
+      clang-version: 18
+      zipfile: PotatoAlert.zip
 
     runs-on: windows-2022
 
@@ -29,21 +22,29 @@ jobs:
         with:
           arch: x64
 
+      - name: Setup Conan
+        run: |
+          pip install conan
+          conan profile detect
+
       - name: Setup Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
         with:
           version: 1.12.1
 
-      - name: Install Qt${{ matrix.qt-major-version }}
+      - name: Install Qt${{ env.qt-major-version }}
         uses: jurplel/install-qt-action@v4
         with:
-          version: ${{ matrix.qt-version }}
+          version: ${{ env.qt-version }}
           cache: true
 
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v2
         with:
-          version: ${{ matrix.clang-version }}
+          version: ${{ env.clang-version }}
+
+      - name: Conan Version
+        run: conan --version
 
       - name: CMake Version
         run: cmake --version
@@ -51,34 +52,46 @@ jobs:
       - name: Clang Version
         run: clang-cl --version
 
+      - name: Ninja Version
+        run: ninja --version
+
+      - name: Cache Conan Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2
+          key: hashFiles('**/conanfile.py')
+
+      - name: Run Conan
+        run: conan install . --build=missing --profile:all=./.github/conan/profiles/windows-clang-cl
+
       - name: Run CMake
         env:
           CC: "${{ env.LLVM_PATH }}\\bin\\clang-cl"
           CXX: "${{ env.LLVM_PATH }}\\bin\\clang-cl"
-        run: cmake -S . -B build -G Ninja -DCMAKE_RC_COMPILER=RC -DCMAKE_BUILD_TYPE=Release -DPA_SUBMIT_URL=${{ secrets.PA_SUBMIT_URL }} -DPA_LOOKUP_URL=${{ secrets.PA_LOOKUP_URL }}
+        run: cmake --preset conan-clang-release -DPA_SUBMIT_URL=${{ secrets.PA_SUBMIT_URL }} -DPA_LOOKUP_URL=${{ secrets.PA_LOOKUP_URL }}
 
       - name: Run Build
-        run: cmake --build build --config Release --target PotatoAlert PotatoUpdater CoreTest GameFileUnpackTest GameTest ReplayTest
+        run: cmake --build --preset conan-clang-release
 
       - name: Run CTest
-        working-directory: ${{env.GITHUB_WORKSPACE}}/build
+        working-directory: ${{env.GITHUB_WORKSPACE}}/build/clang/Release
         env:
           CTEST_OUTPUT_ON_FAILURE: 1
         run: ctest
 
       - name: Create Release Archive
         run: |
-          7z a -mx9 -r ${{ matrix.zipfile }} .\build\bin\*
+          7z a -mx9 -r ${{ env.zipfile }} .\build\clang\Release\bin\*
 
       - name: Create Installer
-        working-directory: ${{env.GITHUB_WORKSPACE}}/build
+        working-directory: ${{env.GITHUB_WORKSPACE}}/build/clang/Release
         run: cpack
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.zipfile }}
-          path: ${{ matrix.zipfile }}
+          name: ${{ env.zipfile }}
+          path: ${{ env.zipfile }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -86,15 +99,14 @@ jobs:
         with:
           prerelease: true
           files: |
-            ${{ matrix.zipfile }}
-            build/PotatoAlert-*.msi
+            ${{ env.zipfile }}
+            build/clang/Release/PotatoAlert-*.msi
 
   build-linux:
     name: Build Linux Qt6
-    strategy:
-      matrix:
-        include:
-          - gcc-version: 14
+    env:
+      qt-version: 6.8.1
+      gcc-version: 14
 
     runs-on: ubuntu-24.04
 
@@ -102,11 +114,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Conan
+        run: |
+          pip install conan
+          conan profile detect
+
       - name: Setup Ninja
         run: sudo apt install -y ninja-build
-
-      - name: Ninja Version
-        run: ninja --version
 
       - name: Install Dependencies
         run: >
@@ -140,33 +154,48 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.7.2
+          version: ${{ env.qt-version }}
           cache: true
+
+      - name: Conan Version
+        run: conan --version
 
       - name: CMake Version
         run: cmake --version
 
       - name: GCC Version
-        run: g++-${{ matrix.gcc-version }} --version
+        run: g++-${{ env.gcc-version }} --version
+
+      - name: Ninja Version
+        run: ninja --version
+
+      - name: Cache Conan Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2
+          key: hashFiles('**/conanfile.py')
+
+      - name: Run Conan
+        run: conan install . --build=missing --profile:all=./.github/conan/profiles/linux-gcc
 
       - name: Run CMake
         env:
-          CC: gcc-${{ matrix.gcc-version }}
-          CXX: g++-${{ matrix.gcc-version }}
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DPA_SUBMIT_URL=${{ secrets.PA_SUBMIT_URL }} -DPA_LOOKUP_URL=${{ secrets.PA_LOOKUP_URL }}
+          CC: gcc-${{ env.gcc-version }}
+          CXX: g++-${{ env.gcc-version }}
+        run: cmake --preset conan-gcc-release -DPA_SUBMIT_URL=${{ secrets.PA_SUBMIT_URL }} -DPA_LOOKUP_URL=${{ secrets.PA_LOOKUP_URL }}
 
       - name: Run Build
-        run: cmake --build build --config Release --target PotatoAlert CoreTest GameFileUnpackTest GameTest ReplayTest
+        run: cmake --build --preset conan-gcc-release
 
       - name: Run CTest
-        working-directory: build
+        working-directory: build/gcc/Release
         env:
           CTEST_OUTPUT_ON_FAILURE: 1
         run: ctest
 
       - name: Create Release Archive
         run: |
-          7z a -mx9 -r PotatoAlert_linux.zip ./build/bin/*
+          7z a -mx9 -r PotatoAlert_linux.zip ./build/gcc/Release/bin/*
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

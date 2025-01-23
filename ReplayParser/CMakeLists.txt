@@ -22,7 +22,8 @@ target_sources(
 )
 set_target_properties(ReplayParser PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 target_include_directories(ReplayParser PUBLIC include)
-target_link_libraries(ReplayParser PUBLIC tinyxml2 Core ReplayAnalyzer)
+find_package(tinyxml2 REQUIRED)
+target_link_libraries(ReplayParser PUBLIC tinyxml2::tinyxml2 Core ReplayAnalyzer)
 include(CompilerFlags)
 SetCompilerFlags(ReplayParser)
 

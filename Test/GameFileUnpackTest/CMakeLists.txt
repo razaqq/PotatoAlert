@@ -1,4 +1,5 @@
 add_executable(GameFileUnpackTest GameFileUnpackTest.cpp)
+find_package(Catch2 REQUIRED)
 target_link_libraries(GameFileUnpackTest PRIVATE Core Catch2::Catch2WithMain GameFileUnpack)
 set_target_properties(GameFileUnpackTest
     PROPERTIES

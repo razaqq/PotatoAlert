@@ -1,6 +1,6 @@
 # PotatoAlert
 
-[![version](https://img.shields.io/github/v/release/razaqq/PotatoAlert.svg?style=flat-square)](https://github.com/razaqq/PotatoAlert/releases) 
+[![version](https://img.shields.io/github/v/release/razaqq/PotatoAlert.svg?style=flat-square)](https://github.com/razaqq/PotatoAlert/releases)
 [![Github all releases](https://img.shields.io/github/downloads/razaqq/PotatoAlert/total.svg?style=flat-square)](https://github.com/razaqq/PotatoAlert/releases)
 [![actions build status](https://img.shields.io/github/actions/workflow/status/razaqq/potatoalert/build.yaml?label=actions&logo=github&style=flat-square)](https://github.com/razaqq/PotatoAlert/actions/workflows/build.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
@@ -45,6 +45,7 @@ If you are on Arch Linux, there exists an [AUR package](https://aur.archlinux.or
 
 #### Requirements
 
+- [conan](https://conan.io/) >= 2.0
 - [Qt](https://www.qt.io/) >= 6.6.0
 - [clang](https://clang.llvm.org/) >= 11.0.0 or MSVC
 - [ninja](https://ninja-build.org/) >= 1.10.2
@@ -56,35 +57,33 @@ If you are on Arch Linux, there exists an [AUR package](https://aur.archlinux.or
 
 #### Steps
 
-- Get Paths
-  - Qt6 `-DCMAKE_PREFIX_PATH=C:\Qt\6.6.0\msvc2019_64`
-- Add clang to PATH and set `CC` and `CXX` env vars to set clang as compiler
-  - `set CC=clang`
-  - `set CXX=clang++`
-- Call cmake (from x64 Native Tools Command Prompt for VS2022)
+- [Setup a conan profile for clang-cl](https://docs.conan.io/2/reference/config_files/profiles.html), an example can be found [here](.github/conan/profiles/windows-clang-cl)
+- Build (from x64 Native Tools Command Prompt for VS2022)
 
 ```console
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=C:\Qt\6.6.0\msvc2019_64 -DCMAKE_RC_COMPILER=RC
-cmake --build build --config Release --target PotatoAlert PotatoUpdater
+conan install . --build=missing --profile=clang-release
+cmake --preset conan-clang-release -DCMAKE_PREFIX_PATH=C:\\Qt\\6.8.1\\msvc2022_64 -DPA_SUBMIT_URL=<SUBMIT_URL> -DPA_LOOKUP_URL=<LOOKUP_URL>
+cmake --build --preset conan-clang-release
 ```
-
-- You find the build output in `.\build\bin\`
 
 ### Linux
 
 #### Requirements
 
+- [conan](https://conan.io/) >= 2.0
 - [Qt](https://www.qt.io/) >= 6.6.0
 - [gcc](https://clang.llvm.org/) >= 12
 - [ninja](https://ninja-build.org/) >= 1.10.2
 - [cmake](https://cmake.org/) >= 3.17
 - [python](https://www.python.org/) >= 3.7
 - [rust](https://www.rust-lang.org/) >= 1.60
-- openssl
 
 #### Steps
 
+- [Setup a conan profile for gcc](https://docs.conan.io/2/reference/config_files/profiles.html), an example can be found [here](.github/conan/profiles/linux-gcc)
+- Build
 ```console
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release --target PotatoAlert
+conan install . --build=missing --profile=gcc-release
+cmake --preset conan-gcc-release -DPA_SUBMIT_URL=<SUBMIT_URL> -DPA_LOOKUP_URL=<LOOKUP_URL>
+cmake --build --preset conan-gcc-release
 ```
