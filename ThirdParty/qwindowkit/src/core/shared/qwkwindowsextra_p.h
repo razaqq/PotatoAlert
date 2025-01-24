@@ -345,11 +345,8 @@ namespace QWK {
         if (!registry.isValid()) {
             return false;
         }
-        auto value = registry.dwordValue(L"ColorPrevalence");
-        if (!value.second) {
-            return false;
-        }
-        return value.first;
+        auto value = registry.value<DWORD>(L"ColorPrevalence");
+		return value.value_or(false);
     }
 
     static inline bool isHighContrastModeEnabled() {
