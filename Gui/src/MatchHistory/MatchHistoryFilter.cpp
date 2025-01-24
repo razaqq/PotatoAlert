@@ -67,11 +67,7 @@ FilterList::FilterList(Client::StringTable::StringTableKey key, QWidget* parent)
 	buttonLayout->addWidget(m_toggle);
 	layout->addLayout(buttonLayout);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0 ,0)
 	connect(m_model, &FilterModel::dataChanged, [this]([[maybe_unused]] const QModelIndex& topLeft, [[maybe_unused]] const QModelIndex& bottomRight, [[maybe_unused]] const QList<int>& roles)
-#else
-	connect(m_model, &FilterModel::dataChanged, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
-#endif
 	{
 		emit FilterChanged();
 	});

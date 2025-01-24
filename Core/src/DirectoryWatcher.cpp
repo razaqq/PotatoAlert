@@ -32,11 +32,7 @@ void DirectoryWatcher::ClearDirectories()
 
 void DirectoryWatcher::WatchDirectory(const std::filesystem::path& dir)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	const QDir directory(dir);
-#else
-	const QDir directory = Core::FromFilesystemPath(dir);
-#endif
 	m_watcher.addPath(directory.absolutePath());
 
 	const QFileInfoList watchedList = directory.entryInfoList(QDir::NoDotAndDotDot | QDir::Files);
@@ -73,11 +69,7 @@ void DirectoryWatcher::ForceFileChanged(std::string_view file)
 {
 	for (const QString& dir : m_watcher.directories())
 	{
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 		emit FileChanged(QDir(dir + QDir::separator() + file.data()).filesystemAbsolutePath());
-#else
-		emit FileChanged(ToFilesystemAbsolutePath(dir + QDir::separator() + file.data()));
-#endif
 	}
 }
 
@@ -101,11 +93,7 @@ void DirectoryWatcher::OnDirectoryChanged(const QString& path)
 		if (!m_lastModified.contains(filePath) || m_lastModified[filePath] < lastModified)
 		{
 			m_lastModified[filePath] = lastModified;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			emit FileChanged(QDir(filePath).filesystemAbsolutePath());
-#else
-			emit FileChanged(ToFilesystemAbsolutePath(filePath));
-#endif
 		}
 
 		// remove it from the list if it still exists
@@ -119,10 +107,6 @@ void DirectoryWatcher::OnDirectoryChanged(const QString& path)
 	for (const QString& file : beforeFiles)
 	{
 		m_lastModified.erase(file);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 		emit FileChanged(QDir(file).filesystemAbsolutePath());
-#else
-		emit FileChanged(ToFilesystemAbsolutePath(file));
-#endif
 	}
 }

@@ -5,36 +5,12 @@
 
 #include <filesystem>
 
-#include <QtGlobal>
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <QDir>
-#include <QString>
-#endif
-
 
 namespace PotatoAlert::Core {
 
 Result<bool> PathExists(const std::filesystem::path& path);
 Result<bool> IsSubdirectory(const std::filesystem::path& path, const std::filesystem::path& root);
 Result<std::filesystem::path> GetModuleRootPath();
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline QDir FromFilesystemPath(const std::filesystem::path& path)
-{
-#ifdef Q_OS_WIN
-	return QString::fromStdWString(path.native());
-#else
-	return QString::fromStdString(path.native());
-#endif
-}
-
-inline std::filesystem::path ToFilesystemAbsolutePath(const QDir& dir)
-{
-	const QString path = dir.absolutePath();
-	return std::filesystem::path(reinterpret_cast<const char16_t*>(path.cbegin()),
-								 reinterpret_cast<const char16_t*>(path.cend()));
-}
-#endif
 
 static_assert(
 	std::is_same_v<std::filesystem::path::value_type, char> ||

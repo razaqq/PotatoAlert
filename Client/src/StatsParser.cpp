@@ -217,11 +217,7 @@ struct Ship
 		QSize iconSize((int)std::roundf(18.0f * parseOptions.FontScaling), (int)std::roundf(9.0f * parseOptions.FontScaling));
 
 		QLabel* shipIcon = new QLabel();
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 		shipIcon->setPixmap(QIcon(fmt::format(":/{}.svg", Class).c_str()).pixmap(iconSize, qApp->devicePixelRatio()));
-#else
-		shipIcon->setPixmap(QIcon(fmt::format(":/{}.svg", Class).c_str()).pixmap(iconSize));
-#endif
 		shipIcon->setStyleSheet("background-color: transparent;");
 		shipIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 		shipIcon->setAlignment(Qt::AlignLeft);
@@ -237,11 +233,7 @@ struct Ship
 		shipTier->setStyleSheet("background-color: transparent;");
 		if (Tier == 11)
 		{
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			shipTier->setPixmap(QIcon(":/Star.svg").pixmap(QSize(13, 13), qApp->devicePixelRatio()));
-#else
-			shipTier->setPixmap(QIcon(":/Star.svg").pixmap(QSize(13, 13)));
-#endif
 		}
 		else
 		{
@@ -375,11 +367,7 @@ struct Player
 		{
 			const int potatoSize = (int)std::roundf(12.0f * parseOptions.FontScaling);
 			QLabel* potatoIcon = new QLabel();
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			potatoIcon->setPixmap(QIcon(":/potato.svg").pixmap(QSize(potatoSize, potatoSize), qApp->devicePixelRatio()));
-#else
-			potatoIcon->setPixmap(QIcon(":/potato.svg").pixmap(QSize(potatoSize, potatoSize)));
-#endif
 			potatoIcon->setStyleSheet("background-color: transparent;");
 			potatoIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 			potatoIcon->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);

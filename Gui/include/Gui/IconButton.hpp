@@ -53,11 +53,7 @@ protected:
 		}
 	}
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	void enterEvent([[maybe_unused]] QEnterEvent* event) override
-#else
-	void enterEvent([[maybe_unused]] QEvent* event) override
-#endif
 	{
 		if (m_showIcons && isEnabled())
 		{

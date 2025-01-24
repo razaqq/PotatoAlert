@@ -48,11 +48,7 @@ target_sources(
     include/Client/ReplayAnalyzer.hpp
 )
 
-find_package(Qt6 COMPONENTS Core Network Widgets QUIET)
-if (NOT Qt6_FOUND)
-    find_package(Qt5 COMPONENTS Core Network Widgets REQUIRED)
-endif()
-
+find_package(Qt6 COMPONENTS Core Network Widgets REQUIRED)
 find_package(ctre REQUIRED)
 find_package(fmt REQUIRED)
 find_package(tinyxml2 REQUIRED)

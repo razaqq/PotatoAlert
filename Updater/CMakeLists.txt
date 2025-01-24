@@ -1,5 +1,6 @@
 # project(PotatoUpdater)
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_definitions(-D_HAS_EXCEPTIONS=0)
 
@@ -8,10 +9,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt6 COMPONENTS Core Network Widgets QUIET)
-if (NOT Qt6_FOUND)
-    find_package(Qt5 COMPONENTS Core Network Widgets REQUIRED)
-endif()
+find_package(Qt6 COMPONENTS Core Network Widgets REQUIRED)
 
 # have to add the header to sources for qt AUTOMOC
 add_library(Updater src/Updater.cpp include/Updater/Updater.hpp)
@@ -44,6 +42,3 @@ add_custom_command(
 
 include(Packaging)
 WinDeployQt(PotatoUpdater)
-if (NOT Qt6_FOUND)  # only need ssl libs on qt5, not qt6
-    CopySslDlls(PotatoUpdater)
-endif()

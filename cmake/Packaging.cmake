@@ -1,7 +1,4 @@
-find_package(Qt6 COMPONENTS Core QUIET)
-if (NOT Qt6_FOUND)
-    find_package(Qt5 COMPONENTS Core REQUIRED)
-endif()
+find_package(Qt6 COMPONENTS Core REQUIRED)
 
 get_target_property(_qmake_executable Qt::qmake IMPORTED_LOCATION)
 get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
@@ -15,16 +12,12 @@ function(WinDeployQt target)
         set(WINDEPLOYQT_BUILD_TYPE --release)
     endif()
 
-    if (Qt5_FOUND)
-        set(WINDEPLOYQT_EXCLUDES "")
+    # --exclude-plugins only exists from 6.6.1 onwards
+    if (${Qt6_VERSION} VERSION_GREATER_EQUAL "6.6.1")
+        set(WINDEPLOYQT_EXCLUDES --exclude-plugins qopensslbackend)
     else()
-        # --exclude-plugins only exists from 6.6.1 onwards
-        if (${Qt6_VERSION} VERSION_GREATER_EQUAL "6.6.1")
-            set(WINDEPLOYQT_EXCLUDES --exclude-plugins qopensslbackend)
-        else()
-            set(WINDEPLOYQT_EXCLUDES "")
-            # TODO once 6.6.1 is usable
-        endif()
+        set(WINDEPLOYQT_EXCLUDES "")
+        # TODO once 6.6.1 is usable
     endif()
 
     add_custom_command(TARGET ${target} POST_BUILD
@@ -44,15 +37,6 @@ function(WinDeployQt target)
 
     set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
     include(InstallRequiredSystemLibraries)
-endfunction()
-
-# OpenSSL DLLs
-function(CopySslDlls target)
-    add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${SSL_DLLS}
-        $<TARGET_FILE_DIR:${target}>
-        COMMENT "Copying OpenSSL dlls..."
-    )
 endfunction()
 
 function(CopyReplayScripts target)

@@ -3,8 +3,5 @@ set(QWINDOWKIT_BUILD_QUICK OFF)
 set(QWINDOWKIT_BUILD_EXAMPLES OFF)
 set(QWINDOWKIT_BUILD_DOCUMENTATIONS OFF)
 set(QWINDOWKIT_INSTALL OFF)
-if (LINUX)  # TODO: this is bad, remove soon
-	set(QMSETUP_FIND_QT_ORDER Qt6)
-endif()
 add_subdirectory(qwindowkit)
 add_subdirectory(win32)

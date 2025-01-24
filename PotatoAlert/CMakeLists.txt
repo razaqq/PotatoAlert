@@ -3,10 +3,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt6 COMPONENTS Widgets QUIET)
-if (NOT Qt6_FOUND)
-    find_package(Qt5 COMPONENTS Widgets REQUIRED)
-endif()
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_executable(PotatoAlert ${CMAKE_BINARY_DIR}/PotatoAlert.qrc ${VersionFilesOutputVariable})
 set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
@@ -50,11 +47,7 @@ target_compile_definitions(
 include(Packaging)
 if(WIN32)
     WinDeployQt(PotatoAlert)
-    if (NOT Qt6_FOUND)  # only need ssl libs on qt5, not qt6
-        CopySslDlls(PotatoAlert)
-    endif()
 endif()
-# makeinstaller(PotatoAlert)
 
 install(DIRECTORY "${CMAKE_BINARY_DIR}/bin/" DESTINATION . COMPONENT PotatoAlert)
 set_property(INSTALL "$<TARGET_FILE_NAME:PotatoAlert>" PROPERTY CPACK_START_MENU_SHORTCUTS "PotatoAlert")
