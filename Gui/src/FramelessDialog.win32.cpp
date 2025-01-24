@@ -37,11 +37,7 @@ void FramelessDialog::showEvent(QShowEvent* event)
 	QDialog::showEvent(event);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool FramelessDialog::nativeEvent(const QByteArray& eventType, void* message, qintptr* result)
-#else
-bool FramelessDialog::nativeEvent(const QByteArray& eventType, void* message, long* result)
-#endif
 {
 	MSG* msg = static_cast<MSG*>(message);
 	if (msg->message == WM_NCCALCSIZE)

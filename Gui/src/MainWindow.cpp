@@ -103,28 +103,17 @@ void MainWindow::SwitchTab(MenuEntry i)
 			const bool doBlur = m_activeWidget == m_statsWidget && m_services.Get<Config>().Get<ConfigKey::AnonymizePlayers>();
 			const fs::path screenshotDir = m_services.Get<Client::AppDirectories>().ScreenshotsDir;
 			Client::CaptureScreenshot(window(), screenshotDir, doBlur ? m_statsWidget->GetPlayerColumnRects(dynamic_cast<QWidget*>(parent())) : QList<QRect>());
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(screenshotDir).absolutePath()));
-#else
-#endif
 			return;
 		}
 		case MenuEntry::CSV:
 		{
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(m_services.Get<Client::AppDirectories>().MatchesDir).absolutePath()));
-#else
-			QDesktopServices::openUrl(QUrl::fromLocalFile(Core::FromFilesystemPath(m_services.Get<Client::AppDirectories>().MatchesDir).absolutePath()));
-#endif
 			return;
 		}
 		case MenuEntry::Log:
 		{
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(m_services.Get<Client::AppDirectories>().AppDir).absolutePath()));
-#else
-			QDesktopServices::openUrl(QUrl::fromLocalFile(Core::FromFilesystemPath(m_services.Get<Client::AppDirectories>().AppDir).absolutePath()));
-#endif
 			return;
 		}
 		case MenuEntry::Github:

@@ -42,4 +42,3 @@ Result<bool> PotatoAlert::Core::IsSubdirectory(const std::filesystem::path& path
 	}
 	return fs::equivalent(current, root);
 }
-

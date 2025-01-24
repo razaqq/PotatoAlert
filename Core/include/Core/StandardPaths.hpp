@@ -28,12 +28,7 @@ inline std::filesystem::path AppDataPath(std::string_view appName)
 		}
 	}
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	return appData.filesystemAbsolutePath();
-#else
-	const QString abs = appData.absolutePath();
-	return { reinterpret_cast<const char16_t*>(abs.cbegin()), reinterpret_cast<const char16_t*>(abs.cend()) };
-#endif
 }
 
 }  // namespace PotatoAlert::Core

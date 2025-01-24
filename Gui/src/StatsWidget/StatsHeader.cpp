@@ -32,13 +32,8 @@ void StatsHeaderFriendly::Init()
 	qApp->installEventFilter(this);
 
 	m_loading = new QSvgWidget(":/Loading.svg");
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	m_ready = QIcon(":/Ready.svg").pixmap(QSize(20, 20), window()->devicePixelRatio());
 	m_error = QIcon(":/Error.svg").pixmap(QSize(20, 20), window()->devicePixelRatio());
-#else
-	m_ready = QIcon(":/Ready.svg").pixmap(QSize(20, 20));
-	m_error = QIcon(":/Error.svg").pixmap(QSize(20, 20));
-#endif
 	
 	QHBoxLayout* iconLayout = new QHBoxLayout();
 	iconLayout->setContentsMargins(0, 0, 0, 0);

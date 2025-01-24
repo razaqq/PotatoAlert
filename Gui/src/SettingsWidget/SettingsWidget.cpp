@@ -119,12 +119,7 @@ void SettingsWidget::Init()
 		if (dir != "")
 		{
 			auto gameInstalls = config.Get<ConfigKey::GameDirectories>();
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			gameInstalls.emplace(QDir(dir).filesystemAbsolutePath().make_preferred());
-#else
-			gameInstalls.emplace(ToFilesystemAbsolutePath(QDir(dir)).make_preferred());
-#endif
 			config.Set<ConfigKey::GameDirectories>(gameInstalls);
 			potatoClient.UpdateGameInstalls();
 		}
@@ -299,11 +294,8 @@ void SettingsWidget::AddSetting(QGridLayout* layout, SettingType* form, StringTa
 				static_assert(always_false<>, "Unsupported config type");
 			}
 		});
-#if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
+
 		connect(form, &SettingsComboBox::currentIndexChanged, [this, onChange, form](int id)
-#else
-		connect(form, qOverload<int>(&SettingsComboBox::currentIndexChanged), [this, &onChange, form](int id)
-#endif
 		{
 			if constexpr (std::is_same_v<ConfigType, int>)
 			{
