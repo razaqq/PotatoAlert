@@ -136,7 +136,8 @@ fn parse_receive_damage_stat(data: &CxxVector<u8>) -> ReceiveDamageStatResult
 				Ok(ds) => {
 					let stats = ds.into_iter()
 						.map(|((dmg_type, dmg_flag), (count, dmg))|
-							ReceiveDamageStat{
+							ReceiveDamageStat
+							{
 								damage_type: dmg_type,
 								damage_flag: dmg_flag,
 								hits: count,
