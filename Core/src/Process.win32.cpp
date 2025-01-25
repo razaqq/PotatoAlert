@@ -1,6 +1,8 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Core/Encoding.hpp"
 #include "Core/Process.hpp"
+#include "Core/Result.hpp"
 
 #define WIN32_SHOWWINDOW
 #define WIN32_USER
@@ -34,18 +36,28 @@ void PotatoAlert::Core::ExitCurrentProcessWithError(uint32_t code)
 
 bool c::CreateNewProcess(const std::filesystem::path& path, std::string_view args, bool elevated)
 {
-	const char* lpVerb = elevated ? "runas" : "open";
-	const std::string pathStr = path.string();
-	const std::string argsStr = std::string(args);
-	SHELLEXECUTEINFOA sei = {  // TODO: use W version here
-		sizeof(sei),
-		SEE_MASK_NO_CONSOLE,
-		nullptr,
-		lpVerb,
-		pathStr.c_str(),
-		argsStr.c_str(),
-		nullptr,
-		SW_SHOWNORMAL
-	};
-	return ShellExecuteExA(&sei);
+	const wchar_t* lpVerb = elevated ? L"runas" : L"open";
+	const std::wstring& pathStr = path.native();
+
+	Result<size_t> size = Utf8ToWide(args);
+	if (!size)
+	{
+		return false;
+	}
+	std::wstring argsStr(size.value(), L'\0');
+	if (!Utf8ToWide(args, argsStr))
+	{
+		return false;
+	}
+
+	SHELLEXECUTEINFOW sei = {};  // TODO: use W version here
+	sei.cbSize = sizeof(SHELLEXECUTEINFOW);
+	sei.fMask = SEE_MASK_NO_CONSOLE;
+	sei.lpVerb = lpVerb;
+	sei.lpFile = pathStr.c_str();
+	sei.lpParameters = argsStr.c_str();
+	sei.lpDirectory = nullptr;
+	sei.nShow = SW_SHOWNORMAL;
+
+	return ShellExecuteExW(&sei);
 }

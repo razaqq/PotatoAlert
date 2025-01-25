@@ -28,7 +28,7 @@ namespace {
 	{                                                                   \
 		return PA_ERROR(std::error_code(hRes, std::system_category())); \
 	}                                                                   \
-	void
+	(void)0
 
 Result<std::string> WmiGetOsCaption()
 {
