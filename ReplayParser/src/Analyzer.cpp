@@ -3,6 +3,7 @@
 #include "Core/Bytes.hpp"
 #include "Core/Instrumentor.hpp"
 #include "Core/Sha256.hpp"
+#include "Core/Version.hpp"
 
 #include "ReplayAnalyzerRust.hpp"
 #include "ReplayParser/GameFiles.hpp"
@@ -21,6 +22,7 @@
 
 
 using PotatoAlert::Core::Byte;
+using PotatoAlert::Core::Version;
 using PotatoAlert::ReplayParser::Replay;
 using PotatoAlert::ReplayParser::ReplayResult;
 using namespace PotatoAlert::ReplayParser;

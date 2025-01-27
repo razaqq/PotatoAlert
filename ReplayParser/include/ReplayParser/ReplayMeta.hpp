@@ -11,10 +11,6 @@
 #include <vector>
 
 
-using PotatoAlert::Core::String::Join;
-using PotatoAlert::Core::String::Split;
-using PotatoAlert::Core::Version;
-
 namespace PotatoAlert::ReplayParser {
 
 struct ArenaInfoVehicle
@@ -38,8 +34,8 @@ struct ReplayMeta
 {
 	std::string MatchGroup;
 	uint32_t GameMode;
-	Version ClientVersionFromExe;
-	Version ClientVersionFromXml;
+	Core::Version ClientVersionFromExe;
+	Core::Version ClientVersionFromXml;
 	// std::unordered_map<std::string, std::vector<std::string>> WeatherParams;
 	uint32_t Duration;
 	std::string Name;
@@ -67,10 +63,10 @@ struct ReplayMeta
 	std::string GameType;
 };
 
-static Version ParseClientVersion(std::string_view str)
+static Core::Version ParseClientVersion(std::string_view str)
 {
-	const std::vector v = Split(str, ",");
-	return Version(Join(std::span{ v }.subspan(0, 3), "."));
+	const std::vector v = Core::String::Split(str, ",");
+	return Core::Version(Core::String::Join(std::span{ v }.subspan(0, 3), "."));
 }
 
 [[maybe_unused]] static Core::JsonResult<void> FromJson(const rapidjson::Value& j, ReplayMeta& m)
