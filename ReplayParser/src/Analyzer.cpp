@@ -96,14 +96,14 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 					bool found = false;
 					PA_TRYV(VariantGet<std::vector<Byte>>(packet, 3, [&replayData, &found, this](const std::vector<Byte>& data) -> ReplayResult<void>
 					{
-						OnArenaStateReceivedPlayerResult result = ParseArenaStateReceivedPlayers(data, Meta.ClientVersionFromExe.GetRaw());
+						const OnArenaStateReceivedPlayerResult result = ParseArenaStateReceivedPlayers(data, Meta.ClientVersionFromExe.GetRaw());
 
 						if (result.IsError)
 						{
-							return PA_REPLAY_ERROR("{}", result.Error.c_str());
+							return PA_REPLAY_ERROR("{}", result.Error.data());
 						}
 
-						for (const auto& player : result.Value)
+						for (const OnArenaStateReceivedPlayer& player : *result.Value)
 						{
 							if (player.EntityId == replayData.PlayerEntityId)
 							{
@@ -300,13 +300,13 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 	}
 
 	auto damageDealtValues = std::views::values(replayData.DamageDealt);
-	float damageDealt = std::accumulate(damageDealtValues.begin(), damageDealtValues.end(), 0.0f);
+	const float damageDealt = std::accumulate(damageDealtValues.begin(), damageDealtValues.end(), 0.0f);
 
 	auto dmgPotentialValues = std::views::values(replayData.DamagePotential);
-	float damagePotential = std::accumulate(dmgPotentialValues.begin(), dmgPotentialValues.end(), 0.0f);
+	const float damagePotential = std::accumulate(dmgPotentialValues.begin(), dmgPotentialValues.end(), 0.0f);
 
 	auto dmgSpottingValues = std::views::values(replayData.DamageSpotting);
-	float damageSpotting = std::accumulate(dmgSpottingValues.begin(), dmgSpottingValues.end(), 0.0f);
+	const float damageSpotting = std::accumulate(dmgSpottingValues.begin(), dmgSpottingValues.end(), 0.0f);
 
 	MatchOutcome outcome;
 
