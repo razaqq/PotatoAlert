@@ -6,6 +6,7 @@
 #include <charconv>
 #include <locale>
 #include <numeric>
+#include <ranges>
 #include <string>
 
 
@@ -55,7 +56,7 @@ std::string s::ToUpper(std::string_view str)
 {
 	std::string result;
 	result.resize(str.size());
-	std::transform(str.begin(), str.end(), result.begin(), UpChar);
+	std::ranges::transform(str, result.begin(), UpChar);
 	return result;
 }
 
@@ -63,7 +64,7 @@ std::string s::ToLower(std::string_view str)
 {
 	std::string result;
 	result.resize(str.size());
-	std::transform(str.begin(), str.end(), result.begin(), LowerChar);
+	std::ranges::transform(str, result.begin(), LowerChar);
 	return result;
 }
 
@@ -131,7 +132,7 @@ std::string s::Join(std::span<const std::string> v, std::string_view del)
 	if (v.empty()) return "";
 	if (v.size() == 1) return v[0];
 
-	const size_t size = std::accumulate(v.begin(), v.end(), size_t(0), [](size_t current, std::string_view str) -> size_t
+	const size_t size = std::accumulate(v.begin(), v.end(), (size_t)0, [](size_t current, std::string_view str) -> size_t
 	{
 		return current + str.size();
 	});
