@@ -34,14 +34,15 @@ endif()
 
 set(RUST_PART_CXX "${CMAKE_CURRENT_BINARY_DIR}/ReplayAnalyzerRust.cpp")
 
-add_library(ReplayAnalyzer STATIC ${RUST_PART_CXX})
+add_library(PotatoAlert-ReplayAnalyzer STATIC ${RUST_PART_CXX})
+add_library(PotatoAlert::ReplayAnalyzer ALIAS PotatoAlert-ReplayAnalyzer)
 
 if(WIN32)
     set(RUST_LIB "${CMAKE_CURRENT_BINARY_DIR}/${RUST_LIB_DIR}/ReplayAnalyzer.lib")
-    target_link_libraries(ReplayAnalyzer PRIVATE ${RUST_LIB} Userenv Ntdll BCrypt)
+    target_link_libraries(PotatoAlert-ReplayAnalyzer PRIVATE ${RUST_LIB} Userenv Ntdll BCrypt)
 elseif(UNIX)
     set(RUST_LIB "${CMAKE_CURRENT_BINARY_DIR}/${RUST_LIB_DIR}/libreplayanalyzer.a")
-    target_link_libraries(ReplayAnalyzer PRIVATE ${RUST_LIB})
+    target_link_libraries(PotatoAlert-ReplayAnalyzer PRIVATE ${RUST_LIB})
 endif()
 
 add_custom_command(
@@ -53,4 +54,4 @@ add_custom_command(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_include_directories(ReplayAnalyzer INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(PotatoAlert-ReplayAnalyzer INTERFACE ${CMAKE_CURRENT_BINARY_DIR})

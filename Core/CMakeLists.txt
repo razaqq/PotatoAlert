@@ -3,10 +3,11 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_library(Core STATIC)
+add_library(PotatoAlert-Core STATIC)
+add_library(PotatoAlert::Core ALIAS PotatoAlert-Core)
 
 target_sources(
-    Core
+    PotatoAlert-Core
     PRIVATE
 
     src/Blowfish.cpp
@@ -28,7 +29,7 @@ target_sources(
 
 # have to add some headers to sources for qt AUTOMOC
 target_sources(
-    Core
+    PotatoAlert-Core
     PRIVATE
 
     include/Core/DirectoryWatcher.hpp
@@ -36,7 +37,7 @@ target_sources(
 
 if(WIN32)
     target_sources(
-        Core
+        PotatoAlert-Core
         PRIVATE
 
         src/ApplicationGuard.win32.cpp
@@ -53,7 +54,7 @@ endif(WIN32)
 
 if(UNIX)
     target_sources(
-        Core
+        PotatoAlert-Core
         PRIVATE
 
         src/ApplicationGuard.linux.cpp
@@ -80,13 +81,13 @@ find_package(tinyxml2 REQUIRED)
 find_package(zip REQUIRED)
 find_package(ZLIB REQUIRED)
 
-set_target_properties(Core PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
-target_link_libraries(Core PRIVATE ctre::ctre date::date SQLite::SQLite3 openssl::openssl zip::zip ZLIB::ZLIB)
-target_link_libraries(Core PUBLIC Qt::Core Qt::Widgets rapidjson fmt::fmt spdlog::spdlog_header_only tinyxml2::tinyxml2)
-target_include_directories(Core PUBLIC include)
+set_target_properties(PotatoAlert-Core PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
+target_link_libraries(PotatoAlert-Core PRIVATE ctre::ctre date::date SQLite::SQLite3 openssl::openssl zip::zip ZLIB::ZLIB)
+target_link_libraries(PotatoAlert-Core PUBLIC Qt::Core Qt::Widgets rapidjson fmt::fmt spdlog::spdlog_header_only tinyxml2::tinyxml2)
+target_include_directories(PotatoAlert-Core PUBLIC include)
 include(CompilerFlags)
-SetCompilerFlags(Core)
+SetCompilerFlags(PotatoAlert-Core)
 
 if(WIN32)
-    target_link_libraries(Core PRIVATE Version Win32 Ws2_32)
+    target_link_libraries(PotatoAlert-Core PRIVATE Version Win32 Ws2_32)
 endif(WIN32)

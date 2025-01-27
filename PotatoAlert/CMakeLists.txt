@@ -10,7 +10,7 @@ set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIR
 
 if(WIN32)
     target_sources(PotatoAlert PRIVATE PotatoAlert.win32.cpp)
-    target_link_libraries(PotatoAlert PRIVATE Updater Win32)
+    target_link_libraries(PotatoAlert PRIVATE PotatoAlert::Updater Win32)
 endif()
 
 if(UNIX)
@@ -24,7 +24,7 @@ endif()
 include(CompilerFlags)
 SetCompilerFlags(PotatoAlert)
 
-target_link_libraries(PotatoAlert PRIVATE Core Gui Qt::Widgets)
+target_link_libraries(PotatoAlert PRIVATE PotatoAlert::Core PotatoAlert::Gui Qt::Widgets)
 
 set_target_properties(PotatoAlert
     PROPERTIES

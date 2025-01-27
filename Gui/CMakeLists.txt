@@ -3,10 +3,11 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_library(Gui STATIC)
+add_library(PotatoAlert-Gui STATIC)
+add_library(PotatoAlert::Gui ALIAS PotatoAlert-Gui)
 
 target_sources(
-    Gui
+    PotatoAlert-Gui
     PRIVATE
 
     src/AboutWidget.cpp
@@ -41,7 +42,7 @@ target_sources(
 
 # have to add some headers to sources for qt AUTOMOC
 target_sources(
-    Gui
+    PotatoAlert-Gui
     PRIVATE
 
     include/Gui/MatchHistory/MatchHistory.hpp
@@ -65,7 +66,7 @@ target_sources(
 
 if(WIN32)
     target_sources(
-        Gui
+        PotatoAlert-Gui
         PRIVATE
 
         src/FramelessDialog.win32.cpp
@@ -76,7 +77,7 @@ endif(WIN32)
 
 if(UNIX)
     target_sources(
-        Gui
+        PotatoAlert-Gui
         PRIVATE
 
         src/FramelessDialog.linux.cpp
@@ -86,14 +87,14 @@ endif()
 
 find_package(Qt6 COMPONENTS SvgWidgets Widgets REQUIRED)
 
-target_link_libraries(Gui PRIVATE QWKWidgets Qt::SvgWidgets Qt::WidgetsPrivate)
-target_link_libraries(Gui PUBLIC Qt::Widgets)
+target_link_libraries(PotatoAlert-Gui PRIVATE QWKWidgets Qt::SvgWidgets Qt::WidgetsPrivate)
+target_link_libraries(PotatoAlert-Gui PUBLIC Qt::Widgets)
 include(CompilerFlags)
-SetCompilerFlags(Gui)
+SetCompilerFlags(PotatoAlert-Gui)
 
 if(WIN32)
-    target_link_libraries(Gui PRIVATE Dwmapi Win32 Updater)
+    target_link_libraries(PotatoAlert-Gui PRIVATE Dwmapi PotatoAlert::Updater Win32)
 endif()
 
-target_link_libraries(Gui PUBLIC Client Core)
-target_include_directories(Gui PUBLIC include ${CMAKE_BINARY_DIR})
+target_link_libraries(PotatoAlert-Gui PUBLIC PotatoAlert::Client PotatoAlert::Core)
+target_include_directories(PotatoAlert-Gui PUBLIC include ${CMAKE_BINARY_DIR})

@@ -12,10 +12,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt6 COMPONENTS Core Network Widgets REQUIRED)
 
 # have to add the header to sources for qt AUTOMOC
-add_library(Updater src/Updater.cpp include/Updater/Updater.hpp)
-target_link_libraries(Updater PRIVATE Gui Core Qt::Network Qt::Widgets Win32)
-target_include_directories(Updater PUBLIC include)
-set_target_properties(Updater PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
+add_library(PotatoAlert-Updater src/Updater.cpp include/Updater/Updater.hpp)
+add_library(PotatoAlert::Updater ALIAS PotatoAlert-Updater)
+target_link_libraries(PotatoAlert-Updater PRIVATE PotatoAlert::Gui PotatoAlert::Core Qt::Network Qt::Widgets Win32)
+target_include_directories(PotatoAlert-Updater PUBLIC include)
+set_target_properties(PotatoAlert-Updater PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 
 add_executable(PotatoUpdater src/PotatoUpdater.cpp ${PROJECT_SOURCE_DIR}/Resources/PotatoUpdater.qrc ${VersionFilesOutputVariable})
 
@@ -26,7 +27,7 @@ endif()
 include(CompilerFlags)
 SetCompilerFlags(PotatoUpdater)
 
-target_link_libraries(PotatoUpdater PRIVATE Core Gui Updater Qt::Core Qt::Widgets Win32)
+target_link_libraries(PotatoUpdater PRIVATE PotatoAlert::Core PotatoAlert::Gui PotatoAlert::Updater Qt::Core Qt::Widgets Win32)
 set_target_properties(PotatoUpdater PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
 set_target_properties(PotatoUpdater
     PROPERTIES
