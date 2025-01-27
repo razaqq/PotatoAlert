@@ -13,11 +13,11 @@
 
 #include "GameFileUnpack/GameFileUnpack.hpp"
 
-#include <array>
 #include <cstdint>
 #include <expected>
 #include <filesystem>
 #include <optional>
+#include <regex>
 #include <string>
 #include <span>
 #include <vector>
@@ -214,7 +214,7 @@ UnpackResult<void> Unpacker::Extract(std::string_view nodeName, const fs::path& 
 	{
 		TreeNode* node = stack.back();
 		stack.pop_back();
-		for (auto& child : node->Nodes | std::views::values)
+		for (TreeNode& child : node->Nodes | std::views::values)
 		{
 			stack.push_back(&child);
 		}
@@ -233,6 +233,68 @@ UnpackResult<void> Unpacker::Extract(std::string_view nodeName, const fs::path& 
 			else
 			{
 				filePath = dst / node->File->Path;
+			}
+
+			// create output directories if they don't exist yet
+			fs::path outDir = filePath;
+			outDir.remove_filename();
+			if (!fs::exists(outDir))
+			{
+				std::error_code ec;
+				fs::create_directories(outDir, ec);
+				if (ec)
+				{
+					return PA_UNPACK_ERROR("Failed to create game file scripts directory: {}", ec);
+				}
+			}
+
+			PA_TRYV(ExtractFile(node->File.value(), filePath));
+		}
+	}
+
+	return {};
+}
+
+UnpackResult<void> Unpacker::Extract(std::string_view nodeName, std::string_view pattern, const std::filesystem::path& dst, bool preservePath) const
+{
+	const std::optional<DirectoryTree::TreeNode> nodeResult = m_directoryTree.Find(nodeName);
+	if (!nodeResult)
+	{
+		return PA_UNPACK_ERROR("There exists no node with name {} in directory tree", nodeName);
+	}
+	TreeNode rootNode = nodeResult.value();
+
+	std::vector<TreeNode*> stack = { &rootNode };
+
+	while (!stack.empty())
+	{
+		TreeNode* node = stack.back();
+		stack.pop_back();
+		for (TreeNode& child : node->Nodes | std::views::values)
+		{
+			stack.push_back(&child);
+		}
+
+		if (node->File)
+		{
+			fs::path filePath;
+			if (!preservePath)
+			{
+				const fs::path rel = fs::relative(node->File->Path, nodeName);
+				if (rel == fs::path("."))
+					filePath = dst / fs::path(nodeName).filename();
+				else
+					filePath = dst / rel;
+			}
+			else
+			{
+				filePath = dst / node->File->Path;
+			}
+
+			std::regex re(pattern.data());
+			if (!std::regex_search(node->File->Path, re))
+			{
+				continue;
 			}
 
 			// create output directories if they don't exist yet

@@ -113,8 +113,7 @@ class PA_API Unpacker
 public:
 	explicit Unpacker(std::filesystem::path pkgPath, std::filesystem::path idxPath);
 	[[nodiscard]] UnpackResult<void> Parse();
-	UnpackResult<void> Parse();
-	UnpackResult<void> Extract(std::string_view node, const std::filesystem::path& dst, bool preservePath = true) const;
+	[[nodiscard]] UnpackResult<void> Extract(std::string_view nodeName, const std::filesystem::path& dst, bool preservePath = true) const;
 	[[nodiscard]] UnpackResult<void> Extract(std::string_view nodeName, std::string_view pattern, const std::filesystem::path& dst, bool preservePath = true) const;
 	[[nodiscard]] const DirectoryTree& GetDirectoryTree() const;
 
