@@ -73,13 +73,26 @@ concept is_bool = std::is_same_v<T, bool>;
 template<typename T>
 concept is_number = (std::is_floating_point_v<T> || std::is_integral_v<T>) && !is_bool<T>;
 
-static_assert(std::is_integral_v<bool>);
+template<typename T>
+concept is_optional = std::same_as<T, std::optional<typename T::value_type>>;
 
 template<typename T>
-concept is_primitive_serializable = is_bool<T> || is_number<T> || is_std_string<T>;
+concept is_std_string_optional = is_optional<T> && is_std_string<typename T::value_type>;
+
+template<typename T>
+concept is_bool_optional = is_optional<T> && is_bool<typename T::value_type>;
+
+template<typename T>
+concept is_number_optional = is_optional<T> && is_number<typename T::value_type>;
+
+template<typename T>
+concept is_primitive_optional = is_optional<T> && (is_bool<typename T::value_type> || is_number<typename T::value_type> || is_std_string<T>);
+
+template<typename T>
+concept is_primitive_serializable = is_bool<T> || is_number<T> || is_std_string<T> || is_primitive_optional<T>;
 
 template<typename T, typename OutputStream = rapidjson::StringBuffer>
-concept is_serializable = is_primitive_serializable<T> || requires (T a, rapidjson::Writer<OutputStream> writer)
+concept is_serializable = is_primitive_serializable<T> || requires(T a, rapidjson::Writer<OutputStream> writer)  // TODO. maybe support non primitive optionals?
 {
 	ToJson(writer, a);
 };
@@ -149,13 +162,13 @@ static inline bool ToJson(rapidjson::Writer<OutputStream>& writer, const T& str)
 template<is_serializable Key, is_serializable Value>
 static inline bool ToJson(rapidjson::Writer<rapidjson::StringBuffer>& writer, const std::unordered_map<Key, Value>& map)
 {
-	bool start = writer.StartObject();
+	const bool start = writer.StartObject();
 	for (const auto& [key, value] : map)
 	{
 		if (!ToJson(writer, key) || !ToJson(writer, value))
 			return false;
 	}
-	bool end = writer.EndObject();
+	const bool end = writer.EndObject();
 
 	return start && end;
 }
@@ -193,6 +206,69 @@ static inline T FromJson(const rapidjson::Value& v)
 	if constexpr (std::is_same_v<D, uint16_t>)
 	{
 		return static_cast<uint16_t>(v.GetUint());
+	}
+	if constexpr (std::is_same_v<D, int32_t>)
+	{
+		return v.GetInt();
+	}
+	else if constexpr (std::is_same_v<D, uint32_t>)
+	{
+		return v.GetUint();
+	}
+	else if constexpr (std::is_same_v<D, int64_t>)
+	{
+		return v.GetInt64();
+	}
+	else if constexpr (std::is_same_v<D, uint64_t>)
+	{
+		return v.GetUint64();
+	}
+	else if constexpr (std::is_same_v<D, float>)
+	{
+		return v.GetDouble();
+	}
+	else if constexpr (std::is_same_v<D, double>)
+	{
+		return v.GetDouble();
+	}
+
+	T t;
+	return t;
+}
+
+template<is_std_string_optional T>
+static inline T FromJson(const rapidjson::Value& v)
+{
+	T str(v.GetString(), v.GetStringLength());
+	return str;
+}
+
+template<is_bool_optional T>
+static inline T FromJson(const rapidjson::Value& v)
+{
+	return v.GetBool();
+}
+
+template<is_number_optional T>
+static inline T FromJson(const rapidjson::Value& v)
+{
+	// TODO: technically we have to check for i8 and i16
+	using D = std::decay_t<T>;
+	if constexpr (std::is_same_v<D, int8_t>)
+	{
+		return v.GetInt();
+	}
+	if constexpr (std::is_same_v<D, uint8_t>)
+	{
+		return v.GetUint();
+	}
+	if constexpr (std::is_same_v<D, int16_t>)
+	{
+		return v.GetInt();
+	}
+	if constexpr (std::is_same_v<D, uint16_t>)
+	{
+		return v.GetUint();
 	}
 	if constexpr (std::is_same_v<D, int32_t>)
 	{
@@ -491,12 +567,12 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 	if (!json.HasMember(key.data()))
 		return PA_JSON_ERROR("Json object has no key '{}'", key);
 
-	if constexpr (is_std_string<D>)
+	if constexpr (is_std_string<D> || is_std_string_optional<D>)
 	{
 		if (!json[key.data()].IsString())
 			return PA_JSON_ERROR("Json value '{}' is not of type '{}'", key, typeid(D).name());
 	}
-	else if constexpr (is_number<D>)
+	else if constexpr (is_number<D> || is_number_optional<D>)
 	{
 		if (!json[key.data()].IsNumber())
 			return PA_JSON_ERROR("Json value '{}' is not of type '{}'", key, typeid(D).name());
@@ -506,8 +582,11 @@ static inline JsonResult<void> FromJson(const rapidjson::Value& json, std::strin
 		if (!json.Is<D>())
 			return PA_JSON_ERROR("Json value '{}' is not of type '{}'", key, typeid(D).name());
 	}
-	
-	v = Core::FromJson<T>(json[key.data()]);
+
+	if constexpr (is_optional<T>)
+		v = Core::FromJson<typename T::value_type>(json[key.data()]);
+	else
+		v = Core::FromJson<T>(json[key.data()]);
 	return {};
 }
 
