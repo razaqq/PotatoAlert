@@ -7,9 +7,10 @@
 #include "Client/StatsParser.hpp"
 #include "Client/StringTable.hpp"
 
-#include "Gui/Events.hpp"
 #include "Gui/IconButton.hpp"
 #include "Gui/ReplaySummary.hpp"
+
+#include "ReplayParser/ReplayParser.hpp"
 
 #include <QApplication>
 #include <QFontDatabase>
@@ -349,7 +350,7 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 		}
 		else
 		{
-			shipTier->setText(Client::TierToString(match.ShipTier).data());
+			shipTier->setText(ReplayParser::TierToString(match.ShipTier).data());
 		}
 
 		ShadowLabel* shipName = new ShadowLabel(match.Ship, 0, 1, 4);

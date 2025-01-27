@@ -2,6 +2,8 @@
 
 #include "Client/StatsParser.hpp"
 
+#include "ReplayParser/ReplayParser.hpp"
+
 #include "Core/Format.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
@@ -237,7 +239,7 @@ struct Ship
 		}
 		else
 		{
-			shipTier->setText(Client::TierToString(Tier).data());
+			shipTier->setText(ReplayParser::TierToString(Tier).data());
 			shipTier->setFont(font);
 		}
 
