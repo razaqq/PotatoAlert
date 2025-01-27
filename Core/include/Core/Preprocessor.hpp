@@ -58,3 +58,9 @@
 	PA_PRAGMA(GCC diagnostic pop)   \
 	PA_PRAGMA(clang diagnostic pop) \
 	PA_PRAGMA(warning(pop))
+
+#if defined(_WIN32) && !defined(PA_STATIC)
+	#define PA_API __declspec(dllexport)
+#else
+	#define PA_API
+#endif

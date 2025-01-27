@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Core/Json.hpp"
+#include "Core/Preprocessor.hpp"
 #include "Core/Version.hpp"
 
 #include "ReplayParser/Packets.hpp"
@@ -340,7 +341,7 @@ static inline Core::JsonResult<void> ToJson(rapidjson::Writer<rapidjson::StringB
 	return {};
 }
 
-class Replay
+class PA_API Replay
 {
 public:
 	std::string MetaString;
@@ -361,7 +362,7 @@ private:
 	PacketParser m_packetParser;
 };
 
-ReplayResult<ReplaySummary> AnalyzeReplay(const std::filesystem::path& file, const std::filesystem::path& gameFilePath);
-bool HasGameScripts(Version gameVersion, const fs::path& gameFilePath);
+PA_API ReplayResult<ReplaySummary> AnalyzeReplay(const std::filesystem::path& file, const std::filesystem::path& gameFilePath);
+PA_API bool HasGameScripts(Core::Version gameVersion, const fs::path& gameFilePath);
 
 }  // namespace PotatoAlert::ReplayParser

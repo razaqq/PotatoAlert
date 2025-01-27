@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "Core/Preprocessor.hpp"
 #include "Core/Version.hpp"
 
 #include "ReplayParser/Entity.hpp"
@@ -27,6 +28,6 @@ struct EntitySpec
 	std::vector<std::reference_wrapper<const Property>> BaseProperties;
 };
 
-ReplayResult<std::vector<EntitySpec>> ParseScripts(Core::Version version, const fs::path& gameFilePath);
+PA_API ReplayResult<std::vector<EntitySpec>> ParseScripts(Core::Version version, const fs::path& gameFilePath);
 
 }  // namespace PotatoAlert::ReplayParser

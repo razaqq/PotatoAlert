@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Core/Bytes.hpp"
+#include "Core/Preprocessor.hpp"
 
 #include <cstdint>
 #include <filesystem>
@@ -42,7 +43,7 @@ struct IdxHeader
 static_assert(sizeof(IdxHeader) == HeaderSize);
 
 static constexpr uint32_t NodeSize = 0x20;
-struct Node
+struct PA_API Node
 {
 	std::string Name;
 	uint64_t Id;
@@ -52,7 +53,7 @@ struct Node
 };
 
 static constexpr uint32_t FileRecordSize = 0x30;
-struct FileRecord
+struct PA_API FileRecord
 {
 	std::string PkgName;
 	std::string Path;
@@ -69,7 +70,7 @@ struct FileRecord
 };
 
 static constexpr uint32_t VolumeSize = 0x18;
-struct Volume
+struct PA_API Volume
 {
 	std::string Name;
 	uint64_t Id;
@@ -77,7 +78,7 @@ struct Volume
 	static UnpackResult<Volume> Parse(std::span<const Core::Byte> data, uint64_t offset, std::span<const Core::Byte> fullData);
 };
 
-struct IdxFile
+struct PA_API IdxFile
 {
 	std::string_view PkgName;
 	std::unordered_map<uint64_t, Node> Nodes;
@@ -87,7 +88,7 @@ struct IdxFile
 	static UnpackResult<IdxFile> Parse(std::span<const Core::Byte> data);
 };
 
-class DirectoryTree
+class PA_API DirectoryTree
 {
 public:
 	struct TreeNode
@@ -107,12 +108,14 @@ private:
 	TreeNode& CreatePath(std::string_view path);
 };
 
-class Unpacker
+class PA_API Unpacker
 {
 public:
 	explicit Unpacker(std::filesystem::path pkgPath, std::filesystem::path idxPath);
+	[[nodiscard]] UnpackResult<void> Parse();
 	UnpackResult<void> Parse();
 	UnpackResult<void> Extract(std::string_view node, const std::filesystem::path& dst, bool preservePath = true) const;
+	[[nodiscard]] UnpackResult<void> Extract(std::string_view nodeName, std::string_view pattern, const std::filesystem::path& dst, bool preservePath = true) const;
 	[[nodiscard]] const DirectoryTree& GetDirectoryTree() const;
 
 private:
@@ -120,7 +123,7 @@ private:
 	std::filesystem::path m_pkgPath;
 	std::filesystem::path m_idxPath;
 
-	UnpackResult<void> ExtractFile(const FileRecord& fileRecord, const std::filesystem::path& dst) const;
+	[[nodiscard]] UnpackResult<void> ExtractFile(const FileRecord& fileRecord, const std::filesystem::path& dst) const;
 };
 
 }  // namespace PotatoAlert::GameFileUnpack
