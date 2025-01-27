@@ -2,7 +2,6 @@
 
 #include "Client/Game.hpp"
 
-#include "Core/Directory.hpp"
 #include "Core/Log.hpp"
 #include "Core/Process.hpp"
 #include "Core/Result.hpp"
@@ -35,24 +34,18 @@ enum class Test
 
 static fs::path GetGamePath(Test t)
 {
-	const auto rootPath = PotatoAlert::Core::GetModuleRootPath();
-	if (!rootPath.has_value())
-	{
-		PotatoAlert::Core::ExitCurrentProcess(1);
-	}
-
 	switch (t)
 	{
 		case Test::NonSteamNonVersioned:
-			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "non_steam_non_versioned";
+			return fs::current_path() / "GameDirectories" / "non_steam_non_versioned";
 		case Test::NonSteamVersioned:
-			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "non_steam_versioned";
+			return fs::current_path() / "GameDirectories" / "non_steam_versioned";
 		case Test::NonSteamNonVersionedExe:
-			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "steam_non_versioned_exe";
+			return fs::current_path() / "GameDirectories" / "steam_non_versioned_exe";
 		case Test::SteamVersionedCwd:
-			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "steam_versioned_cwd";
+			return fs::current_path() / "GameDirectories" / "steam_versioned_cwd";
 		case Test::ResModsVersioned:
-			return fs::path(rootPath.value()).remove_filename() / "GameDirectories" / "res_mods_versioned";
+			return fs::current_path() / "GameDirectories" / "res_mods_versioned";
 	}
 	PotatoAlert::Core::ExitCurrentProcess(1);
 }

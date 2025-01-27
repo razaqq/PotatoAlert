@@ -1,7 +1,6 @@
 // Copyright 2022 <github.com/razaqq>
 
 #include "Core/Bytes.hpp"
-#include "Core/Directory.hpp"
 #include "Core/File.hpp"
 #include "Core/Log.hpp"
 #include "Core/StandardPaths.hpp"
@@ -22,19 +21,14 @@ namespace fs = std::filesystem;
 using PotatoAlert::Core::Byte;
 using PotatoAlert::Core::File;
 using namespace PotatoAlert::GameFileUnpack;
-typedef DirectoryTree::TreeNode TreeNode;
+using TreeNode = DirectoryTree::TreeNode;
 using PotatoAlert::GameFileUnpack::Unpacker;
 
 namespace {
 
 static fs::path GetGameFileRootPath()
 {
-	const auto rootPath = PotatoAlert::Core::GetModuleRootPath();
-	if (!rootPath.has_value())
-	{
-		std::exit(1);
-	}
-	return fs::path(rootPath.value()).remove_filename() / "GameFiles";
+	return fs::current_path() / "GameFiles";
 }
 
 static fs::path GetTempDirectory()

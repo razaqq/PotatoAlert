@@ -2,12 +2,10 @@
 
 #include "Core/ByteReader.hpp"
 #include "Core/Blowfish.hpp"
-#include "Core/Directory.hpp"
 #include "Core/File.hpp"
 #include "Core/FileMapping.hpp"
 #include "Core/PeFileVersion.hpp"
 #include "Core/PeReader.hpp"
-#include "Core/Process.hpp"
 #include "Core/Semaphore.hpp"
 #include "Core/Sha1.hpp"
 #include "Core/Sha256.hpp"
@@ -52,12 +50,7 @@ static std::array<Byte, sizeof...(Ts)> FromHex(Ts&&... args) noexcept
 
 static fs::path GetFile(std::string_view name)
 {
-	if (Result<fs::path> rootPath = GetModuleRootPath())
-	{
-		return rootPath.value().remove_filename() / "Misc" / name;
-	}
-
-	ExitCurrentProcess(1);
+	return fs::current_path() / "Misc" / name;
 }
 
 }

@@ -1,6 +1,5 @@
 // Copyright 2021 <github.com/razaqq>
 
-#include "Core/Directory.hpp"
 #include "Core/Log.hpp"
 #include "Core/Process.hpp"
 #include "Core/Result.hpp"
@@ -21,7 +20,6 @@
 #include <vector>
 
 
-using PotatoAlert::Core::GetModuleRootPath;
 using PotatoAlert::Core::Result;
 using PotatoAlert::Core::Version;
 using namespace PotatoAlert::ReplayParser;
@@ -31,12 +29,7 @@ namespace {
 
 static fs::path GetReplay(std::string_view name)
 {
-	if (Result<fs::path> rootPath = GetModuleRootPath())
-	{
-		return rootPath.value().remove_filename() / "Replays" / name;
-	}
-
-	PotatoAlert::Core::ExitCurrentProcess(1);
+	return fs::current_path() / "Replays" / name;
 }
 
 }
@@ -55,7 +48,7 @@ CATCH_REGISTER_LISTENER(TestRunListener)
 
 TEST_CASE( "ReplayTest" )
 {
-	const fs::path gameFilePath = GetModuleRootPath().value() / "ReplayVersions";
+	const fs::path gameFilePath = fs::current_path() / "ReplayVersions";
 
 	{
 		ReplayResult<Replay> res = Replay::FromFile(GetReplay("20201107_155356_PISC110-Venezia_19_OC_prey.wowsreplay"), gameFilePath);
@@ -183,7 +176,7 @@ TEST_CASE( "ReplayTest" )
 
 TEST_CASE( "ReplayGameFileTest" )
 {
-	const fs::path gameFilePath = GetModuleRootPath().value() / "ReplayVersions";
+	const fs::path gameFilePath = fs::current_path() / "ReplayVersions";
 
 	const auto spec = ParseScripts(Version(0, 10, 8, 0), gameFilePath);
 	REQUIRE(spec);

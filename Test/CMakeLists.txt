@@ -6,7 +6,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_subdirectory(Data)
+function(SetDllPath TARGET)
+    # Right now cmake is not smart enough for this to work https://gitlab.kitware.com/cmake/cmake/-/issues/25686
+    #set_tests_properties(
+    #    ${TARGET}
+    #    PROPERTIES
+    #        ENVIRONMENT_MODIFICATION "PATH=path_list_append:$<TARGET_RUNTIME_DLL_DIRS:${TARGET}>")
+
+    string(REPLACE "\\" "/" ESCAPED_PATH "$ENV{PATH}")
+    set_tests_properties(${TARGET}
+        PROPERTIES ENVIRONMENT "PATH=$<JOIN:$<TARGET_RUNTIME_DLL_DIRS:${TARGET}>;${ESCAPED_PATH},\\;>")
+endfunction()
+
+set(PA_TEST_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Data")
+
 add_subdirectory(CoreTest)
 add_subdirectory(GameFileUnpackTest)
 add_subdirectory(GameTest)

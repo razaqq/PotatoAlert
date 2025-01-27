@@ -38,11 +38,3 @@ function(WinDeployQt target)
     set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
     include(InstallRequiredSystemLibraries)
 endfunction()
-
-function(CopyReplayScripts target)
-    add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/Resources/ReplayVersions
-        $<TARGET_FILE_DIR:${target}>/ReplayVersions
-        COMMENT "Copying Replay Version Files..."
-    )
-endfunction()
