@@ -5,6 +5,7 @@
 #include "Core/Math.hpp"
 #include "Core/Preprocessor.hpp"
 
+#include "ReplayParser/Entity.hpp"
 #include "ReplayParser/NestedProperty.hpp"
 #include "ReplayParser/Types.hpp"
 
@@ -27,7 +28,6 @@ typedef int32_t TypeEntityId;
 typedef int32_t TypeSpaceId;
 typedef int32_t TypeVehicleId;
 typedef int32_t TypeMethodId;
-typedef uint16_t TypeEntityType;
 
 enum class PacketBaseType
 {
@@ -74,7 +74,7 @@ struct UnknownPacket : Packet
 struct BasePlayerCreatePacket : Packet
 {
 	TypeEntityId EntityId;
-	TypeEntityType EntityType;
+	EntityType EntityType;
 	std::vector<Byte> Data;
 };
 
@@ -165,7 +165,7 @@ struct EntityLeavePacket : Packet
 struct EntityCreatePacket : Packet
 {
 	TypeEntityId EntityId;
-	TypeEntityType EntityType;
+	EntityType EntityType;
 	TypeSpaceId SpaceId;
 	TypeVehicleId VehicleId;
 	Vec3 Position;

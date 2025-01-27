@@ -1,6 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
+#include "ReplayParser/Entity.hpp"
 #include "ReplayParser/GameFiles.hpp"
 #include "ReplayParser/Packets.hpp"
 #include "ReplayParser/PacketCallback.hpp"
@@ -16,7 +17,7 @@ namespace PotatoAlert::ReplayParser {
 
 struct Entity
 {
-	uint16_t Type;
+	EntityType Type;
 	std::reference_wrapper<const EntitySpec> Spec;
 	std::unordered_map<std::string, ArgValue> BasePropertiesValues;
 	std::unordered_map<std::string, ArgValue> ClientPropertiesValues;

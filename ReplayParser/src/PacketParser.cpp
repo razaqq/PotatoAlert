@@ -5,12 +5,12 @@
 #include "Core/Version.hpp"
 
 #include "ReplayParser/BitReader.hpp"
+#include "ReplayParser/Entity.hpp"
 #include "ReplayParser/PacketParser.hpp"
 #include "ReplayParser/Packets.hpp"
 #include "ReplayParser/Result.hpp"
 
 #include <cstdint>
-#include <optional>
 #include <span>
 #include <unordered_map>
 #include <variant>
@@ -99,7 +99,7 @@ static constexpr bool IsPacket(PacketBaseType type, uint32_t id, Version version
 	{
 		return PA_REPLAY_ERROR("Entity {} does not exist for EntityMethodPacket", packet.EntityId);
 	}
-	const uint16_t entityType = parser.Entities.at(packet.EntityId).Type;
+	const uint16_t entityType = static_cast<std::underlying_type_t<EntityType>>(parser.Entities.at(packet.EntityId).Type);
 
 	const int specId = entityType - 1;
 	if (specId < 0 || static_cast<size_t>(specId) >= parser.Specs.size())
@@ -174,7 +174,7 @@ static constexpr bool IsPacket(PacketBaseType type, uint32_t id, Version version
 		return PA_REPLAY_ERROR("Failed to get property count for EntityCreatePacket");
 	}
 
-	const int specId = packet.EntityType - 1;
+	const int specId = static_cast<std::underlying_type_t<EntityType>>(packet.EntityType) - 1;
 	if (specId < 0 || static_cast<size_t>(specId) >= parser.Specs.size())
 	{
 		return PA_REPLAY_ERROR("Missing EntitySpec {} for EntityCreatePacket", specId);
@@ -246,7 +246,7 @@ static constexpr bool IsPacket(PacketBaseType type, uint32_t id, Version version
 	{
 		return PA_REPLAY_ERROR("Entity {} does not exist for EntityPropertyPacket", packet.EntityId);
 	}
-	const uint16_t entityType = parser.Entities.at(packet.EntityId).Type;
+	const uint16_t entityType = static_cast<std::underlying_type_t<EntityType>>(parser.Entities.at(packet.EntityId).Type);
 
 	const int specId = entityType - 1;
 	if (specId < 0 || static_cast<size_t>(specId) >= parser.Specs.size())
@@ -296,7 +296,7 @@ static constexpr bool IsPacket(PacketBaseType type, uint32_t id, Version version
 	if (!TakeInto(data, packet.EntityType))
 		return err();
 
-	const int specId = packet.EntityType - 1;
+	const int specId = static_cast<std::underlying_type_t<EntityType>>(packet.EntityType) - 1;
 	if (specId < 0 || static_cast<size_t>(specId) >= parser.Specs.size())
 	{
 		return PA_REPLAY_ERROR("Missing EntitySpec {} for BasePlayerCreatePacket", specId);
@@ -364,9 +364,9 @@ static constexpr bool IsPacket(PacketBaseType type, uint32_t id, Version version
 		return PA_REPLAY_ERROR("Entity {} does not exist for CellPlayerCreatePacket", packet.EntityId);
 	}
 
-	const uint16_t entityType = parser.Entities.at(packet.EntityId).Type;
+	const EntityType entityType = parser.Entities.at(packet.EntityId).Type;
 
-	const int specId = entityType - 1;
+	const int specId = static_cast<std::underlying_type_t<EntityType>>(entityType) - 1;
 	if (specId < 0 || static_cast<size_t>(specId) >= parser.Specs.size())
 	{
 		return PA_REPLAY_ERROR("Missing EntitySpec {} for CellPlayerCreatePacket", specId);

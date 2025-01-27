@@ -16,6 +16,24 @@ namespace fs = std::filesystem;
 
 namespace PotatoAlert::ReplayParser {
 
+// BigWorld counts entities from 1
+enum class EntityType : uint16_t
+{
+	Avatar = 1,
+	Vehicle = 2,
+	Account = 3,
+	SmokeScreen = 4,
+	OfflineEntity = 5,
+	Login = 6,
+	BattleEntity = 7,
+	Building = 8,
+	MasterChanger = 9,
+	BattleLogic = 10,
+	ReplayLeech = 11,
+	ReplayConnectionHandler = 12,
+	InteractiveZone = 13,
+};
+
 enum class PropertyFlag
 {
 	AllClients       = 1 << 0,
