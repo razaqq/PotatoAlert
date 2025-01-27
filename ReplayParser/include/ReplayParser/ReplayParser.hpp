@@ -18,6 +18,14 @@
 
 namespace PotatoAlert::ReplayParser {
 
+enum class DamageFlag : int64_t
+{
+	EnemyDamage = 0,
+	AllyDamage = 1,
+	SpottingDamage = 2,
+	PotentialDamage = 3,
+};
+
 #define DAMAGE_TYPES            \
 	X(MainAP,                1) \
 	X(MainHE,                2) \

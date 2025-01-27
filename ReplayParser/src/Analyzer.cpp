@@ -28,14 +28,6 @@ using PotatoAlert::ReplayParser::ReplayResult;
 using namespace PotatoAlert::ReplayParser;
 using namespace PotatoAlert::ReplayAnalyzer;
 
-enum class DamageFlag : int64_t
-{
-	EnemyDamage     = 0,
-	AllyDamage      = 1,
-	SpottingDamage  = 2,
-	PotentialDamage = 3,
-};
-
 enum class CameraMode : uint32_t
 {
 	OverheadMap        = 0,
