@@ -28,6 +28,6 @@ struct EntitySpec
 	std::vector<std::reference_wrapper<const Property>> BaseProperties;
 };
 
-PA_API ReplayResult<std::vector<EntitySpec>> ParseScripts(Core::Version version, const fs::path& gameFilePath);
+PA_API ReplayResult<std::vector<EntitySpec>> ParseScripts(const std::filesystem::path& scriptsPath);
 
 }  // namespace PotatoAlert::ReplayParser

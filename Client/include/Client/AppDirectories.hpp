@@ -25,14 +25,14 @@ public:
 		AppDir = Core::AppDataPath(appName).make_preferred();
 		MatchesDir = (AppDir / "Matches").make_preferred();
 		ScreenshotsDir = (AppDir / "Screenshots").make_preferred();
-		ReplayVersionsDir = (AppDir / "ReplayVersions").make_preferred();
+		GameFilesDir = (AppDir / "GameFiles").make_preferred();
 		ConfigFile = (AppDir / "config.json").make_preferred();
 		LogFile = (AppDir / fmt::format("{}.log", AppName)).make_preferred();
 		DatabaseFile = (MatchesDir / "match_history.db").make_preferred();
 
 		CreateAppDir(MatchesDir);
 		CreateAppDir(ScreenshotsDir);
-		CreateAppDir(ReplayVersionsDir);
+		CreateAppDir(GameFilesDir);
 	}
 
 	std::string_view AppName;
@@ -40,7 +40,7 @@ public:
 
 	std::filesystem::path MatchesDir;
 	std::filesystem::path ScreenshotsDir;
-	std::filesystem::path ReplayVersionsDir;
+	std::filesystem::path GameFilesDir;
 	std::filesystem::path ConfigFile;
 	std::filesystem::path LogFile;
 	std::filesystem::path DatabaseFile;

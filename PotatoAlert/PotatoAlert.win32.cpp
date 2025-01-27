@@ -74,7 +74,7 @@ static int RunMain(int argc, char* argv[])
 	Config config(appDirs.ConfigFile);
 	serviceProvider.Add(config);
 
-	ReplayAnalyzer replayAnalyzer(serviceProvider, appDirs.ReplayVersionsDir);
+	ReplayAnalyzer replayAnalyzer(serviceProvider);
 	serviceProvider.Add(replayAnalyzer);
 
 	PotatoClient client(

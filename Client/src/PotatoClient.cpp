@@ -215,7 +215,7 @@ static inline std::optional<std::string> GetReplayName(const MatchType::InfoType
 
 void PotatoClient::Init()
 {
-	auto sysInfo = GetSysInfo();
+	Result<SysInfo> sysInfo = GetSysInfo();
 	if (sysInfo)
 	{
 		m_sysInfo = *sysInfo;
@@ -656,6 +656,8 @@ void PotatoClient::UpdateGameInstalls()
 	m_gameInfos.clear();
 	m_watcher.ClearDirectories();
 
+	AppDirectories appDirs = m_services.Get<AppDirectories>();
+
 	for (const fs::path& game : m_services.Get<Config>().Get<ConfigKey::GameDirectories>())
 	{
 		const Result<GameInfo> gameInfo = Game::ReadGameInfo(game);
@@ -665,7 +667,7 @@ void PotatoClient::UpdateGameInstalls()
 			{
 				.Path = game,
 				.Status = "Found",  // TODO: localize
-				.Info = std::move(*gameInfo),
+				.Info = *gameInfo,
 			});
 		}
 		else
@@ -691,10 +693,10 @@ void PotatoClient::UpdateGameInstalls()
 
 		// make sure we have up-to-date game files
 		const std::string gameVersion = gameInfo->GameVersion.ToString(".", true);
-		if (!m_replayAnalyzer.HasGameFiles(gameInfo->GameVersion))
+		if (!m_replayAnalyzer.HasGameFiles(*gameInfo))
 		{
-			LOG_INFO("Missing game files for version {} detected, trying to unpack...", gameVersion);
-			const fs::path dst = AppDataPath("PotatoAlert") / "ReplayVersions" / gameVersion;
+			LOG_INFO("Game files for Client ({}, {}) missing, unpacking...", gameInfo->Region, gameVersion);
+			const fs::path dst = appDirs.GameFilesDir / gameInfo->Region / gameVersion;
 			const UnpackResult<void> unpackResult = ReplayAnalyzer::UnpackGameFiles(dst, gameInfo->PkgPath, gameInfo->IdxPath);
 			if (!unpackResult)
 			{
@@ -703,7 +705,7 @@ void PotatoClient::UpdateGameInstalls()
 		}
 		else
 		{
-			LOG_INFO("Game files for version {} found", gameVersion);
+			LOG_INFO("Game files for Client ({}, {}) missing", gameInfo->Region, gameVersion);
 		}
 
 		// let's check the entire game folder, replays might be hiding everywhere

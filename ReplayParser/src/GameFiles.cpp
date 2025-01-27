@@ -50,24 +50,15 @@ static ReplayResult<std::unordered_map<std::string, ArgType>> ParseAliases(const
 	return aliases;
 }
 
-ReplayResult<std::vector<EntitySpec>> rp::ParseScripts(Version version, const fs::path& gameFilePath)
+ReplayResult<std::vector<EntitySpec>> rp::ParseScripts(const fs::path& scriptsPath)
 {
-	// this is a shit way of doing this, but thanks to wg its also the only way
-	const std::string scriptVersion = version.ToString(".", true);
-
-	const fs::path versionDir = gameFilePath / scriptVersion / "scripts";
-	if (!fs::exists(versionDir))
-	{
-		return PA_REPLAY_ERROR("Game scripts for version {} not found.", scriptVersion);
-	}
-
-	PA_TRY_OR_ELSE(aliases, ParseAliases(versionDir / "entity_defs" / "alias.xml"),
+	PA_TRY_OR_ELSE(aliases, ParseAliases(scriptsPath / "entity_defs" / "alias.xml"),
 	{
 		return PA_REPLAY_ERROR("Failed to parse aliases: {}", error);
 	});
 
 	XMLDocument doc;
-	const fs::path entitiesPath(versionDir / "entities.xml");
+	const fs::path entitiesPath(scriptsPath / "entities.xml");
 	if (!LoadXml(doc, entitiesPath))
 	{
 		return PA_REPLAY_ERROR("Failed to open entities.xml ({}): {}.", entitiesPath, StringWrap(doc.ErrorStr()));
@@ -85,10 +76,10 @@ ReplayResult<std::vector<EntitySpec>> rp::ParseScripts(Version version, const fs
 		for (XMLElement* entityElem = clientServerEntries->FirstChildElement(); entityElem != nullptr; entityElem = entityElem->NextSiblingElement())
 		{
 			std::string entityName = Core::String::Trim(entityElem->Name());
-			PA_TRY(defFile, ParseDef(versionDir / "entity_defs" / fmt::format("{}.def", entityName), aliases));
+			PA_TRY(defFile, ParseDef(scriptsPath / "entity_defs" / fmt::format("{}.def", entityName), aliases));
 			std::vector<DefFile> interfaces;
 
-			PA_TRYV(ParseInterfaces((versionDir / "entity_defs" / "interfaces"), aliases, defFile, interfaces));
+			PA_TRYV(ParseInterfaces((scriptsPath / "entity_defs" / "interfaces"), aliases, defFile, interfaces));
 			interfaces.push_back(std::move(defFile));
 			PA_TRY(merged, MergeDefs(interfaces));
 

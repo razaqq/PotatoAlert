@@ -357,7 +357,7 @@ public:
 	std::vector<PacketType> Packets;
 	std::vector<EntitySpec> Specs;
 
-	static ReplayResult<Replay> FromFile(const std::filesystem::path& filePath, const std::filesystem::path& gameFilePath);
+	static ReplayResult<Replay> FromFile(const std::filesystem::path& filePath, const std::filesystem::path& scriptsPath);
 	[[nodiscard]] ReplayResult<ReplaySummary> Analyze() const;
 
 	template<typename P>
@@ -370,7 +370,6 @@ private:
 	PacketParser m_packetParser;
 };
 
-PA_API ReplayResult<ReplaySummary> AnalyzeReplay(const std::filesystem::path& file, const std::filesystem::path& gameFilePath);
-PA_API bool HasGameScripts(Core::Version gameVersion, const fs::path& gameFilePath);
+PA_API ReplayResult<ReplaySummary> AnalyzeReplay(const std::filesystem::path& file, const std::filesystem::path& scriptsPath);
 
 }  // namespace PotatoAlert::ReplayParser

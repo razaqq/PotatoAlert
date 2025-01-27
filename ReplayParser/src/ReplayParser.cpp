@@ -30,7 +30,7 @@ using namespace PotatoAlert::ReplayParser;
 namespace rp = PotatoAlert::ReplayParser;
 using PotatoAlert::ReplayParser::ReplayResult;
 
-ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& gameFilePath)
+ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& scriptsPath)
 {
 	PA_PROFILE_FUNCTION();
 
@@ -180,7 +180,7 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 	decrypted.clear();
 	decrypted.shrink_to_fit();
 
-	PA_TRYA(replay.Specs, ParseScripts(replay.Meta.ClientVersionFromExe, gameFilePath));
+	PA_TRYA(replay.Specs, ParseScripts(scriptsPath));
 
 	if (replay.Specs.empty())
 	{
@@ -206,14 +206,9 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 	return replay;
 }
 
-ReplayResult<ReplaySummary> rp::AnalyzeReplay(const fs::path& file, const fs::path& gameFilePath)
+ReplayResult<ReplaySummary> rp::AnalyzeReplay(const fs::path& file, const fs::path& scriptsPath)
 {
-	PA_TRY(replay, Replay::FromFile(file, gameFilePath));
+	PA_TRY(replay, Replay::FromFile(file, scriptsPath));
 	PA_TRY(summary, replay.Analyze());
 	return summary;
-}
-
-bool rp::HasGameScripts(Version gameVersion, const fs::path& gameFilePath)
-{
-	return ParseScripts(gameVersion, gameFilePath).has_value();
 }

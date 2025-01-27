@@ -1,9 +1,10 @@
 // Copyright 2022 <github.com/razaqq>
 
+#include "Client/AppDirectories.hpp"
 #include "Client/DatabaseManager.hpp"
+#include "Client/Game.hpp"
 #include "Client/ReplayAnalyzer.hpp"
 
-#include "Core/Encoding.hpp"
 #include "Core/File.hpp"
 #include "Core/Log.hpp"
 #include "Core/String.hpp"
@@ -28,9 +29,10 @@ using PotatoAlert::Client::ReplayAnalyzer;
 using PotatoAlert::GameFileUnpack::Unpacker;
 using PotatoAlert::GameFileUnpack::UnpackResult;
 
-bool ReplayAnalyzer::HasGameFiles(Version gameVersion) const
+bool ReplayAnalyzer::HasGameFiles(const Game::GameInfo& gameInfo) const
 {
-	return ReplayParser::HasGameScripts(gameVersion, m_gameFilePath);
+	const fs::path scriptsPath = m_services.Get<AppDirectories>().GameFilesDir / gameInfo.Region / gameInfo.GameVersion.ToString(".", true) / "scripts";
+	return ReplayParser::ParseScripts(scriptsPath).has_value();
 	// &&MinimapRenderer::HasGameParams(gameVersion, m_gameFilePath);
 }
 
@@ -61,7 +63,7 @@ void ReplayAnalyzer::AnalyzeReplay(const fs::path& path, std::chrono::seconds re
 		LOG_TRACE(STR("Analyzing replay file {} after {} delay..."), file, delay);
 		std::this_thread::sleep_for(delay);
 
-		PA_TRY_OR_ELSE(summary, ReplayParser::AnalyzeReplay(file, m_gameFilePath),
+		PA_TRY_OR_ELSE(summary, ReplayParser::AnalyzeReplay(file, m_services.Get<AppDirectories>().GameFilesDir),
 		{
 			LOG_ERROR(STR("Failed to analyze replay file {}: {}"), file, StringWrap(error));
 			return;
