@@ -46,7 +46,7 @@ if(WIN32)
         src/File.win32.cpp
         src/FileMapping.win32.cpp
         src/Process.win32.cpp
-        src/Semaphore.win32.cpp
+            src/StandardPaths.win32.cpp
         src/Time.win32.cpp
         src/Xml.win32.cpp
     )
@@ -63,7 +63,7 @@ if(UNIX)
         src/File.linux.cpp
         src/FileMapping.linux.cpp
         src/Process.linux.cpp
-        src/Semaphore.linux.cpp
+            src/StandardPaths.linux.cpp
         src/Time.linux.cpp
         src/Xml.linux.cpp
     )

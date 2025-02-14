@@ -20,6 +20,7 @@
 #include <vector>
 
 
+using PotatoAlert::Core::AppDataPath;
 using PotatoAlert::Core::Result;
 using PotatoAlert::Core::Version;
 using namespace PotatoAlert::ReplayParser;
@@ -46,7 +47,11 @@ public:
 
 	void testRunStarting(Catch::TestRunInfo const&) override
 	{
-		PotatoAlert::Core::Log::Init(PotatoAlert::Core::AppDataPath("PotatoAlert") / "ReplayTest.log");
+		PA_TRY_OR_ELSE(appData, AppDataPath("PotatoAlert"),
+		{
+			PotatoAlert::Core::ExitCurrentProcess(1);
+		});
+		PotatoAlert::Core::Log::Init(appData / "ReplayTest.log");
 	}
 };
 CATCH_REGISTER_LISTENER(TestRunListener)

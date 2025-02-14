@@ -16,6 +16,8 @@
 #include <vector>
 
 
+using PotatoAlert::Core::AppDataPath;
+using PotatoAlert::Core::ExitCurrentProcess;
 using PotatoAlert::Core::Result;
 using PotatoAlert::Core::Version;
 using namespace PotatoAlert::Client::Game;
@@ -47,7 +49,7 @@ static fs::path GetGamePath(Test t)
 		case Test::ResModsVersioned:
 			return fs::current_path() / "GameDirectories" / "res_mods_versioned";
 	}
-	PotatoAlert::Core::ExitCurrentProcess(1);
+	ExitCurrentProcess(1);
 }
 
 }
@@ -59,7 +61,11 @@ public:
 
 	void testRunStarting(Catch::TestRunInfo const&) override
 	{
-		PotatoAlert::Core::Log::Init(PotatoAlert::Core::AppDataPath("PotatoAlert") / "GameTest.log");
+		PA_TRY_OR_ELSE(appData, AppDataPath("PotatoAlert"),
+		{
+			PotatoAlert::Core::ExitCurrentProcess(1);
+		});
+		PotatoAlert::Core::Log::Init(appData / "GameTest.log");
 	}
 };
 CATCH_REGISTER_LISTENER(TestRunListener)

@@ -3,6 +3,7 @@
 #include "Core/Bytes.hpp"
 #include "Core/File.hpp"
 #include "Core/Log.hpp"
+#include "Core/Process.hpp"
 #include "Core/Result.hpp"
 #include "Core/StandardPaths.hpp"
 
@@ -14,14 +15,14 @@
 
 #include <filesystem>
 
-#include <QDir>
-#include <QStandardPaths>
-
 
 namespace fs = std::filesystem;
+using PotatoAlert::Core::AppDataPath;
 using PotatoAlert::Core::Byte;
+using PotatoAlert::Core::ExitCurrentProcess;
 using PotatoAlert::Core::File;
 using PotatoAlert::Core::Result;
+using PotatoAlert::Core::TempPath;
 using namespace PotatoAlert::GameFileUnpack;
 using TreeNode = DirectoryTree::TreeNode;
 using PotatoAlert::GameFileUnpack::Unpacker;
@@ -35,7 +36,13 @@ static fs::path GetGameFileRootPath()
 
 static fs::path GetTempDirectory()
 {
-	const fs::path configPath = QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation).append("/PotatoAlert")).filesystemAbsolutePath();
+	const Result<fs::path> temp = TempPath();
+	if (!temp)
+	{
+		ExitCurrentProcess(1);
+	}
+
+	const fs::path configPath = *temp / "PotatoAlert";
 
 	if (!fs::exists(configPath))
 	{
@@ -59,7 +66,11 @@ public:
 
 	void testRunStarting(Catch::TestRunInfo const&) override
 	{
-		PotatoAlert::Core::Log::Init(PotatoAlert::Core::AppDataPath("PotatoAlert") / "GameFileUnpackTest.log");
+		PA_TRY_OR_ELSE(appData, AppDataPath("PotatoAlert"),
+		{
+			PotatoAlert::Core::ExitCurrentProcess(1);
+		});
+		PotatoAlert::Core::Log::Init(appData  / "GameFileUnpackTest.log");
 	}
 };
 CATCH_REGISTER_LISTENER(TestRunListener)

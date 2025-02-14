@@ -1,6 +1,7 @@
 // Copyright 2022 <github.com/razaqq>
 #pragma once
 
+#include "Core/Directory.hpp"
 #include "Core/Format.hpp"
 #include "Core/Process.hpp"
 #include "Core/Result.hpp"
@@ -22,7 +23,14 @@ public:
 	explicit AppDirectories(std::string_view appName)
 	{
 		AppName = appName;
-		AppDir = Core::AppDataPath(appName).make_preferred();
+
+		PA_TRY_OR_ELSE(appDir, Core::AppDataPath(appName),
+		{
+			fmt::println(stderr, "Failed to get appDir: {}", error);
+			Core::ExitCurrentProcess(1);
+		});
+
+		AppDir = appDir.make_preferred();
 		MatchesDir = (AppDir / "Matches").make_preferred();
 		ScreenshotsDir = (AppDir / "Screenshots").make_preferred();
 		GameFilesDir = (AppDir / "GameFiles").make_preferred();
@@ -30,9 +38,21 @@ public:
 		LogFile = (AppDir / fmt::format("{}.log", AppName)).make_preferred();
 		DatabaseFile = (MatchesDir / "match_history.db").make_preferred();
 
-		CreateAppDir(MatchesDir);
-		CreateAppDir(ScreenshotsDir);
-		CreateAppDir(GameFilesDir);
+		PA_TRYV_OR_ELSE(CreateAppDir(MatchesDir),
+		{
+			fmt::println(stderr, "Failed to create MatchesDir {}: {}", MatchesDir, error);
+			Core::ExitCurrentProcess(1);
+		});
+		PA_TRYV_OR_ELSE(CreateAppDir(ScreenshotsDir),
+		{
+			fmt::println(stderr, "Failed to create ScreenshotsDir {}: {}", ScreenshotsDir, error);
+			Core::ExitCurrentProcess(1);
+		});
+		PA_TRYV_OR_ELSE(CreateAppDir(GameFilesDir),
+		{
+			fmt::println(stderr, "Failed to create GameFilesDir {}: {}", GameFilesDir, error);
+			Core::ExitCurrentProcess(1);
+		});
 	}
 
 	std::string_view AppName;
@@ -46,25 +66,14 @@ public:
 	std::filesystem::path DatabaseFile;
 
 private:
-	static void CreateAppDir(const std::filesystem::path& dir)
+	static Result<void> CreateAppDir(const std::filesystem::path& dir)
 	{
-		std::error_code ec;
-		const bool exists = std::filesystem::exists(dir, ec);
-		if (ec)
-		{
-			fmt::println(stderr, "Failed to check if app dir '{}' exists, reason: '{}'", dir, ec);
-			Core::ExitCurrentProcessWithError((uint32_t)ec.value());
-		}
-
+		PA_TRY(exists, Core::PathExists(dir));
 		if (!exists)
 		{
-			std::filesystem::create_directories(dir, ec);
-			if (ec)
-			{
-				fmt::println(stderr, "Failed to create app dir '{}', reason: '{}'", dir, ec);
-				Core::ExitCurrentProcessWithError((uint32_t)ec.value());
-			}
+			PA_TRYV(Core::CreatePath(dir));
 		}
+		return {};
 	}
 };
 
