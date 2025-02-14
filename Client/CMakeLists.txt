@@ -11,7 +11,7 @@ target_sources(
     PRIVATE
 
     src/Config.cpp
-    src/DatabaseManager.cpp
+        src/DirectoryWatcher.cpp
     src/Game.cpp
     src/PotatoClient.cpp
     src/ReplayAnalyzer.cpp
@@ -44,7 +44,7 @@ target_sources(
     PotatoAlert-Client
     PRIVATE
 
-    include/Client/Config.hpp
+        include/Client/DirectoryWatcher.hpp
     include/Client/PotatoClient.hpp
     include/Client/ReplayAnalyzer.hpp
 )

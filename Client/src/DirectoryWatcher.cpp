@@ -1,7 +1,8 @@
 // Copyright 2022 <github.com/razaqq>
 
+#include "Client/DirectoryWatcher.hpp"
+
 #include "Core/Directory.hpp"
-#include "Core/DirectoryWatcher.hpp"
 
 #include <QDateTime>
 #include <QDir>
@@ -14,7 +15,7 @@
 #include <unordered_set>
 
 
-using PotatoAlert::Core::DirectoryWatcher;
+using PotatoAlert::Client::DirectoryWatcher;
 
 DirectoryWatcher::DirectoryWatcher()
 {

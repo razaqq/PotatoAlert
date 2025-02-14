@@ -3,13 +3,12 @@
 
 #include "Client/Config.hpp"
 #include "Client/DatabaseManager.hpp"
+#include "Client/DirectoryWatcher.hpp"
 #include "Client/Game.hpp"
 #include "Client/ReplayAnalyzer.hpp"
 #include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
 #include "Client/SysInfo.hpp"
-
-#include "Core/DirectoryWatcher.hpp"
 
 #include "ReplayParser/ReplayParser.hpp"
 
@@ -74,7 +73,7 @@ private:
 private:
 	ClientOptions m_options;
 	const ServiceProvider& m_services;
-	Core::DirectoryWatcher m_watcher;
+	DirectoryWatcher m_watcher;
 	std::string m_lastArenaInfoHash;
 	std::vector<GameDirectory> m_gameInfos;
 	ReplayAnalyzer& m_replayAnalyzer;

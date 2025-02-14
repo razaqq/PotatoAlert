@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 
-namespace PotatoAlert::Core {
+namespace PotatoAlert::Client {
 
 class DirectoryWatcher : public QObject
 {
@@ -34,4 +34,4 @@ signals:
 	void FileChanged(const std::filesystem::path& file);
 };
 
-}  // namespace PotatoAlert::Core
+}  // namespace PotatoAlert::Client
