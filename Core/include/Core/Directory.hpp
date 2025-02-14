@@ -9,6 +9,7 @@
 namespace PotatoAlert::Core {
 
 Result<bool> PathExists(const std::filesystem::path& path);
+Result<void> CreatePath(const std::filesystem::path& path);
 Result<bool> IsSubdirectory(const std::filesystem::path& path, const std::filesystem::path& root);
 Result<std::filesystem::path> GetModuleRootPath();
 

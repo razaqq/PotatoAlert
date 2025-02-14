@@ -23,6 +23,17 @@ Result<bool> PotatoAlert::Core::PathExists(const fs::path& path)
 	return exists;
 }
 
+Result<void> PotatoAlert::Core::CreatePath(const fs::path& path)
+{
+	std::error_code ec;
+	fs::create_directories(path, ec);
+	if (ec)
+	{
+		return PA_ERROR(ec);
+	}
+	return {};
+}
+
 Result<bool> PotatoAlert::Core::IsSubdirectory(const std::filesystem::path& path, const std::filesystem::path& root)
 {
 	fs::path current = path;
