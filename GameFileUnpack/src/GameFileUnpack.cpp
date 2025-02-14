@@ -2,6 +2,7 @@
 
 #include "Core/Bytes.hpp"
 #include "Core/Defer.hpp"
+#include "Core/Directory.hpp"
 #include "Core/File.hpp"
 #include "Core/FileMagic.hpp"
 #include "Core/FileMapping.hpp"
@@ -27,6 +28,7 @@ using PotatoAlert::Core::Byte;
 using PotatoAlert::Core::File;
 using PotatoAlert::Core::FileMagic;
 using PotatoAlert::Core::FileMapping;
+using PotatoAlert::Core::Result;
 using PotatoAlert::Core::Take;
 using PotatoAlert::Core::TakeInto;
 using PotatoAlert::Core::TakeString;
@@ -37,14 +39,72 @@ using PotatoAlert::GameFileUnpack::IdxHeader;
 using PotatoAlert::GameFileUnpack::Node;
 using PotatoAlert::GameFileUnpack::FileRecord;
 using PotatoAlert::GameFileUnpack::Unpacker;
-using PotatoAlert::GameFileUnpack::UnpackResult;
 using PotatoAlert::GameFileUnpack::Volume;
 
 namespace fs = std::filesystem;
 
-#define PA_UNPACK_ERROR(...) (::std::unexpected(::PotatoAlert::GameFileUnpack::UnpackError(fmt::format(__VA_ARGS__))))
-
 namespace {
+
+enum class UnpackError
+{
+	InvalidIdxFileSize,
+	InvalidIdxHeaderSize,
+	InvalidIdxHeaderMagic,
+
+	InvalidHeaderVersion,
+	InvalidHeaderEndianness,
+	InvalidDataSize,
+	InvalidNodeSize,
+	InvalidVolumeCount,
+	IdxPathDoesNotExist,
+	FailedToIterateIdxPath,
+	FailedToReadIdxFile,
+	FailedToOpenIdxFile,
+
+	FailedToReadPkgFile,
+	FailedToOpenPkgFile,
+	FailedToMapPkgFile,
+
+	FailedToReadNodeNameLength,
+	FailedToReadNodeNamePtr,
+	InvalidNodeNamePtr,
+	FailedToReadNodeName,
+	InvalidNodeNameLength,
+	FailedToReadNodeId,
+	FailedToReadNodeParent,
+
+	InvalidFileRecordSize,
+	InvalidFileRecordNodeId,
+
+	InvalidVolumeSize,
+	FailedToReadVolumeNameLength,
+	FailedToReadVolumeNamePtr,
+	InvalidVolumeNamePtr,
+	FailedToReadVolumeName,
+	InvalidVolumeNameLength,
+
+	InvalidPkgDecompression,
+	NoMatchingNodeInDirectoryTree,
+	FileRecordOffsetOutOfBounds,
+	FailedToWriteData,
+};
+
+struct UnpackErrorCategory : std::error_category
+{
+	const char* name() const noexcept override
+	{
+		return "GameFileUnpack";
+	}
+
+	std::string message(int e) const override;
+};
+
+const UnpackErrorCategory g_unpackErrorCategory{};
+
+static std::error_code MakeError(UnpackError err)
+{
+	return { static_cast<std::underlying_type_t<UnpackError>>(err), g_unpackErrorCategory };
+}
 
 static bool ReadNullTerminatedString(std::span<const Byte> data, uint64_t offset, std::string& out)
 {
@@ -73,7 +133,7 @@ static bool ReadNullTerminatedString(std::span<const Byte> data, uint64_t offset
 	return true;
 }
 
-static UnpackResult<void> WriteFileData(const fs::path& file, std::span<const Byte> data)
+static Result<void> WriteFileData(const fs::path& file, std::span<const Byte> data)
 {
 	// write the data
 	if (const File outFile = File::Open(file, File::Flags::Open | File::Flags::Write | File::Flags::Create))
@@ -83,10 +143,87 @@ static UnpackResult<void> WriteFileData(const fs::path& file, std::span<const By
 			return {};
 		}
 	}
-	return PA_UNPACK_ERROR("Failed to write data to outfile {} - {}", file, File::LastError());
+	return PA_ERROR(MakeError(UnpackError::FailedToWriteData));
 }
 
 }
+
+std::string UnpackErrorCategory::message(int e) const
+{
+	switch (static_cast<UnpackError>(e))
+	{
+		case UnpackError::InvalidIdxFileSize:
+			return "IdxFile has invalid size";
+		case UnpackError::InvalidIdxHeaderMagic:
+			return "IdxFile has invalid magic";
+		case UnpackError::InvalidIdxHeaderSize:
+			return "IdxFile has invalid header size";
+		case UnpackError::InvalidHeaderVersion:
+			return "Header Version is not 0x40";
+		case UnpackError::InvalidHeaderEndianness:
+			return "Header Endianness is not 0x20000000";
+		case UnpackError::InvalidDataSize:
+			return "IdxFile has invalid data size";
+		case UnpackError::InvalidVolumeCount:
+			return "IdxFile volume count doesn't match header";
+		case UnpackError::FailedToWriteData:
+			return "Failed to write data to outfile";
+		case UnpackError::IdxPathDoesNotExist:
+			return "IdxPath does not exist";
+		case UnpackError::FailedToIterateIdxPath:
+			return "Failed to iterate idx path";
+		case UnpackError::FailedToReadIdxFile:
+			return "Failed to read idx file";
+		case UnpackError::FailedToOpenIdxFile:
+			return "Failed to open idx file";
+		case UnpackError::FailedToReadPkgFile:
+			return "Failed to read pkg file";
+		case UnpackError::FailedToOpenPkgFile:
+			return "Failed to open pkg file";
+		case UnpackError::FailedToMapPkgFile:
+			return "Failed to map pkg file";
+		case UnpackError::InvalidPkgDecompression:
+			return "Decompressed file size does not match file record";
+		case UnpackError::NoMatchingNodeInDirectoryTree:
+			return "No matching node in directory tree";
+		case UnpackError::FileRecordOffsetOutOfBounds:
+			return "FileRecord offset is out of bounds";
+		case UnpackError::InvalidNodeSize:
+			return "Invalid node size";
+		case UnpackError::FailedToReadNodeNameLength:
+			return "Failed to read node name length";
+		case UnpackError::FailedToReadNodeNamePtr:
+			return "Failed to read node name ptr";
+		case UnpackError::InvalidNodeNamePtr:
+			return "Invalid node name ptr";
+		case UnpackError::FailedToReadNodeName:
+			return "Failed to read node name";
+		case UnpackError::InvalidNodeNameLength:
+			return "Node name length does not match expected value";
+		case UnpackError::FailedToReadNodeId:
+			return "Failed to read node id";
+		case UnpackError::FailedToReadNodeParent:
+			return "Failed to read node parent";
+		case UnpackError::InvalidFileRecordSize:
+			return "Invalid FileRecord size";
+		case UnpackError::InvalidFileRecordNodeId:
+			return "FileRecord references non-existent node id";
+		case UnpackError::InvalidVolumeSize:
+			return "Invalid volume size";
+		case UnpackError::FailedToReadVolumeNameLength:
+			return "Failed to read volume name length";
+		case UnpackError::FailedToReadVolumeNamePtr:
+			return "Failed to read volume name ptr";
+		case UnpackError::InvalidVolumeNamePtr:
+			return "Invalid volume name ptr";
+		case UnpackError::FailedToReadVolumeName:
+			return "Failed to read volume name";
+		case UnpackError::InvalidVolumeNameLength:
+			return "Invalid volume name length";
+	}
+	return "Unknown error";
+}
+
 
 std::optional<DirectoryTree::TreeNode> DirectoryTree::Find(std::string_view path) const
 {
@@ -155,18 +292,18 @@ Unpacker::Unpacker(fs::path pkgPath, fs::path idxPath) : m_pkgPath(std::move(pkg
 {
 }
 
-UnpackResult<void> Unpacker::Parse()
+Result<void> Unpacker::Parse()
 {
 	if (!fs::exists(m_idxPath))
 	{
-		return PA_UNPACK_ERROR("IdxPath does not exist: {}", m_idxPath);
+		return PA_ERROR(MakeError(UnpackError::IdxPathDoesNotExist));
 	}
 
 	std::error_code ec;
 	auto it = fs::recursive_directory_iterator(m_idxPath, ec);
 	if (ec)
 	{
-		return PA_UNPACK_ERROR("Failed to iterate IdxPath: {}", ec.message());
+		return PA_ERROR(MakeError(UnpackError::FailedToIterateIdxPath));
 	}
 
 	for (const fs::directory_entry& entry : it)
@@ -186,12 +323,12 @@ UnpackResult<void> Unpacker::Parse()
 				}
 				else
 				{
-					return PA_UNPACK_ERROR("Failed to read idxFile: {}", File::LastError());
+					return PA_ERROR(MakeError(UnpackError::FailedToReadIdxFile));
 				}
 			}
 			else
 			{
-				return PA_UNPACK_ERROR("Failed to open idxFile for reading: {}", File::LastError());
+				return PA_ERROR(MakeError(UnpackError::FailedToOpenIdxFile));
 			}
 		}
 	}
@@ -199,12 +336,12 @@ UnpackResult<void> Unpacker::Parse()
 	return {};
 }
 
-UnpackResult<void> Unpacker::Extract(std::string_view nodeName, const fs::path& dst, bool preservePath) const
+Result<void> Unpacker::Extract(std::string_view nodeName, const fs::path& dst, bool preservePath) const
 {
 	const std::optional<DirectoryTree::TreeNode> nodeResult = m_directoryTree.Find(nodeName);
 	if (!nodeResult)
 	{
-		return PA_UNPACK_ERROR("There exists no node with name {} in directory tree", nodeName);
+		return PA_ERROR(MakeError(UnpackError::NoMatchingNodeInDirectoryTree));
 	}
 	TreeNode rootNode = nodeResult.value();
 
@@ -236,16 +373,11 @@ UnpackResult<void> Unpacker::Extract(std::string_view nodeName, const fs::path& 
 			}
 
 			// create output directories if they don't exist yet
-			fs::path outDir = filePath;
-			outDir.remove_filename();
-			if (!fs::exists(outDir))
+			const fs::path outDir = fs::path(filePath).remove_filename();
+			PA_TRY(exists, Core::PathExists(outDir));
+			if (!exists)
 			{
-				std::error_code ec;
-				fs::create_directories(outDir, ec);
-				if (ec)
-				{
-					return PA_UNPACK_ERROR("Failed to create game file scripts directory: {}", ec);
-				}
+				PA_TRYV(Core::CreatePath(outDir));
 			}
 
 			PA_TRYV(ExtractFile(node->File.value(), filePath));
@@ -255,12 +387,12 @@ UnpackResult<void> Unpacker::Extract(std::string_view nodeName, const fs::path& 
 	return {};
 }
 
-UnpackResult<void> Unpacker::Extract(std::string_view nodeName, std::string_view pattern, const std::filesystem::path& dst, bool preservePath) const
+Result<void> Unpacker::Extract(std::string_view nodeName, std::string_view pattern, const std::filesystem::path& dst, bool preservePath) const
 {
 	const std::optional<DirectoryTree::TreeNode> nodeResult = m_directoryTree.Find(nodeName);
 	if (!nodeResult)
 	{
-		return PA_UNPACK_ERROR("There exists no node with name {} in directory tree", nodeName);
+		return PA_ERROR(MakeError(UnpackError::NoMatchingNodeInDirectoryTree));
 	}
 	TreeNode rootNode = nodeResult.value();
 
@@ -298,16 +430,11 @@ UnpackResult<void> Unpacker::Extract(std::string_view nodeName, std::string_view
 			}
 
 			// create output directories if they don't exist yet
-			fs::path outDir = filePath;
-			outDir.remove_filename();
-			if (!fs::exists(outDir))
+			const fs::path outDir = fs::path(filePath).remove_filename();
+			PA_TRY(exists, Core::PathExists(outDir));
+			if (!exists)
 			{
-				std::error_code ec;
-				fs::create_directories(outDir, ec);
-				if (ec)
-				{
-					return PA_UNPACK_ERROR("Failed to create game file scripts directory: {}", ec);
-				}
+				PA_TRYV(Core::CreatePath(outDir));
 			}
 
 			PA_TRYV(ExtractFile(node->File.value(), filePath));
@@ -322,7 +449,7 @@ const DirectoryTree& Unpacker::GetDirectoryTree() const
 	return m_directoryTree;
 }
 
-UnpackResult<void> Unpacker::ExtractFile(const FileRecord& fileRecord, const fs::path& dst) const
+Result<void> Unpacker::ExtractFile(const FileRecord& fileRecord, const fs::path& dst) const
 {
 	if (const File inFile = File::Open(m_pkgPath / fileRecord.PkgName, File::Flags::Open | File::Flags::Read))
 	{
@@ -339,8 +466,7 @@ UnpackResult<void> Unpacker::ExtractFile(const FileRecord& fileRecord, const fs:
 
 				if (fileRecord.Offset + fileRecord.Size > fileSize)
 				{
-					return PA_UNPACK_ERROR("Got offset ({} - {}) out of size bounds ({})",
-						fileRecord.Offset, fileRecord.Offset + fileRecord.Size, fileSize);
+					return PA_ERROR(MakeError(UnpackError::FileRecordOffsetOutOfBounds));
 				}
 
 				// check if data is compressed and inflate
@@ -352,31 +478,31 @@ UnpackResult<void> Unpacker::ExtractFile(const FileRecord& fileRecord, const fs:
 					);
 					if (inflated.size() != fileRecord.UncompressedSize)
 					{
-						return PA_UNPACK_ERROR("File '{}' had invalid size {} != {} after decompression", fileRecord.Path, inflated.size(), fileRecord.UncompressedSize);
+						return PA_ERROR(MakeError(UnpackError::InvalidPkgDecompression));
 					}
 					return WriteFileData(dst, std::span{ inflated });
 				}
 				return WriteFileData(dst, data.subspan(fileRecord.Offset, fileRecord.Size));
 			}
-			return PA_UNPACK_ERROR("Failed to map PkgFile into memory: {}", FileMapping::LastError());
+			return PA_ERROR(MakeError(UnpackError::FailedToMapPkgFile));
 		}
-		return PA_UNPACK_ERROR("Failed to create file mapping: {}", FileMapping::LastError());
+		return PA_ERROR(MakeError(UnpackError::FailedToMapPkgFile));
 	}
-	return PA_UNPACK_ERROR("Failed to open pkg file for reading: {}", File::LastError());
+	return PA_ERROR(MakeError(UnpackError::FailedToOpenPkgFile));
 }
 
-UnpackResult<IdxHeader> IdxHeader::Parse(std::span<const Byte> data)
+Result<IdxHeader> IdxHeader::Parse(std::span<const Byte> data)
 {
 	if (data.size() != HeaderSize)
 	{
-		return PA_UNPACK_ERROR("Invalid IdxHeader Length");
+		return PA_ERROR(MakeError(UnpackError::InvalidIdxHeaderSize));
 	}
 
 	IdxHeader header;
 
 	if (!FileMagic<'I', 'S', 'F', 'P'>(data))
 	{
-		return PA_UNPACK_ERROR("Invalid Idx Header");
+		return PA_ERROR(MakeError(UnpackError::InvalidIdxHeaderMagic));
 	}
 
 	TakeInto(data, header.Endianness);
@@ -396,56 +522,56 @@ UnpackResult<IdxHeader> IdxHeader::Parse(std::span<const Byte> data)
 	return header;
 }
 
-UnpackResult<Node> Node::Parse(std::span<const Byte> data, uint64_t offset, std::span<const Byte> fullData)
+Result<Node> Node::Parse(std::span<const Byte> data, uint64_t offset, std::span<const Byte> fullData)
 {
 	if (data.size() != NodeSize)
 	{
-		return PA_UNPACK_ERROR("Invalid Node size {}", data.size());
+		return PA_ERROR(MakeError(UnpackError::InvalidNodeSize));
 	}
 
 	Node node;
 
 	uint64_t nameLength;
 	if (!TakeInto(data, nameLength))
-		return PA_UNPACK_ERROR("Failed read Node name length");
+		return PA_ERROR(MakeError(UnpackError::FailedToReadNodeNameLength));
 
 	uint64_t namePtr;
 	if (!TakeInto(data, namePtr))
-		return PA_UNPACK_ERROR("Failed read Node namePtr");
+		return PA_ERROR(MakeError(UnpackError::FailedToReadNodeNamePtr));
 
 	namePtr += offset;
 
 	if (namePtr >= fullData.size())
 	{
-		return PA_UNPACK_ERROR("Node name pointer {} outside data range {}", namePtr, fullData.size());
+		return PA_ERROR(MakeError(UnpackError::InvalidNodeNamePtr));
 	}
 
 	if (!ReadNullTerminatedString(fullData, namePtr, node.Name))
 	{
-		return PA_UNPACK_ERROR("Failed to get node name");
+		return PA_ERROR(MakeError(UnpackError::FailedToReadNodeName));
 	}
 
 	if (nameLength != node.Name.size())
 	{
-		return PA_UNPACK_ERROR("Node has invalid name length {} != {}", nameLength, node.Name.size());
+		return PA_ERROR(MakeError(UnpackError::InvalidNodeNameLength));
 	}
 
 	node.Name.pop_back();  // remove the double \0, otherwise we get issues down the line
 
 	if (!TakeInto(data, node.Id))
-		return PA_UNPACK_ERROR("Failed read node.Id");
+		return PA_ERROR(MakeError(UnpackError::FailedToReadNodeId));
 
 	if (!TakeInto(data, node.Parent))
-		return PA_UNPACK_ERROR("Failed read node.Parent");
+		return PA_ERROR(MakeError(UnpackError::FailedToReadNodeParent));
 
 	return node;
 }
 
-UnpackResult<FileRecord> FileRecord::Parse(std::span<const Byte> data, const std::unordered_map<uint64_t, Node>& nodes)
+Result<FileRecord> FileRecord::Parse(std::span<const Byte> data, const std::unordered_map<uint64_t, Node>& nodes)
 {
 	if (data.size() != FileRecordSize)
 	{
-		return PA_UNPACK_ERROR("Invalid RawFileRecord size {}", data.size());
+		return PA_ERROR(MakeError(UnpackError::InvalidFileRecordSize));
 	}
 
 	FileRecord fileRecord;
@@ -461,7 +587,7 @@ UnpackResult<FileRecord> FileRecord::Parse(std::span<const Byte> data, const std
 
 	if (!nodes.contains(fileRecord.NodeId))
 	{
-		return PA_UNPACK_ERROR("FileRecord references node with id {}, but that doesnt exist", fileRecord.NodeId);
+		return PA_ERROR(MakeError(UnpackError::InvalidFileRecordNodeId));
 	}
 
 	std::vector<std::string_view> paths;
@@ -480,38 +606,38 @@ UnpackResult<FileRecord> FileRecord::Parse(std::span<const Byte> data, const std
 	return fileRecord;
 }
 
-UnpackResult<Volume> Volume::Parse(std::span<const Byte> data, uint64_t offset, std::span<const Byte> fullData)
+Result<Volume> Volume::Parse(std::span<const Byte> data, uint64_t offset, std::span<const Byte> fullData)
 {
 	if (data.size() < VolumeSize)
 	{
-		return PA_UNPACK_ERROR("Invalid IdxFile size {}", data.size());
+		return PA_ERROR(MakeError(UnpackError::InvalidVolumeSize));
 	}
 
 	Volume volume;
 
 	uint64_t nameLength;
 	if (!TakeInto(data, nameLength))
-		return PA_UNPACK_ERROR("Failed read Volume name length");
+		return PA_ERROR(MakeError(UnpackError::FailedToReadVolumeNameLength));
 
 	uint64_t namePtr;
 	if (!TakeInto(data, namePtr))
-		return PA_UNPACK_ERROR("Failed read Volume namePtr");
+		return PA_ERROR(MakeError(UnpackError::FailedToReadVolumeNamePtr));
 
 	namePtr += offset;
 
 	if (namePtr >= fullData.size())
 	{
-		return PA_UNPACK_ERROR("Volume name pointer {} outside data range {}", namePtr, fullData.size());
+		return PA_ERROR(MakeError(UnpackError::InvalidVolumeNamePtr));
 	}
 
 	if (!ReadNullTerminatedString(fullData, namePtr, volume.Name))
 	{
-		return PA_UNPACK_ERROR("Failed to get Volume name");
+		return PA_ERROR(MakeError(UnpackError::FailedToReadVolumeName));
 	}
 
 	if (nameLength != volume.Name.size())
 	{
-		return PA_UNPACK_ERROR("Volume has invalid name length {} != {}", nameLength, volume.Name.size());
+		return PA_ERROR(MakeError(UnpackError::InvalidVolumeNameLength));
 	}
 
 	volume.Name.pop_back();  // remove the double \0, otherwise we get issues down the line
@@ -521,13 +647,13 @@ UnpackResult<Volume> Volume::Parse(std::span<const Byte> data, uint64_t offset, 
 	return volume;
 }
 
-UnpackResult<IdxFile> IdxFile::Parse(std::span<const Byte> data)
+Result<IdxFile> IdxFile::Parse(std::span<const Byte> data)
 {
 	const std::span originalData = data;
 
 	if (data.size() < HeaderSize)
 	{
-		return PA_UNPACK_ERROR("Invalid IdxFile size {}", data.size());
+		return PA_ERROR(MakeError(UnpackError::InvalidIdxFileSize));
 	}
 
 	IdxFile file;
@@ -537,19 +663,19 @@ UnpackResult<IdxFile> IdxFile::Parse(std::span<const Byte> data)
 
 	if (header.Endianness != 0x2000000)
 	{
-		return PA_UNPACK_ERROR("Endianness is not 0x20000000");
+		return PA_ERROR(MakeError(UnpackError::InvalidHeaderEndianness));
 	}
 
 	if (header.Version != 0x40)
 	{
-		return PA_UNPACK_ERROR("Endianness is not 0x40");
+		return PA_ERROR(MakeError(UnpackError::InvalidHeaderVersion));
 	}
 
-	auto getData = [originalData](uint64_t offset, uint64_t size) -> UnpackResult<std::span<const Byte>>
+	auto getData = [originalData](uint64_t offset, uint64_t size) -> Result<std::span<const Byte>>
 	{
 		if (offset + size > originalData.size())
 		{
-			return PA_UNPACK_ERROR("Data too small: offset {} + size {} > {}", offset, size, originalData.size());
+			return PA_ERROR(MakeError(UnpackError::InvalidDataSize));
 		}
 		return originalData.subspan(offset, size);
 	};
@@ -582,7 +708,7 @@ UnpackResult<IdxFile> IdxFile::Parse(std::span<const Byte> data)
 	}
 
 	if (file.Volumes.size() != 1)
-		return PA_UNPACK_ERROR("IdxFile had volume count {} != 1", file.Volumes.size());
+		return PA_ERROR(MakeError(UnpackError::InvalidVolumeCount));
 	file.PkgName = file.Volumes[0].Name;
 
 	return file;

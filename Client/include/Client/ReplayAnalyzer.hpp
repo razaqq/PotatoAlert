@@ -46,7 +46,7 @@ public:
 	void AnalyzeDirectory(const std::filesystem::path& directory);
 	void OnFileChanged(const std::filesystem::path& file);
 	bool HasGameFiles(const Game::GameInfo& gameInfo) const;
-	static GameFileUnpack::UnpackResult<void> UnpackGameFiles(const std::filesystem::path& dst, const std::filesystem::path& pkgPath, const std::filesystem::path& idxPath);
+	static Core::Result<void> UnpackGameFiles(const std::filesystem::path& dst, const std::filesystem::path& pkgPath, const std::filesystem::path& idxPath);
 
 private:
 	void AnalyzeReplay(const std::filesystem::path& path, std::chrono::seconds readDelay = std::chrono::seconds(0));

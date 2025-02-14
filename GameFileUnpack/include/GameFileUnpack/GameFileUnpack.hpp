@@ -3,6 +3,7 @@
 
 #include "Core/Bytes.hpp"
 #include "Core/Preprocessor.hpp"
+#include "Core/Result.hpp"
 
 #include <cstdint>
 #include <filesystem>
@@ -14,10 +15,6 @@
 
 
 namespace PotatoAlert::GameFileUnpack {
-
-using UnpackError = std::string;
-template<typename T>
-using UnpackResult = Core::Result<T, UnpackError>;
 
 static constexpr uint32_t HeaderSize = 0x38;
 static constexpr uint32_t HeaderDataOffset = 0x10;  // size until version
@@ -38,7 +35,7 @@ struct IdxHeader
 	uint64_t FileRecordTablePtr;
 	uint64_t VolumeTablePtr;
 
-	static UnpackResult<IdxHeader> Parse(std::span<const Core::Byte> data);
+	static Core::Result<IdxHeader> Parse(std::span<const Core::Byte> data);
 };
 static_assert(sizeof(IdxHeader) == HeaderSize);
 
@@ -49,7 +46,7 @@ struct PA_API Node
 	uint64_t Id;
 	uint64_t Parent;
 
-	static UnpackResult<Node> Parse(std::span<const Core::Byte> data, uint64_t offset, std::span<const Core::Byte> fullData);
+	static Core::Result<Node> Parse(std::span<const Core::Byte> data, uint64_t offset, std::span<const Core::Byte> fullData);
 };
 
 static constexpr uint32_t FileRecordSize = 0x30;
@@ -66,7 +63,7 @@ struct PA_API FileRecord
 	uint64_t UncompressedSize;
 	uint32_t Padding;
 
-	static UnpackResult<FileRecord> Parse(std::span<const Core::Byte> data, const std::unordered_map<uint64_t, Node>& nodes);
+	static Core::Result<FileRecord> Parse(std::span<const Core::Byte> data, const std::unordered_map<uint64_t, Node>& nodes);
 };
 
 static constexpr uint32_t VolumeSize = 0x18;
@@ -75,7 +72,7 @@ struct PA_API Volume
 	std::string Name;
 	uint64_t Id;
 
-	static UnpackResult<Volume> Parse(std::span<const Core::Byte> data, uint64_t offset, std::span<const Core::Byte> fullData);
+	static Core::Result<Volume> Parse(std::span<const Core::Byte> data, uint64_t offset, std::span<const Core::Byte> fullData);
 };
 
 struct PA_API IdxFile
@@ -85,7 +82,7 @@ struct PA_API IdxFile
 	std::vector<FileRecord> Files;
 	std::vector<Volume> Volumes;
 
-	static UnpackResult<IdxFile> Parse(std::span<const Core::Byte> data);
+	static Core::Result<IdxFile> Parse(std::span<const Core::Byte> data);
 };
 
 class PA_API DirectoryTree
@@ -112,9 +109,9 @@ class PA_API Unpacker
 {
 public:
 	explicit Unpacker(std::filesystem::path pkgPath, std::filesystem::path idxPath);
-	[[nodiscard]] UnpackResult<void> Parse();
-	[[nodiscard]] UnpackResult<void> Extract(std::string_view nodeName, const std::filesystem::path& dst, bool preservePath = true) const;
-	[[nodiscard]] UnpackResult<void> Extract(std::string_view nodeName, std::string_view pattern, const std::filesystem::path& dst, bool preservePath = true) const;
+	[[nodiscard]] Core::Result<void> Parse();
+	[[nodiscard]] Core::Result<void> Extract(std::string_view nodeName, const std::filesystem::path& dst, bool preservePath = true) const;
+	[[nodiscard]] Core::Result<void> Extract(std::string_view nodeName, std::string_view pattern, const std::filesystem::path& dst, bool preservePath = true) const;
 	[[nodiscard]] const DirectoryTree& GetDirectoryTree() const;
 
 private:
@@ -122,7 +119,7 @@ private:
 	std::filesystem::path m_pkgPath;
 	std::filesystem::path m_idxPath;
 
-	[[nodiscard]] UnpackResult<void> ExtractFile(const FileRecord& fileRecord, const std::filesystem::path& dst) const;
+	[[nodiscard]] Core::Result<void> ExtractFile(const FileRecord& fileRecord, const std::filesystem::path& dst) const;
 };
 
 }  // namespace PotatoAlert::GameFileUnpack

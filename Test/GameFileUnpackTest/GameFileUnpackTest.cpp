@@ -3,6 +3,7 @@
 #include "Core/Bytes.hpp"
 #include "Core/File.hpp"
 #include "Core/Log.hpp"
+#include "Core/Result.hpp"
 #include "Core/StandardPaths.hpp"
 
 #include <GameFileUnpack/GameFileUnpack.hpp>
@@ -20,6 +21,7 @@
 namespace fs = std::filesystem;
 using PotatoAlert::Core::Byte;
 using PotatoAlert::Core::File;
+using PotatoAlert::Core::Result;
 using namespace PotatoAlert::GameFileUnpack;
 using TreeNode = DirectoryTree::TreeNode;
 using PotatoAlert::GameFileUnpack::Unpacker;
@@ -90,7 +92,7 @@ TEST_CASE("GameFileUnpackTest_IdxFileTest")
 	REQUIRE(file);
 	std::vector<Byte> data;
 	REQUIRE(file.ReadAll(data));
-	UnpackResult<IdxFile> idxFileRes = IdxFile::Parse(data);
+	Result<IdxFile> idxFileRes = IdxFile::Parse(data);
 	REQUIRE(idxFileRes);
 	IdxFile& idxFile = *idxFileRes;
 	REQUIRE(idxFile.Files.size() == 39);

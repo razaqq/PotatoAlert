@@ -22,6 +22,7 @@
 
 #include "GameFileUnpack/GameFileUnpack.hpp"
 
+#include <QApplication>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QObject>
@@ -39,7 +40,6 @@
 using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Client::StatsParser::MatchType;
 using PotatoAlert::Core::String::Split;
-using PotatoAlert::GameFileUnpack::UnpackResult;
 using namespace PotatoAlert::Core;
 
 namespace {
@@ -697,15 +697,15 @@ void PotatoClient::UpdateGameInstalls()
 		{
 			LOG_INFO("Game files for Client ({}, {}) missing, unpacking...", gameInfo->Region, gameVersion);
 			const fs::path dst = appDirs.GameFilesDir / gameInfo->Region / gameVersion;
-			const UnpackResult<void> unpackResult = ReplayAnalyzer::UnpackGameFiles(dst, gameInfo->PkgPath, gameInfo->IdxPath);
+			const Result<void> unpackResult = ReplayAnalyzer::UnpackGameFiles(dst, gameInfo->PkgPath, gameInfo->IdxPath);
 			if (!unpackResult)
 			{
-				LOG_ERROR("Failed to unpack game files for version '{}': {}", gameVersion, unpackResult.error());
+				LOG_ERROR("Failed to unpack game files for version '{}': {}", gameVersion, unpackResult.error().message());
 			}
 		}
 		else
 		{
-			LOG_INFO("Game files for Client ({}, {}) missing", gameInfo->Region, gameVersion);
+			LOG_INFO("Game files for Client ({}, {}) found", gameInfo->Region, gameVersion);
 		}
 
 		// let's check the entire game folder, replays might be hiding everywhere
