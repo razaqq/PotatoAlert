@@ -17,6 +17,7 @@
 #include "Gui/VerticalMenuBar.hpp"
 
 #include <QDesktopServices>
+#include <QDir>
 #include <QMainWindow>
 #include <QUrl>
 #include <QVBoxLayout>

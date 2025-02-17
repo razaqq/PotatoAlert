@@ -1,4 +1,4 @@
-﻿// Copyright 2021 <github.com/razaqq>
+// Copyright 2021 <github.com/razaqq>
 
 #include "Core/ApplicationGuard.hpp"
 #include "Core/Directory.hpp"
@@ -18,14 +18,10 @@
 #include "Gui/NativeWindow.hpp"
 #include "Gui/Palette.hpp"
 
-#include "Updater/Updater.hpp"
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreserved-id-macro"
 #include "VersionInfo.h"
 #pragma clang diagnostic pop
-
-#include "win32.h"
 
 #include <QApplication>
 #include <QEvent>
@@ -49,9 +45,8 @@ using PotatoAlert::Gui::FontScalingChangeEvent;
 using PotatoAlert::Gui::LanguageChangeEvent;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::NativeWindow;
-using PotatoAlert::Updater::Updater;
 
-static int RunMain(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
 	const ApplicationGuard guard("PotatoAlert");
 	if (guard.ExistsOtherInstance())
@@ -70,11 +65,12 @@ static int RunMain(int argc, char* argv[])
 	serviceProvider.Add(appDirs);
 
 	PotatoAlert::Core::Log::Init(appDirs.LogFile);
+	qInstallMessageHandler(LogQtMessage);
 
 	Config config(appDirs.ConfigFile);
 	serviceProvider.Add(config);
 
-	ReplayAnalyzer replayAnalyzer(serviceProvider);
+	ReplayAnalyzer replayAnalyzer(serviceProvider, appDirs.ReplayVersionsDir);
 	serviceProvider.Add(replayAnalyzer);
 
 	PotatoClient client(
@@ -82,7 +78,8 @@ static int RunMain(int argc, char* argv[])
 		.SubmitUrl = PA_SUBMIT_URL,
 		.LookupUrl = PA_LOOKUP_URL,
 		.TransferTimeout = 10000,
-	}, serviceProvider);
+	},
+	serviceProvider);
 	serviceProvider.Add(client);
 
 	SQLite db = SQLite::Open(appDirs.DatabaseFile, SQLite::Flags::ReadWrite | SQLite::Flags::Create);
@@ -96,7 +93,7 @@ static int RunMain(int argc, char* argv[])
 	serviceProvider.Add(dbm);
 
 	QApplication::setQuitOnLastWindowClosed(false);
-	
+
 	QApplication::setOrganizationName(PRODUCT_COMPANY_NAME);
 	QApplication::setApplicationVersion(PRODUCT_VERSION_FULL_STR);
 
@@ -126,27 +123,8 @@ static int RunMain(int argc, char* argv[])
 	FontScalingChangeEvent fontScalingChangeEvent((float)serviceProvider.Get<Config>().Get<ConfigKey::FontScaling>() / 100.0f);
 	QApplication::sendEvent(mainWindow, &fontScalingChangeEvent);
 
-	// check if there is a new version available
-	if (serviceProvider.Get<Config>().Get<ConfigKey::UpdateNotifications>())
-		if (Updater::UpdateAvailable())
-			if (mainWindow->ConfirmUpdate())
-				if (Updater::StartUpdater())
-					ExitCurrentProcess(0);
-
 	if (QApplication::arguments().contains("--changelog"))
 		;  // TODO: add changelog
 
 	return QApplication::exec();
 }
-
-#ifndef NDEBUG
-int main(int argc, char* argv[])
-{
-	return RunMain(argc, argv);
-}
-#else
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
-{
-	return RunMain(__argc, __argv);
-}
-#endif

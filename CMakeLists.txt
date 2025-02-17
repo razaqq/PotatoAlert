@@ -1,24 +1,19 @@
 cmake_minimum_required(VERSION 3.17)
 project(PotatoAlert VERSION 3.1.25)
 
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 cmake_policy(SET CMP0069 NEW)  # needed for CMAKE_INTERPROCEDURAL_OPTIMIZATION
 set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 
 option(PA_ENABLE_LTO "Enable cross language linking time optimization" OFF)
-set(LTO_ENABLED false)
 if(PA_ENABLE_LTO)
     include(CheckIPOSupported)
     check_ipo_supported(RESULT LTO_SUPPORTED OUTPUT LTO_ERROR)
 
     if(LTO_SUPPORTED)
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-            set(LTO_ENABLED true)
+            set(LTO_ENABLED TRUE)
             message(STATUS "IPO / LTO enabled")
             set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto=thin -fuse-ld=ldd")

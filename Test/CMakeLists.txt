@@ -1,11 +1,5 @@
 cmake_minimum_required(VERSION 3.17)
 
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
 function(SetDllPath TARGET)
     # Right now cmake is not smart enough for this to work https://gitlab.kitware.com/cmake/cmake/-/issues/25686
     #set_tests_properties(

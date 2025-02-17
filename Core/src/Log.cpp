@@ -7,9 +7,6 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-#include <QApplication>
-#include <QString>
-
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -19,34 +16,6 @@
 using PotatoAlert::Core::Log;
 
 std::shared_ptr<spdlog::logger> Log::s_logger;
-
-namespace {
-
-static void LogQtMessage(QtMsgType type, const QMessageLogContext& context, const QString& text)
-{
-	spdlog::level::level_enum level = spdlog::level::info;
-
-	switch (type)
-	{
-		case QtDebugMsg:
-			level = spdlog::level::trace;
-			break;
-		case QtWarningMsg:
-			level = spdlog::level::warn;
-			break;
-		case QtCriticalMsg:
-		case QtFatalMsg:
-			level = spdlog::level::err;
-			break;
-		case QtInfoMsg:
-			level = spdlog::level::info;
-			break;
-	}
-
-	Log::GetLogger()->log(spdlog::source_loc{ context.file, context.line, context.function }, level, text.toStdString());
-}
-
-}
 
 template<typename ScopedPadder>
 class SourceLocationFlag : public spdlog::custom_flag_formatter
@@ -115,6 +84,4 @@ void Log::Init(const std::filesystem::path& logFile)
 	spdlog::register_logger(s_logger);
 	s_logger->set_level(spdlog::level::trace);
 	s_logger->flush_on(spdlog::level::trace);
-
-	qInstallMessageHandler(LogQtMessage);
 }

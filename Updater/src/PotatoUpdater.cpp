@@ -3,6 +3,7 @@
 #include "Client/AppDirectories.hpp"
 #include "Client/Config.hpp"
 #include "Client/ServiceProvider.hpp"
+#include "Client/Log.hpp"
 
 #include "Core/Log.hpp"
 #include "Core/StandardPaths.hpp"
@@ -18,6 +19,7 @@
 
 using PotatoAlert::Client::AppDirectories;
 using PotatoAlert::Client::Config;
+using PotatoAlert::Client::LogQtMessage;
 using PotatoAlert::Client::ServiceProvider;
 using PotatoAlert::Updater::Updater;
 
@@ -28,6 +30,7 @@ static int RunMain(int argc, char* argv[])
 	const AppDirectories appDirs("PotatoAlert");
 
 	PotatoAlert::Core::Log::Init(appDirs.AppDir / "PotatoUpdater.log");
+	qInstallMessageHandler(LogQtMessage);
 	
 	QApplication app(argc, argv);
 

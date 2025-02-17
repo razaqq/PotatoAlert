@@ -74,7 +74,7 @@ Config::Config(const fs::path& filePath) : m_filePath(filePath)
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowWidth]), 1500, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowX]), 0, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowY]), 0, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowState]), Qt::WindowState::WindowActive, a);
+	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowState]), 0x00000008, a);  // TODO: Qt::WindowState::WindowActive
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::Font]), "Roboto", a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::FontScaling]), 100, a);
 	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::AllowSendingUsageStats]), true, a);

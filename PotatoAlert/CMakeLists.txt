@@ -1,35 +1,44 @@
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+cmake_minimum_required(VERSION 3.17)
+project(PotatoAlert VERSION 3.1.25)
 
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_executable(PotatoAlert ${CMAKE_BINARY_DIR}/PotatoAlert.qrc ${VersionFilesOutputVariable})
-set_target_properties(PotatoAlert PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED true)
-
-if(WIN32)
-    target_sources(PotatoAlert PRIVATE PotatoAlert.win32.cpp)
-    target_link_libraries(PotatoAlert PRIVATE PotatoAlert::Updater Win32)
-endif()
+set_target_properties(PotatoAlert
+    PROPERTIES
+        AUTORCC TRUE
+        AUTOMOC TRUE
+        AUTOUIC TRUE
+        CXX_STANDARD 23
+        CXX_STANDARD_REQUIRED TRUE
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
 
 if(UNIX)
-    target_sources(PotatoAlert PRIVATE PotatoAlert.linux.cpp)
+    target_sources(PotatoAlert PRIVATE src/PotatoAlert.linux.cpp)
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    set_property(TARGET PotatoAlert PROPERTY WIN32_EXECUTABLE true)
+    set_property(TARGET PotatoAlert PROPERTY WIN32_EXECUTABLE TRUE)
 endif()
 
 include(CompilerFlags)
 SetCompilerFlags(PotatoAlert)
 
-target_link_libraries(PotatoAlert PRIVATE PotatoAlert::Core PotatoAlert::Gui Qt::Widgets)
-
-set_target_properties(PotatoAlert
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+target_link_libraries(PotatoAlert
+    PRIVATE
+        PotatoAlert::Core
+        PotatoAlert::Gui
+        Qt::Widgets
 )
+if(WIN32)
+    target_sources(PotatoAlert PRIVATE src/PotatoAlert.win32.cpp)
+    target_link_libraries(PotatoAlert
+        PRIVATE
+            PotatoAlert::Updater
+            Win32
+    )
+endif()
 
 if(NOT DEFINED PA_LOOKUP_URL)
     message(FATAL_ERROR "Missing cmake variable 'PA_LOOKUP_URL'")
