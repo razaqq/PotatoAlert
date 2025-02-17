@@ -29,6 +29,70 @@ namespace PotatoAlert::Client::Game {
 
 namespace {
 
+struct GameCategoryT : std::error_category
+{
+	const char* name() const noexcept override
+	{
+		return "GameError";
+	}
+
+	std::string message(int code) const override
+	{
+		switch (static_cast<GameError>(code))
+		{
+			using enum GameError;
+
+			case DirectoryNotFound:
+				return "Directory Not Found";
+			case PreferencesXmlMissing:
+				return "No preferences.xml";
+			case PreferencesXmlFailedToMap:
+				return "Failed to map preferences.xml";
+			case PreferencesXmlMissingVersion:
+				return "No version in preferences.xml";
+			case PreferencesXmlMissingRegion:
+				return "No region in preferences.xml";
+			case PreferencesXmlInvalidRegion:
+				return "Invalid region in preferences.xml";
+			case BinPathMissing:
+				return "Missing bin path";
+			case BinPathFailedToReadPeVersion:
+				return "Failed to read PE Version";
+			case BinPathFailedToDetermine:
+				return "Failed to determine bin path";
+			case EngineConfigXmlMissing:
+				return "Missing engine_config.xml";
+			case EngineConfigXmlFailedLoading:
+				return "Failed to read engine_config.xml";
+			case EngineConfigXmlEmpty:
+				return "Empty engine_config.xml";
+			case EngineConfigXmlMissingReplays:
+				return "engine_config.xml missing 'replays'";
+			case EngineConfigXmlMissingDirPath:
+				return "engine_config.xml missing 'dirPath'";
+			case EngineConfigXmlMissingPathBase:
+				return "engine_config.xml missing 'pathBase'";
+			case EngineConfigXmlMissingVersioned:
+				return "engine_config.xml missing 'versioned'";
+			case EngineConfigXmlMissingPreferences:
+				return "engine_config.xml missing 'preferences'";
+			case EngineConfigXmlMissingPreferencesPathBase:
+				return "engine_config.xml missing 'preferences/pathBase'";
+			case EngineConfigXmlVersionedInvalid:
+				return "engine_config.xml invalid 'versioned'";
+		}
+
+		return fmt::format("GameError{:08x}", static_cast<uint32_t>(code));
+	}
+};
+
+const GameCategoryT g_gameCategory;
+
+inline std::error_code MakeErrorCode(const GameError error)
+{
+	return { static_cast<int>(error), g_gameCategory };
+}
+
 struct PreferencesResult
 {
 	Version GameVersion;
@@ -295,63 +359,6 @@ Result<EngineConfigResult> ReadEngineConfig(const fs::path& file)
 }
 
 }
-
-const char* Detail::GameCategoryT::name() const noexcept
-{
-	return nullptr;
-}
-
-std::string Detail::GameCategoryT::message(int const code) const
-{
-	switch (static_cast<GameError>(code))
-	{
-		using enum GameError;
-
-		case DirectoryNotFound:
-			return "Directory Not Found";
-		case PreferencesXmlMissing:
-			return "No preferences.xml";
-		case PreferencesXmlFailedToMap:
-			return "Failed to map preferences.xml";
-		case PreferencesXmlMissingVersion:
-			return "No version in preferences.xml";
-		case PreferencesXmlMissingRegion:
-			return "No region in preferences.xml";
-		case PreferencesXmlInvalidRegion:
-			return "Invalid region in preferences.xml";
-		case BinPathMissing:
-			return "Missing bin path";
-		case BinPathFailedToReadPeVersion:
-			return "Failed to read PE Version";
-		case BinPathFailedToDetermine:
-			return "Failed to determine bin path";
-		case EngineConfigXmlMissing:
-			return "Missing engine_config.xml";
-		case EngineConfigXmlFailedLoading:
-			return "Failed to read engine_config.xml";
-		case EngineConfigXmlEmpty:
-			return "Empty engine_config.xml";
-		case EngineConfigXmlMissingReplays:
-			return "engine_config.xml missing 'replays'";
-		case EngineConfigXmlMissingDirPath:
-			return "engine_config.xml missing 'dirPath'";
-		case EngineConfigXmlMissingPathBase:
-			return "engine_config.xml missing 'pathBase'";
-		case EngineConfigXmlMissingVersioned:
-			return "engine_config.xml missing 'versioned'";
-		case EngineConfigXmlMissingPreferences:
-			return "engine_config.xml missing 'preferences'";
-		case EngineConfigXmlMissingPreferencesPathBase:
-			return "engine_config.xml missing 'preferences/pathBase'";
-		case EngineConfigXmlVersionedInvalid:
-			return "engine_config.xml invalid 'versioned'";
-	}
-
-	return fmt::format("GameError{:08x}", static_cast<uint32_t>(code));
-}
-
-Detail::GameCategoryT const Detail::g_gameCategory;
-
 
 Result<GameInfo> ReadGameInfo(const fs::path& path)
 {

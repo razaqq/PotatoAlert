@@ -34,7 +34,6 @@ enum class GameError
 	EngineConfigXmlVersionedInvalid,
 };
 
-
 struct GameInfo
 {
 	Core::Version GameVersion;
@@ -45,22 +44,6 @@ struct GameInfo
 	std::vector<std::filesystem::path> ReplaysPaths;
 	std::string Region;
 };
-
-namespace Detail {
-
-struct GameCategoryT : std::error_category
-{
-	const char* name() const noexcept override;
-	std::string message(int code) const override;
-};
-extern GameCategoryT const g_gameCategory;
-
-}  // namespace Detail
-
-inline std::error_code MakeErrorCode(const GameError error)
-{
-	return { static_cast<int>(error), Detail::g_gameCategory };
-}
 
 std::vector<std::filesystem::path> GetDefaultGamePaths();
 Core::Result<GameInfo> ReadGameInfo(const std::filesystem::path& selectedPath);
