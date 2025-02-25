@@ -4,106 +4,115 @@ on: [push]
 
 jobs:
   build-windows:
-    name: Build Windows Qt6
+    name: 🪟 Build Windows Qt6
     env:
       qt-major-version: 6
       qt-version: 6.8.1
-      clang-version: 18
-      zipfile: PotatoAlert.zip
+      clang-version: 19
 
     runs-on: windows-2022
 
     steps:
-      - name: Checkout
+      - name: 🧰 Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Visual Studio Shell
+      - name: ⬇️ Setup Visual Studio Shell
         uses: egor-tensin/vs-shell@v2
         with:
           arch: x64
 
-      - name: Setup Conan
+      - name: ⬇️ Setup Conan
         run: |
           pip install conan
           conan profile detect
 
-      - name: Setup Ninja
+      - name: ⬇️ Setup Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
         with:
           version: 1.12.1
 
-      - name: Install Qt${{ env.qt-major-version }}
+      - name: ⬇️ Install Qt${{ env.qt-major-version }}
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.qt-version }}
           cache: true
 
-      - name: Install LLVM and Clang
-        uses: KyleMayes/install-llvm-action@v2
+      - name: ⬇️ Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v2.0.6
         with:
           version: ${{ env.clang-version }}
 
-      - name: Conan Version
-        run: conan --version
+      - name: 🔢 Tool Versions
+        run: |
+          conan --version
+          cmake --version
+          clang-cl --version
+          ninja --version
+          rustc --version
 
-      - name: CMake Version
-        run: cmake --version
-
-      - name: Clang Version
-        run: clang-cl --version
-
-      - name: Ninja Version
-        run: ninja --version
-
-      - name: Cache Conan Dependencies
+      - name: 📁 Cache Conan Dependencies
         uses: actions/cache@v4
         with:
           path: ~/.conan2
           key: hashFiles('**/conanfile.py')
 
-      - name: Run Conan
+      - name: 📁 Run Conan
         run: conan install . --build=missing --profile:all=./.github/conan/profiles/windows-clang-cl
 
-      - name: Run CMake
+      - name: 🛠️ Configure
         env:
           CC: "${{ env.LLVM_PATH }}\\bin\\clang-cl"
           CXX: "${{ env.LLVM_PATH }}\\bin\\clang-cl"
-        run: cmake --preset conan-clang-release -DPA_SUBMIT_URL=${{ secrets.PA_SUBMIT_URL }} -DPA_LOOKUP_URL=${{ secrets.PA_LOOKUP_URL }}
+        run: >
+          cmake
+          --preset conan-clang-release
+          -DPA_SUBMIT_URL=${{ secrets.PA_SUBMIT_URL }}
+          -DPA_LOOKUP_URL=${{ secrets.PA_LOOKUP_URL }}
+          -DCMAKE_INSTALL_PREFIX=install
+          -DCPACK_PACKAGE_DIRECTORY=pack
 
-      - name: Run Build
-        run: cmake --build --preset conan-clang-release
+      - name: 🛠️ Build
+        run: |
+          cmake --build --preset conan-clang-release
+          cmake --install build/clang/Release
 
-      - name: Run CTest
-        working-directory: ${{env.GITHUB_WORKSPACE}}/build/clang/Release
+      - name: 📦 CPack
+        working-directory: ./build/clang/Release
+        run: |
+          cpack
+          cpack --config CPackConfig-PotatoAlert.cmake
+
+      - name: 🧪 CTest
+        working-directory: ./build/clang/Release
         env:
           CTEST_OUTPUT_ON_FAILURE: 1
         run: ctest
 
-      - name: Create Release Archive
-        run: |
-          7z a -mx9 -r ${{ env.zipfile }} .\build\clang\Release\bin\*
-
-      - name: Create Installer
-        working-directory: ${{env.GITHUB_WORKSPACE}}/build/clang/Release
-        run: cpack
-
-      - name: Upload Artifact
+      - name: ⬆️ Upload Portable ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.zipfile }}
-          path: ${{ env.zipfile }}
+          name: PotatoAlert Windows Portable x86_64
+          path: ./build/clang/Release/pack/PotatoAlert.zip
+          if-no-files-found: error
 
-      - name: Create Release
+      - name: ⬆️ Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: PotatoAlert Windows Installer x86_64
+          path: ./build/clang/Release/pack/PotatoAlert-*.msi
+          if-no-files-found: error
+
+      - name: 🎫 Create Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           prerelease: true
           files: |
-            ${{ env.zipfile }}
-            build/clang/Release/PotatoAlert-*.msi
+            ./build/clang/Release/pack/PotatoAlert.zip
+            ./build/clang/Release/pack/PotatoAlert-*.msi
 
   build-linux:
-    name: Build Linux Qt6
+    name: 🐧 Build Linux Qt6
     env:
       qt-version: 6.8.1
       gcc-version: 14
@@ -111,18 +120,18 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout
+      - name: 🧰 Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Conan
+      - name: ⬇️ Setup Conan
         run: |
           pip install conan
           conan profile detect
 
-      - name: Setup Ninja
+      - name: ⬇️ Setup Ninja
         run: sudo apt install -y ninja-build
 
-      - name: Install Dependencies
+      - name: ⬇️ Install Dependencies
         run: >
           sudo apt install -y
           libfontconfig1-dev
@@ -151,61 +160,68 @@ jobs:
           libxkbcommon-dev
           libxkbcommon-x11-dev
 
-      - name: Install Qt
+      - name: ⬇️ Install Qt
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.qt-version }}
           cache: true
 
-      - name: Conan Version
-        run: conan --version
+      - name: 🔢 Tool Versions
+        run: |
+          conan --version
+          cmake --version
+          g++-${{ env.gcc-version }} --version
+          ninja --version
+          rustc --version
 
-      - name: CMake Version
-        run: cmake --version
-
-      - name: GCC Version
-        run: g++-${{ env.gcc-version }} --version
-
-      - name: Ninja Version
-        run: ninja --version
-
-      - name: Cache Conan Dependencies
+      - name: 📁 Cache Conan Dependencies
         uses: actions/cache@v4
         with:
           path: ~/.conan2
           key: hashFiles('**/conanfile.py')
 
-      - name: Run Conan
+      - name: 📁 Run Conan
         run: conan install . --build=missing --profile:all=./.github/conan/profiles/linux-gcc
 
-      - name: Run CMake
+      - name: 🛠️ Configure
         env:
           CC: gcc-${{ env.gcc-version }}
           CXX: g++-${{ env.gcc-version }}
-        run: cmake --preset conan-gcc-release -DPA_SUBMIT_URL=${{ secrets.PA_SUBMIT_URL }} -DPA_LOOKUP_URL=${{ secrets.PA_LOOKUP_URL }}
+        run: >
+          cmake
+          --preset conan-gcc-release
+          -DPA_SUBMIT_URL=${{ secrets.PA_SUBMIT_URL }}
+          -DPA_LOOKUP_URL=${{ secrets.PA_LOOKUP_URL }}
+          -DCMAKE_INSTALL_PREFIX=install
+          -DCPACK_PACKAGE_DIRECTORY=pack
 
-      - name: Run Build
-        run: cmake --build --preset conan-gcc-release
+      - name: 🛠️ Build
+        run: |
+          cmake --build --preset conan-gcc-release
+          cmake --install build/gcc/Release
 
-      - name: Run CTest
-        working-directory: build/gcc/Release
+      - name: 📦 CPack
+        working-directory: ./build/gcc/Release
+        run: |
+          cpack --config CPackConfig-PotatoAlert.cmake
+          mv -v ./pack/PotatoAlert.zip ./pack/PotatoAlert_linux.zip
+
+      - name: 🧪 CTest
+        working-directory: ./build/gcc/Release
         env:
           CTEST_OUTPUT_ON_FAILURE: 1
         run: ctest
 
-      - name: Create Release Archive
-        run: |
-          7z a -mx9 -r PotatoAlert_linux.zip ./build/gcc/Release/bin/*
-
-      - name: Upload Artifact
+      - name: ⬆️ Upload Portable ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: PotatoAlert_linux.zip
-          path: PotatoAlert_linux.zip
+          name: PotatoAlert Linux Portable x86_64
+          path: ./build/gcc/Release/pack/PotatoAlert_linux.zip
+          if-no-files-found: error
 
-      - name: Create Release
+      - name: 🎫 Create Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           prerelease: true
-          files: PotatoAlert_linux.zip
+          files: ./build/gcc/Release/pack/PotatoAlert_linux.zip

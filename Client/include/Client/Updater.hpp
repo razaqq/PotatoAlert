@@ -9,7 +9,7 @@
 #include <utility>
 
 
-namespace PotatoAlert::Updater {
+namespace PotatoAlert::Client {
 
 enum class Edition
 {
@@ -17,10 +17,12 @@ enum class Edition
 	Linux
 };
 
-#if defined(WIN32)
+#if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64)
 	static constexpr Edition CurrentEdition = Edition::Windows;
-#else
+#elif defined(__linux__) || defined(__unix__)
 	static constexpr Edition CurrentEdition = Edition::Linux;
+#else
+	static_assert(false, "Unsupported platform");
 #endif
 
 static constexpr std::string_view UpdateArchiveFile(Edition edition)
@@ -86,4 +88,4 @@ signals:
 	void DownloadProgress(int percent, const QString& progress, const QString& speed);
 };
 
-}  // namespace PotatoAlert::Updater
+}  // namespace PotatoAlert::Client

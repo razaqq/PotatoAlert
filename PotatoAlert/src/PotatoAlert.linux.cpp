@@ -18,10 +18,7 @@
 #include "Gui/NativeWindow.hpp"
 #include "Gui/Palette.hpp"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wreserved-id-macro"
-#include "VersionInfo.h"
-#pragma clang diagnostic pop
+#include "VersionInfo.hpp"
 
 #include <QApplication>
 #include <QEvent>

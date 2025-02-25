@@ -1,35 +1,46 @@
 cmake_minimum_required(VERSION 3.17)
 project(GameFileUnpack)
 
-option(GameFileUnpack_STATIC "Build as static library" OFF)
-option(GameFileUnpack_TEST "Build GameFileUnpack test" ON)
-
-if(GameFileUnpack_STATIC)
-    add_library(PotatoAlert-GameFileUnpack STATIC src/GameFileUnpack.cpp)
+if(WIN32)
+    set(LIB_TYPE SHARED)
+elseif(LINUX)
+    set(LIB_TYPE STATIC)
 else()
-    add_library(PotatoAlert-GameFileUnpack SHARED src/GameFileUnpack.cpp)
+    message(FATAL_ERROR "PotatoAlert: Unsupported OS")
 endif()
-add_library(PotatoAlert::GameFileUnpack ALIAS PotatoAlert-GameFileUnpack)
-set_target_properties(PotatoAlert-GameFileUnpack
+message(STATUS "PotatoAlert: Building GameFileUnpack as ${LIB_TYPE} library")
+
+pa_add_library(
+    PotatoAlert::GameFileUnpack
+    ${LIB_TYPE}
+    HEADERS
+        include/GameFileUnpack/GameFileUnpack.hpp
+    SOURCES
+        src/GameFileUnpack.cpp
     PROPERTIES
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED TRUE
+        CXX_EXTENSIONS TRUE
         OUTPUT_NAME "${PROJECT_NAME}"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
         DEBUG_POSTFIX "d"
-        PUBLIC_HEADER "include/GameFileUnpack/GameFileUnpack.hpp"
+    HEADER_INCLUDE_DIRECTORIES
+        include
+    HEADER_DEPENDENCIES
+        PotatoAlert::Core
+    TEST_SOURCES
+        Test/GameFileUnpackTest.cpp
+    TEST_PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin-test"
+    TEST_WORKING_DIRECTORY
+        "${CMAKE_CURRENT_SOURCE_DIR}/Test/Data"
 )
-target_include_directories(PotatoAlert-GameFileUnpack
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
+pa_install_target(
+    PotatoAlert::GameFileUnpack
+    COMPONENT ${PROJECT_NAME}
+    RUNTIME_DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    ARCHIVE_DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    LIBRARY_DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    HEADERS_DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
-target_link_libraries(PotatoAlert-GameFileUnpack PRIVATE PotatoAlert::Core)
-include(CompilerFlags)
-SetCompilerFlags(PotatoAlert-GameFileUnpack)
-
-install(TARGETS PotatoAlert-GameFileUnpack
-    EXPORT "${PROJECT_NAME}Targets"
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    COMPONENT GameFileUnpack
-)
+pa_archive_component(${PROJECT_NAME})

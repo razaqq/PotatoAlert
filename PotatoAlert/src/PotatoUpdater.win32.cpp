@@ -2,16 +2,14 @@
 
 #include "Client/AppDirectories.hpp"
 #include "Client/Config.hpp"
-#include "Client/ServiceProvider.hpp"
 #include "Client/Log.hpp"
+#include "Client/ServiceProvider.hpp"
+#include "Client/Updater.hpp"
 
 #include "Core/Log.hpp"
-#include "Core/StandardPaths.hpp"
 
 #include "Gui/Palette.hpp"
 #include "Gui/Updater.hpp"
-
-#include "Updater/Updater.hpp"
 
 #include <QApplication>
 #include <QFile>
@@ -21,7 +19,7 @@ using PotatoAlert::Client::AppDirectories;
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::LogQtMessage;
 using PotatoAlert::Client::ServiceProvider;
-using PotatoAlert::Updater::Updater;
+using PotatoAlert::Client::Updater;
 
 static int RunMain(int argc, char* argv[])
 {

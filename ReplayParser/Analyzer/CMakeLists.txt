@@ -18,13 +18,13 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     endif()
 endif()
 
-if(LTO_ENABLED)
-    message(STATUS "IPO / LTO enabled for rust")
+if(PA_LTO_ENABLED)
+    message(STATUS "PotatoAlert: IPO / LTO enabled for rust")
     set(RUST_FLAGS "-Clinker-plugin-lto" "-Clinker=clang" "-Clink-arg=-fuse-ld=lld")
 endif()
 
-message(STATUS "ReplayAnalyzer CARGO_BUILD_TYPE set to ${CARGO_BUILD_TYPE}")
-if(WIN32 AND LTO_ENABLED AND "${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")
+message(STATUS "PotatoAlert: CARGO_BUILD_TYPE - ${CARGO_BUILD_TYPE}")
+if(WIN32 AND PA_LTO_ENABLED AND "${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")
     # have to set explicit target on win32 with clang-cl and proc macros when using LTO
     set(RUST_LIB_DIR "x86_64-pc-windows-msvc/${RUST_LIB_DIR}")
     set(CARGO_CMD cargo build --profile=${CARGO_BUILD_TYPE} --target x86_64-pc-windows-msvc)
@@ -43,15 +43,25 @@ if(WIN32)
 elseif(UNIX)
     set(RUST_LIB "${CMAKE_CURRENT_BINARY_DIR}/${RUST_LIB_DIR}/libreplayanalyzer.a")
     target_link_libraries(PotatoAlert-ReplayAnalyzer PRIVATE ${RUST_LIB})
+else()
+    message(FATAL_ERROR "PotatoAlert: Unsupported OS")
 endif()
 
 add_custom_command(
-    OUTPUT ${RUST_PART_CXX} ${RUST_LIB}
+    OUTPUT
+        ${RUST_PART_CXX}
+        ${RUST_LIB}
     COMMAND ${CMAKE_COMMAND} -E env ${RUST_CC_ENV} CARGO_TARGET_DIR=${CMAKE_CURRENT_BINARY_DIR} RUSTFLAGS="${RUST_FLAGS}" ${CARGO_CMD}
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/cxxbridge/Analyzer/src/lib.rs.cc ${RUST_PART_CXX}
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/cxxbridge/Analyzer/src/lib.rs.h ${CMAKE_CURRENT_BINARY_DIR}/ReplayAnalyzerRust.hpp
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/cxxbridge/Analyzer/src/lib.rs.cc" ${RUST_PART_CXX}
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/cxxbridge/Analyzer/src/lib.rs.h" "${CMAKE_CURRENT_BINARY_DIR}/ReplayAnalyzerRust.hpp"
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/lib.rs"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
+add_custom_target(PotatoAlert-ReplayAnalyzerRust
+    DEPENDS
+        ${RUST_PART_CXX}
+        ${RUST_LIB}
+)
+add_dependencies(PotatoAlert-ReplayAnalyzer PotatoAlert-ReplayAnalyzerRust)
 
 target_include_directories(PotatoAlert-ReplayAnalyzer INTERFACE ${CMAKE_CURRENT_BINARY_DIR})

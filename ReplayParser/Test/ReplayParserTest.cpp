@@ -51,7 +51,7 @@ public:
 		{
 			PotatoAlert::Core::ExitCurrentProcess(1);
 		});
-		PotatoAlert::Core::Log::Init(appData / "ReplayTest.log");
+		PotatoAlert::Core::Log::Init(appData / "ReplayParserTest.log");
 	}
 };
 CATCH_REGISTER_LISTENER(TestRunListener)

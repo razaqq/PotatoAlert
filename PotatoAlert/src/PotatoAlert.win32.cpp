@@ -1,30 +1,26 @@
 ﻿// Copyright 2021 <github.com/razaqq>
 
+#include "Client/AppDirectories.hpp"
+#include "Client/Config.hpp"
+#include "Client/DatabaseManager.hpp"
+#include "Client/Updater.hpp"
+#include "Client/FontLoader.hpp"
+#include "Client/Log.hpp"
+#include "Client/ReplayAnalyzer.hpp"
+#include "Client/ServiceProvider.hpp"
+
 #include "Core/ApplicationGuard.hpp"
 #include "Core/Directory.hpp"
 #include "Core/Process.hpp"
 #include "Core/StandardPaths.hpp"
 #include "Core/Sqlite.hpp"
 
-#include "Client/AppDirectories.hpp"
-#include "Client/Config.hpp"
-#include "Client/DatabaseManager.hpp"
-#include "Client/FontLoader.hpp"
-#include "Client/Log.hpp"
-#include "Client/ReplayAnalyzer.hpp"
-#include "Client/ServiceProvider.hpp"
-
 #include "Gui/Events.hpp"
 #include "Gui/MainWindow.hpp"
 #include "Gui/NativeWindow.hpp"
 #include "Gui/Palette.hpp"
 
-#include "Updater/Updater.hpp"
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wreserved-id-macro"
-#include "VersionInfo.h"
-#pragma clang diagnostic pop
+#include "VersionInfo.hpp"
 
 #include "win32.h"
 
@@ -42,6 +38,7 @@ using PotatoAlert::Client::LoadFonts;
 using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Client::ReplayAnalyzer;
 using PotatoAlert::Client::ServiceProvider;
+using PotatoAlert::Client::Updater;
 using PotatoAlert::Core::ApplicationGuard;
 using PotatoAlert::Core::ExitCurrentProcess;
 using PotatoAlert::Core::ExitCurrentProcessWithError;
@@ -51,7 +48,6 @@ using PotatoAlert::Gui::FontScalingChangeEvent;
 using PotatoAlert::Gui::LanguageChangeEvent;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::NativeWindow;
-using PotatoAlert::Updater::Updater;
 
 static int RunMain(int argc, char* argv[])
 {

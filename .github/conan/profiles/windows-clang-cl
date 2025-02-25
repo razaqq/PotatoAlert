@@ -1,22 +1,56 @@
 [settings]
 arch=x86_64
-build_type=Release
+os=Windows
 compiler=clang
 compiler.cppstd=23
 compiler.runtime=dynamic
-compiler.runtime_type=Release
 compiler.runtime_version=v144
-compiler.version=17
-os=Windows
-openssl/*:compiler=msvc
-openssl/*:compiler.cppstd=17
-openssl/*:compiler.runtime=dynamic
-openssl/*:compiler.runtime_type=Release
-openssl/*:compiler.version=194
+compiler.runtime_type=Release
+compiler.version=19
+build_type=Release
+
+{% macro set_msvc_settings(lib) %}
+{{lib}}/*:compiler=msvc
+{{lib}}/*:compiler.version=194
+{{lib}}/*:compiler.runtime=dynamic
+{{lib}}/*:compiler.runtime_type=Release
+{% endmacro %}
+
+{{set_msvc_settings("ffmpeg")}}
+{{set_msvc_settings("openssl")}}
+{{set_msvc_settings("libelf")}}
+{{set_msvc_settings("libx264")}}
+{{set_msvc_settings("simd")}}
+{{set_msvc_settings("nasm")}}
+{{set_msvc_settings("libffi")}}
+{{set_msvc_settings("opencv")}}
+{{set_msvc_settings("m4")}}
+{{set_msvc_settings("libtool")}}
+{{set_msvc_settings("libcurl")}}
 
 [conf]
-tools.cmake.cmake_layout:build_folder_vars=['settings.compiler']
+tools.cmake.cmake_layout:build_folder_vars+=["settings.compiler"]
 tools.cmake.cmaketoolchain:generator=Ninja
-!openssl*:tools.build:compiler_executables={'cpp': 'clang-cl', 'c': 'clang-cl'}
-!openssl*:tools.build:exelinkflags=['clang_rt.builtins-x86_64.lib']
-!openssl*:tools.build:sharedlinkflags=['clang_rt.builtins-x86_64.lib']
+tools.build:exelinkflags+=["clang_rt.builtins-x86_64.lib"]
+tools.build:sharedlinkflags+=["clang_rt.builtins-x86_64.lib"]
+tools.build:compiler_executables={"cpp": "clang-cl", "c": "clang-cl"}
+
+{% macro set_msvc_conf(lib) %}
+{{lib}}*:tools.cmake.cmaketoolchain:generator=Visual Studio 17 2022
+{{lib}}*:tools.build:cxxflags=[]
+{{lib}}*:tools.build:exelinkflags=[]
+{{lib}}*:tools.build:sharedlinkflags=[]
+{{lib}}*:tools.build:compiler_executables={"cpp": "cl", "c": "cl"}
+{% endmacro %}
+
+{{set_msvc_conf("ffmpeg")}}
+{{set_msvc_conf("openssl")}}
+{{set_msvc_conf("libelf")}}
+{{set_msvc_conf("libx264")}}
+{{set_msvc_conf("simd")}}
+{{set_msvc_conf("nasm")}}
+{{set_msvc_conf("libffi")}}
+{{set_msvc_conf("opencv")}}
+{{set_msvc_conf("m4")}}
+{{set_msvc_conf("libtool")}}
+{{set_msvc_conf("libcurl")}}

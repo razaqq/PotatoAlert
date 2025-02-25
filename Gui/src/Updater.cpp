@@ -3,11 +3,10 @@
 #include "Client/Config.hpp"
 #include "Client/ServiceProvider.hpp"
 #include "Client/StringTable.hpp"
+#include "Client/Updater.hpp"
 
 #include "Gui/FramelessDialog.hpp"
 #include "Gui/Updater.hpp"
-
-#include "Updater/Updater.hpp"
 
 #include <QLabel>
 #include <QProgressBar>
@@ -18,22 +17,22 @@ using namespace PotatoAlert::Client::StringTable;
 using namespace PotatoAlert::Core;
 using PotatoAlert::Gui::FramelessDialog;
 using UpdaterGui = PotatoAlert::Gui::Updater;
-using UpdaterCore = PotatoAlert::Updater::Updater;
+using UpdaterClient = PotatoAlert::Client::Updater;
 
 UpdaterGui::Updater(const Client::ServiceProvider& serviceProvider) : FramelessDialog(nullptr)
 {
-	auto vLayout = new QVBoxLayout();
+	QVBoxLayout* vLayout = new QVBoxLayout();
 
 	int lang = serviceProvider.Get<Client::Config>().Get<Client::ConfigKey::Language>();
-	auto waitLabel = new QLabel(GetString(lang, StringTableKey::UPDATE_DOWNLOADING));
+	QLabel* waitLabel = new QLabel(GetString(lang, StringTableKey::UPDATE_DOWNLOADING));
 
-	auto progressBar = new QProgressBar();
+	QProgressBar* progressBar = new QProgressBar();
 	progressBar->setValue(0);
 	progressBar->setMaximum(100);
 
-	auto progressLayout = new QHBoxLayout();
-	auto progressLabel = new QLabel();
-	auto speedLabel = new QLabel();
+	QHBoxLayout* progressLayout = new QHBoxLayout();
+	QLabel* progressLabel = new QLabel();
+	QLabel* speedLabel = new QLabel();
 	progressLayout->addStretch();
 	progressLayout->addWidget(progressLabel);
 	progressLayout->addStretch();
@@ -43,11 +42,11 @@ UpdaterGui::Updater(const Client::ServiceProvider& serviceProvider) : FramelessD
 	vLayout->addWidget(waitLabel, 0, Qt::AlignHCenter);
 	vLayout->addWidget(progressBar);
 	vLayout->addLayout(progressLayout);
-	this->setLayout(vLayout);
+	setLayout(vLayout);
 
-	UpdaterCore& updater = serviceProvider.Get<UpdaterCore>();
+	UpdaterClient& updater = serviceProvider.Get<UpdaterClient>();
 
-	connect(&updater, &UpdaterCore::DownloadProgress,
+	connect(&updater, &UpdaterClient::DownloadProgress,
 	[progressBar, progressLabel, speedLabel](int percent, const QString& progress, const QString& speed)
 	{
 		progressBar->setValue(percent);
@@ -89,5 +88,5 @@ UpdaterGui::Updater(const Client::ServiceProvider& serviceProvider) : FramelessD
 	*/
 
 	updater.Run();
-	this->exec();  // TODO
+	QDialog::exec();  // TODO
 }

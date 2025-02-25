@@ -1,8 +1,15 @@
-add_library(PotatoAlert-Client STATIC)
-add_library(PotatoAlert::Client ALIAS PotatoAlert-Client)
+cmake_minimum_required(VERSION 3.24)
+project(Client)
 
-target_sources(PotatoAlert-Client
-    PRIVATE
+find_package(Qt6 COMPONENTS Core Network Widgets REQUIRED)
+find_package(ctre REQUIRED)
+find_package(fmt REQUIRED)
+find_package(tinyxml2 REQUIRED)
+
+pa_add_library(
+    PotatoAlert::Client
+    STATIC
+    SOURCES
         src/Config.cpp
         src/DatabaseManager.cpp
         src/DirectoryWatcher.cpp
@@ -12,49 +19,25 @@ target_sources(PotatoAlert-Client
         src/ReplayAnalyzer.cpp
         src/Screenshot.cpp
         src/StatsParser.cpp
-)
 
-if(WIN32)
-    target_sources(PotatoAlert-Client
-        PRIVATE
-            src/Game.win32.cpp
-            src/SysInfo.win32.cpp
-    )
-endif(WIN32)
-
-if(UNIX)
-    target_sources(PotatoAlert-Client
-        PRIVATE
-            src/Game.linux.cpp
-            src/SysInfo.linux.cpp
-    )
-endif(UNIX)
-
-# have to add some headers to sources for qt AUTOMOC
-target_sources(PotatoAlert-Client
-    PRIVATE
+        # have to add some headers to sources for qt AUTOMOC
         include/Client/Config.hpp
         include/Client/DirectoryWatcher.hpp
         include/Client/PotatoClient.hpp
         include/Client/ReplayAnalyzer.hpp
-)
-
-find_package(Qt6 COMPONENTS Core Network Widgets REQUIRED)
-find_package(ctre REQUIRED)
-find_package(fmt REQUIRED)
-find_package(tinyxml2 REQUIRED)
-
-set_target_properties(PotatoAlert-Client
     PROPERTIES
         AUTORCC TRUE
         AUTOMOC TRUE
         AUTOUIC TRUE
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED TRUE
+        CXX_EXTENSIONS TRUE
         DEBUG_POSTFIX "d"
-)
-target_link_libraries(PotatoAlert-Client
-    PUBLIC
+    HEADER_INCLUDE_DIRECTORIES
+        ${PROJECT_SOURCE_DIR}/Resources
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_BINARY_DIR}
+    HEADER_DEPENDENCIES
         PotatoAlert::Core
         PotatoAlert::GameFileUnpack
         PotatoAlert::ReplayParser
@@ -62,19 +45,35 @@ target_link_libraries(PotatoAlert-Client
         Qt::Core
         Qt::Network
         Qt::Widgets
-    PRIVATE
+    SOURCE_DEPENDENCIES
         ctre::ctre
         tinyxml2::tinyxml2
+    MANUAL_DEPENDENCIES
+        PotatoAlert-StringTable
+    TEST_SOURCES
+        Test/ClientTest.cpp
+    TEST_PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin-test"
+    TEST_WORKING_DIRECTORY
+        "${CMAKE_CURRENT_SOURCE_DIR}/Test/Data"
+)
+pa_configure(
+    PotatoAlert::Client
+    PLATFORM Windows
+    SOURCES
+        src/Game.win32.cpp
+        src/SysInfo.win32.cpp
+        src/Updater.win32.cpp
+        include/Client/Updater.hpp
+    SOURCE_DEPENDENCIES
+        Dwmapi
+        Version
         Win32
 )
-target_include_directories(PotatoAlert-Client
-    PUBLIC
-        ${PROJECT_SOURCE_DIR}/Resources
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
+pa_configure(
+    PotatoAlert::Client
+    PLATFORM Linux
+    SOURCES
+        src/Game.linux.cpp
+        src/SysInfo.linux.cpp
 )
-include(CompilerFlags)
-SetCompilerFlags(PotatoAlert-Client)
-
-if(WIN32)
-    target_link_libraries(PotatoAlert-Client PRIVATE Version)
-endif(WIN32)

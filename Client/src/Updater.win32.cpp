@@ -1,5 +1,7 @@
 // Copyright 2021 <github.com/razaqq>
 
+#include "Client/Updater.hpp"
+
 #include "Core/Defer.hpp"
 #include "Core/Directory.hpp"
 #include "Core/Encoding.hpp"
@@ -11,7 +13,6 @@
 #include "Core/Version.hpp"
 #include "Core/Zip.hpp"
 
-#include "Updater/Updater.hpp"
 
 #include <QApplication>
 #include <QElapsedTimer>
@@ -51,7 +52,7 @@
  */
 
 
-using PotatoAlert::Updater::Updater;
+using PotatoAlert::Client::Updater;
 using namespace PotatoAlert::Core;
 namespace fs = std::filesystem;
 

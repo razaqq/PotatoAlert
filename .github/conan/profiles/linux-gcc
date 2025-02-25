@@ -8,6 +8,7 @@ compiler.version=14
 os=Linux
 
 [conf]
+tools.build:cxxflags=["-fms-extensions"]
 tools.build:compiler_executables={'cpp': 'g++-14', 'c': 'gcc-14'}
 tools.cmake.cmake_layout:build_folder_vars+=["settings.compiler"]
 tools.cmake.cmaketoolchain:generator=Ninja
