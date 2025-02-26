@@ -1,13 +1,4 @@
-﻿// Copyright 2021 <github.com/razaqq>
-
-#include "Client/AppDirectories.hpp"
-#include "Client/Config.hpp"
-#include "Client/DatabaseManager.hpp"
-#include "Client/Updater.hpp"
-#include "Client/FontLoader.hpp"
-#include "Client/Log.hpp"
-#include "Client/ReplayAnalyzer.hpp"
-#include "Client/ServiceProvider.hpp"
+// Copyright 2025 <github.com/razaqq>
 
 #include "Core/ApplicationGuard.hpp"
 #include "Core/Directory.hpp"
@@ -15,18 +6,28 @@
 #include "Core/StandardPaths.hpp"
 #include "Core/Sqlite.hpp"
 
+#include "Client/AppDirectories.hpp"
+#include "Client/Config.hpp"
+#include "Client/DatabaseManager.hpp"
+#include "Client/FontLoader.hpp"
+#include "Client/Log.hpp"
+#include "Client/PotatoClient.hpp"
+#include "Client/Updater.hpp"
+
+#include "Gui/Palette.hpp"
+#include "Gui/NativeWindow.hpp"
 #include "Gui/Events.hpp"
 #include "Gui/MainWindow.hpp"
-#include "Gui/NativeWindow.hpp"
-#include "Gui/Palette.hpp"
 
 #include "VersionInfo.hpp"
-
-#include "win32.h"
 
 #include <QApplication>
 #include <QEvent>
 #include <QFile>
+
+#ifdef WIN32
+	#include "win32.h"
+#endif
 
 
 using PotatoAlert::Client::AppDirectories;
@@ -42,12 +43,14 @@ using PotatoAlert::Client::Updater;
 using PotatoAlert::Core::ApplicationGuard;
 using PotatoAlert::Core::ExitCurrentProcess;
 using PotatoAlert::Core::ExitCurrentProcessWithError;
+using PotatoAlert::Core::Log;
 using PotatoAlert::Core::SQLite;
 using PotatoAlert::Gui::DarkPalette;
 using PotatoAlert::Gui::FontScalingChangeEvent;
 using PotatoAlert::Gui::LanguageChangeEvent;
 using PotatoAlert::Gui::MainWindow;
 using PotatoAlert::Gui::NativeWindow;
+
 
 static int RunMain(int argc, char* argv[])
 {
@@ -67,7 +70,7 @@ static int RunMain(int argc, char* argv[])
 	AppDirectories appDirs("PotatoAlert");
 	serviceProvider.Add(appDirs);
 
-	PotatoAlert::Core::Log::Init(appDirs.LogFile);
+	Log::Init(appDirs.LogFile);
 	qInstallMessageHandler(LogQtMessage);
 
 	Config config(appDirs.ConfigFile);
@@ -81,7 +84,8 @@ static int RunMain(int argc, char* argv[])
 		.SubmitUrl = PA_SUBMIT_URL,
 		.LookupUrl = PA_LOOKUP_URL,
 		.TransferTimeout = 10000,
-	}, serviceProvider);
+	},
+	serviceProvider);
 	serviceProvider.Add(client);
 
 	SQLite db = SQLite::Open(appDirs.DatabaseFile, SQLite::Flags::ReadWrite | SQLite::Flags::Create);
@@ -95,7 +99,7 @@ static int RunMain(int argc, char* argv[])
 	serviceProvider.Add(dbm);
 
 	QApplication::setQuitOnLastWindowClosed(false);
-	
+
 	QApplication::setOrganizationName(PRODUCT_COMPANY_NAME);
 	QApplication::setApplicationVersion(PRODUCT_VERSION_FULL_STR);
 
@@ -125,6 +129,7 @@ static int RunMain(int argc, char* argv[])
 	FontScalingChangeEvent fontScalingChangeEvent((float)serviceProvider.Get<Config>().Get<ConfigKey::FontScaling>() / 100.0f);
 	QApplication::sendEvent(mainWindow, &fontScalingChangeEvent);
 
+#ifdef WIN32
 	// check if there is a new version available
 	if (serviceProvider.Get<Config>().Get<ConfigKey::UpdateNotifications>())
 		if (Updater::UpdateAvailable())
@@ -134,11 +139,12 @@ static int RunMain(int argc, char* argv[])
 
 	if (QApplication::arguments().contains("--changelog"))
 		;  // TODO: add changelog
+#endif
 
 	return QApplication::exec();
 }
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) || !defined(WIN32)
 int main(int argc, char* argv[])
 {
 	return RunMain(argc, argv);

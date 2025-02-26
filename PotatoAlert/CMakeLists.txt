@@ -23,6 +23,7 @@ endif()
 pa_add_executable(
     PotatoAlert
     SOURCES
+        src/PotatoAlert.cpp
         ${CMAKE_BINARY_DIR}/PotatoAlert.qrc
     PROPERTIES
         AUTORCC TRUE
@@ -47,16 +48,8 @@ pa_add_executable(
 pa_configure(
     PotatoAlert
     PLATFORM Windows
-    SOURCES
-        src/PotatoAlert.win32.cpp
     SOURCE_DEPENDENCIES
         Win32
-)
-pa_configure(
-    PotatoAlert
-    PLATFORM Linux
-    SOURCES
-        src/PotatoAlert.linux.cpp
 )
 pa_add_version_rc(PotatoAlert
     NAME "${PROJECT_NAME}"
