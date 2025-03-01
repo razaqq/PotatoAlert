@@ -30,7 +30,7 @@ using namespace PotatoAlert::ReplayParser;
 namespace rp = PotatoAlert::ReplayParser;
 using PotatoAlert::ReplayParser::ReplayResult;
 
-ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& scriptsPath)
+ReplayResult<Replay> Replay::Read(const std::filesystem::path& filePath)
 {
 	PA_PROFILE_FUNCTION();
 
@@ -165,13 +165,13 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 	fileMapping.Close();
 	file.Close();
 
-	const std::vector<Byte> decompressed = Zlib::Inflate(decrypted);
-	if (decompressed.empty())
+	replay.m_decompressed = Zlib::Inflate(decrypted);
+	if (replay.m_decompressed.empty())
 	{
 		return PA_REPLAY_ERROR("Failed to inflate decrypted replay data with zlib.");
 	}
 
-	if (decompressed.size() != decompressedSize)
+	if (replay.m_decompressed.size() != decompressedSize)
 	{
 		return PA_REPLAY_ERROR("Replay decompressed data != decompressedSize");
 	}
@@ -180,28 +180,36 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 	decrypted.clear();
 	decrypted.shrink_to_fit();
 
-	PA_TRYA(replay.Specs, ParseScripts(scriptsPath));
+	return replay;
+}
 
-	if (replay.Specs.empty())
+ReplayResult<void> Replay::ParsePackets(const std::filesystem::path& scriptsPath)
+{
+	PA_TRYA(Specs, ParseScripts(scriptsPath));
+
+	if (Specs.empty())
 	{
 		return PA_REPLAY_ERROR("Empty entity specs");
 	}
 
-	replay.m_packetParser.Specs = replay.Specs;
+	m_packetParser.Specs = Specs;
 
-	std::span out{ decompressed };
+	std::span<const Byte> out{ m_decompressed };
 	do {
-		PA_TRY(packet, ParsePacket(out, replay.m_packetParser, replay.Meta.ClientVersionFromExe));
-		replay.Packets.emplace_back(std::move(packet));
+		PA_TRY(packet, ParsePacket(out, m_packetParser, Meta.ClientVersionFromExe));
+		Packets.emplace_back(std::move(packet));
 	} while (!out.empty());
 
-	// sort the packets by game time
-	// std::ranges::sort(replay.Packets, [](const PacketType& a, const PacketType& b)
-	// {
-	// 	const Packet& aPacket = std::visit([](const auto& x) -> const Packet& { return x; }, a);
-	// 	const Packet& bPacket = std::visit([](const auto& x) -> const Packet& { return x; }, b);
-	// 	return aPacket.Clock < bPacket.Clock;
-	// });
+	// free memory of decompressed data
+	m_decompressed.clear();
+	m_decompressed.shrink_to_fit();
 
+	return {};
+}
+
+ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& scriptsPath)
+{
+	PA_TRY(replay, Read(filePath));
+	PA_TRYV(replay.ParsePackets(scriptsPath));
 	return replay;
 }

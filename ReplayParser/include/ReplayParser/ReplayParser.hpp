@@ -357,6 +357,9 @@ public:
 	std::vector<PacketType> Packets;
 	std::vector<EntitySpec> Specs;
 
+	static ReplayResult<Replay> Read(const std::filesystem::path& filePath);
+	ReplayResult<void> ParsePackets(const std::filesystem::path& scriptsPath);
+
 	static ReplayResult<Replay> FromFile(const std::filesystem::path& filePath, const std::filesystem::path& scriptsPath);
 	[[nodiscard]] ReplayResult<ReplaySummary> Analyze() const;
 
@@ -368,6 +371,7 @@ public:
 
 private:
 	PacketParser m_packetParser;
+	std::vector<Byte> m_decompressed;
 };
 
 }  // namespace PotatoAlert::ReplayParser
