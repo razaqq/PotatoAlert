@@ -570,7 +570,7 @@ SqlResult<std::vector<NonAnalyzedMatch>> DatabaseManager::GetNonAnalyzedMatches(
 {
 	std::vector<NonAnalyzedMatch> matches;
 
-	static constexpr std::string_view selectQuery = "SELECT Hash, ReplayName FROM matches WHERE Analyzed = false";
+	static constexpr std::string_view selectQuery = "SELECT Hash, ReplayName, Region FROM matches WHERE Analyzed = false";
 
 	SQLite::Statement stmt(m_db, selectQuery);
 
@@ -586,8 +586,9 @@ SqlResult<std::vector<NonAnalyzedMatch>> DatabaseManager::GetNonAnalyzedMatches(
 		{
 			matches.emplace_back(NonAnalyzedMatch
 			{
-				ParseValue<std::string>(stmt, 0),
-				ParseValue<std::string>(stmt, 1)
+				.Hash = ParseValue<std::string>(stmt, 0),
+				.ReplayName = ParseValue<std::string>(stmt, 1),
+				.Region = ParseValue<std::string>(stmt, 2)
 			});
 		}
 	}

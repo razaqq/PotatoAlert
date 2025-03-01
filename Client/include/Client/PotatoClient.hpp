@@ -66,6 +66,9 @@ public:
 
 private:
 	void OnFileChanged(const std::filesystem::path& file);
+	void OnTempArenaInfoChanged(const std::filesystem::path& file, const GameInfo& game);
+	void OnReplayChanged(const std::filesystem::path& file, const GameInfo& game);
+
 	void SendRequest(std::string_view requestString, MatchContext&& matchContext);
 	void HandleReply(QNetworkReply* reply, auto& successHandler);
 	void LookupResult(const std::string& url, const std::string& authToken, const MatchContext& matchContext);

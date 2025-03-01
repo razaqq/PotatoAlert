@@ -43,14 +43,12 @@ public:
 		qRegisterMetaType<ReplaySummary>("ReplaySummary");
 	}
 
+	void AnalyzeReplay(const std::filesystem::path& path, const std::string& region, std::chrono::seconds readDelay = std::chrono::seconds(0));
 	void AnalyzeDirectory(const std::filesystem::path& directory);
-	void OnFileChanged(const std::filesystem::path& file);
 	bool HasGameFiles(const Game::GameInfo& gameInfo) const;
 	static Core::Result<void> UnpackGameFiles(const std::filesystem::path& dst, const std::filesystem::path& pkgPath, const std::filesystem::path& idxPath);
 
 private:
-	void AnalyzeReplay(const std::filesystem::path& path, std::chrono::seconds readDelay = std::chrono::seconds(0));
-
 	const ServiceProvider& m_services;
 	Core::ThreadPool m_threadPool;
 	std::unordered_map<std::filesystem::path::string_type, std::future<void>> m_futures;

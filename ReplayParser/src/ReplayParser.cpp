@@ -205,10 +205,3 @@ ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& 
 
 	return replay;
 }
-
-ReplayResult<ReplaySummary> rp::AnalyzeReplay(const fs::path& file, const fs::path& scriptsPath)
-{
-	PA_TRY(replay, Replay::FromFile(file, scriptsPath));
-	PA_TRY(summary, replay.Analyze());
-	return summary;
-}

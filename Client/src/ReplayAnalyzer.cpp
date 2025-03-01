@@ -27,6 +27,7 @@ using namespace std::chrono_literals;
 using namespace PotatoAlert::Core;
 using PotatoAlert::Client::ReplayAnalyzer;
 using PotatoAlert::GameFileUnpack::Unpacker;
+using PotatoAlert::ReplayParser::Replay;
 
 bool ReplayAnalyzer::HasGameFiles(const Game::GameInfo& gameInfo) const
 {
@@ -44,25 +45,24 @@ Result<void> ReplayAnalyzer::UnpackGameFiles(const fs::path& dst, const fs::path
 	return {};
 }
 
-void ReplayAnalyzer::OnFileChanged(const std::filesystem::path& file)
+void ReplayAnalyzer::AnalyzeReplay(const fs::path& path, const std::string& region, std::chrono::seconds readDelay)
 {
-	if (file.extension() == fs::path(".wowsreplay") && File::Exists(file) &&
-		file.filename() != fs::path("temp.wowsreplay"))
-	{
-		LOG_TRACE("Replay file {} changed", file);
-		AnalyzeReplay(file, 30s);
-	}
-}
-
-void ReplayAnalyzer::AnalyzeReplay(const fs::path& path, std::chrono::seconds readDelay)
-{
-	auto analyze = [this](const fs::path& file, std::chrono::seconds delay) -> void
+	auto analyze = [this](const fs::path& file, const std::string& region, std::chrono::seconds delay) -> void
 	{
 		// this is honestly not ideal, but i don't see another way of fixing it
 		LOG_TRACE(STR("Analyzing replay file {} after {} delay..."), file, delay);
 		std::this_thread::sleep_for(delay);
 
-		PA_TRY_OR_ELSE(summary, ReplayParser::AnalyzeReplay(file, m_services.Get<AppDirectories>().GameFilesDir),
+		auto analyzeReplay = [this](const fs::path& file, const std::string& region) -> ReplayResult<ReplaySummary>
+		{
+			PA_TRY(replay, Replay::Read(file));
+			const fs::path scriptsPath = m_services.Get<AppDirectories>().GameFilesDir / region / replay.Meta.ClientVersionFromExe.ToString(".", true) / "scripts";
+			PA_TRYV(replay.ParsePackets(scriptsPath));
+			PA_TRY(summary, replay.Analyze());
+			return summary;
+		};
+
+		PA_TRY_OR_ELSE(summary, analyzeReplay(file, region),
 		{
 			LOG_ERROR(STR("Failed to analyze replay file {}: {}"), file, StringWrap(error));
 			return;
@@ -96,12 +96,12 @@ void ReplayAnalyzer::AnalyzeReplay(const fs::path& path, std::chrono::seconds re
 	// this avoids running multiple analyzes if the game writes to the replay multiple times
 	if (!m_futures.contains(path.native()))
 	{
-		m_futures.emplace(path.native(), m_threadPool.Enqueue(analyze, path, readDelay));
+		m_futures.emplace(path.native(), m_threadPool.Enqueue(analyze, path, region, readDelay));
 	}
 
 	if (m_futures.at(path.native()).wait_for(0s) == std::future_status::ready)
 	{
-		m_futures.at(path.native()) = m_threadPool.Enqueue(analyze, path, readDelay);
+		m_futures.at(path.native()) = m_threadPool.Enqueue(analyze, path, region, readDelay);
 	}
 }
 
@@ -140,7 +140,7 @@ void ReplayAnalyzer::AnalyzeDirectory(const fs::path& directory)
 
 			if (found != matches.end())
 			{
-				AnalyzeReplay(entry.path());
+				AnalyzeReplay(entry.path(), found->Region);
 			}
 		}
 	}

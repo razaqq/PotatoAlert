@@ -226,7 +226,6 @@ void PotatoClient::Init()
 	}
 
 	connect(&m_watcher, &DirectoryWatcher::FileChanged, this, &PotatoClient::OnFileChanged);
-	connect(&m_watcher, &DirectoryWatcher::FileChanged, &m_replayAnalyzer, &ReplayAnalyzer::OnFileChanged);
 
 	connect(&m_replayAnalyzer, &ReplayAnalyzer::ReplaySummaryReady, this, &PotatoClient::ReplaySummaryChanged);
 
@@ -572,11 +571,69 @@ void PotatoClient::OnFileChanged(const std::filesystem::path& file)
 {
 	LOG_TRACE("File changed: {}", file);
 
-	if (file.filename() != fs::path("tempArenaInfo.json") || !File::Exists(file))
+	if (!File::Exists(file))
 	{
 		return;
 	}
 
+	auto findGame = [this, &file]() -> std::optional<GameInfo>
+	{
+		std::optional<GameInfo> game = std::nullopt;
+		for (const GameDirectory& gameDir : m_gameInfos)
+		{
+			Result<bool> eq = IsSubdirectory(file, gameDir.Path);
+			if (eq && *eq && gameDir.Info)
+			{
+				game = gameDir.Info;
+			}
+		}
+
+		return game;
+	};
+
+	if (file.extension() == fs::path(".wowsreplay"))
+	{
+		const std::optional<GameInfo> game = findGame();
+		if (!game)
+		{
+			LOG_ERROR("Replay path is not inside any game directory.");
+			emit StatusReady(Status::Error, "Replay Path");
+			return;
+		}
+		OnReplayChanged(file, *game);
+	}
+	else if (file.filename() == fs::path("tempArenaInfo.json"))
+	{
+		const std::optional<GameInfo> game = findGame();
+		if (!game)
+		{
+			LOG_ERROR("Arena info path is not inside any game directory.");
+			emit StatusReady(Status::Error, "Arena Info Path");
+			return;
+		}
+		OnTempArenaInfoChanged(file, *game);
+	}
+}
+
+void PotatoClient::OnReplayChanged(const std::filesystem::path& file, const GameInfo& game)
+{
+	if (file.filename() != fs::path("temp.wowsreplay"))
+	{
+		LOG_TRACE("Replay file {} changed", file);
+
+		if (game.Region.empty())
+		{
+			LOG_ERROR("No region set in DirectoryStatus");
+			emit StatusReady(Status::Error, "No Region Set");
+			return;
+		}
+
+		m_replayAnalyzer.AnalyzeReplay(file, game.Region, std::chrono::seconds(30));
+	}
+}
+
+void PotatoClient::OnTempArenaInfoChanged(const std::filesystem::path& file, const GameInfo& game)
+{
 	PA_TRY_OR_ELSE(arenaInfo, ReadArenaInfo(file),
 	{
 		LOG_ERROR("Failed to read arena info from file: {}", error);
@@ -595,24 +652,7 @@ void PotatoClient::OnFileChanged(const std::filesystem::path& file)
 		return;
 	m_lastArenaInfoHash = arenaInfo.Hash;
 
-	GameInfo const* game = nullptr;
-	for (const GameDirectory& gameDir : m_gameInfos)
-	{
-		Result<bool> eq = IsSubdirectory(file, gameDir.Path);
-		if (eq && *eq && gameDir.Info)
-		{
-			game = &*gameDir.Info;
-		}
-	}
-
-	if (game == nullptr)
-	{
-		LOG_ERROR("Arena info path is not inside any game directory.");
-		emit StatusReady(Status::Error, "Arena Info Path");
-		return;
-	}
-
-	if (game->Region.empty())
+	if (game.Region.empty())
 	{
 		LOG_ERROR("No region set in DirectoryStatus");
 		emit StatusReady(Status::Error, "No Region Set");
@@ -625,7 +665,7 @@ void PotatoClient::OnFileChanged(const std::filesystem::path& file)
 	rapidjson::MemoryPoolAllocator<> a = request.GetAllocator();
 	request.AddMember("Guid", "placeholder123", a);
 	request.AddMember("Player", arenaInfo.PlayerName, a);
-	request.AddMember("Region", game->Region, a);
+	request.AddMember("Region", game.Region, a);
 	request.AddMember("StatsMode", ToJson(m_services.Get<Config>().Get<ConfigKey::StatsMode>()), a);
 	request.AddMember("TeamDamageMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamDamageMode>()), a);
 	request.AddMember("TeamWinRateMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamWinRateMode>()), a);

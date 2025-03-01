@@ -370,6 +370,4 @@ private:
 	PacketParser m_packetParser;
 };
 
-PA_API ReplayResult<ReplaySummary> AnalyzeReplay(const std::filesystem::path& file, const std::filesystem::path& scriptsPath);
-
 }  // namespace PotatoAlert::ReplayParser

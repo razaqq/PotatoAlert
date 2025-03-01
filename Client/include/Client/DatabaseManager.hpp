@@ -56,6 +56,7 @@ struct NonAnalyzedMatch
 {
 	std::string Hash;
 	std::string ReplayName;
+	std::string Region;
 };
 
 using SqlError = std::string;
