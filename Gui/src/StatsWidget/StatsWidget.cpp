@@ -3,8 +3,8 @@
 #include "Client/Config.hpp"
 #include "Client/PotatoClient.hpp"
 #include "Client/ServiceProvider.hpp"
-#include "Client/StatsParser.hpp"
 
+#include "Gui/StatsParser.hpp"
 #include "Gui/StatsWidget/StatsWidget.hpp"
 
 #include <QVBoxLayout>
@@ -31,7 +31,7 @@ void StatsWidget::Init()
 	setLayout(m_layout);
 }
 
-void StatsWidget::Update(const MatchType& match) const
+void StatsWidget::Update(const StatsParser::Match& match) const
 {
 	m_team1->Update(match.Team1);
 	m_team2->Update(match.Team2);

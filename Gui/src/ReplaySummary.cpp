@@ -28,7 +28,7 @@ using PotatoAlert::ReplayParser::AchievementType;
 using PotatoAlert::ReplayParser::RibbonType;
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::ConfigKey;
-using PotatoAlert::Client::Match;
+using PotatoAlert::Client::DbMatch;
 using PotatoAlert::Gui::Background;
 using PotatoAlert::Gui::ShadowLabel;
 using ReplaySummaryData = PotatoAlert::ReplayParser::ReplaySummary;
@@ -239,7 +239,7 @@ ReplaySummaryGui::ReplaySummary(const Client::ServiceProvider& serviceProvider, 
 	QFontDatabase::addApplicationFont(":/Warhelios-Bold.ttf");
 }
 
-void ReplaySummaryGui::SetReplaySummary(const Match& match)
+void ReplaySummaryGui::SetReplaySummary(const DbMatch& match)
 {
 	ClearLayout(layout());
 

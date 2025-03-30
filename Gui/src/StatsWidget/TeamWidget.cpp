@@ -4,6 +4,7 @@
 #include "Client/ServiceProvider.hpp"
 
 #include "Gui/Fonts.hpp"
+#include "Gui/StatsParser.hpp"
 #include "Gui/StatsWidget/StatsHeader.hpp"
 #include "Gui/StatsWidget/StatsTable.hpp"
 #include "Gui/StatsWidget/StatsTeamFooter.hpp"
@@ -54,7 +55,7 @@ TeamWidget::TeamWidget(Side side, QWidget* parent)
 	});
 }
 
-void TeamWidget::Update(const Team& team)
+void TeamWidget::Update(const StatsParser::Team& team)
 {
 	m_wowsNumbers = team.WowsNumbers;
 
@@ -70,7 +71,7 @@ void TeamWidget::Update(const Team& team)
 				break;
 			}
 
-			Client::StatsParser::FieldType field = player[static_cast<size_t>(col)];
+			StatsParser::FieldType field = player[static_cast<size_t>(col)];
 			if (std::holds_alternative<QTableWidgetItem*>(field))
 				m_table->setItem(row, col, std::get<QTableWidgetItem*>(field));
 			if (std::holds_alternative<QLabel*>(field))

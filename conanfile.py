@@ -20,6 +20,7 @@ class PotatoAlert(ConanFile):
         self.requires("ctre/3.9.0")
         self.requires("date/3.0.3")
         self.requires("fmt/11.1.1", override=True)
+        self.requires("glaze/5.0.0")
         self.requires("kuba-zip/0.3.2")
         self.requires("openssl/3.3.2")
         # self.requires("qt/6.7.1")

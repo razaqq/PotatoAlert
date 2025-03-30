@@ -1,9 +1,8 @@
 // Copyright 2020 <github.com/razaqq>
 #pragma once
 
-#include "Client/StatsParser.hpp"
-
 #include "Gui/ScalingLabel.hpp"
+#include "Gui/StatsParser.hpp"
 
 #include <QEvent>
 #include <QFont>
@@ -12,13 +11,11 @@
 
 namespace PotatoAlert::Gui {
 
-using Client::StatsParser::Team;
-
 class StatsTeamFooter : public QWidget
 {
 public:
 	explicit StatsTeamFooter(QWidget* parent = nullptr);
-	void Update(const Team& team) const;
+	void Update(const StatsParser::Team& team) const;
 	bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:

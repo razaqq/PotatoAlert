@@ -20,7 +20,7 @@
 
 
 using PotatoAlert::Client::DatabaseManager;
-using PotatoAlert::Client::Match;
+using PotatoAlert::Client::DbMatch;
 using PotatoAlert::Client::NonAnalyzedMatch;
 using PotatoAlert::Client::SchemaInfo;
 using PotatoAlert::Client::SqlResult;
@@ -146,12 +146,12 @@ static inline bool BindValue(std::string_view name, SQLite::Statement& stmt, con
 }
 #endif
 
-static inline Match ParseMatch(const SQLite::Statement& stmt)
+static inline DbMatch ParseMatch(const SQLite::Statement& stmt)
 {
 	int index = 0;
 
 #define PARSE_FIELD(Type, Name, SqlType) .Name = ParseValue<Type>(stmt, index++),
-	return Match{ PARSE_FIELD(uint32_t, Id, "") MATCH_FIELDS(PARSE_FIELD) };
+	return DbMatch{ PARSE_FIELD(uint32_t, Id, "") MATCH_FIELDS(PARSE_FIELD) };
 #undef PARSE_FIELD
 }
 
@@ -251,7 +251,7 @@ SqlResult<void> DatabaseManager::MigrateTables() const
 			stmt.ExecuteStep();
 			if (stmt.HasRow())
 			{
-				Match match = ParseMatch(stmt);
+				DbMatch match = ParseMatch(stmt);
 				if (std::optional<Core::Time::TimePoint> tp = Core::Time::StrToTime(match.Date, "%d.%m.%Y %H:%M:%S"))
 				{
 					match.Date = Core::Time::TimeToStr(*tp, "{:%Y-%m-%d %H:%M:%S}");
@@ -303,7 +303,7 @@ SqlResult<void> DatabaseManager::MigrateTables() const
 	return {};
 }
 
-SqlResult<void> DatabaseManager::AddMatch(Match& match) const
+SqlResult<void> DatabaseManager::AddMatch(DbMatch& match) const
 {
 	static constexpr std::string_view insertQuery = "INSERT INTO matches ("
 		PA_DB_COLUMNS(MATCH_FIELDS) ") VALUES (" PA_DB_COLUMNS_VALUES(MATCH_FIELDS) ")";
@@ -398,7 +398,7 @@ SqlResult<void> DatabaseManager::DeleteMatches(std::span<uint32_t> ids) const
 	return {};
 }
 
-SqlResult<std::optional<Match>> DatabaseManager::GetMatch(std::string_view hash) const
+SqlResult<std::optional<DbMatch>> DatabaseManager::GetMatch(std::string_view hash) const
 {
 	static constexpr std::string_view selectQuery =
 			PA_DB_SELECT_WITH_ID(MATCH_FIELDS) " FROM matches WHERE Hash = :Hash";
@@ -421,7 +421,7 @@ SqlResult<std::optional<Match>> DatabaseManager::GetMatch(std::string_view hash)
 	return {};
 }
 
-SqlResult<std::optional<Match>> DatabaseManager::GetMatch(uint32_t id) const
+SqlResult<std::optional<DbMatch>> DatabaseManager::GetMatch(uint32_t id) const
 {
 	static constexpr std::string_view selectQuery =
 			PA_DB_SELECT_WITH_ID(MATCH_FIELDS) " FROM matches WHERE Id = :Id";
@@ -444,11 +444,11 @@ SqlResult<std::optional<Match>> DatabaseManager::GetMatch(uint32_t id) const
 	return {};
 }
 
-SqlResult<std::vector<Match>> DatabaseManager::GetMatches() const
+SqlResult<std::vector<DbMatch>> DatabaseManager::GetMatches() const
 {
 	PA_PROFILE_FUNCTION();
 
-	std::vector<Match> matches;
+	std::vector<DbMatch> matches;
 
 	static constexpr std::string_view selectQuery =
 			PA_DB_SELECT_WITH_ID(MATCH_FIELDS) " FROM matches ORDER BY Date DESC";
@@ -472,7 +472,7 @@ SqlResult<std::vector<Match>> DatabaseManager::GetMatches() const
 	return matches;
 }
 
-SqlResult<void> DatabaseManager::UpdateMatch(uint32_t id, const Match& match) const
+SqlResult<void> DatabaseManager::UpdateMatch(uint32_t id, const DbMatch& match) const
 {
 	static constexpr std::string_view updateStatement = "UPDATE matches SET " PA_DB_COLUMNS_VALUES_UPDATE(MATCH_FIELDS) " WHERE Id = :Id";
 
@@ -497,7 +497,7 @@ SqlResult<void> DatabaseManager::UpdateMatch(uint32_t id, const Match& match) co
 	return {};
 }
 
-SqlResult<void> DatabaseManager::UpdateMatch(std::string_view hash, const Match& match) const
+SqlResult<void> DatabaseManager::UpdateMatch(std::string_view hash, const DbMatch& match) const
 {
 	static constexpr std::string_view updateStatement = "UPDATE matches SET " PA_DB_COLUMNS_VALUES_UPDATE(MATCH_FIELDS) " WHERE Hash = :Hash";
 
@@ -596,7 +596,7 @@ SqlResult<std::vector<NonAnalyzedMatch>> DatabaseManager::GetNonAnalyzedMatches(
 	return matches;
 }
 
-SqlResult<std::optional<Match>> DatabaseManager::GetLatestMatch() const
+SqlResult<std::optional<DbMatch>> DatabaseManager::GetLatestMatch() const
 {
 	static constexpr std::string_view selectQuery = PA_DB_SELECT_WITH_ID(MATCH_FIELDS) " FROM matches ORDER BY Id DESC LIMIT 1";
 

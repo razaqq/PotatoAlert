@@ -6,8 +6,6 @@
 #include "Client/Screenshot.hpp"
 #include "Client/StringTable.hpp"
 
-#include "Core/Directory.hpp"
-
 #include "Gui/Fonts.hpp"
 #include "Gui/MainWindow.hpp"
 #include "Gui/MatchHistory/MatchHistory.hpp"
@@ -23,6 +21,8 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QWindow>
+
+#include <filesystem>
 
 
 using namespace PotatoAlert::Client::StringTable;
@@ -102,7 +102,7 @@ void MainWindow::SwitchTab(MenuEntry i)
 		case MenuEntry::Screenshot:
 		{
 			const bool doBlur = m_activeWidget == m_statsWidget && m_services.Get<Config>().Get<ConfigKey::AnonymizePlayers>();
-			const fs::path screenshotDir = m_services.Get<Client::AppDirectories>().ScreenshotsDir;
+			const std::filesystem::path screenshotDir = m_services.Get<Client::AppDirectories>().ScreenshotsDir;
 			Client::CaptureScreenshot(window(), screenshotDir, doBlur ? m_statsWidget->GetPlayerColumnRects(dynamic_cast<QWidget*>(parent())) : QList<QRect>());
 			QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(screenshotDir).absolutePath()));
 			return;
@@ -139,12 +139,19 @@ void MainWindow::ConnectSignals()
 	const PotatoClient& potatoClient = m_services.Get<PotatoClient>();
 
 	connect(&potatoClient, &PotatoClient::StatusReady, m_statsWidget, &StatsWidget::SetStatus);
-	connect(&potatoClient, &PotatoClient::MatchReady, m_statsWidget, &StatsWidget::Update);
+	connect(&potatoClient, &PotatoClient::MatchReady, [this](const Client::StatsParser::Match& match, const Client::MatchContext& ctx)
+	{
+		const bool showKarma = m_services.Get<Config>().Get<ConfigKey::ShowKarma>();
+		const bool fontShadow = m_services.Get<Config>().Get<ConfigKey::FontShadow>();
+		const int fontScaling = m_services.Get<Config>().Get<ConfigKey::FontScaling>();
+		const StatsParser::Match guiMatch = StatsParser::ParseMatch(match, ctx, { showKarma, fontShadow, (float)fontScaling / 100.0f });
+		m_statsWidget->Update(guiMatch);
+	});
 
 	connect(&potatoClient, &PotatoClient::MatchHistoryNewMatch, m_matchHistory, &MatchHistory::AddMatch);
 	connect(&potatoClient, &PotatoClient::ReplaySummaryChanged, m_matchHistory, &MatchHistory::SetReplaySummary);
 
-	connect(m_matchHistory, &MatchHistory::ReplaySelected, [this](const MatchType& match)
+	connect(m_matchHistory, &MatchHistory::ReplaySelected, [this](const StatsParser::Match& match)
 	{
 		m_statsWidget->Update(match);
 		SwitchTab(MenuEntry::Table);
@@ -156,7 +163,7 @@ void MainWindow::ConnectSignals()
 		SwitchTab(MenuEntry::MatchHistory);
 	});
 
-	connect(m_matchHistory, &MatchHistory::ReplaySummarySelected, [this](const Client::Match& match)
+	connect(m_matchHistory, &MatchHistory::ReplaySummarySelected, [this](const Client::DbMatch& match)
 	{
 		m_activeWidget->setVisible(false);
 		m_replaySummary->SetReplaySummary(match);

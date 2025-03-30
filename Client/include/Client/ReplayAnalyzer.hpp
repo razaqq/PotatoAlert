@@ -20,7 +20,6 @@
 #include <string>
 
 
-namespace fs = std::filesystem;
 using PotatoAlert::ReplayParser::ReplaySummary;
 using PotatoAlert::ReplayParser::ReplayResult;
 

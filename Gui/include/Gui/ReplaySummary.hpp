@@ -22,7 +22,7 @@ class ReplaySummary : public QWidget
 
 public:
 	explicit ReplaySummary(const Client::ServiceProvider& serviceProvider, QWidget* parent = nullptr);
-	void SetReplaySummary(const Client::Match& match);
+	void SetReplaySummary(const Client::DbMatch& match);
 
 private:
 	void paintEvent(QPaintEvent* _) override;

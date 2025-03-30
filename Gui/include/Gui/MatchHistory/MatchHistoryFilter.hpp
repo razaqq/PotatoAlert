@@ -149,9 +149,9 @@ public:
 	explicit MatchHistoryFilter(QWidget* align, QWidget* parent = nullptr);
 
 	void AdjustPosition();
-	void BuildFilter(std::span<const Client::Match> matches) const;
-	void Add(const Client::Match& match) const;
-	void Remove(const Client::Match& match) const;
+	void BuildFilter(std::span<const Client::DbMatch> matches) const;
+	void Add(const Client::DbMatch& match) const;
+	void Remove(const Client::DbMatch& match) const;
 
 	[[nodiscard]] const Filter& ShipFilter() const { return m_shipList->GetFilter(); }
 	[[nodiscard]] const Filter& MapFilter() const { return m_mapList->GetFilter(); }

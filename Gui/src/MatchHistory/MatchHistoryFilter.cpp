@@ -127,7 +127,7 @@ void MatchHistoryFilter::AdjustPosition()
 	setGeometry(QRect(topLeft - QPoint(0, height()), QSize(width(), height())));
 }
 
-void MatchHistoryFilter::BuildFilter(std::span<const Client::Match> matches) const
+void MatchHistoryFilter::BuildFilter(std::span<const Client::DbMatch> matches) const
 {
 	m_shipList->Clear();
 	m_mapList->Clear();
@@ -136,13 +136,13 @@ void MatchHistoryFilter::BuildFilter(std::span<const Client::Match> matches) con
 	m_playerList->Clear();
 	m_regionList->Clear();
 
-	for (const Client::Match& match : matches)
+	for (const Client::DbMatch& match : matches)
 	{
 		Add(match);
 	}
 }
 
-void MatchHistoryFilter::Add(const Client::Match& match) const
+void MatchHistoryFilter::Add(const Client::DbMatch& match) const
 {
 	m_shipList->AddItem(match.Ship);
 	m_mapList->AddItem(match.Map);
@@ -152,7 +152,7 @@ void MatchHistoryFilter::Add(const Client::Match& match) const
 	m_regionList->AddItem(match.Region);
 }
 
-void MatchHistoryFilter::Remove(const Client::Match& match) const
+void MatchHistoryFilter::Remove(const Client::DbMatch& match) const
 {
 	m_shipList->RemoveItem(match.Ship);
 	m_mapList->RemoveItem(match.Map);

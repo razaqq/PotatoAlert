@@ -84,8 +84,7 @@ static int RunMain(int argc, char* argv[])
 		.SubmitUrl = PA_SUBMIT_URL,
 		.LookupUrl = PA_LOOKUP_URL,
 		.TransferTimeout = 10000,
-	},
-	serviceProvider);
+	}, serviceProvider);
 	serviceProvider.Add(client);
 
 	SQLite db = SQLite::Open(appDirs.DatabaseFile, SQLite::Flags::ReadWrite | SQLite::Flags::Create);

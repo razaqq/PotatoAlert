@@ -2,8 +2,8 @@
 #pragma once
 
 #include "Client/PotatoClient.hpp"
-#include "Client/StatsParser.hpp"
 
+#include "Gui/StatsParser.hpp"
 #include "Gui/StatsWidget/TeamWidget.hpp"
 
 #include <QBoxLayout>
@@ -11,8 +11,6 @@
 
 
 namespace PotatoAlert::Gui {
-
-using PotatoAlert::Client::StatsParser::MatchType;
 
 class StatsWidget : public QWidget
 {
@@ -28,7 +26,7 @@ private:
 public:
 	explicit StatsWidget(const Client::ServiceProvider& serviceProvider, QWidget* parent = nullptr);
 
-	void Update(const MatchType& match) const;
+	void Update(const StatsParser::Match& match) const;
 	void SetStatus(Client::Status status, std::string_view statusText) const;
 	void UpdateTableLayout();
 	QList<QRect> GetPlayerColumnRects(QWidget* parent) const;

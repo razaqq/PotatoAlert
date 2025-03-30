@@ -10,7 +10,7 @@
 #include "Client/StatsParser.hpp"
 #include "Client/SysInfo.hpp"
 
-#include "ReplayParser/ReplayParser.hpp"
+#include "ReplayParser/Result.hpp"
 
 #include <QNetworkAccessManager>
 #include <QObject>
@@ -25,7 +25,6 @@
 
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::Game::GameInfo;
-using PotatoAlert::Client::StatsParser::MatchContext;
 
 namespace PotatoAlert::Client {
 
@@ -50,6 +49,13 @@ struct ClientOptions
 	int32_t TransferTimeout;
 };
 
+struct MatchContext
+{
+	std::string ArenaInfo;
+	std::string PlayerName;
+	std::string ShipIdent;
+};
+
 class PotatoClient : public QObject
 {
 	Q_OBJECT
@@ -63,15 +69,25 @@ public:
 	void TriggerRun();
 	void ForceRun();
 	void UpdateGameInstalls();
+	[[nodiscard]] std::vector<GameDirectory> GetGameInstalls() const
+	{
+		return m_gameInfos;
+	}
 
 private:
 	void OnFileChanged(const std::filesystem::path& file);
 	void OnTempArenaInfoChanged(const std::filesystem::path& file, const GameInfo& game);
 	void OnReplayChanged(const std::filesystem::path& file, const GameInfo& game);
 
+	[[nodiscard]] std::filesystem::path GetGameFilePath(const GameInfo& game) const;
+	[[nodiscard]] std::filesystem::path GetGameFilePath(const GameInfo& game, Core::Version version) const;
+
+	[[nodiscard]] std::string BuildRequest(const std::string& region, const std::string& playerName, rapidjson::Document& json) const;
 	void SendRequest(std::string_view requestString, MatchContext&& matchContext);
 	void HandleReply(QNetworkReply* reply, auto& successHandler);
 	void LookupResult(const std::string& url, const std::string& authToken, const MatchContext& matchContext);
+
+	void DbAddMatch(std::string_view hash, const StatsParser::Match& match, const MatchContext& matchContext, std::string&& jsonString);
 
 private:
 	ClientOptions m_options;
@@ -84,8 +100,8 @@ private:
 	QNetworkAccessManager* m_networkAccessManager = new QNetworkAccessManager();
 
 signals:
-	void MatchReady(const StatsParser::MatchType& match);
-	void MatchHistoryNewMatch(const Match& match);
+	void MatchReady(const StatsParser::Match& match, const MatchContext& ctx);
+	void MatchHistoryNewMatch(const DbMatch& match);
 	void ReplaySummaryChanged(uint32_t id, const ReplaySummary& summary);
 	void StatusReady(Status status, std::string_view statusText);
 	void GameInfosChanged(std::span<const GameDirectory> infos);

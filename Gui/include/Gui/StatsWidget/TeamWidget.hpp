@@ -2,8 +2,8 @@
 #pragma once
 
 #include "Client/PotatoClient.hpp"
-#include "Client/StatsParser.hpp"
 
+#include "Gui/StatsParser.hpp"
 #include "Gui/StatsWidget/StatsTable.hpp"
 #include "Gui/StatsWidget/StatsTeamFooter.hpp"
 
@@ -25,7 +25,7 @@ public:
 
 	explicit TeamWidget(Side side, QWidget* parent = nullptr);
 
-	void Update(const Team& team);
+	void Update(const StatsParser::Team& team);
 	void SetStatus(Client::Status status, std::string_view text) const;
 	QRect GetPlayerColumnRect(QWidget* parent) const;
 	bool eventFilter(QObject* watched, QEvent* event) override;
@@ -35,7 +35,7 @@ private:
 	StatsTable* m_table;
 	StatsTeamFooter* m_footer = new StatsTeamFooter();
 	QWidget* m_header;
-	Client::StatsParser::WowsNumbersType m_wowsNumbers;
+	StatsParser::WowsNumbersType m_wowsNumbers;
 };
 
 }  // namespace PotatoAlert::Gui

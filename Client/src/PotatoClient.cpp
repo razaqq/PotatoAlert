@@ -38,23 +38,27 @@
 
 
 using PotatoAlert::Client::PotatoClient;
-using PotatoAlert::Client::StatsParser::MatchType;
+using PotatoAlert::Client::StatsParser::Match;
+using PotatoAlert::Client::MatchContext;
 using PotatoAlert::Core::String::Split;
+using PotatoAlert::ReplayParser::Replay;
+using PotatoAlert::ReplayParser::ReplayMeta;
+using PotatoAlert::ReplayParser::ReplayResult;
 using namespace PotatoAlert::Core;
+namespace fs = std::filesystem;
 
 namespace {
 
 struct TempArenaInfoResult
 {
-	std::string Raw;
-	std::string PlayerName;
-	std::string PlayerVehicle;
-	rapidjson::Document Json;
 	std::string Hash;
+	std::string String;
+	rapidjson::Document Json;
+	ReplayMeta Meta;
 };
 
 // opens and reads a file
-static Result<TempArenaInfoResult, std::string> ReadArenaInfo(const fs::path& filePath)
+static Result<std::optional<TempArenaInfoResult>, std::string> ReadArenaInfo(const fs::path& filePath)
 {
 	LOG_TRACE(STR("Reading arena info from: {}"), filePath);
 
@@ -92,7 +96,7 @@ static Result<TempArenaInfoResult, std::string> ReadArenaInfo(const fs::path& fi
 		{
 			// we have to assume it's not an error, because the game sometimes touches it at the end of a match
 			// when its about to get deleted
-			return TempArenaInfoResult{ "" };
+			return std::nullopt;
 		}
 
 		// the game has written to the file
@@ -100,14 +104,24 @@ static Result<TempArenaInfoResult, std::string> ReadArenaInfo(const fs::path& fi
 		{
 			if (std::string arenaInfo; file.ReadAllString(arenaInfo))
 			{
-				PA_TRY(j, ParseJson(arenaInfo));
-				PA_TRY(playerName, ::FromJson<std::string>(j, "playerName"));
-				PA_TRY(playerVehicle, ::FromJson<std::string>(j, "playerVehicle"));
+				ReplayResult<ReplayMeta> meta = Replay::ParseMeta(arenaInfo);
+				if (!meta)
+				{
+					return PA_ERROR(fmt::format("Failed to parse arena info as ReplayMeta: {}", meta.error()));
+				}
 
 				std::string hash;
 				Sha256(arenaInfo, hash);
 
-				return TempArenaInfoResult{ arenaInfo, playerName, playerVehicle, std::move(j), hash };
+				PA_TRY(json, ParseJson(arenaInfo));
+
+				return TempArenaInfoResult
+				{
+					.Hash = hash,
+					.String = arenaInfo,
+					.Json = std::move(json),
+					.Meta = std::move(*meta),
+				};
 			}
 			return PA_ERROR(fmt::format("Failed to read arena info file: {}", File::LastError()));
 		}
@@ -195,9 +209,9 @@ struct ServerResponse
 	return {};
 }
 
-static inline std::optional<std::string> GetReplayName(const MatchType::InfoType& info)
+static inline std::optional<std::string> GetReplayName(const Match& match, const MatchContext& ctx)
 {
-	const std::vector<std::string> dateSplit = Split(info.DateTime, " ");
+	const std::vector<std::string> dateSplit = Split(match.DateTime, " ");
 
 	if (dateSplit.size() != 2)
 		return {};
@@ -208,7 +222,7 @@ static inline std::optional<std::string> GetReplayName(const MatchType::InfoType
 	if (date.size() != 3 || time.size() != 3)
 		return {};
 
-	return fmt::format("{}_{}_{}_{}.wowsreplay", fmt::join(date, ""), fmt::join(time, ""), info.ShipIdent, info.Map);
+	return fmt::format("{}_{}_{}_{}.wowsreplay", fmt::join(date, ""), fmt::join(time, ""), ctx.ShipIdent, match.Map);
 }
 
 }
@@ -230,6 +244,35 @@ void PotatoClient::Init()
 	connect(&m_replayAnalyzer, &ReplayAnalyzer::ReplaySummaryReady, this, &PotatoClient::ReplaySummaryChanged);
 
 	UpdateGameInstalls();
+}
+
+std::string PotatoClient::BuildRequest(const std::string& region, const std::string& playerName, rapidjson::Document& json) const
+{
+	rapidjson::Document request;
+	request.SetObject();
+	rapidjson::MemoryPoolAllocator<> a = request.GetAllocator();
+	request.AddMember("Guid", "placeholder123", a);
+	request.AddMember("Player", playerName, a);
+	request.AddMember("Region", region, a);
+	request.AddMember("StatsMode", ToJson(m_services.Get<Config>().Get<ConfigKey::StatsMode>()), a);
+	request.AddMember("TeamDamageMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamDamageMode>()), a);
+	request.AddMember("TeamWinRateMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamWinRateMode>()), a);
+	request.AddMember("ArenaInfo", std::move(json), a);
+
+	request.AddMember("ClientInfo", rapidjson::Value(rapidjson::kObjectType), a);
+	rapidjson::Value& clientInfo = request["ClientInfo"];
+	clientInfo.AddMember("ClientVersion", QApplication::applicationVersion().toStdString(), a);
+	if (m_services.Get<Config>().Get<ConfigKey::AllowSendingUsageStats>() && m_sysInfo)
+	{
+		clientInfo.AddMember("SysInfo", rapidjson::Value(rapidjson::kObjectType), a);
+		rapidjson::Value& sysInfo = clientInfo["SysInfo"];
+		ToJson(sysInfo, *m_sysInfo, a);
+	}
+
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer writer(buffer);
+	request.Accept(writer);
+	return buffer.GetString();
 }
 
 void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& matchContext)
@@ -356,11 +399,13 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 							return;
 						}
 
+						rapidjson::StringBuffer buffer;
+						rapidjson::Writer writer(buffer);
+						serverResponse.Result.value().Accept(writer);
+						std::string jsonString = buffer.GetString();
+
 						LOG_TRACE("Parsing match.");
-						const bool showKarma = m_services.Get<Config>().Get<ConfigKey::ShowKarma>();
-						const bool fontShadow = m_services.Get<Config>().Get<ConfigKey::FontShadow>();
-						const int fontScaling = m_services.Get<Config>().Get<ConfigKey::FontScaling>();
-						PA_TRY_OR_ELSE(res, ParseMatch(serverResponse.Result.value(), matchContext, { showKarma, fontShadow, (float)fontScaling / 100.0f }),
+						PA_TRY_OR_ELSE(match, StatsParser::ParseMatch(jsonString),
 						{
 							LOG_ERROR("Failed to parse server match response as JSON: {}", error);
 							emit StatusReady(Status::Error, "JSON Parse Error");
@@ -371,67 +416,21 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 
 						if (config.Get<ConfigKey::MatchHistory>())
 						{
-							const DatabaseManager& dbm = m_services.Get<DatabaseManager>();
-
-							PA_TRY_OR_ELSE(exists, dbm.MatchExists(m_lastArenaInfoHash),
-							{
-								LOG_ERROR("Failed to check if match exists in database: {}", error);
-								return;
-							});
-
-							if (!exists)
-							{
-								LOG_TRACE("Adding match to match history '{}'", m_lastArenaInfoHash);
-								
-								rapidjson::StringBuffer buffer;
-								rapidjson::Writer writer(buffer);
-								serverResponse.Result.value().Accept(writer);
-
-								const std::optional<std::string> replayName = GetReplayName(res.Match.Info);
-								if (!replayName)
-								{
-									LOG_ERROR("Failed to get replay name");
-									return;
-								}
-
-								Match match
-								{
-									.Hash = m_lastArenaInfoHash,
-									.ReplayName = *replayName,
-									.Date = res.Match.Info.DateTime,
-									.Ship = res.Match.Info.ShipName,
-									.ShipNation = res.Match.Info.ShipNation,
-									.ShipClass = res.Match.Info.ShipClass,
-									.ShipTier = res.Match.Info.ShipTier,
-									.Map = res.Match.Info.Map,
-									.MatchGroup = res.Match.Info.MatchGroup,
-									.StatsMode = res.Match.Info.StatsMode,
-									.Player = res.Match.Info.Player,
-									.Region = res.Match.Info.Region,
-									.Json = buffer.GetString(),
-									.ArenaInfo = matchContext.ArenaInfo,
-									.Analyzed = false,
-									.ReplaySummary = ReplaySummary{}
-								};
-
-								SqlResult<void> addResult = dbm.AddMatch(match);
-								if (addResult)
-								{
-									emit MatchHistoryNewMatch(match);
-								}
-								else
-								{
-									LOG_ERROR("Failed to add match to database: {}", addResult.error());
-								}
-							}
+							DbAddMatch(m_lastArenaInfoHash, match, matchContext, std::move(jsonString));
 						}
 
 						if (config.Get<ConfigKey::SaveMatchCsv>())
 						{
+							PA_TRY_OR_ELSE(csv, StatsParser::ToCSV(match),
+							{
+								LOG_ERROR("Failed to convert match to CSV: {}", error);
+								return;
+							});
+
 							const fs::path fileName = m_services.Get<AppDirectories>().MatchesDir / fmt::format("match_{}.csv", Time::GetTimeStamp("%Y-%m-%d_%H-%M-%S"));
 							if (const File file = File::Open(fileName, File::Flags::Write | File::Flags::Create))
 							{
-								if (file.WriteString(res.Csv))
+								if (file.WriteString(csv))
 								{
 									LOG_TRACE("Wrote match as CSV.");
 								}
@@ -447,8 +446,7 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 						}
 
 						LOG_TRACE("Updating tables.");
-						emit MatchReady(res.Match);
-
+						emit MatchReady(match, matchContext);
 						emit StatusReady(Status::Ready, "Ready");
 						break;
 					}
@@ -493,6 +491,76 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 			HandleReply(lookupReply, handler);
 		});
 	});
+}
+
+void PotatoClient::DbAddMatch(std::string_view hash, const Match& match, const MatchContext& matchContext, std::string&& jsonString)
+{
+	const DatabaseManager& dbm = m_services.Get<DatabaseManager>();
+
+	PA_TRY_OR_ELSE(exists, dbm.MatchExists(hash),
+	{
+		LOG_ERROR("Failed to check if match exists in database: {}", error);
+		return;
+	});
+
+	if (!exists)
+	{
+		LOG_TRACE("Adding match to match history '{}'", hash);
+
+		const std::optional<std::string> replayName = GetReplayName(match, matchContext);
+		if (!replayName)
+		{
+			LOG_ERROR("Failed to get replay name");
+			return;
+		}
+
+		const auto it = std::ranges::find_if(match.Team1.Players, [&matchContext](const StatsParser::Player& player)
+		{
+			if (player.Name == matchContext.PlayerName)
+			{
+				return true;
+			}
+			return false;
+		});
+
+		if (it == match.Team1.Players.end())
+		{
+			LOG_ERROR("Failed to find player in match");
+			return;
+		}
+
+		StatsParser::Ship ship = it->Ship.value_or(StatsParser::Ship{});
+
+		DbMatch dbMatch
+		{
+			.Hash = m_lastArenaInfoHash,
+			.ReplayName = *replayName,
+			.Date = match.DateTime,
+			.Ship = ship.Name,
+			.ShipNation = ship.Nation,
+			.ShipClass = ship.Class,
+			.ShipTier = ship.Tier,
+			.Map = match.Map,
+			.MatchGroup = match.MatchGroup,
+			.StatsMode = match.StatsMode,
+			.Player = it->Name,
+			.Region = match.Region,
+			.Json = std::move(jsonString),
+			.ArenaInfo = matchContext.ArenaInfo,
+			.Analyzed = false,
+			.ReplaySummary = ReplaySummary{}
+		};
+
+		SqlResult<void> addResult = dbm.AddMatch(dbMatch);
+		if (addResult)
+		{
+			emit MatchHistoryNewMatch(dbMatch);
+		}
+		else
+		{
+			LOG_ERROR("Failed to add match to database: {}", addResult.error());
+		}
+	}
 }
 
 void PotatoClient::HandleReply(QNetworkReply* reply, auto& successHandler)
@@ -641,16 +709,16 @@ void PotatoClient::OnTempArenaInfoChanged(const std::filesystem::path& file, con
 		return;
 	});
 
-	if (!File::Exists(file))
+	if (!File::Exists(file) || !arenaInfo)
 	{
 		LOG_TRACE("Arena info does not exist when directory changed.");
 		return;
 	}
 
 	// make sure we don't pull the same match twice
-	if (arenaInfo.Hash == m_lastArenaInfoHash)
+	if (arenaInfo->Hash == m_lastArenaInfoHash)
 		return;
-	m_lastArenaInfoHash = arenaInfo.Hash;
+	m_lastArenaInfoHash = arenaInfo->Hash;
 
 	if (game.Region.empty())
 	{
@@ -659,36 +727,26 @@ void PotatoClient::OnTempArenaInfoChanged(const std::filesystem::path& file, con
 		return;
 	}
 
-	// build the request
-	rapidjson::Document request;
-	request.SetObject();
-	rapidjson::MemoryPoolAllocator<> a = request.GetAllocator();
-	request.AddMember("Guid", "placeholder123", a);
-	request.AddMember("Player", arenaInfo.PlayerName, a);
-	request.AddMember("Region", game.Region, a);
-	request.AddMember("StatsMode", ToJson(m_services.Get<Config>().Get<ConfigKey::StatsMode>()), a);
-	request.AddMember("TeamDamageMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamDamageMode>()), a);
-	request.AddMember("TeamWinRateMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamWinRateMode>()), a);
-	request.AddMember("ArenaInfo", arenaInfo.Json, a);
-	
-	request.AddMember("ClientInfo", rapidjson::Value(rapidjson::kObjectType), a);
-	rapidjson::Value& clientInfo = request["ClientInfo"];
-	clientInfo.AddMember("ClientVersion", QApplication::applicationVersion().toStdString(), a);
-	if (m_services.Get<Config>().Get<ConfigKey::AllowSendingUsageStats>() && m_sysInfo)
-	{
-		clientInfo.AddMember("SysInfo", rapidjson::Value(rapidjson::kObjectType), a);
-		rapidjson::Value& sysInfo = clientInfo["SysInfo"];
-		ToJson(sysInfo, *m_sysInfo, a);
-	}
-
-	rapidjson::StringBuffer buffer;
-	rapidjson::Writer writer(buffer);
-	request.Accept(writer);
+	const std::string request = BuildRequest(game.Region, arenaInfo->Meta.PlayerName, arenaInfo->Json);
 
 	emit StatusReady(Status::Loading, "Loading");
 
-	SendRequest(buffer.GetString(),
-		MatchContext{arenaInfo.Raw, arenaInfo.PlayerName, arenaInfo.PlayerVehicle});
+	SendRequest(request, MatchContext
+	{
+		.ArenaInfo = arenaInfo->String,
+		.PlayerName = arenaInfo->Meta.PlayerName,
+		.ShipIdent = arenaInfo->Meta.PlayerVehicle
+	});
+}
+
+fs::path PotatoClient::GetGameFilePath(const GameInfo& game) const
+{
+	return m_services.Get<AppDirectories>().GameFilesDir / game.Region / game.GameVersion.ToString(".", true);
+}
+
+fs::path PotatoClient::GetGameFilePath(const GameInfo& game, Version version) const
+{
+	return m_services.Get<AppDirectories>().GameFilesDir / game.Region / version.ToString(".", true);
 }
 
 void PotatoClient::UpdateGameInstalls()
@@ -733,11 +791,11 @@ void PotatoClient::UpdateGameInstalls()
 
 		// make sure we have up-to-date game files
 		const std::string gameVersion = gameInfo->GameVersion.ToString(".", true);
-		if (!m_replayAnalyzer.HasGameFiles(*gameInfo))
+		const fs::path gameFilePath = GetGameFilePath(*gameInfo);
+		if (!ReplayAnalyzer::HasGameFiles(gameFilePath))
 		{
 			LOG_INFO("Game files for Client ({}, {}) missing, unpacking...", gameInfo->Region, gameVersion);
-			const fs::path dst = appDirs.GameFilesDir / gameInfo->Region / gameVersion;
-			const Result<void> unpackResult = ReplayAnalyzer::UnpackGameFiles(dst, gameInfo->PkgPath, gameInfo->IdxPath);
+			const Result<void> unpackResult = ReplayAnalyzer::UnpackGameFiles(gameFilePath, gameInfo->PkgPath, gameInfo->IdxPath);
 			if (!unpackResult)
 			{
 				LOG_ERROR("Failed to unpack game files for version '{}': {}", gameVersion, unpackResult.error().message());

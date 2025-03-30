@@ -40,7 +40,7 @@ namespace PotatoAlert::Client {
 
 #define DECL_STRUCT(Type, Name, SqlType) Type Name;
 
-struct Match
+struct DbMatch
 {
 	uint32_t Id;
 	MATCH_FIELDS(DECL_STRUCT)
@@ -75,19 +75,19 @@ public:
 	SqlResult<void> MigrateTables() const;
 
 	// adds the match to db and set the id
-	[[nodiscard]] SqlResult<void> AddMatch(Match& match) const;
-	[[nodiscard]] SqlResult<std::optional<Match>> GetMatch(uint32_t id) const;
-	[[nodiscard]] SqlResult<std::optional<Match>> GetMatch(std::string_view hash) const;
-	[[nodiscard]] SqlResult<std::vector<Match>> GetMatches() const;
+	[[nodiscard]] SqlResult<void> AddMatch(DbMatch& match) const;
+	[[nodiscard]] SqlResult<std::optional<DbMatch>> GetMatch(uint32_t id) const;
+	[[nodiscard]] SqlResult<std::optional<DbMatch>> GetMatch(std::string_view hash) const;
+	[[nodiscard]] SqlResult<std::vector<DbMatch>> GetMatches() const;
 	[[nodiscard]] SqlResult<void> DeleteMatch(uint32_t id) const;
 	[[nodiscard]] SqlResult<void> DeleteMatch(std::string_view hash) const;
 	[[nodiscard]] SqlResult<void> DeleteMatches(std::span<uint32_t> ids) const;
-	[[nodiscard]] SqlResult<void> UpdateMatch(uint32_t id, const Match& match) const;
-	[[nodiscard]] SqlResult<void> UpdateMatch(std::string_view hash, const Match& match) const;
+	[[nodiscard]] SqlResult<void> UpdateMatch(uint32_t id, const DbMatch& match) const;
+	[[nodiscard]] SqlResult<void> UpdateMatch(std::string_view hash, const DbMatch& match) const;
 	[[nodiscard]] SqlResult<void> SetMatchNonAnalyzed(uint32_t id) const;
 	[[nodiscard]] SqlResult<void> SetMatchNonAnalyzed(std::string_view hash) const;
 	[[nodiscard]] SqlResult<std::vector<NonAnalyzedMatch>> GetNonAnalyzedMatches() const;
-	[[nodiscard]] SqlResult<std::optional<Match>> GetLatestMatch() const;
+	[[nodiscard]] SqlResult<std::optional<DbMatch>> GetLatestMatch() const;
 	[[nodiscard]] SqlResult<std::optional<std::string>> GetMatchJson(uint32_t id) const;
 	[[nodiscard]] SqlResult<std::optional<std::string>> GetMatchJson(std::string_view hash) const;
 	[[nodiscard]] SqlResult<void> SetMatchReplaySummary(uint32_t id, const ReplaySummary& replaySummary) const;

@@ -6,19 +6,22 @@
 
 #include "Client/Config.hpp"
 #include "Client/DatabaseManager.hpp"
+#include "Client/PotatoClient.hpp"
 #include "Client/ServiceProvider.hpp"
-#include "Client/StatsParser.hpp"
 #include "Client/StringTable.hpp"
 
 #include "Gui/Events.hpp"
 #include "Gui/Fonts.hpp"
 #include "Gui/MatchHistory/MatchHistory.hpp"
+
 #include "Gui/MatchHistory/MatchHistoryModel.hpp"
 #include "Gui/MatchHistory/MatchHistorySortFilter.hpp"
 #include "Gui/MatchHistory/MatchHistoryView.hpp"
 #include "Gui/MatchHistory/ReplaySummaryButtonDelegate.hpp"
 #include "Gui/QuestionDialog.hpp"
+#include "Gui/StatsParser.hpp"
 
+#include <QFileDialog>
 #include <QHBoxLayout>
 #include <QSortFilterProxyModel>
 
@@ -30,11 +33,11 @@
 using PotatoAlert::Client::Config;
 using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Client::DatabaseManager;
-using PotatoAlert::Client::StatsParser::MatchContext;
-using PotatoAlert::Client::StatsParser::ParseMatch;
+using PotatoAlert::Client::MatchContext;
 using PotatoAlert::Client::StringTable::GetString;
 using PotatoAlert::Client::StringTable::StringTableKey;
 using PotatoAlert::Gui::MatchHistory;
+using PotatoAlert::Gui::StatsParser::ParseMatch;
 
 MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidget* parent) : QWidget(parent), m_services(serviceProvider)
 {
@@ -58,7 +61,7 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 
 	m_view->Init();
 
-	// maybe we should do this async
+	// TODO: maybe we should do this async
 	LoadMatches();
 
 	QHBoxLayout* horLayout = new QHBoxLayout();
@@ -76,7 +79,6 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 	m_deleteButton->setObjectName("paginationButton");
 	m_deleteButton->setFixedSize(30, 30);
 	m_deleteButton->setEnabled(false);
-	m_deleteButton->setCheckable(false);
 	m_filterButton->setObjectName("paginationButton");
 	m_filterButton->setFixedSize(30, 30);
 
@@ -101,7 +103,7 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 
 	setLayout(horLayout);
 
-	connect(m_deleteButton, &QPushButton::clicked, [this]([[maybe_unused]] bool checked)
+	connect(m_deleteButton, &IconButton::clicked, [this]([[maybe_unused]] bool checked)
 	{
 		const QItemSelection sourceSelection = m_sortFilter->mapSelectionToSource(m_view->selectionModel()->selection());
 
@@ -144,24 +146,26 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 	});
 
 	m_filter->setVisible(false);
-	connect(m_filterButton, &QPushButton::clicked, [this]([[maybe_unused]] bool checked)
+	connect(m_filterButton, &IconButton::clicked, [this]([[maybe_unused]] bool checked)
 	{
 		m_filter->setVisible(!m_filter->isVisible());
 		m_filter->AdjustPosition();
 	});
 
+
 	connect(m_view, &QTableView::doubleClicked, [this](const QModelIndex& index)
 	{
-		const Client::Match& match = m_model->GetMatch(m_sortFilter->mapToSource(index).row());
+		const Client::DbMatch& match = m_model->GetMatch(m_sortFilter->mapToSource(index).row());
 		const bool showKarma = m_services.Get<Config>().Get<ConfigKey::ShowKarma>();
 		const bool fontShadow = m_services.Get<Config>().Get<ConfigKey::FontShadow>();
 		const int fontScaling = m_services.Get<Config>().Get<ConfigKey::FontScaling>();
-		PA_TRY_OR_ELSE(res, ParseMatch(match.Json, MatchContext{}, { showKarma, fontShadow, (float)fontScaling / 100.0f }),
+		MatchContext ctx{};
+		PA_TRY_OR_ELSE(res, ParseMatch(match.Json, ctx, { showKarma, fontShadow, (float)fontScaling / 100.0f }),
 		{
 			LOG_ERROR("Failed to parse match as JSON: {}", error);
 			return;
 		});
-		emit ReplaySelected(res.Match);
+		emit ReplaySelected(res);
 	});
 
 	connect(m_view->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselection)
@@ -205,7 +209,7 @@ int MatchHistory::PageCount() const
 	return std::max(static_cast<int>(std::ceil((float)m_sortFilter->rowCount() / (float)EntriesPerPage)), 1);
 }
 
-void MatchHistory::AddMatch(const Client::Match& match) const
+void MatchHistory::AddMatch(const Client::DbMatch& match) const
 {
 	m_model->AddMatch(match);
 	// rebuild the filter, otherwise a new ship type might be added, but there is no filter for it
@@ -216,7 +220,7 @@ void MatchHistory::AddMatch(const Client::Match& match) const
 
 void MatchHistory::LoadMatches() const
 {
-	PA_PROFILE_SCOPE();
+	PA_PROFILE_FUNCTION();
 
 	LOG_TRACE("Loading MatchHistory...");
 	PA_TRY_OR_ELSE(matches, m_services.Get<Client::DatabaseManager>().GetMatches(),

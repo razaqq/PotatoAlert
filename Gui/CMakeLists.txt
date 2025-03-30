@@ -15,6 +15,7 @@ pa_add_library(
         src/Palette.cpp
         src/QuestionDialog.cpp
         src/ReplaySummary.cpp
+        src/StatsParser.cpp
         src/TitleBar.cpp
         src/VerticalMenuBar.cpp
 

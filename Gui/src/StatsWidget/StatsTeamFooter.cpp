@@ -1,9 +1,9 @@
 // Copyright 2020 <github.com/razaqq>
 
-#include "Client/StatsParser.hpp"
 #include "Client/StringTable.hpp"
 
 #include "Gui/Events.hpp"
+#include "Gui/StatsParser.hpp"
 #include "Gui/StatsWidget/StatsTeamFooter.hpp"
 
 #include <QApplication>
@@ -16,7 +16,6 @@
 
 
 using namespace PotatoAlert::Client::StringTable;
-using namespace PotatoAlert::Core;
 using PotatoAlert::Gui::StatsTeamFooter;
 
 StatsTeamFooter::StatsTeamFooter(QWidget* parent) : QWidget(parent)
@@ -58,7 +57,7 @@ void StatsTeamFooter::Init()
 	setLayout(layout);
 }
 
-void StatsTeamFooter::Update(const Team& team) const
+void StatsTeamFooter::Update(const StatsParser::Team& team) const
 {
 	// set average stats per team
 	team.Winrate.UpdateLabel(m_wr);

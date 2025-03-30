@@ -38,7 +38,7 @@ public:
 		return m_matches.size();
 	}
 
-	[[nodiscard]] const Client::Match& GetMatch(size_t idx) const
+	[[nodiscard]] const Client::DbMatch& GetMatch(size_t idx) const
 	{
 		return m_matches[idx];
 	}
@@ -48,28 +48,28 @@ public:
 		m_matches.erase(m_matches.begin() + static_cast<ptrdiff_t>(idx));
 	}
 
-	void AddMatch(const Client::Match& match)
+	void AddMatch(const Client::DbMatch& match)
 	{
-		m_matches.insert(std::ranges::upper_bound(m_matches, match, [](const Client::Match& a, const Client::Match& b)
+		m_matches.insert(std::ranges::upper_bound(m_matches, match, [](const Client::DbMatch& a, const Client::DbMatch& b)
 		{
 			return a.Date > b.Date;
 		}), match);
 	}
 
-	std::span<const Client::Match> GetMatches() const
+	std::span<const Client::DbMatch> GetMatches() const
 	{
 		return m_matches;
 	}
 
 	// matches have to be sorted
-	void SetMatches(std::vector<Client::Match>&& matches)
+	void SetMatches(std::vector<Client::DbMatch>&& matches)
 	{
 		m_matches = std::move(matches);
 	}
 
 	void SetReplaySummary(uint32_t id, const ReplaySummary& summary);
 
-	static std::time_t GetMatchTime(const Client::Match& match);
+	static std::time_t GetMatchTime(const Client::DbMatch& match);
 
 	[[nodiscard]] QVariant data(const QModelIndex& index, int role) const override;
 	[[nodiscard]] QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
@@ -84,7 +84,7 @@ public:
 private:
 	int m_headerSize = 11;
 	static constexpr int m_columnCount = 8;
-	std::vector<Client::Match> m_matches;
+	std::vector<Client::DbMatch> m_matches;
 	const Client::ServiceProvider& m_services;
 };
 

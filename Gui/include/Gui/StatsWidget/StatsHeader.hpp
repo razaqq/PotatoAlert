@@ -10,6 +10,7 @@
 #include <QFont>
 #include <QLabel>
 #include <QPixmap>
+#include <QSvgWidget>
 #include <QWidget>
 
 #include <string>
@@ -35,7 +36,7 @@ private:
 
 	ScalingLabel* m_label = new ScalingLabel(QFont(QApplication::font().family(), 15, QFont::Bold));
 	
-	QWidget* m_loading;
+	QSvgWidget* m_loading;
 	QPixmap m_ready;
 	QPixmap m_error;
 };

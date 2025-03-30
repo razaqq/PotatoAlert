@@ -29,10 +29,9 @@ using PotatoAlert::Client::ReplayAnalyzer;
 using PotatoAlert::GameFileUnpack::Unpacker;
 using PotatoAlert::ReplayParser::Replay;
 
-bool ReplayAnalyzer::HasGameFiles(const Game::GameInfo& gameInfo) const
+bool ReplayAnalyzer::HasGameFiles(const fs::path& gameFilePath)
 {
-	const fs::path scriptsPath = m_services.Get<AppDirectories>().GameFilesDir / gameInfo.Region / gameInfo.GameVersion.ToString(".", true) / "scripts";
-	return ReplayParser::ParseScripts(scriptsPath).has_value();
+	return Replay::ParseScripts(gameFilePath / "scripts").has_value();
 	// &&MinimapRenderer::HasGameParams(gameVersion, m_gameFilePath);
 }
 

@@ -22,9 +22,6 @@
 #include <cstdint>
 #include <chrono>
 #include <ranges>
-#include <sstream>
-#include <chrono>
-#include <vector>
 
 
 using PotatoAlert::Core::Time::TimePoint;
@@ -42,7 +39,7 @@ MatchHistoryModel::MatchHistoryModel(const Client::ServiceProvider& serviceProvi
 
 void MatchHistoryModel::SetReplaySummary(uint32_t id, const ReplaySummary& summary)
 {
-	const auto it = std::ranges::find_if(m_matches, [id](const Client::Match& match)
+	const auto it = std::ranges::find_if(m_matches, [id](const Client::DbMatch& match)
 	{
 		return match.Id == id;
 	});
@@ -54,7 +51,7 @@ void MatchHistoryModel::SetReplaySummary(uint32_t id, const ReplaySummary& summa
 	}
 }
 
-std::time_t MatchHistoryModel::GetMatchTime(const Client::Match& match)
+std::time_t MatchHistoryModel::GetMatchTime(const Client::DbMatch& match)
 {
 	if (const std::optional<TimePoint> tp = Core::Time::StrToTime(match.Date, "%Y-%m-%d %H:%M:%S"))
 	{

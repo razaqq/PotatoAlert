@@ -1,97 +1,80 @@
-// Copyright 2021 <github.com/razaqq>
+// Copyright 2025 <github.com/razaqq>
 #pragma once
 
 #include "Core/Json.hpp"
 
-#include <QColor>
-#include <QLabel>
-#include <QTableWidgetItem>
-
+#include <array>
+#include <cstdint>
+#include <string>
 #include <optional>
-#include <variant>
 #include <vector>
 
+namespace PotatoAlert::Client::StatsParser {
 
-namespace PotatoAlert::Client {
+using ColorRGB = std::array<uint8_t, 3>;
+using ColorRGBA = std::array<uint8_t, 4>;
 
-namespace StatsParser {
-
-typedef std::variant<QLabel*, QTableWidgetItem*, QWidget*> FieldType;
-typedef std::vector<FieldType> PlayerType;
-typedef std::vector<PlayerType> TeamType;
-typedef std::vector<QString> WowsNumbersType;
-
-struct Label
+struct Stat
 {
-	QString Text;
-	std::optional<QColor> Color;
+	std::string Str;
+	ColorRGB ColorRGB;
+};
 
-	void UpdateLabel(QLabel* label) const;
+struct Clan
+{
+	std::string Name;
+	std::string Tag;
+	ColorRGB ColorRGB;
+	std::string Region;
+};
+
+struct Ship
+{
+	std::string Name;
+	std::string Class;
+	std::string Nation;
+	uint8_t Tier;
+};
+
+struct Player
+{
+	std::optional<Clan> Clan;
+	bool HiddenPro;
+	std::string Name;
+	ColorRGB NameColor;
+	std::optional<Ship> Ship;
+	Stat Battles;
+	Stat Winrate;
+	Stat AvgDmg;
+	Stat BattlesShip;
+	Stat WinrateShip;
+	Stat AvgDmgShip;
+	std::optional<Stat> Karma;
+	ColorRGBA PrColor;
+	std::string WowsNumbers;
+	bool IsUsingPa;
 };
 
 struct Team
 {
-	TeamType Table;
-	WowsNumbersType WowsNumbers;
-
-	// averages
-	Label AvgDmg;
-	Label Winrate;
-
-	// clan wars
-	struct
-	{
-		bool Show = false;
-		Label Tag;
-		Label Name;
-		Label Region;
-	} Clan;
+	uint8_t Id;
+	std::vector<Player> Players;
+	Stat AvgDmg;
+	Stat AvgWr;
 };
 
-struct MatchType
+struct Match
 {
 	Team Team1;
 	Team Team2;
-
-	struct InfoType
-	{
-		std::string Map;
-		std::string ShipIdent;
-		std::string ShipName;
-		std::string ShipClass;
-		std::string ShipNation;
-		uint8_t ShipTier;
-		std::string DateTime;
-		std::string MatchGroup;
-		std::string StatsMode;
-		std::string Region;
-		std::string Player;
-	} Info;
+	std::string MatchGroup;
+	std::string StatsMode;
+	std::string Region;
+	std::string Map;
+	std::string DateTime;
 };
 
-struct StatsParseResult
-{
-	MatchType Match;
-	std::string Csv;
-};
+Core::JsonResult<Match> ParseMatch(std::string_view json);
+Core::JsonResult<std::string> ToCSV(const Match& match);
 
-struct MatchContext
-{
-	std::string ArenaInfo;
-	std::string PlayerName;
-	std::string ShipIdent;
-};
-
-struct MatchParseOptions
-{
-	bool ShowKarma;
-	bool FontShadow;
-	float FontScaling;
-};
-
-Core::JsonResult<StatsParseResult> ParseMatch(const rapidjson::Value& j, const MatchContext& matchContext, MatchParseOptions&& parseOptions) noexcept;
-Core::JsonResult<StatsParseResult> ParseMatch(const std::string& raw, const MatchContext& matchContext, MatchParseOptions&& parseOptions) noexcept;
-
-}  // namespace StatsParser
-
-}  // namespace PotatoAlert::Client
+}  // namespace PotatoAlert::Client::StatsParser
