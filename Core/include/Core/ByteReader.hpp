@@ -9,10 +9,13 @@
 #include <cstdint>
 #include <span>
 #include <string>
+#include <system_error>
 #include <vector>
 
 
 namespace PotatoAlert::Core {
+
+namespace Detail {
 
 enum class ReaderError
 {
@@ -21,19 +24,32 @@ enum class ReaderError
 	OutOfBoundsRead,
 };
 
-static inline constexpr std::string_view ErrorMessage(ReaderError error)
+struct ByteReaderCategory : std::error_category
 {
-	switch (error)
+	const char* name() const noexcept override
 	{
-		case ReaderError::InvalidSeek:
-			return "Invalid seek origin";
-		case ReaderError::OutOfBoundsSeek:
-			return "Out of bounds seek";
-		case ReaderError::OutOfBoundsRead:
-			return "Out of bounds read";
+		return "ByteReader";
 	}
-	return "Unknown Error";
-}
+
+	std::string message(int e) const override
+	{
+		switch (static_cast<ReaderError>(e))
+		{
+			case ReaderError::InvalidSeek:
+				return "Invalid seek origin";
+			case ReaderError::OutOfBoundsSeek:
+				return "Out of bounds seek";
+			case ReaderError::OutOfBoundsRead:
+				return "Out of bounds read";
+		}
+		return "Unknown Error";
+	}
+};
+
+static const ByteReaderCategory g_category{};
+
+}  // namespace Detail
+
 
 enum class SeekOrigin
 {
@@ -42,7 +58,7 @@ enum class SeekOrigin
 	Current,
 };
 
-template<is_byte ByteType>
+template<is_byte ByteType = Byte>
 class ByteReader
 {
 private:
@@ -85,7 +101,7 @@ public:
 		return m_data.data();
 	}
 
-	Result<size_t, ReaderError> Seek(SeekOrigin from, int64_t offset)
+	Result<size_t> Seek(SeekOrigin from, int64_t offset)
 	{
 		switch (from)
 		{
@@ -96,7 +112,7 @@ public:
 					m_pos = offset;
 					return m_pos;
 				}
-				return PA_ERROR(ReaderError::OutOfBoundsSeek);
+				return PA_ERROR(MakeError(Detail::ReaderError::OutOfBoundsSeek));
 			}
 			case SeekOrigin::End:
 			{
@@ -105,7 +121,7 @@ public:
 					m_pos = m_data.size() + offset;
 					return m_pos;
 				}
-				return PA_ERROR(ReaderError::OutOfBoundsSeek);
+				return PA_ERROR(MakeError(Detail::ReaderError::OutOfBoundsSeek));
 			}
 			case SeekOrigin::Current:
 			{
@@ -116,7 +132,7 @@ public:
 						m_pos += offset;
 						return m_pos;
 					}
-					return PA_ERROR(ReaderError::OutOfBoundsSeek);
+					return PA_ERROR(MakeError(Detail::ReaderError::OutOfBoundsSeek));
 				}
 				else
 				{
@@ -125,11 +141,11 @@ public:
 						m_pos += offset;
 						return m_pos;
 					}
-					return PA_ERROR(ReaderError::OutOfBoundsSeek);
+					return PA_ERROR(MakeError(Detail::ReaderError::OutOfBoundsSeek));
 				}
 			}
 		}
-		return PA_ERROR(ReaderError::InvalidSeek);
+		return PA_ERROR(MakeError(Detail::ReaderError::InvalidSeek));
 	}
 
 	// consumes n bytes from the buffer, stream pos will saturate at bounds, not overflow
@@ -143,27 +159,27 @@ public:
 		m_pos = std::clamp((int64_t)m_pos - (int64_t)n, (int64_t)0, (int64_t)m_data.size());
 	}
 
-	Result<ByteType, ReaderError> ReadByte()
+	Result<ByteType> ReadByte()
 	{
 		if (Empty())
-			return PA_ERROR(ReaderError::OutOfBoundsRead);
+			return PA_ERROR(MakeError(Detail::ReaderError::OutOfBoundsRead));
 		return m_data[m_pos++];
 	}
 
 	// reads buf.size() bytes and advances the position
-	Result<size_t, ReaderError> Read(std::span<ByteType>& buf)
+	Result<size_t> Read(std::span<ByteType>& buf)
 	{
-		if (buf.size() < Size())
-			return PA_ERROR(ReaderError::OutOfBoundsRead);
+		if (buf.size() > Size())
+			return PA_ERROR(MakeError(Detail::ReaderError::OutOfBoundsRead));
 		std::copy(m_data.begin(), m_data.end(), buf.begin());
 		m_pos += buf.size();
 		return buf.size();
 	}
 
-	Result<std::span<const ByteType>, ReaderError> Read(size_t n)
+	Result<std::span<const ByteType>> Read(size_t n)
 	{
-		if (n < Size())
-			return PA_ERROR(ReaderError::OutOfBoundsRead);
+		if (n > Size())
+			return PA_ERROR(MakeError(Detail::ReaderError::OutOfBoundsRead));
 		const std::span r = m_data.subspan(m_pos, n);
 		m_pos += n;
 		return r;
@@ -188,32 +204,38 @@ public:
 	}
 
 	template<typename T>
-	Result<size_t, ReaderError> ReadTo(T& t)
+	Result<size_t> ReadTo(T& t)
 	{
-		if (Size() < sizeof(T))
-			return PA_ERROR(ReaderError::OutOfBoundsRead);
+		if (sizeof(T) > Size())
+			return PA_ERROR(MakeError(Detail::ReaderError::OutOfBoundsRead));
 		std::memcpy(&t, ReadUnsafe(sizeof(T)).data(), sizeof(T));
 		return sizeof(T);
 	}
 
 	// reads n bytes into the string, string will be resized
 	template<is_std_string TStr>
-	Result<size_t, ReaderError> ReadToString(TStr& str, size_t n)
+	Result<size_t> ReadToString(TStr& str, size_t n)
 	{
 		if (n > Size())
-			return PA_ERROR(ReaderError::OutOfBoundsRead);
+			return PA_ERROR(MakeError(Detail::ReaderError::OutOfBoundsRead));
 		str.resize(n);
 		std::memcpy(str.data(), ReadUnsafe(n).data(), n);
 		return n;
 	}
 
 	// reads str.size() bytes into the string
-	Result<size_t, ReaderError> ReadToString(std::string_view str)
+	Result<size_t> ReadToString(std::string_view str)
 	{
 		if (str.size() > Size())
-			return PA_ERROR(ReaderError::OutOfBoundsRead);
+			return PA_ERROR(MakeError(Detail::ReaderError::OutOfBoundsRead));
 		std::memcpy((void*)str.data(), ReadUnsafe(str.size()).data(), str.size());
 		return str.size();
+	}
+
+private:
+	static std::error_code MakeError(Detail::ReaderError err)
+	{
+		return { static_cast<std::underlying_type_t<Detail::ReaderError>>(err), Detail::g_category };
 	}
 };
 
