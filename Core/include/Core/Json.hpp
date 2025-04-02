@@ -148,7 +148,7 @@ static inline bool ToJson(rapidjson::Writer<OutputStream>& writer, std::string_v
 
 template<is_std_string T, typename OutputStream = rapidjson::StringBuffer>
 static inline bool ToJson(rapidjson::Writer<OutputStream>& writer, const T& str)
-	requires(str.c_str())
+	requires requires { str.c_str(); }
 {
 	return writer.String(str.c_str());
 }
@@ -165,8 +165,17 @@ static inline bool ToJson(rapidjson::Writer<rapidjson::StringBuffer>& writer, co
 	const bool start = writer.StartObject();
 	for (const auto& [key, value] : map)
 	{
-		if (!ToJson(writer, key) || !ToJson(writer, value))
-			return false;
+		if constexpr (std::is_arithmetic_v<Key>)
+		{
+			const std::string keyStr = std::to_string(key);
+			if (!ToJson(writer, keyStr) || !ToJson(writer, value))
+				return false;
+		}
+		else
+		{
+			if (!ToJson(writer, key) || !ToJson(writer, value))
+				return false;
+		}
 	}
 	const bool end = writer.EndObject();
 
@@ -370,6 +379,11 @@ static inline JsonResult<void> FromJsonImpl(std::unordered_map<Key, Value>& map,
 	if constexpr (std::is_enum_v<Key>)
 	{
 		FromJson(key, k);
+	}
+	else if constexpr (std::is_arithmetic_v<Key>)
+	{
+		if (!String::ParseNumber(key.GetString(), k))
+			return PA_JSON_ERROR("Failed to parse key as number");
 	}
 	else
 	{
