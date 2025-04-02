@@ -52,12 +52,11 @@ void ReplayAnalyzer::AnalyzeReplay(const fs::path& path, const std::string& regi
 		LOG_TRACE(STR("Analyzing replay file {} after {} delay..."), file, delay);
 		std::this_thread::sleep_for(delay);
 
-		auto analyzeReplay = [this](const fs::path& file, const std::string& region) -> ReplayResult<ReplaySummary>
+		auto analyzeReplay = [this](const fs::path& file, const std::string& region) -> ReplayParser::ReplayResult<ReplaySummary>
 		{
-			PA_TRY(replay, Replay::Read(file));
+			PA_TRY(replay, Replay::FromFile(file));
 			const fs::path scriptsPath = m_services.Get<AppDirectories>().GameFilesDir / region / replay.Meta.ClientVersionFromExe.ToString(".", true) / "scripts";
-			PA_TRYV(replay.ParsePackets(scriptsPath));
-			PA_TRY(summary, replay.Analyze());
+			PA_TRY(summary, replay.Analyze(scriptsPath));
 			return summary;
 		};
 

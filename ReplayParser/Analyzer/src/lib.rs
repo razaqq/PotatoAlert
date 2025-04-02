@@ -55,6 +55,8 @@ mod ffi
 	#[derive(Debug, Default, Serialize)]
 	pub struct OnArenaStateReceivedPlayer
 	{
+		#[cxx_name = "AccoundDbId"]
+		pub account_db_id: i64,
 		#[cxx_name = "EntityId"]
 		pub entity_id: i64,
 		#[cxx_name = "Id"]
@@ -489,6 +491,9 @@ macro_rules! parse_arena_state_player
 							{
 								match FromPrimitive::from_i64(idx)
 								{
+									Some($data_index::AccountDbId) => {
+										get_pickle!(i64, value, p.account_db_id);
+									}
 									Some($data_index::EntityId) => {
 										get_pickle!(i64, value, p.entity_id);
 									}
@@ -574,6 +579,9 @@ macro_rules! parse_arena_state_bot
 							{
 								match FromPrimitive::from_i64(idx)
 								{
+									Some($data_index::AccountDbId) => {
+										get_pickle!(i64, value, p.account_db_id);
+									}
 									Some($data_index::ShipId) => {
 										get_pickle!(i64, value, p.ship_id);
 									}

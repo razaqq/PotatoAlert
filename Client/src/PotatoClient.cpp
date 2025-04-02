@@ -17,10 +17,10 @@
 #include "Core/Log.hpp"
 #include "Core/Sha256.hpp"
 #include "Core/String.hpp"
-#include "Core/StandardPaths.hpp"
 #include "Core/Time.hpp"
 
-#include "GameFileUnpack/GameFileUnpack.hpp"
+#include "ReplayParser/ReplayParser.hpp"
+#include "ReplayParser/Result.hpp"
 
 #include <QApplication>
 #include <QNetworkReply>

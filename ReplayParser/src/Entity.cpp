@@ -13,6 +13,7 @@
 #include <vector>
 
 
+namespace fs = std::filesystem;
 namespace rp = PotatoAlert::ReplayParser;
 using namespace PotatoAlert::ReplayParser;
 using namespace PotatoAlert;

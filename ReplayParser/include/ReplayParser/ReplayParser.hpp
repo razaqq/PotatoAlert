@@ -3,7 +3,6 @@
 
 #include "Core/Json.hpp"
 #include "Core/Preprocessor.hpp"
-#include "Core/Version.hpp"
 
 #include "ReplayParser/Packets.hpp"
 #include "ReplayParser/PacketParser.hpp"
@@ -27,26 +26,26 @@ enum class DamageFlag : int64_t
 };
 
 #define DAMAGE_TYPES            \
-	X(MainAP,                1) \
-	X(MainHE,                2) \
-	X(SecondaryAP,           3) \
-	X(SecondaryHE,           4) \
-	X(ShipTorpedo,           7) \
-	X(AviaBombAP,            10) \
-	X(AviaBombHE,            11) \
-	X(AviaTorpedo,           12) \
-	X(Fire,                  17) \
-	X(Ram,                   18) \
-	X(Flooding,              20) \
-	X(AviaBomb,              27) \
-	X(AviaRocket,            28) \
-	X(MainCS,                32) \
-	X(SecondarySAP,          33) \
-	X(Unknown,               41) \
-	X(AviaSkipBombHE,        42) \
-	X(AviaBombAirstrike,     52) \
-	X(DepthChargeAirstrike,  58) \
-	X(AcousticHomingTorpedo, 60) \
+	X(MainAP, 1)                \
+	X(MainHE, 2)                \
+	X(SecondaryAP, 3)           \
+	X(SecondaryHE, 4)           \
+	X(ShipTorpedo, 7)           \
+	X(AviaBombAP, 10)           \
+	X(AviaBombHE, 11)           \
+	X(AviaTorpedo, 12)          \
+	X(Fire, 17)                 \
+	X(Ram, 18)                  \
+	X(Flooding, 20)             \
+	X(AviaBomb, 27)             \
+	X(AviaRocket, 28)           \
+	X(MainCS, 32)               \
+	X(SecondarySAP, 33)         \
+	X(Unknown, 41)              \
+	X(AviaSkipBombHE, 42)       \
+	X(AviaBombAirstrike, 52)    \
+	X(DepthChargeAirstrike, 58) \
+	X(AcousticHomingTorpedo, 60)
 
 enum class DamageType : int64_t
 {
@@ -70,45 +69,45 @@ inline std::string_view GetName(DamageType dmgType)
 }
 
 // missing RocketRicochet
-#define RIBBON_TYPES                                        \
-	X(AcousticHit, -99, AcousticHit)                        \
-	X(SonarHit, -98, AcousticHit)                           \
-	X(UnknownRibbon, -1, UnknownRibbon)                     \
-	X(Artillery, 0, Artillery)                              \
-	X(TorpedoHit, 1, TorpedoHit)                            \
-	X(Bomb, 2, Bomb)                                        \
-	X(PlaneShotDown, 3, PlaneShotDown)                      \
-	X(Incapacitation, 4, Incapacitation)                    \
-	X(Destroyed, 5, Destroyed)                              \
-	X(SetFire, 6, SetFire)                                  \
-	X(Flooding, 7, Flooding)                                \
-	X(Citadel, 8, Citadel)                                  \
-	X(Defended, 9, Defended)                                \
-	X(Captured, 10, Captured)                               \
-	X(AssistedInCapture, 11, AssistedInCapture)             \
-	X(Suppressed, 12, Suppressed)                           \
-	X(SecondaryHit, 13, SecondaryHit)                       \
-	X(OverPenetration, 14, Artillery)                       \
-	X(Penetration, 15, Artillery)                           \
-	X(NonPenetration, 16, Artillery)                        \
-	X(Ricochet, 17, Artillery)                              \
-	X(BuildingDestroyed, 18, BuildingDestroyed)             \
-	X(Spotted, 19, Spotted)                                 \
-	X(DiveBombOverPenetration, 20, Bomb)                    \
-	X(DiveBombPenetration, 21, Bomb)                        \
-	X(DiveBombNonPenetration, 22, Bomb)                     \
-	X(DiveBombRicochet, 23, Bomb)                           \
-	X(Rocket, 24, Rocket)                                   \
-	X(RocketPenetration, 25, Rocket)                        \
-	X(RocketNonPenetration, 26, Rocket)                     \
-	X(ShotDownByAircraft, 27, ShotDownByAircraft)           \
-	X(TorpedoProtectionHit, 28, Artillery)                  \
-	X(BombBulge, 29, Bomb)                                  \
-	X(RocketTorpedoProtectionHit, 30, Rocket)               \
-	X(DepthChargeHit, 31, DepthChargeHit)                   \
-	X(BuffSeized, 33, BuffSeized)                           \
-	X(SonarOneHit, 39, SonarHit)                            \
-	X(SonarTwoHits, 40, SonarHit)                           \
+#define RIBBON_TYPES                              \
+	X(AcousticHit, -99, AcousticHit)              \
+	X(SonarHit, -98, AcousticHit)                 \
+	X(UnknownRibbon, -1, UnknownRibbon)           \
+	X(Artillery, 0, Artillery)                    \
+	X(TorpedoHit, 1, TorpedoHit)                  \
+	X(Bomb, 2, Bomb)                              \
+	X(PlaneShotDown, 3, PlaneShotDown)            \
+	X(Incapacitation, 4, Incapacitation)          \
+	X(Destroyed, 5, Destroyed)                    \
+	X(SetFire, 6, SetFire)                        \
+	X(Flooding, 7, Flooding)                      \
+	X(Citadel, 8, Citadel)                        \
+	X(Defended, 9, Defended)                      \
+	X(Captured, 10, Captured)                     \
+	X(AssistedInCapture, 11, AssistedInCapture)   \
+	X(Suppressed, 12, Suppressed)                 \
+	X(SecondaryHit, 13, SecondaryHit)             \
+	X(OverPenetration, 14, Artillery)             \
+	X(Penetration, 15, Artillery)                 \
+	X(NonPenetration, 16, Artillery)              \
+	X(Ricochet, 17, Artillery)                    \
+	X(BuildingDestroyed, 18, BuildingDestroyed)   \
+	X(Spotted, 19, Spotted)                       \
+	X(DiveBombOverPenetration, 20, Bomb)          \
+	X(DiveBombPenetration, 21, Bomb)              \
+	X(DiveBombNonPenetration, 22, Bomb)           \
+	X(DiveBombRicochet, 23, Bomb)                 \
+	X(Rocket, 24, Rocket)                         \
+	X(RocketPenetration, 25, Rocket)              \
+	X(RocketNonPenetration, 26, Rocket)           \
+	X(ShotDownByAircraft, 27, ShotDownByAircraft) \
+	X(TorpedoProtectionHit, 28, Artillery)        \
+	X(BombBulge, 29, Bomb)                        \
+	X(RocketTorpedoProtectionHit, 30, Rocket)     \
+	X(DepthChargeHit, 31, DepthChargeHit)         \
+	X(BuffSeized, 33, BuffSeized)                 \
+	X(SonarOneHit, 39, SonarHit)                  \
+	X(SonarTwoHits, 40, SonarHit)                 \
 	X(SonarNeutralized, 41, SonarHit)
 
 enum class RibbonType : int8_t
@@ -202,8 +201,7 @@ inline constexpr RibbonType GetParent(RibbonType ribbon)
 	X(Assistant,              4170376112) \
 	X(WillToWin,              4193444784) \
 	X(TacticalExpertise,      4161987504) \
-	X(CombatScout,            3879920560) \
-
+	X(CombatScout,            3879920560)
 	// X(JollyRogerSilver,    4045595568) \  // TODO
 	// X(JollyRogerBronze,    4045595568) \  // TODO
 
@@ -274,6 +272,82 @@ PA_JSON_SERIALIZE_ENUM(MatchOutcome,
 	{ MatchOutcome::Unknown, "unknown" }
 });
 
+enum class TeamType
+{
+	Ally,
+	Enemy
+};
+PA_JSON_SERIALIZE_ENUM(TeamType,
+{
+	{ TeamType::Ally, "ally" },
+	{ TeamType::Enemy, "enemy" },
+});
+
+struct EntityStats
+{
+	std::string Name;
+	std::string Clan;
+	TeamType Team;
+
+	float DamageDealt;
+	float DamagePotential;
+	float DamageSpotting;
+	float DamageTaken = 0.0f;
+	uint32_t Exp;
+	uint32_t Frags;
+	std::unordered_map<AchievementType, uint32_t> Achievements;
+};
+
+static inline Core::JsonResult<void> ToJson(rapidjson::Writer<rapidjson::StringBuffer>& writer, const EntityStats& s)
+{
+	writer.StartObject();
+	writer.Key("name");
+	writer.String(s.Name.c_str());
+	writer.Key("clan");
+	writer.String(s.Clan.c_str());
+	writer.Key("team");
+	if (!ReplayParser::ToJson(writer, s.Team))
+		return PA_JSON_ERROR("Failed to write ReplaySummary::Team");
+	writer.Key("damage_dealt");
+	writer.Double(s.DamageDealt);
+	writer.Key("damage_potential");
+	writer.Double(s.DamagePotential);
+	writer.Key("damage_spotting");
+	writer.Double(s.DamageSpotting);
+	writer.Key("damage_taken");
+	writer.Double(s.DamageTaken);
+	writer.Key("exp");
+	writer.Uint(s.Exp);
+	writer.Key("frags");
+	writer.Uint(s.Frags);
+	writer.Key("achievements");
+	if (!Core::ToJson(writer, s.Achievements))
+		return PA_JSON_ERROR("Failed to write EntityStats::Achievements");
+	writer.EndObject();
+	return {};
+}
+
+[[maybe_unused]] static inline Core::JsonResult<void> FromJson(const rapidjson::Value& j, EntityStats& s)
+{
+	PA_TRYA(s.Name, Core::FromJson<std::string>(j, "name"));
+	PA_TRYA(s.Clan, Core::FromJson<std::string>(j, "clan"));
+	if (j.HasMember("team"))
+	{
+		if (!FromJson(j["team"], s.Team))
+		{
+			return PA_JSON_ERROR("Failed to parse EntityStats::Team");
+		}
+	}
+	PA_TRYA(s.DamageDealt, Core::FromJson<float>(j, "damage_dealt"));
+	PA_TRYA(s.DamagePotential, Core::FromJson<float>(j, "damage_potential"));
+	PA_TRYA(s.DamageSpotting, Core::FromJson<float>(j, "damage_spotting"));
+	PA_TRYA(s.DamageTaken, Core::FromJson<float>(j, "damage_taken"));
+	PA_TRYA(s.Exp, Core::FromJson<uint32_t>(j, "exp"));
+	PA_TRYA(s.Frags, Core::FromJson<uint32_t>(j, "frags"));
+	PA_TRYV(Core::FromJson(j["achievements"], s.Achievements));
+	return {};
+}
+
 struct ReplaySummary
 {
 	std::string Hash;
@@ -284,6 +358,8 @@ struct ReplaySummary
 	float DamagePotential = 0.0f;
 	std::unordered_map<AchievementType, uint32_t> Achievements = {};
 	std::unordered_map<RibbonType, uint32_t> Ribbons = {};
+
+	std::optional<std::unordered_map<int64_t, EntityStats>> TeamScore;  // Key is vehicleId
 };
 
 static inline Core::JsonResult<void> ToJson(rapidjson::Writer<rapidjson::StringBuffer>& writer, const ReplaySummary& s)
@@ -304,7 +380,6 @@ static inline Core::JsonResult<void> ToJson(rapidjson::Writer<rapidjson::StringB
 	writer.Double(s.DamagePotential);
 
 	writer.Key("achievements");
-
 	if (!Core::ToJson(writer, s.Achievements))
 		return PA_JSON_ERROR("Failed to write ReplaySummary::Achievements");
 
@@ -312,17 +387,31 @@ static inline Core::JsonResult<void> ToJson(rapidjson::Writer<rapidjson::StringB
 	if (!Core::ToJson(writer, s.Ribbons))
 		return PA_JSON_ERROR("Failed to write ReplaySummary::Ribbons");
 
+	writer.Key("team_score");
+	if (s.TeamScore)
+	{
+		if (!Core::ToJson(writer, s.TeamScore.value()))
+			return PA_JSON_ERROR("Failed to write ReplaySummary::TeamScore");
+	}
+	else
+	{
+		writer.Null();
+	}
+
 	writer.EndObject();
 
 	return {};
 }
 
-[[maybe_unused]] static Core::JsonResult<void> FromJson(std::string_view json, ReplaySummary& s)
+[[maybe_unused]] static inline Core::JsonResult<void> FromJson(std::string_view json, ReplaySummary& s)
 {
 	PA_TRY(j, Core::ParseJson(json));
 
 	if (j.HasMember("outcome"))
-		ReplayParser::FromJson(j["outcome"], s.Outcome);
+	{
+		if (!FromJson(j["outcome"], s.Outcome))
+			return PA_JSON_ERROR("Failed to parse ReplaySummary::Outcome");
+	}
 	
 	if (j.HasMember("damage_dealt") && j["damage_dealt"].IsFloat())
 		s.DamageDealt = j["damage_dealt"].GetFloat();
@@ -346,6 +435,13 @@ static inline Core::JsonResult<void> ToJson(rapidjson::Writer<rapidjson::StringB
 		PA_TRYV(Core::FromJson(j["ribbons"], s.Ribbons));
 	}
 
+	if (j.HasMember("team_score"))
+	{
+		decltype(s.TeamScore)::value_type teamScore;
+		PA_TRYV(Core::FromJson(j["team_score"], teamScore));
+		s.TeamScore = std::move(teamScore);
+	}
+
 	return {};
 }
 
@@ -354,23 +450,32 @@ class PA_API Replay
 public:
 	std::string MetaString;
 	ReplayMeta Meta;
-	std::vector<PacketType> Packets;
-	std::vector<EntitySpec> Specs;
+	//std::vector<PacketType> Packets;
 
-	static ReplayResult<Replay> Read(const std::filesystem::path& filePath);
-	ReplayResult<void> ParsePackets(const std::filesystem::path& scriptsPath);
+	static ReplayResult<Replay> FromFile(const std::filesystem::path& filePath);
+	ReplayResult<std::vector<PacketType>> ParseAllPackets(const std::filesystem::path& scriptsPath) const;
 
-	static ReplayResult<Replay> FromFile(const std::filesystem::path& filePath, const std::filesystem::path& scriptsPath);
-	[[nodiscard]] ReplayResult<ReplaySummary> Analyze() const;
-
-	template<typename P>
-	void AddPacketCallback(std::function<void(const P&)> callback)
+	ReplayResult<void> ParsePackets(PacketParseContext& ctx, auto&& parser) const
 	{
-		m_packetParser.Callbacks.Add(callback);
+		Core::ByteReader<> reader(m_decompressed);
+		PA_TRYV(ReplayParser::ParsePackets(reader, ctx, parser));
+		return {};
+	}
+
+	static ReplayResult<ReplayMeta> ParseMeta(std::string_view str);
+	static ReplayResult<std::vector<EntitySpec>> ParseScripts(const std::filesystem::path& scriptsPath);
+	static ReplayResult<PacketParseContext> PrepareContext(const std::filesystem::path& scriptsPath, Core::Version version);
+
+	[[nodiscard]] ReplayResult<ReplaySummary> Analyze(const std::filesystem::path& scriptsPath) const;
+
+	void Free()
+	{
+		// free memory of decompressed data
+		m_decompressed.clear();
+		m_decompressed.shrink_to_fit();
 	}
 
 private:
-	PacketParser m_packetParser;
 	std::vector<Byte> m_decompressed;
 };
 

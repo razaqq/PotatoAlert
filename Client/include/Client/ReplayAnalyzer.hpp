@@ -20,9 +20,6 @@
 #include <string>
 
 
-using PotatoAlert::ReplayParser::ReplaySummary;
-using PotatoAlert::ReplayParser::ReplayResult;
-
 // these have to be declared, because ReplaySummaryReady will be emitted from
 // another thread and the connection type will therefore be QueuedConnection
 Q_DECLARE_METATYPE(uint32_t);
@@ -44,7 +41,7 @@ public:
 
 	void AnalyzeReplay(const std::filesystem::path& path, const std::string& region, std::chrono::seconds readDelay = std::chrono::seconds(0));
 	void AnalyzeDirectory(const std::filesystem::path& directory);
-	bool HasGameFiles(const Game::GameInfo& gameInfo) const;
+	static bool HasGameFiles(const std::filesystem::path& gameFilePath);
 	static Core::Result<void> UnpackGameFiles(const std::filesystem::path& dst, const std::filesystem::path& pkgPath, const std::filesystem::path& idxPath);
 
 private:

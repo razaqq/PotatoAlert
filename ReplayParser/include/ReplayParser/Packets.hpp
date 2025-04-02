@@ -4,12 +4,15 @@
 #include "Core/Bytes.hpp"
 #include "Core/Math.hpp"
 #include "Core/Preprocessor.hpp"
+#include "Core/Version.hpp"
 
 #include "ReplayParser/Entity.hpp"
 #include "ReplayParser/NestedProperty.hpp"
 #include "ReplayParser/Types.hpp"
 
+#include <cstdint>
 #include <string>
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
@@ -28,6 +31,13 @@ typedef int32_t TypeEntityId;
 typedef int32_t TypeSpaceId;
 typedef int32_t TypeVehicleId;
 typedef int32_t TypeMethodId;
+
+struct PacketParseContext
+{
+	std::vector<EntitySpec> Specs;
+	std::unordered_map<TypeEntityId, Entity> Entities;
+	Core::Version Version;
+};
 
 enum class PacketBaseType
 {
@@ -51,16 +61,21 @@ enum class PacketBaseType
 	CameraFreeLook,
 	CruiseState,
 	Result,
+	Unknown,
 };
 
 struct Packet
 {
-	PacketBaseType Type;
 	float Clock;
 };
 
 struct UnknownPacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::Unknown;
+
+	std::vector<Byte> Data;
+
+	PA_API static ReplayResult<UnknownPacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 /**
@@ -73,9 +88,13 @@ struct UnknownPacket : Packet
  **/
 struct BasePlayerCreatePacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::BasePlayerCreate;
+
 	TypeEntityId EntityId;
-	EntityType EntityType;
+	TypeEntityType EntityType;
 	std::vector<Byte> Data;
+
+	PA_API static ReplayResult<BasePlayerCreatePacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 /**
@@ -93,13 +112,16 @@ struct BasePlayerCreatePacket : Packet
  **/
 struct CellPlayerCreatePacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::CellPlayerCreate;
+
 	TypeEntityId EntityId;
 	TypeSpaceId SpaceId;
-	uint16_t Unknown;
 	TypeVehicleId VehicleId;
 	Vec3 Position;
 	Rot3 Rotation;
 	std::unordered_map<std::string, ArgValue> Values;
+
+	PA_API static ReplayResult<CellPlayerCreatePacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 /**
@@ -111,8 +133,12 @@ struct CellPlayerCreatePacket : Packet
  **/
 struct EntityControlPacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::EntityControl;
+
 	TypeEntityId EntityId;
 	bool IsControlled;
+
+	PA_API static ReplayResult<EntityControlPacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 /**
@@ -127,9 +153,13 @@ struct EntityControlPacket : Packet
  **/
 struct EntityEnterPacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::EntityEnter;
+
 	TypeEntityId EntityId;
 	TypeSpaceId SpaceId;
 	TypeVehicleId VehicleId;
+
+	PA_API static ReplayResult<EntityEnterPacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 /**
@@ -141,7 +171,11 @@ struct EntityEnterPacket : Packet
  **/
 struct EntityLeavePacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::EntityLeave;
+
 	TypeEntityId EntityId;
+
+	PA_API static ReplayResult<EntityLeavePacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 /**
@@ -164,13 +198,17 @@ struct EntityLeavePacket : Packet
  **/
 struct EntityCreatePacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::EntityCreate;
+
 	TypeEntityId EntityId;
-	EntityType EntityType;
+	TypeEntityType EntityType;
 	TypeSpaceId SpaceId;
 	TypeVehicleId VehicleId;
 	Vec3 Position;
 	Rot3 Rotation;
 	std::unordered_map<std::string, ArgValue> Values;
+
+	PA_API static ReplayResult<EntityCreatePacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 /**
@@ -183,10 +221,14 @@ struct EntityCreatePacket : Packet
  **/
 struct EntityMethodPacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::EntityMethod;
+
 	TypeEntityId EntityId;
 	TypeMethodId MethodId;
 	std::string MethodName;
 	std::vector<ArgValue> Values;
+
+	PA_API static ReplayResult<EntityMethodPacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 /**
@@ -199,46 +241,62 @@ struct EntityMethodPacket : Packet
  **/
 struct EntityPropertyPacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::EntityProperty;
+
 	TypeEntityId EntityId;
-	TypeMethodId MethodId;
+	TypeMethodId PropertyId;
 	std::string PropertyName;
 	ArgValue Value;
+
+	PA_API static ReplayResult<EntityPropertyPacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 struct PlayerOrientationPacket : Packet
 {
-	uint32_t Pid;
-	uint32_t ParentId;
+	static constexpr PacketBaseType Type = PacketBaseType::PlayerOrientation;
+
+	TypeEntityId EntityId;
+	TypeVehicleId VehicleId;
 	Vec3 Position;
 	Rot3 Rotation;
+
+	PA_API static ReplayResult<PlayerOrientationPacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 struct PlayerPositionPacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::PlayerPosition;
+
 	TypeEntityId EntityId;
 	TypeVehicleId VehicleId;
 	Vec3 Position;
 	Vec3 PositionError;
 	Rot3 Rotation;
 	bool IsError;
-};
 
-struct Entity;  // forward declare for PacketParser.hpp
+	PA_API static ReplayResult<PlayerPositionPacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
+};
 
 /*
  * https://github.com/Monstrofil/replays_unpack/blob/parser2.0/docs/packets/0x22.md
  */
 struct NestedPropertyUpdatePacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::NestedPropertyUpdate;
+
 	TypeEntityId EntityId;
 	std::string PropertyName;
 	size_t PropertyIndex;
 	PropertyNesting Nesting;
 	Entity* EntityPtr;
+
+	PA_API static ReplayResult<NestedPropertyUpdatePacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 struct MapPacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::Map;
+
 	TypeSpaceId SpaceId;
 	int64_t ArenaId;
 	uint32_t Unknown1;
@@ -246,10 +304,14 @@ struct MapPacket : Packet
 	std::string Name;
 	Mat4 Matrix;
 	bool Unknown3;
+
+	PA_API static ReplayResult<MapPacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 struct CameraPacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::Camera;
+
 	Vec3 Unknown;
 	float Unknown2;
 	Vec3 AbsolutePosition;
@@ -257,37 +319,63 @@ struct CameraPacket : Packet
 	Vec3 Position;
 	Rot3 Rotation;
 	float Unknown3;  // only in newer versions
+
+	PA_API static ReplayResult<CameraPacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 struct VersionPacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::Version;
+
 	std::string Version;
+
+	PA_API static ReplayResult<VersionPacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 struct PlayerEntityPacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::PlayerEntity;
+
 	TypeEntityId EntityId;
+
+	PA_API static ReplayResult<PlayerEntityPacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 struct CruiseStatePacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::CruiseState;
+
 	uint32_t Key;
 	int32_t Value;
+
+	PA_API static ReplayResult<CruiseStatePacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 struct CameraFreeLookPacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::CameraFreeLook;
+
 	bool Locked;
+
+	PA_API static ReplayResult<CameraFreeLookPacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 struct CameraModePacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::CameraMode;
+
 	uint32_t Mode;
+
+	PA_API static ReplayResult<CameraModePacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 struct ResultPacket : Packet
 {
+	static constexpr PacketBaseType Type = PacketBaseType::Result;
+
 	std::string Result;
+
+	PA_API static ReplayResult<ResultPacket> Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock);
 };
 
 #define PA_RP_PACKETS(X)          \

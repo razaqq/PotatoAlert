@@ -12,12 +12,10 @@
 #include <vector>
 
 
-namespace fs = std::filesystem;
-
 namespace PotatoAlert::ReplayParser {
 
 // BigWorld counts entities from 1
-enum class EntityType : uint16_t
+enum class TypeEntityType : uint16_t
 {
 	Avatar = 1,
 	Vehicle = 2,
@@ -118,8 +116,31 @@ struct DefFile
 	std::vector<std::string> Implements = {};
 };
 
-ReplayResult<DefFile> ParseDef(const fs::path& file, const AliasType& aliases);
+ReplayResult<DefFile> ParseDef(const std::filesystem::path& file, const AliasType& aliases);
 ReplayResult<DefFile> MergeDefs(const std::vector<DefFile>& defs);
-ReplayResult<void> ParseInterfaces(const fs::path& root, const AliasType& aliases, const DefFile& def, std::vector<DefFile>& out);
+ReplayResult<void> ParseInterfaces(const std::filesystem::path& root, const AliasType& aliases, const DefFile& def, std::vector<DefFile>& out);
+
+
+struct EntitySpec
+{
+	std::string Name;
+	std::vector<Method> BaseMethods;
+	std::vector<Method> CellMethods;
+	std::vector<Method> ClientMethods;
+	std::vector<Property> AllProperties;
+	std::vector<std::reference_wrapper<const Property>> ClientProperties;
+	std::vector<std::reference_wrapper<const Property>> ClientPropertiesInternal;
+	std::vector<std::reference_wrapper<const Property>> CellProperties;
+	std::vector<std::reference_wrapper<const Property>> BaseProperties;
+};
+
+struct Entity
+{
+	TypeEntityType Type;
+	std::reference_wrapper<const EntitySpec> Spec;
+	std::unordered_map<std::string, ArgValue> BasePropertiesValues;
+	std::unordered_map<std::string, ArgValue> ClientPropertiesValues;
+	std::unordered_map<std::string, ArgValue> ClientPropertiesInternalValues;
+};
 
 }  // namespace PotatoAlert::ReplayParser

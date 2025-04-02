@@ -24,13 +24,11 @@
 
 
 namespace fs = std::filesystem;
-
 using namespace PotatoAlert::Core;
 using namespace PotatoAlert::ReplayParser;
-namespace rp = PotatoAlert::ReplayParser;
 using PotatoAlert::ReplayParser::ReplayResult;
 
-ReplayResult<Replay> Replay::Read(const std::filesystem::path& filePath)
+ReplayResult<Replay> Replay::FromFile(const fs::path& filePath)
 {
 	PA_PROFILE_FUNCTION();
 
@@ -94,11 +92,7 @@ ReplayResult<Replay> Replay::Read(const std::filesystem::path& filePath)
 	replay.MetaString.resize(metaSize);
 	std::memcpy(replay.MetaString.data(), Take(data, metaSize).data(), metaSize);
 
-	PA_TRY_OR_ELSE(js, Core::ParseJson(replay.MetaString),
-	{
-		return PA_REPLAY_ERROR("Failed to parse replay meta as JSON: {}", error);
-	});
-	PA_TRYV(FromJson(js, replay.Meta));
+	PA_TRYA(replay.Meta, ParseMeta(replay.MetaString));
 
 	for (size_t i = 0; i < blocksCount - 1; i++)
 	{
@@ -183,33 +177,62 @@ ReplayResult<Replay> Replay::Read(const std::filesystem::path& filePath)
 	return replay;
 }
 
-ReplayResult<void> Replay::ParsePackets(const std::filesystem::path& scriptsPath)
+ReplayResult<std::vector<PacketType>> Replay::ParseAllPackets(const fs::path& scriptsPath) const
 {
-	PA_TRYA(Specs, ParseScripts(scriptsPath));
+	PA_TRY(ctx, PrepareContext(scriptsPath, Meta.ClientVersionFromExe));
 
-	if (Specs.empty())
-	{
-		return PA_REPLAY_ERROR("Empty entity specs");
-	}
+	std::vector<PacketType> packets;
 
-	m_packetParser.Specs = Specs;
+	const auto parser = MakePacketParser(
+		On<BasePlayerCreatePacket>([&packets](BasePlayerCreatePacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<CellPlayerCreatePacket>([&packets](CellPlayerCreatePacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<EntityCreatePacket>([&packets](EntityCreatePacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<EntityControlPacket>([&packets](EntityControlPacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<EntityEnterPacket>([&packets](EntityEnterPacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<EntityLeavePacket>([&packets](EntityLeavePacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<EntityMethodPacket>([&packets](EntityMethodPacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<EntityPropertyPacket>([&packets](EntityPropertyPacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<PlayerOrientationPacket>([&packets](PlayerOrientationPacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<PlayerPositionPacket>([&packets](PlayerPositionPacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<NestedPropertyUpdatePacket>([&packets](NestedPropertyUpdatePacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<MapPacket>([&packets](MapPacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<CameraPacket>([&packets](CameraPacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<VersionPacket>([&packets](VersionPacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<PlayerEntityPacket>([&packets](PlayerEntityPacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<CruiseStatePacket>([&packets](CruiseStatePacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<CameraFreeLookPacket>([&packets](CameraFreeLookPacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<CameraModePacket>([&packets](CameraModePacket&& p) { packets.emplace_back(std::move(p)); }),
+		On<ResultPacket>([&packets](ResultPacket&& p) { packets.emplace_back(std::move(p)); })
+	);
 
-	std::span<const Byte> out{ m_decompressed };
-	do {
-		PA_TRY(packet, ParsePacket(out, m_packetParser, Meta.ClientVersionFromExe));
-		Packets.emplace_back(std::move(packet));
-	} while (!out.empty());
+	PA_TRYV(ParsePackets(ctx, parser));
 
-	// free memory of decompressed data
-	m_decompressed.clear();
-	m_decompressed.shrink_to_fit();
-
-	return {};
+	return packets;
 }
 
-ReplayResult<Replay> Replay::FromFile(const fs::path& filePath, const fs::path& scriptsPath)
+ReplayResult<ReplayMeta> Replay::ParseMeta(std::string_view str)
 {
-	PA_TRY(replay, Read(filePath));
-	PA_TRYV(replay.ParsePackets(scriptsPath));
-	return replay;
+	PA_TRY_OR_ELSE(js, Core::ParseJson(str),
+	{
+		return PA_REPLAY_ERROR("Failed to parse replay meta as JSON: {}", error);
+	});
+	ReplayMeta meta;
+	PA_TRYV(FromJson(js, meta));
+	return std::move(meta);
+}
+
+ReplayResult<std::vector<EntitySpec>> Replay::ParseScripts(const std::filesystem::path& scriptsPath)
+{
+	return ReplayParser::ParseScripts(scriptsPath);
+}
+
+ReplayResult<PacketParseContext> Replay::PrepareContext(const std::filesystem::path& scriptsPath, Version version)
+{
+	PA_TRY(specs, ReplayParser::ParseScripts(scriptsPath));
+	return PacketParseContext
+	{
+		.Specs = std::move(specs),
+		.Entities = {},
+		.Version = version,
+	};
 }

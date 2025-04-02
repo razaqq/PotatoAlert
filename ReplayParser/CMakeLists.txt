@@ -21,7 +21,6 @@ pa_add_library(
     HEADERS
         include/ReplayParser/BitReader.hpp
         include/ReplayParser/Entity.hpp
-        include/ReplayParser/GameFiles.hpp
         include/ReplayParser/NestedProperty.hpp
         include/ReplayParser/PacketCallback.hpp
         include/ReplayParser/PacketParser.hpp
@@ -37,7 +36,7 @@ pa_add_library(
         src/Entity.cpp
         src/GameFiles.cpp
         src/NestedProperty.cpp
-        src/PacketParser.cpp
+        src/Packets.cpp
         src/ReplayParser.cpp
         src/Types.cpp
     PROPERTIES

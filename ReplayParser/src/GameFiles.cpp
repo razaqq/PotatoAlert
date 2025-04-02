@@ -10,6 +10,7 @@
 #include "ReplayParser/GameFiles.hpp"
 #include "ReplayParser/Result.hpp"
 
+#include <filesystem>
 #include <functional>
 #include <optional>
 #include <ranges>
@@ -17,6 +18,7 @@
 #include <vector>
 
 
+namespace fs = std::filesystem;
 namespace rp = PotatoAlert::ReplayParser;
 using PotatoAlert::Core::File;
 using PotatoAlert::Core::LoadXml;
@@ -24,6 +26,8 @@ using PotatoAlert::Core::Version;
 using PotatoAlert::Core::XmlResult;
 using namespace PotatoAlert::ReplayParser;
 using namespace tinyxml2;
+
+namespace {
 
 static ReplayResult<std::unordered_map<std::string, ArgType>> ParseAliases(const fs::path& path)
 {
@@ -48,6 +52,8 @@ static ReplayResult<std::unordered_map<std::string, ArgType>> ParseAliases(const
 		aliases.insert({ elem->Name(), type });
 	}
 	return aliases;
+}
+
 }
 
 ReplayResult<std::vector<EntitySpec>> rp::ParseScripts(const fs::path& scriptsPath)

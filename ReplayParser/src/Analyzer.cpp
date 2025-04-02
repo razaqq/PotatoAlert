@@ -2,11 +2,12 @@
 
 #include "Core/Bytes.hpp"
 #include "Core/Instrumentor.hpp"
+#include "Core/String.hpp"
 #include "Core/Sha256.hpp"
 #include "Core/Version.hpp"
 
 #include "ReplayAnalyzerRust.hpp"
-#include "ReplayParser/GameFiles.hpp"
+#include "ReplayParser/ArgValueReader.hpp"
 #include "ReplayParser/ReplayParser.hpp"
 #include "ReplayParser/Result.hpp"
 #include "ReplayParser/Types.hpp"
@@ -27,44 +28,33 @@ using PotatoAlert::ReplayParser::Replay;
 using PotatoAlert::ReplayParser::ReplayResult;
 using namespace PotatoAlert::ReplayParser;
 using namespace PotatoAlert::ReplayAnalyzer;
+namespace fs = std::filesystem;
 
-enum class CameraMode : uint32_t
-{
-	OverheadMap        = 0,
-	FollowingShells    = 1,
-	FollowingPlanes    = 2,
-	FollowingShip      = 3,
-	FollowingSubmarine = 4,
-	FreeFlying         = 5,
-};
+using AccountDbId64 = int64_t;
+using EntityId64 = int64_t;
+using PlayerId64 = int64_t;
+using VehicleId64 = int64_t;
+using TeamId = int8_t;
 
-enum class Consumable : int8_t
-{
-	DamageControl            = 0,
-	SpottingAircraft         = 1,
-	DefensiveAntiAircraft    = 2,
-	SpeedBoost               = 3,
-	RepairParty              = 4,
-	CatapultFighter          = 5,
-	MainBatteryReloadBooster = 6,
-	TorpedoReloadBooster     = 7,
-	Smoke                    = 8,
-	Radar                    = 9,
-	HydroacousticSearch      = 10,
-	Hydrophone               = 11,
-	EnhancedRudders          = 12,
-	ReserveBattery           = 13,
-};
-
-ReplayResult<ReplaySummary> Replay::Analyze() const
+ReplayResult<ReplaySummary> Replay::Analyze(const fs::path& scriptsPath) const
 {
 	PA_PROFILE_FUNCTION();
 
+	struct PlayerMeta
+	{
+		std::string Name;
+		std::string ClanTag;
+		PlayerId64 Id;
+		VehicleId64 VehicleId;
+		EntityId64 EntityId;
+		TeamId TeamId;
+	};
+
 	struct
 	{
-		std::optional<int8_t> winningTeam = std::nullopt;
-		std::optional<int8_t> playerTeam = std::nullopt;
-		int32_t PlayerEntityId;
+		std::optional<TeamId> WinningTeam = std::nullopt;
+		std::optional<TeamId> PlayerTeam = std::nullopt;
+		TypeEntityId PlayerEntityId;
 		// int64_t PlayerAvatarId;
 		int64_t PlayerShipId;
 		int64_t PlayerId;
@@ -73,307 +63,267 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 		std::unordered_map<DamageType, float> DamageSpotting;
 		float DamageTaken = 0.0f;
 		std::unordered_map<RibbonType, uint32_t> Ribbons;
-		std::unordered_map<AchievementType, uint32_t> Achievements;
+
+		std::unordered_map<AccountDbId64, PlayerMeta> VehicleMap;
+		std::unordered_map<VehicleId64, EntityStats> EntityStats;
 	} replayData;
 
-	for (const PacketType& pak : Packets)
-	{
-		const ReplayResult<void> packetResult = std::visit([&replayData, this]<typename Type>(Type&& packet) -> ReplayResult<void>
+	const auto parser = MakePacketParser(
+		On<EntityCreatePacket>([](const EntityCreatePacket&) -> ReplayResult<void> { return {}; }),
+		On<EntityPropertyPacket>([](const EntityPropertyPacket&) -> ReplayResult<void> { return {}; }),
+		On<NestedPropertyUpdatePacket>([](const NestedPropertyUpdatePacket&) -> ReplayResult<void> { return {}; }),
+		On<BasePlayerCreatePacket>([&replayData](const BasePlayerCreatePacket& packet) -> ReplayResult<void>
 		{
-			using T = std::decay_t<Type>;
-
-			if constexpr (std::is_same_v<T, BasePlayerCreatePacket>)
+			replayData.PlayerEntityId = packet.EntityId;
+			return {};
+		}),
+		On<EntityMethodPacket>([&replayData, this](const EntityMethodPacket& packet) -> ReplayResult<void>
+		{
+			if (packet.MethodName == "onArenaStateReceived")
 			{
-				replayData.PlayerEntityId = packet.EntityId;
+				if (packet.Values.size() < 4)
+					return PA_REPLAY_ERROR("Avatar onArenaStateReceived only has {} values", packet.Values.size());
+
+				bool found = false;
+
+				PA_TRY(playerData, GetArgValue<std::vector<Byte>>(packet.Values[3]));
+				OnArenaStateReceivedPlayerResult playerResult = ParseArenaStateReceivedPlayers(playerData, Meta.ClientVersionFromExe.GetRaw());
+				if (playerResult.IsError)
+					return PA_REPLAY_ERROR("Failed to parse onArenaStateReceived players: {}", playerResult.Error.c_str());
+				for (const OnArenaStateReceivedPlayer& player : *playerResult.Value)
+				{
+					replayData.VehicleMap[player.AccoundDbId] = PlayerMeta
+					{
+						.Name = std::string(player.Name),
+						.ClanTag = std::string(player.ClanTag),
+						.Id = player.Id,
+						.VehicleId = player.ShipId,
+						.EntityId = player.EntityId,
+						.TeamId = static_cast<TeamId>(player.TeamId),
+					};
+					replayData.EntityStats[player.ShipId] = EntityStats{};
+
+					if (player.EntityId == replayData.PlayerEntityId)
+					{
+						found = true;
+						// replayData.PlayerAvatarId = player.avatarid;
+						replayData.PlayerId = player.Id;
+						replayData.PlayerShipId = player.ShipId;
+					}
+				}
+
+				PA_TRY(botsData, GetArgValue<std::vector<Byte>>(packet.Values[4]));
+				OnArenaStateReceivedPlayerResult botsResult = ParseArenaStateReceivedBots(botsData, Meta.ClientVersionFromExe.GetRaw());
+				if (botsResult.IsError)
+					return PA_REPLAY_ERROR("Failed to parse onArenaStateReceived bots: {}", botsResult.Error.c_str());
+
+				for (const OnArenaStateReceivedPlayer& bot : *botsResult.Value)
+				{
+					replayData.VehicleMap[bot.AccoundDbId] = PlayerMeta
+					{
+						.Name = std::string(bot.Name),
+						.ClanTag = std::string(bot.ClanTag),
+						.Id = bot.Id,
+						.VehicleId = bot.ShipId,
+						.EntityId = bot.EntityId,
+						.TeamId = static_cast<TeamId>(bot.TeamId),
+					};
+					replayData.EntityStats[bot.ShipId] = EntityStats{};
+				}
+
+				if (!found)
+				{
+					return PA_REPLAY_ERROR("onArenaStateReceived did not include the player id {} itself", replayData.PlayerEntityId);
+				}
 
 				return {};
 			}
 
-			if constexpr (std::is_same_v<T, EntityMethodPacket>)
+			if (packet.MethodName == "onBattleEnd")
 			{
-				if (packet.MethodName == "onArenaStateReceived")
+				if (Meta.ClientVersionFromExe < Version(12, 5, 0))
 				{
-					bool found = false;
-					PA_TRYV(VariantGet<std::vector<Byte>>(packet, 3, [&replayData, &found, this](const std::vector<Byte>& data) -> ReplayResult<void>
-					{
-						const OnArenaStateReceivedPlayerResult result = ParseArenaStateReceivedPlayers(data, Meta.ClientVersionFromExe.GetRaw());
-
-						if (result.IsError)
-						{
-							return PA_REPLAY_ERROR("{}", result.Error.data());
-						}
-
-						for (const OnArenaStateReceivedPlayer& player : *result.Value)
-						{
-							if (player.EntityId == replayData.PlayerEntityId)
-							{
-								found = true;
-								// replayData.PlayerAvatarId = player.avatarid;
-								replayData.PlayerId = player.Id;
-								replayData.PlayerShipId = player.ShipId;
-							}
-						}
-
-						return {};
-					}));
-
-					if (!found)
-					{
-						return PA_REPLAY_ERROR("onArenaStateReceived did not include the player id {} itself", replayData.PlayerEntityId);
-					}
-
-					return {};
-				}
-
-				if (packet.MethodName == "onBattleEnd")
-				{
-					if (Meta.ClientVersionFromExe < Version(12, 5, 0))
-					{
-						// second arg uint8_t winReason
-						return VariantGet<int8_t>(packet, 0, [&replayData](int8_t team) -> ReplayResult<void>
-						{
-							replayData.winningTeam = team;
-
-							return {};
-						});
-					}
-				}
-
-				if (packet.MethodName == "receiveDamageStat")
-				{
-					if (packet.Values.size() != 1)
-					{
-						return PA_REPLAY_ERROR("receiveDamageStat Values were not size 1");
-					}
-
-					return VariantGet<std::vector<Byte>>(packet, 0, [&replayData](const std::vector<Byte>& data) -> ReplayResult<void>
-					{
-						ReceiveDamageStatResult result = ParseReceiveDamageStat(data);
-
-						if (result.IsError)
-						{
-							return PA_REPLAY_ERROR("Failed to parse damage stat: {}", result.Error.c_str());
-						}
-
-						for (const ReceiveDamageStat& stat : result.Value)
-						{
-							const DamageType dmgType = static_cast<DamageType>(stat.DamageType);
-							switch (static_cast<DamageFlag>(stat.DamageFlag))
-							{
-								case DamageFlag::EnemyDamage:
-								{
-									replayData.DamageDealt[dmgType] = stat.Damage;
-									break;
-								}
-								case DamageFlag::PotentialDamage:
-								{
-									replayData.DamagePotential[dmgType] = stat.Damage;
-									break;
-								}
-								case DamageFlag::SpottingDamage:
-								{
-									replayData.DamageSpotting[dmgType] = stat.Damage;
-									break;
-								}
-								default:
-									break;
-							}
-						}
-
-						return {};
-					});
-				}
-
-				if (packet.MethodName == "receiveDamagesOnShip")
-				{
-					if (packet.EntityId != replayData.PlayerShipId)
-					{
-						return {};  // just ignore this packet if the ids dont match
-					}
-
-					return VariantGet<std::vector<ArgValue>>(packet, 0, [&replayData](const std::vector<ArgValue>& vec) -> ReplayResult<void>
-					{
-						for (const ArgValue& elem : vec)
-						{
-							VariantGet<std::unordered_map<std::string, ArgValue>>(elem, [&replayData](const std::unordered_map<std::string, ArgValue>& dict) -> ReplayResult<void>
-							{
-								// other field is 'vehicleID' int32_t of the aggressor
-								if (dict.contains("damage"))
-								{
-									VariantGet<float>(dict.at("damage"), [&replayData](float damage) -> ReplayResult<void>
-									{
-										replayData.DamageTaken += damage;
-										return {};
-									});
-								}
-								return {};
-							});
-						}
-
-						return {};
-					});
-
-					return {};
-				}
-
-				// until 12.0.0, since then its an EntityProperty
-				if (Meta.ClientVersionFromExe < Version(12, 0, 0))
-				{
-					if (packet.MethodName == "onRibbon")
-					{
-						return VariantGet<int8_t>(packet, 0, [&replayData](int8_t value) -> ReplayResult<void>
-						{
-							const RibbonType ribbon = static_cast<RibbonType>(value);
-							if (replayData.Ribbons.contains(ribbon))
-							{
-								replayData.Ribbons[ribbon] += 1;
-							}
-							else
-							{
-								replayData.Ribbons[ribbon] = 1;
-							}
-
-							return {};
-						});
-					}
-				}
-
-				if (packet.MethodName == "onAchievementEarned")
-				{
-					bool discard = true;
-					PA_TRYV(VariantGet<int32_t>(packet, 0, [&replayData, &discard, this](int32_t id) -> ReplayResult<void>
-					{
-						// since version 0.11.4 this is a different id
-						if (Meta.ClientVersionFromExe >= Version(0, 11, 4))
-						{
-							if (id == replayData.PlayerId)
-							{
-								discard = false;
-							}
-						}
-						else
-						{
-							if (id == replayData.PlayerEntityId)
-							{
-								discard = false;
-							}
-						}
-						return {};
-					}));
-					PA_TRYV(VariantGet<uint32_t>(packet, 1, [&replayData, discard](uint32_t value) -> ReplayResult<void>
-					{
-						if (discard)
-							return {};
-						const AchievementType achievement = static_cast<AchievementType>(value);
-						if (replayData.Achievements.contains(achievement))
-						{
-							replayData.Achievements[achievement] += 1;
-						}
-						else
-						{
-							replayData.Achievements[achievement] = 1;
-						}
-						return {};
-					}));
-
-					return {};
+					// second arg uint8_t winReason
+					PA_TRYA(replayData.WinningTeam, GetArgValue<TeamId>(packet.Values, { 0 }));
 				}
 			}
 
-			if constexpr (std::is_same_v<T, CellPlayerCreatePacket>)
+			if (packet.MethodName == "receiveDamageStat")
 			{
-				if (packet.Values.contains("teamId"))
+				if (packet.Values.size() != 1)
 				{
-					VariantGet<int8_t>(packet.Values.at("teamId"), [&replayData](int8_t team) -> ReplayResult<void>
-					{
-						replayData.playerTeam = team;
-						return {};
-					});
+					return PA_REPLAY_ERROR("receiveDamageStat Values were not size 1");
 				}
 
+				return VariantGet<std::vector<Byte>>(packet, 0, [&replayData](const std::vector<Byte>& data) -> ReplayResult<void>
+				{
+					ReceiveDamageStatResult result = ParseReceiveDamageStat(data);
+
+					if (result.IsError)
+					{
+						return PA_REPLAY_ERROR("Failed to parse damage stat: {}", result.Error.c_str());
+					}
+
+					for (const ReceiveDamageStat& stat : result.Value)
+					{
+						const DamageType dmgType = static_cast<DamageType>(stat.DamageType);
+						switch (static_cast<DamageFlag>(stat.DamageFlag))
+						{
+							case DamageFlag::EnemyDamage:
+							{
+								replayData.DamageDealt[dmgType] = stat.Damage;
+								break;
+							}
+							case DamageFlag::PotentialDamage:
+							{
+								replayData.DamagePotential[dmgType] = stat.Damage;
+								break;
+							}
+							case DamageFlag::SpottingDamage:
+							{
+								replayData.DamageSpotting[dmgType] = stat.Damage;
+								break;
+							}
+							default:
+								break;
+						}
+					}
+
+					return {};
+				});
+			}
+
+			if (packet.MethodName == "receiveDamagesOnShip")
+			{
+				if (packet.Values.empty())
+				{
+					return PA_REPLAY_ERROR("receiveDamagesOnShip had no values");
+				}
+
+				PA_TRY(damages, GetArgValue<ArrayValue>(packet.Values[0], {}));
+				for (const ArgValue& damageValue : damages)
+				{
+					PA_TRY(aggressor, GetArgValue<int32_t>(damageValue, { "vehicleID" }));
+					PA_TRY(damage, GetArgValue<float>(damageValue, { "damage" }));
+
+					if (replayData.EntityStats.contains(aggressor))
+					{
+						EntityStats& stats = replayData.EntityStats[aggressor];
+						stats.DamageDealt += damage;
+					}
+
+					if (packet.EntityId == replayData.PlayerShipId)
+					{
+						replayData.DamageTaken += damage;
+					}
+				}
+			}
+
+			// until 12.0.0, since then it's an EntityProperty
+			if (packet.MethodName == "onRibbon" && Meta.ClientVersionFromExe < Version(12, 0, 0))
+			{
+				PA_TRY(ribbonId, GetArgValue<int8_t>(packet.Values, { 0 }));
+
+				const RibbonType ribbon = static_cast<RibbonType>(ribbonId);
+				if (replayData.Ribbons.contains(ribbon))
+				{
+					replayData.Ribbons[ribbon] += 1;
+				}
+				else
+				{
+					replayData.Ribbons[ribbon] = 1;
+				}
+
+				return {};
+			}
+
+			if (packet.MethodName == "onAchievementEarned")
+			{
+				PA_TRY(id, GetArgValue<int32_t>(packet.Values, { 0 }));
+				PA_TRY(achievementId, GetArgValue<uint32_t>(packet.Values, { 1 }));
+				const AchievementType achievement = static_cast<AchievementType>(achievementId);
+
+				const auto players = replayData.VehicleMap | std::views::values;
+				const auto it = std::ranges::find_if(players, [this, id](const PlayerMeta& meta)
+				{
+					// since version 0.11.4 this is a different id
+					if (Meta.ClientVersionFromExe >= Version(0, 11, 4))
+					{
+						return meta.Id == id;
+					}
+					else
+					{
+						return meta.EntityId == id;
+					}
+				});
+				if (it != players.end() && replayData.EntityStats.contains((*it).VehicleId))
+				{
+					replayData.EntityStats.at((*it).VehicleId).Achievements[achievement]++;
+				}
 				return {};
 			}
 
 			return {};
-		}, pak);
-		PA_TRYV(packetResult);
-	}
+		}),
+		On<CellPlayerCreatePacket>([&replayData](const CellPlayerCreatePacket& packet) -> ReplayResult<void>
+		{
+			if (packet.Values.contains("teamId"))
+			{
+				PA_TRYA(replayData.PlayerTeam, GetArgValue<TeamId>(packet.Values.at("teamId")));
+			}
 
-	auto damageDealtValues = std::views::values(replayData.DamageDealt);
+			return {};
+		})
+	);
+
+	PA_TRY(ctx, Replay::PrepareContext(scriptsPath, Meta.ClientVersionFromExe));
+	PA_TRYV(ParsePackets(ctx, parser));
+
+	auto damageDealtValues = replayData.DamageDealt | std::views::values;
 	const float damageDealt = std::accumulate(damageDealtValues.begin(), damageDealtValues.end(), 0.0f);
 
-	auto dmgPotentialValues = std::views::values(replayData.DamagePotential);
+	auto dmgPotentialValues = replayData.DamagePotential | std::views::values;
 	const float damagePotential = std::accumulate(dmgPotentialValues.begin(), dmgPotentialValues.end(), 0.0f);
 
-	auto dmgSpottingValues = std::views::values(replayData.DamageSpotting);
+	auto dmgSpottingValues = replayData.DamageSpotting | std::views::values;
 	const float damageSpotting = std::accumulate(dmgSpottingValues.begin(), dmgSpottingValues.end(), 0.0f);
 
 	MatchOutcome outcome;
 
-	// since 12.0.0
+	// get ribbons from privateVehicleState
 	if (Meta.ClientVersionFromExe >= Version(12, 0, 0))
 	{
-		if (!m_packetParser.Entities.contains(replayData.PlayerEntityId))
+		if (!ctx.Entities.contains(replayData.PlayerEntityId))
 		{
 			return PA_REPLAY_ERROR("PacketParser has no entity for PlayerEntityId");
 		}
-		const Entity& playerEntity = m_packetParser.Entities.at(replayData.PlayerEntityId);
+		const Entity& playerEntity = ctx.Entities.at(replayData.PlayerEntityId);
+
 		if (!playerEntity.ClientPropertiesValues.contains("privateVehicleState"))
 		{
 			return PA_REPLAY_ERROR("Player entity is missing ClientProperty 'privateVehicleState'");
 		}
 		const ArgValue& privateVehicleState = playerEntity.ClientPropertiesValues.at("privateVehicleState");
 
-		PA_TRYV(VariantGet<std::unordered_map<std::string, ArgValue>>(privateVehicleState, [&replayData](auto& state) -> ReplayResult<void>
+		PA_TRY(ribbons, GetArgValue<ArrayValue>(privateVehicleState, { "ribbons" }));
+		for (const ArgValue& ribbonValue : ribbons)
 		{
-			if (!state.contains("ribbons"))
-			{
-				return PA_REPLAY_ERROR("privateVehicleState is missing key 'ribbons'");
-			}
-			return VariantGet<std::vector<ArgValue>>(state.at("ribbons"), [&replayData](auto& ribbons) -> ReplayResult<void>
-			{
-				for (const ArgValue& ribbonValue : ribbons)
-				{
-					PA_TRYV(VariantGet<std::unordered_map<std::string, ArgValue>>(ribbonValue, [&replayData](auto& ribbon) -> ReplayResult<void>
-					{
-						if (!ribbon.contains("count"))
-						{
-							return PA_REPLAY_ERROR("ribbon is missing key 'count'");
-						}
-						uint32_t ribbonCount;
-						PA_TRYV(VariantGet<uint16_t>(ribbon.at("count"), [&ribbonCount](uint16_t count) -> ReplayResult<void>
-						{
-							ribbonCount = count;
-							return {};
-						}));
-
-						if (!ribbon.contains("ribbonId"))
-						{
-							return PA_REPLAY_ERROR("ribbon is missing key 'ribbonId'");
-						}
-						RibbonType ribbonType;
-						PA_TRYV(VariantGet<int8_t>(ribbon.at("ribbonId"), [&ribbonType](int8_t ribbonId) -> ReplayResult<void>
-						{
-							ribbonType = static_cast<RibbonType>(ribbonId);
-							return {};
-						}));
-						replayData.Ribbons.emplace(ribbonType, ribbonCount);
-						return {};
-					}));
-				}
-				return {};
-			});
-		}));
+			PA_TRY(ribbonId, GetArgValue<int8_t>(ribbonValue, { "ribbonId" }));
+			PA_TRY(count, GetArgValue<uint16_t>(ribbonValue, { "count" }));
+			replayData.Ribbons.emplace(static_cast<RibbonType>(ribbonId), count);
+		}
 	}
 
+	// determine the winner
 	if (Meta.ClientVersionFromExe >= Version(12, 5, 0))
 	{
-		const auto battleLogic = std::ranges::find_if(m_packetParser.Entities | std::views::values, [](const Entity& entity)
+		const auto entities = ctx.Entities | std::views::values;
+		const auto battleLogic = std::ranges::find_if(entities, [](const Entity& entity)
 		{
 			return entity.Spec.get().Name == "BattleLogic";
 		});
 
-		if (battleLogic == std::end(m_packetParser.Entities | std::views::values))
+		if (battleLogic == entities.end())
 		{
 			return PA_REPLAY_ERROR("No entity with spec BattleLogic");
 		}
@@ -382,34 +332,20 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 		{
 			return PA_REPLAY_ERROR("Entity BattleLogic is missing 'battleResult'");
 		}
-
-		PA_TRYV(VariantGet<std::unordered_map<std::string, ArgValue>>((*battleLogic).ClientPropertiesValues.at("battleResult"), [&replayData](const auto& map) -> ReplayResult<void>
-		{
-			if (map.contains("winnerTeamId"))
-			{
-				PA_TRYV(VariantGet<int8_t>(map.at("winnerTeamId"), [&replayData](int8_t winnerTeamId) -> ReplayResult<void>
-				{
-					replayData.winningTeam = winnerTeamId;
-					return {};
-				}));
-
-				return {};
-			}
-
-			return PA_REPLAY_ERROR("battleResult did not contain 'winnerTeamId'");
-		}));
+		const ArgValue& battleResult = (*battleLogic).ClientPropertiesValues.at("battleResult");
+		PA_TRYA(replayData.WinningTeam, GetArgValue<TeamId>(battleResult, { "winnerTeamId" }));
 	}
 
-	if (!replayData.playerTeam || !replayData.winningTeam || (replayData.winningTeam && replayData.winningTeam == -2))
+	if (!replayData.PlayerTeam || !replayData.WinningTeam || (replayData.WinningTeam && replayData.WinningTeam == -2))
 	{
-		LOG_TRACE("Failed to determine match outcome, PT {} WT {}", replayData.playerTeam.has_value(), replayData.winningTeam.has_value());
+		//LOG_TRACE("Failed to determine match outcome, PT {} WT {}", replayData.playerTeam.has_value(), replayData.winningTeam.has_value());
 		outcome = MatchOutcome::Unknown;
 	}
-	else if (replayData.playerTeam.value() == replayData.winningTeam.value())
+	else if (replayData.PlayerTeam.value() == replayData.WinningTeam.value())
 	{
 		outcome = MatchOutcome::Win;
 	}
-	else if (replayData.winningTeam.value() == -1)
+	else if (replayData.WinningTeam.value() == -1)
 	{
 		outcome = MatchOutcome::Draw;
 	}
@@ -424,6 +360,11 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 		return PA_REPLAY_ERROR("Failed to get SHA256 hash of replay meta");
 	}
 
+	if (!replayData.EntityStats.contains(replayData.PlayerShipId))
+	{
+		return PA_REPLAY_ERROR("EntityStats do not contain the player vehicle");
+	}
+
 	return ReplaySummary
 	{
 		.Hash = hash,
@@ -432,7 +373,8 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 		.DamageTaken = replayData.DamageTaken,
 		.DamageSpotting = damageSpotting,
 		.DamagePotential = damagePotential,
-		.Achievements = replayData.Achievements,
+		.Achievements = replayData.EntityStats.at(replayData.PlayerShipId).Achievements,
 		.Ribbons = replayData.Ribbons,
+		.TeamScore = std::move(replayData.EntityStats),
 	};
 }

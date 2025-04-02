@@ -7,13 +7,15 @@
 #include "ReplayParser/ReplayParser.hpp"
 
 
+namespace fs = std::filesystem;
 using namespace PotatoAlert::Core;
 using namespace PotatoAlert::ReplayParser;
 using PotatoAlert::ReplayParser::ReplayResult;
 
 int main(int argc, char* argv[])
 {
-	Log::Init(AppDataPath("PotatoAlert") / "StandaloneReplayParser.log");
+	auto appData = AppDataPath("PotatoAlert").value();
+	Log::Init(appData / "StandaloneReplayParser.log");
 
 	auto section = [](std::string_view title = "")
 	{
@@ -33,13 +35,15 @@ int main(int argc, char* argv[])
 		return err();
 	}
 
-	PA_TRY_OR_ELSE(replay, Replay::FromFile(argv[1], (AppDataPath("PotatoAlert") / "ReplayVersions")),
+	PA_TRY_OR_ELSE(replay, Replay::FromFile(argv[1]),
 	{
 		LOG_ERROR(error);
 		return err();
 	});
 
-	PA_TRY_OR_ELSE(summary, replay.Analyze(),
+	const fs::path scriptsPath(appData / "GameFiles" / "eu" / replay.Meta.ClientVersionFromExe.ToString() / "scripts");
+
+	PA_TRY_OR_ELSE(summary, replay.Analyze(scriptsPath),
 	{
 		LOG_ERROR(error);
 		return err();
@@ -77,6 +81,12 @@ int main(int argc, char* argv[])
 	for (const auto& [achievement, count] : summary.Achievements)
 	{
 		LOG_INFO("    {}: {}", GetName(achievement), count);
+	}
+
+	section("PLAYERS");
+	for (const auto& [name, stats] : *summary.TeamScore)
+	{
+		LOG_TRACE("Player [{}]{}: Damage {} Spotting {} Exp {} Frags {}", stats.Clan, stats.Name, stats.DamageDealt, stats.DamageSpotting, stats.Exp, stats.Frags);
 	}
 
 	printf("Press any key to continue...\n");
