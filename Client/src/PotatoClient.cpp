@@ -211,18 +211,13 @@ struct ServerResponse
 
 static inline std::optional<std::string> GetReplayName(const Match& match, const MatchContext& ctx)
 {
-	const std::vector<std::string> dateSplit = Split(match.DateTime, " ");
-
-	if (dateSplit.size() != 2)
-		return {};
-
-	const std::vector<std::string> date = Split(dateSplit[0], "-");
-	const std::vector<std::string> time = Split(dateSplit[1], ":");
-
-	if (date.size() != 3 || time.size() != 3)
-		return {};
-
-	return fmt::format("{}_{}_{}_{}.wowsreplay", fmt::join(date, ""), fmt::join(time, ""), ctx.ShipIdent, match.Map);
+	const std::optional<Time::TimePoint> tp = Time::StrToTime(match.DateTime, "%d.%m.%Y %H:%M:%S");
+	if (tp)
+	{
+		const std::string time = Time::TimeToStr(*tp, "{:%Y%m%d_%H%M%S}");
+		return fmt::format("{}_{}_{}.wowsreplay", time, ctx.ShipIdent, match.Map);
+	}
+	return {};
 }
 
 }
