@@ -34,8 +34,11 @@ inline std::error_code AsErrorCode(const Result<void>& result)
 	return result ? std::error_code() : result.error();
 }
 
-#define PA_DETAIL_TRY_IS_VOID(Result) \
-	(::std::is_void_v<typename ::std::remove_cvref_t<decltype(Result)>::value_type>)
+#define PA_DETAIL_TRY_VALUE_T(result) \
+	typename ::std::remove_cvref_t<decltype(result)>::value_type
+
+#define PA_DETAIL_TRY_IS_VOID(result) \
+	(::std::is_void_v<PA_DETAIL_TRY_VALUE_T(result)>)
 
 #define PA_DETAIL_TRY_S0(_0, ...) \
 	_0
@@ -152,5 +155,33 @@ inline std::error_code AsErrorCode(const Result<void>& result)
 #define PA_TRYV_OR_ELSE(func, ...)                                              \
 	static_assert(PA_DETAIL_TRY_IS_VOID(func), "TRYV requires a void result."); \
 	PA_DETAIL_TRYV_OR_ELSE(auto, PA_DETAIL_TRY_R, func, __VA_ARGS__)
+
+#define PA_DETAIL_TRY_IS_PTR(result) \
+	(::std::indirectly_readable<PA_DETAIL_TRY_VALUE_T(result)>)
+
+#define PA_DETAIL_TRY_PTR_2(return, hspec, vspec, result, ...)                                                                                               \
+	PA_DETAIL_TRY_INTO(return, hspec, result, __VA_ARGS__)                                           \
+	static_assert(PA_DETAIL_TRY_IS_PTR(result), "TRY_PTR requires an indirectly readable result."); \
+	auto&& vspec = **(result);                                                                                                                                \
+	((void)0)
+
+#define PA_DETAIL_TRY_PTR_1(return, spec, ...) \
+	PA_DETAIL_TRY_PTR_2(return, PA_DETAIL_TRY_H(spec), PA_DETAIL_TRY_V(spec), PA_DETAIL_TRY_R, __VA_ARGS__)
+
+#define PA_TRY_PTR(spec, ...) \
+	PA_DETAIL_TRY_PTR_1(return, spec, __VA_ARGS__)
+
+
+#define PA_DETAIL_TRY_PTRA_2(return, hspec, left, result, ...)                             \
+	PA_DETAIL_TRY_INTO(return, hspec, result, __VA_ARGS__)                             \
+	static_assert(PA_DETAIL_TRY_IS_PTR(result), "TRY_PTRA requires an indirectly readable result."); \
+	((void)(left = static_cast<std::remove_pointer_t<PA_DETAIL_TRY_VALUE_T(result)>&&>(**(result))))
+	//((void)(left = **(result)
+
+#define PA_DETAIL_TRY_PTRA_1(return, left, ...) \
+	PA_DETAIL_TRY_PTRA_2(return, PA_DETAIL_TRY_H(left), PA_DETAIL_TRY_V(left), PA_DETAIL_TRY_R, __VA_ARGS__)
+
+#define PA_TRY_PTRA(left, ...) \
+	PA_DETAIL_TRY_PTRA_1(return, left, __VA_ARGS__)
 
 }  // namespace PotatoAlert::Core
