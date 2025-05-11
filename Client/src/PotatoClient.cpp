@@ -407,14 +407,14 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 							return;
 						});
 
-						const Config& config = m_services.Get<Config>();
+						const Config& config = m_services.Get<ConfigManager>().GetConfig();
 
-						if (config.Get<ConfigKey::MatchHistory>())
+						if (config.MatchHistory)
 						{
-							DbAddMatch(m_lastArenaInfoHash, match, matchContext, std::move(jsonString));
+							DbAddMatch(m_lastArenaInfoHash, match, matchContext, std::move(*serverResponse.Result));
 						}
 
-						if (config.Get<ConfigKey::SaveMatchCsv>())
+						if (config.SaveMatchCsv)
 						{
 							PA_TRY_OR_ELSE(csv, StatsParser::ToCSV(match),
 							{
@@ -751,7 +751,7 @@ void PotatoClient::UpdateGameInstalls()
 
 	AppDirectories appDirs = m_services.Get<AppDirectories>();
 
-	for (const fs::path& game : m_services.Get<Config>().Get<ConfigKey::GameDirectories>())
+	for (const fs::path& game : m_services.Get<ConfigManager>().GetConfig().GameDirectories)
 	{
 		const Result<GameInfo> gameInfo = Game::ReadGameInfo(game);
 		if (gameInfo)

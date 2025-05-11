@@ -23,7 +23,7 @@ UpdaterGui::Updater(const Client::ServiceProvider& serviceProvider) : FramelessD
 {
 	QVBoxLayout* vLayout = new QVBoxLayout();
 
-	int lang = serviceProvider.Get<Client::Config>().Get<Client::ConfigKey::Language>();
+	int lang = serviceProvider.Get<Client::ConfigManager>().GetConfig().Language;
 	QLabel* waitLabel = new QLabel(GetString(lang, StringTableKey::UPDATE_DOWNLOADING));
 
 	QProgressBar* progressBar = new QProgressBar();

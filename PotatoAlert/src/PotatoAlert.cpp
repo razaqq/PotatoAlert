@@ -1,6 +1,7 @@
 // Copyright 2025 <github.com/razaqq>
 
 #include "Core/ApplicationGuard.hpp"
+#include "Core/Defer.hpp"
 #include "Core/Directory.hpp"
 #include "Core/Process.hpp"
 #include "Core/StandardPaths.hpp"
@@ -32,7 +33,8 @@
 
 using PotatoAlert::Client::AppDirectories;
 using PotatoAlert::Client::Config;
-using PotatoAlert::Client::ConfigKey;
+using PotatoAlert::Client::ConfigManager;
+using PotatoAlert::Client::ConfigResult;
 using PotatoAlert::Client::DatabaseManager;
 using PotatoAlert::Client::LogQtMessage;
 using PotatoAlert::Client::LoadFonts;
@@ -73,8 +75,21 @@ static int RunMain(int argc, char* argv[])
 	Log::Init(appDirs.LogFile);
 	qInstallMessageHandler(LogQtMessage);
 
-	Config config(appDirs.ConfigFile);
-	serviceProvider.Add(config);
+	ConfigManager configManager(appDirs.ConfigFile);
+	PA_DEFER {
+		const ConfigResult<void> res = configManager.Save();
+		if (!res)
+		{
+			LOG_ERROR("Failed to save config: {}", res.error());
+		}
+	};
+	const ConfigResult<void> res = configManager.Init();
+	if (!res)
+	{
+		LOG_ERROR("Failed to initialize config: {}", res.error());
+		return 1;
+	}
+	serviceProvider.Add(configManager);
 
 	ReplayAnalyzer replayAnalyzer(serviceProvider);
 	serviceProvider.Add(replayAnalyzer);
@@ -110,7 +125,7 @@ static int RunMain(int argc, char* argv[])
 	app.setStyleSheet(style);
 
 	LoadFonts();
-	QFont font(QString::fromStdString(config.Get<ConfigKey::Font>()), 9);
+	QFont font(QString::fromStdString(configManager.GetConfig().Font), 9);
 	font.setLetterSpacing(QFont::PercentageSpacing, 0);
 	font.setStyleStrategy(QFont::PreferAntialias);
 	QApplication::setFont(font);
@@ -121,16 +136,16 @@ static int RunMain(int argc, char* argv[])
 	nativeWindow->show();
 
 	// force update of language
-	LanguageChangeEvent languageChangeEvent(serviceProvider.Get<Config>().Get<ConfigKey::Language>());
+	LanguageChangeEvent languageChangeEvent(configManager.GetConfig().Language);
 	QApplication::sendEvent(mainWindow, &languageChangeEvent);
 
 	// force update of font scaling
-	FontScalingChangeEvent fontScalingChangeEvent((float)serviceProvider.Get<Config>().Get<ConfigKey::FontScaling>() / 100.0f);
+	FontScalingChangeEvent fontScalingChangeEvent(static_cast<float>(configManager.GetConfig().FontScaling) / 100.0f);
 	QApplication::sendEvent(mainWindow, &fontScalingChangeEvent);
 
 #ifdef WIN32
 	// check if there is a new version available
-	if (serviceProvider.Get<Config>().Get<ConfigKey::UpdateNotifications>())
+	if (configManager.GetConfig().UpdateNotifications)
 		if (Updater::UpdateAvailable())
 			if (mainWindow->ConfirmUpdate())
 				if (Updater::StartUpdater())

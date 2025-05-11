@@ -27,7 +27,7 @@
 using PotatoAlert::Core::Time::TimePoint;
 using PotatoAlert::Gui::MatchHistoryModel;
 using PotatoAlert::Client::Config;
-using PotatoAlert::Client::ConfigKey;
+using PotatoAlert::Client::ConfigManager;
 using PotatoAlert::Client::StringTable::GetString;
 using PotatoAlert::Client::StringTable::StringTableKey;
 
@@ -139,7 +139,7 @@ QVariant MatchHistoryModel::headerData(int section, Qt::Orientation orientation,
 		{
 			if (orientation == Qt::Horizontal)
 			{
-				const int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
+				const int lang = m_services.Get<ConfigManager>().GetConfig().Language;
 				switch (section)
 				{
 					case 0:

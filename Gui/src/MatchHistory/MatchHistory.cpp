@@ -21,7 +21,6 @@
 #include "Gui/QuestionDialog.hpp"
 #include "Gui/StatsParser.hpp"
 
-#include <QFileDialog>
 #include <QHBoxLayout>
 #include <QSortFilterProxyModel>
 
@@ -31,7 +30,7 @@
 
 
 using PotatoAlert::Client::Config;
-using PotatoAlert::Client::ConfigKey;
+using PotatoAlert::Client::ConfigManager;
 using PotatoAlert::Client::DatabaseManager;
 using PotatoAlert::Client::MatchContext;
 using PotatoAlert::Client::StringTable::GetString;
@@ -112,7 +111,7 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 			return;
 		}
 
-		const int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
+		const int lang = m_services.Get<ConfigManager>().GetConfig().Language;
 		QuestionDialog* dialog = new QuestionDialog(lang, this, GetString(lang, StringTableKey::HISTORY_DELETE_QUESTION));
 		if (dialog->Run() == QuestionAnswer::Yes)
 		{
@@ -156,11 +155,9 @@ MatchHistory::MatchHistory(const Client::ServiceProvider& serviceProvider, QWidg
 	connect(m_view, &QTableView::doubleClicked, [this](const QModelIndex& index)
 	{
 		const Client::DbMatch& match = m_model->GetMatch(m_sortFilter->mapToSource(index).row());
-		const bool showKarma = m_services.Get<Config>().Get<ConfigKey::ShowKarma>();
-		const bool fontShadow = m_services.Get<Config>().Get<ConfigKey::FontShadow>();
-		const int fontScaling = m_services.Get<Config>().Get<ConfigKey::FontScaling>();
+		const Config& config = m_services.Get<ConfigManager>().GetConfig();
 		MatchContext ctx{};
-		PA_TRY_OR_ELSE(res, ParseMatch(match.Json, ctx, { showKarma, fontShadow, (float)fontScaling / 100.0f }),
+		PA_TRY_OR_ELSE(res, ParseMatch(match.Json, ctx, { config.ShowKarma, config.FontShadow, (float)config.FontScaling / 100.0f }),
 		{
 			LOG_ERROR("Failed to parse match as JSON: {}", error);
 			return;

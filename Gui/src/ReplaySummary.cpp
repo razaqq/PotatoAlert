@@ -27,7 +27,7 @@ using namespace PotatoAlert::Client::StringTable;
 using PotatoAlert::ReplayParser::AchievementType;
 using PotatoAlert::ReplayParser::RibbonType;
 using PotatoAlert::Client::Config;
-using PotatoAlert::Client::ConfigKey;
+using PotatoAlert::Client::ConfigManager;
 using PotatoAlert::Client::DbMatch;
 using PotatoAlert::Gui::Background;
 using PotatoAlert::Gui::ShadowLabel;
@@ -243,7 +243,7 @@ void ReplaySummaryGui::SetReplaySummary(const DbMatch& match)
 {
 	ClearLayout(layout());
 
-	const int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
+	const int lang = m_services.Get<ConfigManager>().GetConfig().Language;
 
 	m_background = new Background(
 		fmt::format(":/{}.jpg", match.Map).c_str()

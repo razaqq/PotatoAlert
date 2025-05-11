@@ -6,6 +6,7 @@
 #include "Client/ServiceProvider.hpp"
 #include "Client/Updater.hpp"
 
+#include "Core/Defer.hpp"
 #include "Core/Log.hpp"
 
 #include "Gui/Palette.hpp"
@@ -17,6 +18,8 @@
 
 using PotatoAlert::Client::AppDirectories;
 using PotatoAlert::Client::Config;
+using PotatoAlert::Client::ConfigManager;
+using PotatoAlert::Client::ConfigResult;
 using PotatoAlert::Client::LogQtMessage;
 using PotatoAlert::Client::ServiceProvider;
 using PotatoAlert::Client::Updater;
@@ -48,8 +51,22 @@ static int RunMain(int argc, char* argv[])
 
 	ServiceProvider serviceProvider;
 	
-	Config config(appDirs.ConfigFile);
-	serviceProvider.Add(config);
+	ConfigManager configManager(appDirs.ConfigFile);
+	PA_DEFER
+	{
+		const ConfigResult<void> res = configManager.Save();
+		if (!res)
+		{
+			LOG_ERROR("Failed to save config: {}", res.error());
+		}
+	};
+	const ConfigResult<void> res = configManager.Init();
+	if (!res)
+	{
+		LOG_ERROR("Failed to initialize config: {}", res.error());
+		return 1;
+	}
+	serviceProvider.Add(configManager);
 
 	Updater updater;
 	serviceProvider.Add(updater);

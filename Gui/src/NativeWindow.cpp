@@ -19,7 +19,7 @@
 
 
 using PotatoAlert::Client::Config;
-using PotatoAlert::Client::ConfigKey;
+using PotatoAlert::Client::ConfigManager;
 using PotatoAlert::Gui::NativeWindow;
 
 NativeWindow::NativeWindow(const Client::ServiceProvider& serviceProvider, QMainWindow* mainWindow, QWidget* parent) : QWidget(parent), m_services(serviceProvider), m_mainWindow(mainWindow)
@@ -51,9 +51,9 @@ void NativeWindow::hideEvent(QHideEvent* event)
 		return;
 	}
 
-	Config& config = m_services.Get<Config>();
+	Config& config = m_services.Get<ConfigManager>().GetConfig();
 
-	if (config.Get<ConfigKey::MinimizeTray>())
+	if (config.MinimizeTray)
 	{
 		hide();
 	}
@@ -62,12 +62,12 @@ void NativeWindow::hideEvent(QHideEvent* event)
 		// if window is not maximized, save geometry
 		if ((windowState() & Qt::WindowMaximized) == 0)
 		{
-			config.Set<ConfigKey::WindowHeight>(height());
-			config.Set<ConfigKey::WindowWidth>(width());
-			config.Set<ConfigKey::WindowX>(windowHandle()->framePosition().x());
-			config.Set<ConfigKey::WindowY>(windowHandle()->framePosition().y());
+			config.WindowHeight = height();
+			config.WindowWidth = width();
+			config.WindowX = windowHandle()->framePosition().x();
+			config.WindowY = windowHandle()->framePosition().y();
 		}
-		config.Set<ConfigKey::WindowState>(windowState() & ~Qt::WindowMinimized);
+		config.WindowState = windowState() & ~Qt::WindowMinimized;
 
 		QWidget::hideEvent(event);
 		QApplication::exit(0);
@@ -81,15 +81,13 @@ void NativeWindow::showEvent([[maybe_unused]] QShowEvent* event)
 		return;
 	}
 
-	const Config& config = m_services.Get<Config>();
+	const Config& config = m_services.Get<ConfigManager>().GetConfig();
 
 	setGeometry(
-		config.Get<ConfigKey::WindowX>(),
-		config.Get<ConfigKey::WindowY>(),
-		config.Get<ConfigKey::WindowWidth>(),
-		config.Get<ConfigKey::WindowHeight>()
+		config.WindowX, config.WindowY,
+		config.WindowWidth, config.WindowHeight
 	);
-	setWindowState(static_cast<decltype(windowState())>(config.Get<ConfigKey::WindowState>() & ~Qt::WindowMinimized));
+	setWindowState(static_cast<decltype(windowState())>(config.WindowState & ~Qt::WindowMinimized));
 
 	bool reachable = false;
 	QRect titleBarGeo = windowHandle()->frameGeometry();

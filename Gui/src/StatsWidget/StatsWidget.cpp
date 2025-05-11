@@ -12,7 +12,7 @@
 
 
 using PotatoAlert::Client::Config;
-using PotatoAlert::Client::ConfigKey;
+using PotatoAlert::Client::ConfigManager;
 using PotatoAlert::Client::ServiceProvider;
 using PotatoAlert::Gui::StatsWidget;
 
@@ -44,7 +44,7 @@ void StatsWidget::SetStatus(Client::Status status, std::string_view statusText) 
 
 void StatsWidget::AddTables()
 {
-	switch (m_services.Get<Config>().Get<ConfigKey::TableLayout>())
+	switch (m_services.Get<ConfigManager>().GetConfig().TableLayout)
 	{
 		case Client::TableLayout::Horizontal:
 		{

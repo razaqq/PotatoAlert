@@ -38,9 +38,10 @@
 
 static constexpr int ROW_HEIGHT = 20;
 
+using PotatoAlert::Client::Config;
+using PotatoAlert::Client::ConfigManager;
 using namespace PotatoAlert::Client::StringTable;
 using namespace PotatoAlert::Core;
-using PotatoAlert::Client::ConfigKey;
 using PotatoAlert::Gui::SettingsWidget;
 using PotatoAlert::Gui::SettingsChoice;
 
@@ -93,17 +94,17 @@ void SettingsWidget::Init()
 	displayLayout->setVerticalSpacing(5);
 	displayLayout->setHorizontalSpacing(30);
 
-	Config& config = m_services.Get<Config>();
+	Config& config = m_services.Get<ConfigManager>().GetConfig();
 	Client::PotatoClient& potatoClient = m_services.Get<Client::PotatoClient>();
 
 	connect(&potatoClient, &Client::PotatoClient::GameInfosChanged, m_gameInstalls, &GameInstalls::SetInstalls);
 	connect(m_gameInstalls, &GameInstalls::RemoveGameInstall, [&config, &potatoClient](const Client::GameDirectory& game)
 	{
-		auto gameInstalls = config.Get<ConfigKey::GameDirectories>();
+		auto gameInstalls = config.GameDirectories;
 		if (const auto it = gameInstalls.find(game.Path); it != gameInstalls.end())
 		{
 			gameInstalls.erase(it);
-			config.Set<ConfigKey::GameDirectories>(gameInstalls);
+			config.GameDirectories = gameInstalls;
 			potatoClient.UpdateGameInstalls();
 		}
 	});
@@ -118,9 +119,9 @@ void SettingsWidget::Init()
 		QString dir = QFileDialog::getExistingDirectory(this, "Select Game Directory", "", QFileDialog::ShowDirsOnly);
 		if (dir != "")
 		{
-			auto gameInstalls = config.Get<ConfigKey::GameDirectories>();
+			auto gameInstalls = config.GameDirectories;
 			gameInstalls.emplace(QDir(dir).filesystemAbsolutePath().make_preferred());
-			config.Set<ConfigKey::GameDirectories>(gameInstalls);
+			config.GameDirectories = gameInstalls;
 			potatoClient.UpdateGameInstalls();
 		}
 	});
@@ -130,45 +131,45 @@ void SettingsWidget::Init()
 
 	generalLayout->addWidget(new HorizontalLine(), 2, 0, 1, 2);
 
-	AddSetting<SettingsSwitch, ConfigKey::MatchHistory>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SAVE_MATCHHISTORY, [](SettingsSwitch*, bool) {});
-	AddSetting<SettingsSwitch, ConfigKey::SaveMatchCsv>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SAVE_CSV, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsSwitch>(&Config::MatchHistory, generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SAVE_MATCHHISTORY, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsSwitch>(&Config::SaveMatchCsv, generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SAVE_CSV, [](SettingsSwitch*, bool) {});
 
 	generalLayout->addWidget(new HorizontalLine(), 5, 0, 1, 2);
 	
-	AddSetting<SettingsSwitch, ConfigKey::MinimizeTray>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_MINIMIZETRAY, [](SettingsSwitch*, bool) {});
-	AddSetting<SettingsSwitch, ConfigKey::UpdateNotifications>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_UPDATES, [](SettingsSwitch*, bool) {});
-	AddSetting<SettingsSwitch, ConfigKey::AllowSendingUsageStats>(generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_ALLOW_SENDING_USAGE_STATS, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsSwitch>(&Config::MinimizeTray, generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_MINIMIZETRAY, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsSwitch>(&Config::UpdateNotifications, generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_UPDATES, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsSwitch>(&Config::AllowSendingUsageStats, generalLayout, new SettingsSwitch(), StringTableKey::SETTINGS_ALLOW_SENDING_USAGE_STATS, [](SettingsSwitch*, bool) {});
 
 	// DISPLAY
-	AddSetting<SettingsComboBox, ConfigKey::Language>(displayLayout, new SettingsComboBox(Languages), StringTableKey::SETTINGS_LANGUAGE, [this](SettingsComboBox*, int id)
+	AddSetting<SettingsComboBox>(&Config::Language, displayLayout, new SettingsComboBox(Languages), StringTableKey::SETTINGS_LANGUAGE, [this](SettingsComboBox*, int id)
 	{
 		LanguageChangeEvent event(id);
 		QApplication::sendEvent(window(), &event);
 	});
 	SettingsChoice* statsMode = new SettingsChoice(this, { "current mode", "randoms", "ranked", "coop" });  // TODO: localize
-	AddSetting<SettingsChoice, ConfigKey::StatsMode>(displayLayout, statsMode, StringTableKey::SETTINGS_STATS_MODE, [this](SettingsChoice*, int)
+	AddSetting<SettingsChoice>(&Config::StatsMode, displayLayout, statsMode, StringTableKey::SETTINGS_STATS_MODE, [this](SettingsChoice*, int)
 	{
 		m_forceRun = true;
 	});
 	SettingsChoice* teamWinrateMode = new SettingsChoice(this, { "weighted", "average", "median" });  // TODO: localize
-	AddSetting<SettingsChoice, ConfigKey::TeamWinRateMode>(displayLayout, teamWinrateMode, StringTableKey::SETTINGS_TEAM_WIN_RATE_MODE, [this](SettingsChoice*, int)
+	AddSetting<SettingsChoice>(&Config::TeamWinRateMode, displayLayout, teamWinrateMode, StringTableKey::SETTINGS_TEAM_WIN_RATE_MODE, [this](SettingsChoice*, int)
 	{
 		m_forceRun = true;
 	});
 	SettingsChoice* teamDamageMode = new SettingsChoice(this, { "weighted", "average", "median" });  // TODO: localize
-	AddSetting<SettingsChoice, ConfigKey::TeamDamageMode>(displayLayout, teamDamageMode, StringTableKey::SETTINGS_TEAM_DAMAGE_MODE, [this](SettingsChoice*, int)
+	AddSetting<SettingsChoice>(&Config::TeamDamageMode, displayLayout, teamDamageMode, StringTableKey::SETTINGS_TEAM_DAMAGE_MODE, [this](SettingsChoice*, int)
 	{
 		m_forceRun = true;
 	});
-	AddSetting<SettingsSwitch, ConfigKey::ShowKarma>(displayLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SHOW_KARMA, [](SettingsSwitch*, bool) {});
-	AddSetting<SettingsSwitch, ConfigKey::FontShadow>(displayLayout, new SettingsSwitch(), StringTableKey::SETTINGS_FONT_SHADOW, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsSwitch>(&Config::ShowKarma, displayLayout, new SettingsSwitch(), StringTableKey::SETTINGS_SHOW_KARMA, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsSwitch>(&Config::FontShadow, displayLayout, new SettingsSwitch(), StringTableKey::SETTINGS_FONT_SHADOW, [](SettingsSwitch*, bool) {});
 	SettingsChoice* tableLayout = new SettingsChoice(this, { "horizontal", "vertical" });
-	AddSetting<SettingsChoice, ConfigKey::TableLayout>(displayLayout, tableLayout, StringTableKey::SETTINGS_TABLE_LAYOUT, [this](SettingsChoice*, int)
+	AddSetting<SettingsChoice>(&Config::TableLayout, displayLayout, tableLayout, StringTableKey::SETTINGS_TABLE_LAYOUT, [this](SettingsChoice*, int)
 	{
 		emit TableLayoutChanged();
 	});
-	AddSetting<SettingsSwitch, ConfigKey::AnonymizePlayers>(displayLayout, new SettingsSwitch(), StringTableKey::SETTINGS_ANONYMIZE_PLAYER_NAMES_SCREENSHOT, [](SettingsSwitch*, bool) {});
-	AddSetting<SettingsComboBox, ConfigKey::Font>(displayLayout, new SettingsComboBox(Client::Fonts), StringTableKey::SETTINGS_FONT, [](SettingsComboBox* form, int)
+	AddSetting<SettingsSwitch>(&Config::AnonymizePlayers, displayLayout, new SettingsSwitch(), StringTableKey::SETTINGS_ANONYMIZE_PLAYER_NAMES_SCREENSHOT, [](SettingsSwitch*, bool) {});
+	AddSetting<SettingsComboBox>(&Config::Font, displayLayout, new SettingsComboBox(Client::Fonts), StringTableKey::SETTINGS_FONT, [](SettingsComboBox* form, int)
 	{
 		QFont font = QApplication::font();
 		font.setFamily(form->currentText());
@@ -177,7 +178,7 @@ void SettingsWidget::Init()
 
 	SettingsSlider* fontScaling = new SettingsSlider(50, 150);
 	fontScaling->setFixedWidth(250);
-	AddSetting<SettingsSlider, ConfigKey::FontScaling>(displayLayout, fontScaling, StringTableKey::SETTINGS_FONT_SCALING, [](SettingsSlider*, int value)
+	AddSetting<SettingsSlider>(&Config::FontScaling, displayLayout, fontScaling, StringTableKey::SETTINGS_FONT_SCALING, [](SettingsSlider*, int value)
 	{
 		FontScalingChangeEvent event((float)value / 100.0f);
 		for (QWidget* w : qApp->allWidgets())
@@ -215,7 +216,7 @@ void SettingsWidget::Init()
 	layout->addWidget(centralWidget);
 	layout->addStretch();
 
-	connect(saveButton, &QPushButton::clicked, [this, &config, &potatoClient]()
+	connect(saveButton, &QPushButton::clicked, [this, &potatoClient]()
 	{
 		if (m_forceRun)
 		{
@@ -223,14 +224,14 @@ void SettingsWidget::Init()
 			m_services.Get<Client::PotatoClient>().ForceRun();
 		}
 
-		config.Save();
+		m_services.Get<ConfigManager>().Save();  // TODO: handle result
 		potatoClient.UpdateGameInstalls();
 		emit Done();
 	});
-	connect(cancelButton, &QPushButton::clicked, [this, &config, &potatoClient]()
+	connect(cancelButton, &QPushButton::clicked, [this, &potatoClient]()
 	{
 		m_forceRun = false;
-		config.Load();
+		m_services.Get<ConfigManager>().Load();  // TODO: handle result
 		emit Reset();
 		potatoClient.UpdateGameInstalls();
 		QEvent event(QEvent::LanguageChange);
@@ -252,8 +253,8 @@ void SettingsWidget::Init()
 	setLayout(horLayout);
 }
 
-template<typename SettingType, ConfigKey Key>
-void SettingsWidget::AddSetting(QGridLayout* layout, SettingType* form, StringTableKey stringKey, auto&& onChange)
+template<typename SettingType, typename Target>
+void SettingsWidget::AddSetting(Target target, QGridLayout* layout, SettingType* form, StringTableKey stringKey, auto&& onChange)
 {
 	ScalingLabel* label = new ScalingLabel(QFont(QApplication::font().family(), 11, QFont::Bold));
 	label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -262,25 +263,28 @@ void SettingsWidget::AddSetting(QGridLayout* layout, SettingType* form, StringTa
 		label->setText(GetString(lang, stringKey));
 	});
 
+	Config& config = m_services.Get<ConfigManager>().GetConfig();
+
+	using ConfigType = std::decay_t<decltype(config.*target)>;
+
 	if constexpr (std::is_same_v<SettingType, SettingsSwitch>)
 	{
-		connect(this, &SettingsWidget::Reset, [this, form]()
+		connect(this, &SettingsWidget::Reset, [form, &config, target]()
 		{
-			form->setChecked(m_services.Get<Config>().Get<Key>());
+			form->setChecked(config.*target);
 		});
-		connect(form, &SettingsSwitch::clicked, [this, onChange, form](bool checked)
+		connect(form, &SettingsSwitch::clicked, [onChange, form, &config, target](bool checked)
 		{
-			m_services.Get<Config>().Set<Key>(checked);
+			config.*target = checked;
 			onChange(form, checked);
 		});
 	}
 	else if constexpr (std::is_same_v<SettingType, SettingsComboBox>)
 	{
-		using ConfigType = decltype(m_services.Get<Config>().Get<Key>());
 		form->setFixedHeight(ROW_HEIGHT);
-		connect(this, &SettingsWidget::Reset, [this, form]()
+		connect(this, &SettingsWidget::Reset, [form, &config, target]()
 		{
-			ConfigType k = m_services.Get<Config>().Get<Key>();
+			ConfigType k = config.*target;
 			if constexpr (std::is_same_v<ConfigType, int>)
 			{
 				form->setCurrentIndex(k);
@@ -295,16 +299,16 @@ void SettingsWidget::AddSetting(QGridLayout* layout, SettingType* form, StringTa
 			}
 		});
 
-		connect(form, &SettingsComboBox::currentIndexChanged, [this, onChange, form](int id)
+		connect(form, &SettingsComboBox::currentIndexChanged, [onChange, form, &config, target](int id)
 		{
 			if constexpr (std::is_same_v<ConfigType, int>)
 			{
-				m_services.Get<Config>().Set<Key>(id);
+				config.*target = id;
 			}
 			else if constexpr (std::is_same_v<ConfigType, std::string>)
 			{
 				const std::string k = form->itemText(id).toStdString();
-				m_services.Get<Config>().Set<Key>(k);
+				config.*target = k;
 			}
 			else
 			{
@@ -315,25 +319,25 @@ void SettingsWidget::AddSetting(QGridLayout* layout, SettingType* form, StringTa
 	}
 	else if constexpr (std::is_same_v<SettingType, SettingsChoice>)
 	{
-		connect(this, &SettingsWidget::Reset, [this, form]()
+		connect(this, &SettingsWidget::Reset, [form, &config, target]()
 		{
-			form->SetCurrentIndex(static_cast<int>(m_services.Get<Config>().Get<Key>()));
+			form->SetCurrentIndex(static_cast<int>(config.*target));
 		});
-		connect(form, &SettingsChoice::CurrentIndexChanged, [this, onChange, form](int index)
+		connect(form, &SettingsChoice::CurrentIndexChanged, [onChange, form, &config, target](int index)
 		{
-			m_services.Get<Config>().Set<Key>(static_cast<decltype(m_services.Get<Config>().Get<Key>())>(index));
+			config.*target = static_cast<ConfigType>(index);
 			onChange(form, index);
 		});
 	}
 	else if constexpr (std::is_same_v<SettingType, SettingsSlider>)
 	{
-		connect(this, &SettingsWidget::Reset, [this, form]()
+		connect(this, &SettingsWidget::Reset, [form, &config, target]()
 		{
-			form->SetValue(m_services.Get<Config>().Get<Key>());
+			form->SetValue(config.*target);
 		});
-		connect(form, &SettingsSlider::ValueChanged, [this, onChange, form](int value)
+		connect(form, &SettingsSlider::ValueChanged, [onChange, form, &config, target](int value)
 		{
-			m_services.Get<Config>().Set<Key>(value);
+			config.*target = value;
 			onChange(form, value);
 		});
 	}

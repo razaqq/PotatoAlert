@@ -23,8 +23,8 @@ public:
 
 private:
 	void Init();
-	template<typename SettingType, Client::ConfigKey Key>
-	void AddSetting(QGridLayout* layout, SettingType* form, Client::StringTable::StringTableKey stringKey, auto&& onChange);
+	template<typename SettingType, typename Target>
+	void AddSetting(Target target, QGridLayout* layout, SettingType* form, Client::StringTable::StringTableKey stringKey, auto&& onChange);
 
 private:
 	const Client::ServiceProvider& m_services;

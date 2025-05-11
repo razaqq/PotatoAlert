@@ -26,7 +26,7 @@
 
 
 using namespace PotatoAlert::Client::StringTable;
-using PotatoAlert::Client::ConfigKey;
+using PotatoAlert::Client::ConfigManager;
 using PotatoAlert::Client::PotatoClient;
 using PotatoAlert::Gui::MainWindow;
 
@@ -50,15 +50,14 @@ void MainWindow::Init()
 	m_centralLayout->setSpacing(0);
 	m_centralW->setLayout(m_centralLayout);
 
-	Config& config = m_services.Get<Config>();
+	Config& config = m_services.Get<ConfigManager>().GetConfig();
 
 	// menubar dock widget
-	const bool leftSide = config.Get<ConfigKey::MenuBarLeft>();
-	const auto side = leftSide ? Qt::DockWidgetArea::LeftDockWidgetArea : Qt::DockWidgetArea::RightDockWidgetArea;
+	const auto side = config.MenuBarLeft ? Qt::DockWidgetArea::LeftDockWidgetArea : Qt::DockWidgetArea::RightDockWidgetArea;
 	addDockWidget(side, m_menuBar);
 	connect(m_menuBar, &VerticalMenuBar::dockLocationChanged, [&config](Qt::DockWidgetArea area)
 	{
-		config.Set<ConfigKey::MenuBarLeft>(area == Qt::DockWidgetArea::LeftDockWidgetArea);
+		config.MenuBarLeft = area == Qt::DockWidgetArea::LeftDockWidgetArea;
 	});
 
 	// set other tabs invisible
@@ -101,7 +100,7 @@ void MainWindow::SwitchTab(MenuEntry i)
 		}
 		case MenuEntry::Screenshot:
 		{
-			const bool doBlur = m_activeWidget == m_statsWidget && m_services.Get<Config>().Get<ConfigKey::AnonymizePlayers>();
+			const bool doBlur = m_activeWidget == m_statsWidget && m_services.Get<ConfigManager>().GetConfig().AnonymizePlayers;
 			const std::filesystem::path screenshotDir = m_services.Get<Client::AppDirectories>().ScreenshotsDir;
 			Client::CaptureScreenshot(window(), screenshotDir, doBlur ? m_statsWidget->GetPlayerColumnRects(dynamic_cast<QWidget*>(parent())) : QList<QRect>());
 			QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(screenshotDir).absolutePath()));
@@ -141,10 +140,8 @@ void MainWindow::ConnectSignals()
 	connect(&potatoClient, &PotatoClient::StatusReady, m_statsWidget, &StatsWidget::SetStatus);
 	connect(&potatoClient, &PotatoClient::MatchReady, [this](const Client::StatsParser::Match& match, const Client::MatchContext& ctx)
 	{
-		const bool showKarma = m_services.Get<Config>().Get<ConfigKey::ShowKarma>();
-		const bool fontShadow = m_services.Get<Config>().Get<ConfigKey::FontShadow>();
-		const int fontScaling = m_services.Get<Config>().Get<ConfigKey::FontScaling>();
-		const StatsParser::Match guiMatch = StatsParser::ParseMatch(match, ctx, { showKarma, fontShadow, (float)fontScaling / 100.0f });
+		const Config& config = m_services.Get<ConfigManager>().GetConfig();
+		const StatsParser::Match guiMatch = StatsParser::ParseMatch(match, ctx, { config.ShowKarma, config.FontShadow, (float)config.FontScaling / 100.0f });
 		m_statsWidget->Update(guiMatch);
 	});
 
@@ -197,7 +194,7 @@ bool MainWindow::ConfirmUpdate()
 	 * QWindowsWindow::setGeometry: Unable to set geometry
 	*/
 
-	const int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
+	const int lang = m_services.Get<ConfigManager>().GetConfig().Language;
 	QuestionDialog* dialog = new QuestionDialog(lang, this, GetString(lang, StringTableKey::UPDATE_QUESTION));
 	return dialog->Run() == QuestionAnswer::Yes;
 }
