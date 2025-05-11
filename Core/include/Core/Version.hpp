@@ -62,24 +62,29 @@ public:
 		return !(*this < other);
 	}
 
-	[[nodiscard]] uint8_t Major() const
+	[[nodiscard]] constexpr uint8_t Major() const
 	{
 		return m_version >> 0x18 & 0xFFU;
 	}
-	[[nodiscard]] uint8_t Minor() const
+	[[nodiscard]] constexpr uint8_t Minor() const
 	{
 		return m_version >> 0x10 & 0xFFU;
 	}
-	[[nodiscard]] uint8_t Patch() const
+	[[nodiscard]] constexpr uint8_t Patch() const
 	{
 		return m_version >> 0x08 & 0xFFU;
 	}
-	[[nodiscard]] uint8_t Build() const
+	[[nodiscard]] constexpr uint8_t Build() const
 	{
 		return m_version >> 0x00 & 0xFFU;
 	}
 
-	[[nodiscard]] uint32_t GetRaw() const { return m_version; }
+	[[nodiscard]] constexpr uint32_t GetRaw() const { return m_version; }
+
+	constexpr operator uint32_t() const
+	{
+		return m_version;
+	}
 
 	[[nodiscard]] std::string ToString(std::string_view del = ".", bool includeBuild = true) const;
 
