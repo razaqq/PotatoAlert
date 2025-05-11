@@ -1,7 +1,6 @@
 // Copyright 2025 <github.com/razaqq>
 
 #include "Core/Bytes.hpp"
-#include "Core/Log.hpp"
 #include "Core/Version.hpp"
 
 #include "ReplayParser/Entity.hpp"
@@ -17,7 +16,6 @@ using PotatoAlert::Core::Take;
 using PotatoAlert::Core::TakeInto;
 using PotatoAlert::Core::TakeString;
 using PotatoAlert::Core::FormatBytes;
-using PotatoAlert::Core::Version;
 using PotatoAlert::ReplayParser::Entity;
 using PotatoAlert::ReplayParser::TypeEntityType;
 using PotatoAlert::ReplayParser::BasePlayerCreatePacket;
@@ -42,7 +40,7 @@ using PotatoAlert::ReplayParser::ResultPacket;
 using PotatoAlert::ReplayParser::UnknownPacket;
 using PotatoAlert::ReplayParser::ReplayResult;
 
-ReplayResult<UnknownPacket> UnknownPacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<UnknownPacket> UnknownPacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	UnknownPacket packet;
 	packet.Clock = clock;
@@ -143,7 +141,9 @@ ReplayResult<CellPlayerCreatePacket> CellPlayerCreatePacket::Parse(std::span<con
 
 	if (!ctx.Entities.contains(packet.EntityId))
 	{
-		LOG_WARN("CellPlayerCreatePacket created non-existing entity {}", packet.EntityId);
+#ifndef NDEBUG
+		return PA_REPLAY_ERROR("CellPlayerCreatePacket created non-existing entity {}", packet.EntityId);
+#endif
 		ctx.Entities.emplace(packet.EntityId, Entity{ entityType, spec, {}, {}, {} });
 	}
 
@@ -162,15 +162,10 @@ ReplayResult<CellPlayerCreatePacket> CellPlayerCreatePacket::Parse(std::span<con
 	uint8_t unknown;
 	TakeInto(data, unknown);
 
-	if (!data.empty())
-	{
-		LOG_WARN("CellPlayerCreatePacket had {} bytes remaining after parsing", data.size());
-	}
-
 	return packet;
 }
 
-ReplayResult<EntityControlPacket> EntityControlPacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<EntityControlPacket> EntityControlPacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	EntityControlPacket packet;
 	packet.Clock = clock;
@@ -185,15 +180,10 @@ ReplayResult<EntityControlPacket> EntityControlPacket::Parse(std::span<const Byt
 	if (!TakeInto(data, packet.IsControlled))
 		return err();
 
-	if (!data.empty())
-	{
-		LOG_WARN("EntityControlPacket had {} bytes remaining after parsing", data.size());
-	}
-
 	return packet;
 }
 
-ReplayResult<EntityEnterPacket> EntityEnterPacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<EntityEnterPacket> EntityEnterPacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	EntityEnterPacket packet;
 	packet.Clock = clock;
@@ -210,15 +200,10 @@ ReplayResult<EntityEnterPacket> EntityEnterPacket::Parse(std::span<const Byte>& 
 	if (!TakeInto(data, packet.VehicleId))
 		return err();
 
-	if (!data.empty())
-	{
-		LOG_WARN("EntityEnterPacket had {} bytes remaining after parsing", data.size());
-	}
-
 	return packet;
 }
 
-ReplayResult<EntityLeavePacket> EntityLeavePacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<EntityLeavePacket> EntityLeavePacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	EntityLeavePacket packet;
 	packet.Clock = clock;
@@ -226,11 +211,6 @@ ReplayResult<EntityLeavePacket> EntityLeavePacket::Parse(std::span<const Byte>& 
 	if (!TakeInto(data, packet.EntityId))
 	{
 		return PA_REPLAY_ERROR("Failed to parse EntityLeavePacket: {}", FormatBytes(data));
-	}
-
-	if (!data.empty())
-	{
-		LOG_WARN("EntityLeavePacket had {} bytes remaining after parsing", data.size());
 	}
 
 	return packet;
@@ -440,7 +420,7 @@ ReplayResult<EntityPropertyPacket> EntityPropertyPacket::Parse(std::span<const B
 	return packet;
 }
 
-ReplayResult<PlayerOrientationPacket> PlayerOrientationPacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<PlayerOrientationPacket> PlayerOrientationPacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	PlayerOrientationPacket packet;
 	packet.Clock = clock;
@@ -459,15 +439,10 @@ ReplayResult<PlayerOrientationPacket> PlayerOrientationPacket::Parse(std::span<c
 	if (!TakeInto(data, packet.Rotation))
 		return err();
 
-	if (!data.empty())
-	{
-		LOG_WARN("PlayerOrientationPacket had {} bytes remaining after parsing", data.size());
-	}
-
 	return packet;
 }
 
-ReplayResult<PlayerPositionPacket> PlayerPositionPacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<PlayerPositionPacket> PlayerPositionPacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	PlayerPositionPacket packet;
 	packet.Clock = clock;
@@ -489,11 +464,6 @@ ReplayResult<PlayerPositionPacket> PlayerPositionPacket::Parse(std::span<const B
 		return err();
 	if (!TakeInto(data, packet.IsError))
 		return err();
-
-	if (!data.empty())
-	{
-		LOG_WARN("PlayerPositionPacket had {} bytes remaining after parsing", data.size());
-	}
 
 	return packet;
 }
@@ -559,15 +529,10 @@ ReplayResult<NestedPropertyUpdatePacket> NestedPropertyUpdatePacket::Parse(std::
 	PA_TRY(nesting, GetNestedPropertyPath(isSlice, prop.Type, &packet.EntityPtr->ClientPropertiesValues[prop.Name], bitReader));
 	packet.Nesting = nesting;
 
-	if (!data.empty())
-	{
-		LOG_WARN("NestedPropertyUpdatePacket had {} bytes remaining after parsing", data.size());
-	}
-
 	return packet;
 }
 
-ReplayResult<MapPacket> MapPacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<MapPacket> MapPacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	MapPacket packet;
 	packet.Clock = clock;
@@ -598,15 +563,10 @@ ReplayResult<MapPacket> MapPacket::Parse(std::span<const Byte>& data, PacketPars
 	if (!TakeInto(data, packet.Unknown3))
 		return err();
 
-	if (!data.empty())
-	{
-		LOG_WARN("MapPacket had {} bytes remaining after parsing", data.size());
-	}
-
 	return packet;
 }
 
-ReplayResult<CameraPacket> CameraPacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<CameraPacket> CameraPacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	CameraPacket packet;
 	packet.Clock = clock;
@@ -636,15 +596,10 @@ ReplayResult<CameraPacket> CameraPacket::Parse(std::span<const Byte>& data, Pack
 			return err();
 	}
 
-	if (!data.empty())
-	{
-		LOG_WARN("CameraPacket had {} bytes remaining after parsing", data.size());
-	}
-
 	return packet;
 }
 
-ReplayResult<VersionPacket> VersionPacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<VersionPacket> VersionPacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	VersionPacket packet;
 	packet.Clock = clock;
@@ -661,15 +616,10 @@ ReplayResult<VersionPacket> VersionPacket::Parse(std::span<const Byte>& data, Pa
 	if (!TakeString(data, packet.Version, stringSize))
 		return err();
 
-	if (!data.empty())
-	{
-		LOG_WARN("VersionPacket had {} bytes remaining after parsing", data.size());
-	}
-
 	return packet;
 }
 
-ReplayResult<PlayerEntityPacket> PlayerEntityPacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<PlayerEntityPacket> PlayerEntityPacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	PlayerEntityPacket packet;
 	packet.Clock = clock;
@@ -682,15 +632,10 @@ ReplayResult<PlayerEntityPacket> PlayerEntityPacket::Parse(std::span<const Byte>
 	if (!TakeInto(data, packet.EntityId))
 		return err();
 
-	if (!data.empty())
-	{
-		LOG_WARN("PlayerEntityPacket had {} bytes remaining after parsing", data.size());
-	}
-
 	return packet;
 }
 
-ReplayResult<CruiseStatePacket> CruiseStatePacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<CruiseStatePacket> CruiseStatePacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	CruiseStatePacket packet;
 	packet.Clock = clock;
@@ -706,15 +651,10 @@ ReplayResult<CruiseStatePacket> CruiseStatePacket::Parse(std::span<const Byte>& 
 	if (!TakeInto(data, packet.Value))
 		return err();
 
-	if (!data.empty())
-	{
-		LOG_WARN("CruiseStatePacket had {} bytes remaining after parsing", data.size());
-	}
-
 	return packet;
 }
 
-ReplayResult<CameraFreeLookPacket> CameraFreeLookPacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<CameraFreeLookPacket> CameraFreeLookPacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	CameraFreeLookPacket packet;
 	packet.Clock = clock;
@@ -727,15 +667,10 @@ ReplayResult<CameraFreeLookPacket> CameraFreeLookPacket::Parse(std::span<const B
 	if (!TakeInto(data, packet.Locked))
 		return err();
 
-	if (!data.empty())
-	{
-		LOG_WARN("CameraFreeLookPacket had {} bytes remaining after parsing", data.size());
-	}
-
 	return packet;
 }
 
-ReplayResult<CameraModePacket> CameraModePacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<CameraModePacket> CameraModePacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	CameraModePacket packet;
 	packet.Clock = clock;
@@ -748,15 +683,10 @@ ReplayResult<CameraModePacket> CameraModePacket::Parse(std::span<const Byte>& da
 	if (!TakeInto(data, packet.Mode))
 		return err();
 
-	if (!data.empty())
-	{
-		LOG_WARN("CameraModePacket had {} bytes remaining after parsing", data.size());
-	}
-
 	return packet;
 }
 
-ReplayResult<ResultPacket> ResultPacket::Parse(std::span<const Byte>& data, PacketParseContext& ctx, float clock)
+ReplayResult<ResultPacket> ResultPacket::Parse(std::span<const Byte>& data, [[maybe_unused]] PacketParseContext& ctx, float clock)
 {
 	ResultPacket packet;
 	packet.Clock = clock;
