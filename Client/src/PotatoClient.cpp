@@ -12,6 +12,7 @@
 
 #include "Core/Defer.hpp"
 #include "Core/Directory.hpp"
+#include "Core/File.hpp"
 #include "Core/Format.hpp"
 #include "Core/Json.hpp"
 #include "Core/Log.hpp"
