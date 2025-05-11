@@ -4,6 +4,7 @@
 #include "Core/TypeTraits.hpp"
 
 #include <concepts>
+#include <optional>
 #include <ranges>
 #include <string>
 
@@ -21,5 +22,14 @@ concept is_std_string = std::is_same_v<T, std::string> || std::is_same_v<T, std:
 
 template<typename T>
 concept is_string = std::ranges::contiguous_range<T> && character<std::ranges::range_value_t<T>>;
+
+template<typename T>
+concept is_bool = std::is_same_v<T, bool>;
+
+template<typename T>
+concept is_number = (std::is_floating_point_v<T> || std::is_integral_v<T>) && !is_bool<T>;
+
+template<typename T>
+concept is_optional = std::same_as<T, std::optional<typename T::value_type>>;
 
 }  // namespace PotatoAlert::Core
