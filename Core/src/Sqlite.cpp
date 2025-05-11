@@ -98,16 +98,6 @@ bool SQLite::Statement::Bind(int index, double value) const
 	return sqlite3_bind_double(static_cast<sqlite3_stmt*>(m_stmt), index, value) == SQLITE_OK;
 }
 
-bool SQLite::Statement::Bind(int index, const char* value) const
-{
-	return sqlite3_bind_text(static_cast<sqlite3_stmt*>(m_stmt), index, value, -1, nullptr) == SQLITE_OK;
-}
-
-bool SQLite::Statement::Bind(int index, const std::string& value) const
-{
-	return sqlite3_bind_text(static_cast<sqlite3_stmt*>(m_stmt), index, value.c_str(), -1, nullptr) == SQLITE_OK;
-}
-
 bool SQLite::Statement::Bind(int index, std::string_view value) const
 {
 	return sqlite3_bind_text(static_cast<sqlite3_stmt*>(m_stmt), index, value.data(), -1, nullptr) == SQLITE_OK;

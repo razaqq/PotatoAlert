@@ -123,8 +123,6 @@ public:
 		bool Bind(int index, int32_t value) const;
 		bool Bind(int index, uint32_t value) const;
 		bool Bind(int index, double value) const;
-		bool Bind(int index, const char* value) const;
-		bool Bind(int index, const std::string& value) const;
 		bool Bind(int index, std::string_view value) const;
 
 		bool Bind(std::string_view name, int32_t value) const;
