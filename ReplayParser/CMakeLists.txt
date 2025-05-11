@@ -3,7 +3,6 @@ project(ReplayParser)
 option(PA_BUILD_STANDALONE_REPLAYPARSER OFF)
 message(STATUS "PotatoAlert: PA_BUILD_STANDALONE_REPLAYPARSER - ${PA_BUILD_STANDALONE_REPLAYPARSER}")
 
-find_package(tinyxml2 REQUIRED)
 add_subdirectory(Analyzer)
 
 if(WIN32)
@@ -22,11 +21,11 @@ pa_add_library(
         include/ReplayParser/BitReader.hpp
         include/ReplayParser/Entity.hpp
         include/ReplayParser/NestedProperty.hpp
-        include/ReplayParser/PacketCallback.hpp
         include/ReplayParser/PacketParser.hpp
         include/ReplayParser/Packets.hpp
         include/ReplayParser/ReplayMeta.hpp
         include/ReplayParser/ReplayParser.hpp
+        include/ReplayParser/ReplaySummary.hpp
         include/ReplayParser/Result.hpp
         include/ReplayParser/Types.hpp
         include/ReplayParser/Variant.hpp
@@ -37,7 +36,9 @@ pa_add_library(
         src/GameFiles.cpp
         src/NestedProperty.cpp
         src/Packets.cpp
+        src/ReplayMeta.cpp
         src/ReplayParser.cpp
+        src/ReplaySummary.cpp
         src/Types.cpp
     PROPERTIES
         CXX_STANDARD 23
@@ -49,7 +50,6 @@ pa_add_library(
     HEADER_INCLUDE_DIRECTORIES
         include
     HEADER_DEPENDENCIES
-        tinyxml2::tinyxml2
         PotatoAlert::Core
         PotatoAlert::ReplayAnalyzer
     TEST_SOURCES

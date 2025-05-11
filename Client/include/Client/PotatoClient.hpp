@@ -10,6 +10,8 @@
 #include "Client/StatsParser.hpp"
 #include "Client/SysInfo.hpp"
 
+#include "Core/Json.hpp"
+
 #include "ReplayParser/Result.hpp"
 
 #include <QNetworkAccessManager>
@@ -82,7 +84,7 @@ private:
 	[[nodiscard]] std::filesystem::path GetGameFilePath(const GameInfo& game) const;
 	[[nodiscard]] std::filesystem::path GetGameFilePath(const GameInfo& game, Core::Version version) const;
 
-	[[nodiscard]] std::string BuildRequest(const std::string& region, const std::string& playerName, rapidjson::Document& json) const;
+	[[nodiscard]] Core::JsonResult<std::string> BuildRequest(const std::string& region, const std::string& playerName, std::string_view metaString) const;
 	void SendRequest(std::string_view requestString, MatchContext&& matchContext);
 	void HandleReply(QNetworkReply* reply, auto& successHandler);
 	void LookupResult(const std::string& url, const std::string& authToken, const MatchContext& matchContext);

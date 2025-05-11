@@ -63,12 +63,6 @@ struct SysInfo
 	ProcessorArchitecture Arch;
 	std::string Release;
 };
-static inline void ToJson(rapidjson::Value& obj, const SysInfo& s, rapidjson::MemoryPoolAllocator<>& a)
-{
-	obj.AddMember("Os", Core::ToRef(ToString(s.Os)), a);
-	obj.AddMember("Arch", Core::ToRef(ToString(s.Arch)), a);
-	obj.AddMember("Release", s.Release, a);
-}
 
 Core::Result<SysInfo> GetSysInfo();
 

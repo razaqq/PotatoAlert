@@ -4,7 +4,6 @@
 #include "Core/ByteReader.hpp"
 
 #include "ReplayParser/Packets.hpp"
-#include "ReplayParser/PacketCallback.hpp"
 #include "ReplayParser/Result.hpp"
 
 #include <cstdint>

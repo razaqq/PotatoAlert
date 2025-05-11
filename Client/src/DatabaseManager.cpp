@@ -4,12 +4,15 @@
 
 #include "Core/Format.hpp"
 #include "Core/Instrumentor.hpp"
+#include "Core/Json.hpp"
 #include "Core/Preprocessor.hpp"
 #include "Core/Result.hpp"
 #include "Core/Sqlite.hpp"
 #include "Core/String.hpp"
 #include "Core/Time.hpp"
 #include "Core/Version.hpp"
+
+#include "ReplayParser/ReplaySummary.hpp"
 
 #include <cstdint>
 #include <optional>
@@ -24,6 +27,7 @@ using PotatoAlert::Client::DbMatch;
 using PotatoAlert::Client::NonAnalyzedMatch;
 using PotatoAlert::Client::SchemaInfo;
 using PotatoAlert::Client::SqlResult;
+using PotatoAlert::Core::JsonResult;
 using PotatoAlert::Core::SQLite;
 using PotatoAlert::Core::Version;
 
@@ -54,7 +58,7 @@ using PotatoAlert::Core::Version;
 namespace {
 
 template<typename T>
-static inline T ParseValue(const SQLite::Statement& stmt, int index)
+static inline SqlResult<T> ParseValue(const SQLite::Statement& stmt, int index)
 {
 	using Value = std::decay_t<T>;
 	if constexpr (std::is_same_v<Value, bool>)
@@ -89,79 +93,53 @@ static inline T ParseValue(const SQLite::Statement& stmt, int index)
 	{
 		if (std::string json; stmt.GetText(index, json))
 		{
-			ReplaySummary summary;
-			FromJson(json, summary);  // TODO: handle the result
-			return summary;
+			return PotatoAlert::ReplayParser::ReadJson(json);
 		}
 	}
 
-	LOG_ERROR("Failed to parse value into {}", typeid(T).name());
-	return T();
+	return PA_SQL_ERROR("Failed to parse value into {}", typeid(T).name());
 }
 
 template<typename T>
-static inline T GetValue(const T& value)
+static inline SqlResult<void> BindValue(const SQLite::Statement& stmt, std::string_view name, const T& t)
 {
-	return value;
-}
-
-static inline std::string GetValue(const ReplaySummary& summary)
-{
-	rapidjson::StringBuffer buffer;
-	rapidjson::Writer writer(buffer);
-	ToJson(writer, summary);  // TODO: handle the result
-	return buffer.GetString();
-}
-
-#define BIND_VALUE(Name, Stmt, Value)             \
-	auto PA_CAT(_value_, Name) = GetValue(Value); \
-	(Stmt).Bind(PA_STR(:Name), PA_CAT(_value_, Name))
-
-#if 0
-#define BIND_VALUE(Name, Stmt, Value)                                           \
-	if constexpr (std::is_same_v<std::decay_t<decltype(Value)>, ReplaySummary>) \
-	{                                                                           \
-		std::string json = (Value).ToJson();                                    \
-		(Stmt).Bind(Name, json);                                                \
-	}                                                                           \
-	else                                                                        \
-	{                                                                           \
-		(Stmt).Bind(Name, Value);                                               \
-	}
-#endif
-
-#if 0
-template<typename  T>
-static inline bool BindValue(std::string_view name, SQLite::Statement& stmt, const T& value)
-{
-	using Value = std::decay_t<T>;
-	if constexpr (std::is_same_v<Value, ReplaySummary>)
+	if constexpr (std::is_same_v<T, ReplaySummary>)
 	{
-		return stmt.Bind(name, value.ToJson());
+		PA_TRY(s, PotatoAlert::ReplayParser::WriteJson(t));
+		stmt.Bind(name, s);
 	}
 	else
 	{
-		return stmt.Bind(name, value);
+		stmt.Bind(name, t);
 	}
+	return {};
 }
-#endif
 
-static inline DbMatch ParseMatch(const SQLite::Statement& stmt)
+#define BIND_VALUE(Name, Stmt, Value) \
+	PA_TRYV(BindValue(Stmt, PA_STR( : Name), Value));
+
+static inline SqlResult<DbMatch> ParseMatch(const SQLite::Statement& stmt)
 {
 	int index = 0;
 
-#define PARSE_FIELD(Type, Name, SqlType) .Name = ParseValue<Type>(stmt, index++),
-	return DbMatch{ PARSE_FIELD(uint32_t, Id, "") MATCH_FIELDS(PARSE_FIELD) };
+	DbMatch match;
+#define PARSE_FIELD(Type, Name, SqlType) PA_TRYA(match.Name, ParseValue<Type>(stmt, index++));
+	PARSE_FIELD(uint32_t, Id, "")
+	MATCH_FIELDS(PARSE_FIELD)
 #undef PARSE_FIELD
+	return match;
 }
 
-static inline SchemaInfo ParseSchemaInfo(const SQLite::Statement& stmt)
+static inline SqlResult<SchemaInfo> ParseSchemaInfo(const SQLite::Statement& stmt)
 {
 	int index = 0;
 
-#define PARSE_FIELD(Type, Name, SqlType) .Name = ParseValue<Type>(stmt, index++),
-	return SchemaInfo{ PARSE_FIELD(uint32_t, Id, "") SCHEMAINFO_FIELDS(PARSE_FIELD) };
+	SchemaInfo info;
+#define PARSE_FIELD(Type, Name, SqlType) PA_TRYA(info.Name, ParseValue<Type>(stmt, index++));
+	PARSE_FIELD(uint32_t, Id, "")
+	SCHEMAINFO_FIELDS(PARSE_FIELD)
 #undef PARSE_FIELD
+	return info;
 }
 
 }  // namespace
@@ -221,7 +199,8 @@ SqlResult<void> DatabaseManager::MigrateTables() const
 	Version version(0, 0);
 	if (versionStmt.HasRow())
 	{
-		version = Version(ParseSchemaInfo(versionStmt).Version);
+		PA_TRY(info, ParseSchemaInfo(versionStmt));
+		version = Version(info.Version);
 	}
 
 	// backup old database before any migration
@@ -251,7 +230,7 @@ SqlResult<void> DatabaseManager::MigrateTables() const
 			stmt.ExecuteStep();
 			if (stmt.HasRow())
 			{
-				DbMatch match = ParseMatch(stmt);
+				PA_TRY(match, ParseMatch(stmt));
 				if (std::optional<Core::Time::TimePoint> tp = Core::Time::StrToTime(match.Date, "%d.%m.%Y %H:%M:%S"))
 				{
 					match.Date = Core::Time::TimeToStr(*tp, "{:%Y-%m-%d %H:%M:%S}");
@@ -465,7 +444,8 @@ SqlResult<std::vector<DbMatch>> DatabaseManager::GetMatches() const
 		stmt.ExecuteStep();
 		if (stmt.HasRow())
 		{
-			matches.emplace_back(ParseMatch(stmt));
+			PA_TRY(match, ParseMatch(stmt));
+			matches.emplace_back(std::move(match));
 		}
 	}
 
@@ -584,12 +564,11 @@ SqlResult<std::vector<NonAnalyzedMatch>> DatabaseManager::GetNonAnalyzedMatches(
 		stmt.ExecuteStep();
 		if (stmt.HasRow())
 		{
-			matches.emplace_back(NonAnalyzedMatch
-			{
-				.Hash = ParseValue<std::string>(stmt, 0),
-				.ReplayName = ParseValue<std::string>(stmt, 1),
-				.Region = ParseValue<std::string>(stmt, 2)
-			});
+			NonAnalyzedMatch match;
+			PA_TRYA(match.Hash, ParseValue<std::string>(stmt, 0));
+			PA_TRYA(match.ReplayName, ParseValue<std::string>(stmt, 1));
+			PA_TRYA(match.Region, ParseValue<std::string>(stmt, 2));
+			matches.emplace_back(std::move(match));
 		}
 	}
 
@@ -680,11 +659,7 @@ SqlResult<void> DatabaseManager::SetMatchReplaySummary(uint32_t id, const Replay
 		return PA_SQL_ERROR("Failed to prepare SQL statement: {}", m_db.GetLastError());
 	}
 	stmt.Bind(":Id", id);
-
-	rapidjson::StringBuffer buffer;
-	rapidjson::Writer writer(buffer);
-	PA_TRYV(ToJson(writer, replaySummary));
-	stmt.Bind(":ReplaySummary", buffer.GetString());
+	PA_TRYV(BindValue(stmt, ":ReplaySummary", replaySummary));
 
 	stmt.ExecuteStep();
 	if (!stmt.IsDone())
@@ -706,10 +681,7 @@ SqlResult<void> DatabaseManager::SetMatchReplaySummary(std::string_view hash, co
 		return PA_SQL_ERROR("Failed to prepare SQL statement: {}", m_db.GetLastError());
 	}
 	stmt.Bind(":Hash", hash);
-	rapidjson::StringBuffer buffer;
-	rapidjson::Writer writer(buffer);
-	PA_TRYV(ToJson(writer, replaySummary));
-	stmt.Bind(":ReplaySummary", buffer.GetString());
+	PA_TRYV(BindValue(stmt, ":ReplaySummary", replaySummary));
 
 	stmt.ExecuteStep();
 	if (!stmt.IsDone())

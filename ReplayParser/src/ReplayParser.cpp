@@ -7,7 +7,6 @@
 #include "Core/FileMagic.hpp"
 #include "Core/FileMapping.hpp"
 #include "Core/Instrumentor.hpp"
-#include "Core/Json.hpp"
 #include "Core/Zlib.hpp"
 
 #include "ReplayParser/GameFiles.hpp"
@@ -212,13 +211,7 @@ ReplayResult<std::vector<PacketType>> Replay::ParseAllPackets(const fs::path& sc
 
 ReplayResult<ReplayMeta> Replay::ParseMeta(std::string_view str)
 {
-	PA_TRY_OR_ELSE(js, Core::ParseJson(str),
-	{
-		return PA_REPLAY_ERROR("Failed to parse replay meta as JSON: {}", error);
-	});
-	ReplayMeta meta;
-	PA_TRYV(FromJson(js, meta));
-	return std::move(meta);
+	return ReplayParser::ParseMeta(str);
 }
 
 ReplayResult<std::vector<EntitySpec>> Replay::ParseScripts(const std::filesystem::path& scriptsPath)

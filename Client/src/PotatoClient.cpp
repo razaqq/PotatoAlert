@@ -53,7 +53,7 @@ struct TempArenaInfoResult
 {
 	std::string Hash;
 	std::string String;
-	rapidjson::Document Json;
+	glz::json_t Json;
 	ReplayMeta Meta;
 };
 
@@ -113,7 +113,7 @@ static Result<std::optional<TempArenaInfoResult>, std::string> ReadArenaInfo(con
 				std::string hash;
 				Sha256(arenaInfo, hash);
 
-				PA_TRY(json, ParseJson(arenaInfo));
+				PA_TRY(json, Json::Read<glz::json_t>(arenaInfo));
 
 				return TempArenaInfoResult
 				{
@@ -131,84 +131,6 @@ static Result<std::optional<TempArenaInfoResult>, std::string> ReadArenaInfo(con
 	return PA_ERROR(fmt::format("Game failed to write arena info within 1 second."));
 }
 
-enum RequestStatus
-{
-	InProgress,
-	Completed,
-	Error,
-};
-
-PA_JSON_SERIALIZE_ENUM(RequestStatus,
-{
-	{ RequestStatus::InProgress, "in_progress" },
-	{ RequestStatus::Completed, "completed" },
-	{ RequestStatus::Error, "error" },
-})
-
-enum ServerErrorCategory
-{
-	WargamingApiError,
-	WowsNumbersApiError,
-	MatchBuilderError,
-	RequestHandlerError,
-	UnknownError
-};
-
-PA_JSON_SERIALIZE_ENUM(ServerErrorCategory,
-{
-	{ WargamingApiError, "WargamingApiError"},
-	{ WowsNumbersApiError, "WowsNumbersApiError" },
-	{ MatchBuilderError, "MatchBuilderError"},
-	{ RequestHandlerError, "RequestHandlerError"},
-	{ UnknownError, "UnknownError" }
-});
-
-struct ServerResponse
-{
-	RequestStatus Status;
-	std::optional<std::string> Error;
-	std::optional<ServerErrorCategory> ErrorCategory;
-	std::optional<std::string> IssuedAt;
-	std::optional<std::string> CompletedAt;
-	std::optional<rapidjson::Document> Result;
-};
-
-[[maybe_unused]] static JsonResult<void> FromJson(rapidjson::Document& j, ServerResponse& r)
-{
-	if (!j.HasMember("status"))
-		return PA_JSON_ERROR("Server response is missing status");
-	FromJson(j["status"], r.Status);
-	if (j.HasMember("error"))
-	{
-		PA_TRYA(r.Error, PotatoAlert::Core::FromJson<std::string>(j, "error"));
-	}
-	if (j.HasMember("error_category"))
-	{
-		ServerErrorCategory category;
-		if (FromJson(j["error_category"], category))
-		{
-			r.ErrorCategory = category;
-		}
-
-	}
-	if (j.HasMember("issued_at"))
-	{
-		PA_TRYA(r.IssuedAt, PotatoAlert::Core::FromJson<std::string>(j, "issued_at"));
-	}
-	if (j.HasMember("completed_at"))
-	{
-		PA_TRYA(r.CompletedAt, PotatoAlert::Core::FromJson<std::string>(j, "completed_at"));
-	}
-	if (j.HasMember("result"))
-	{
-		rapidjson::Document d;
-		d.Swap(j["result"]);
-		r.Result = std::move(d);
-	}
-
-	return {};
-}
-
 static inline std::optional<std::string> GetReplayName(const Match& match, const MatchContext& ctx)
 {
 	const std::optional<Time::TimePoint> tp = Time::StrToTime(match.DateTime, "%d.%m.%Y %H:%M:%S");
@@ -220,7 +142,58 @@ static inline std::optional<std::string> GetReplayName(const Match& match, const
 	return {};
 }
 
-}
+}  // namespace
+
+enum class RequestStatus
+{
+	InProgress,
+	Completed,
+	Error,
+};
+
+enum class ServerErrorCategory
+{
+	WargamingApiError,
+	WowsNumbersApiError,
+	MatchBuilderError,
+	RequestHandlerError,
+	UnknownError
+};
+
+struct ServerResponse
+{
+	RequestStatus Status;
+	std::optional<std::string> Error;
+	std::optional<ServerErrorCategory> ErrorCategory;
+	std::optional<std::string> IssuedAt;
+	std::optional<std::string> CompletedAt;
+	std::optional<std::string> Result;
+};
+
+template<>
+struct glz::meta<RequestStatus>
+{
+	using enum RequestStatus;
+	static constexpr auto value = glz::enumerate(
+		"in_progress", InProgress,
+		"completed", Completed,
+		"error", Error
+	);
+};
+
+template<>
+struct glz::meta<ServerErrorCategory>
+{
+	using enum ServerErrorCategory;
+	static constexpr auto value = enumerate
+	(
+		"WargamingApiError", WargamingApiError,
+		"WowsNumbersApiError", WowsNumbersApiError,
+		"MatchBuilderError", MatchBuilderError,
+		"RequestHandlerError", RequestHandlerError,
+		"UnknownError", UnknownError
+	);
+};
 
 void PotatoClient::Init()
 {
@@ -241,33 +214,29 @@ void PotatoClient::Init()
 	UpdateGameInstalls();
 }
 
-std::string PotatoClient::BuildRequest(const std::string& region, const std::string& playerName, rapidjson::Document& json) const
+JsonResult<std::string> PotatoClient::BuildRequest(const std::string& region, const std::string& playerName, std::string_view metaString) const
 {
-	rapidjson::Document request;
-	request.SetObject();
-	rapidjson::MemoryPoolAllocator<> a = request.GetAllocator();
-	request.AddMember("Guid", "placeholder123", a);
-	request.AddMember("Player", playerName, a);
-	request.AddMember("Region", region, a);
-	request.AddMember("StatsMode", ToJson(m_services.Get<Config>().Get<ConfigKey::StatsMode>()), a);
-	request.AddMember("TeamDamageMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamDamageMode>()), a);
-	request.AddMember("TeamWinRateMode", ToJson(m_services.Get<Config>().Get<ConfigKey::TeamWinRateMode>()), a);
-	request.AddMember("ArenaInfo", std::move(json), a);
-
-	request.AddMember("ClientInfo", rapidjson::Value(rapidjson::kObjectType), a);
-	rapidjson::Value& clientInfo = request["ClientInfo"];
-	clientInfo.AddMember("ClientVersion", QApplication::applicationVersion().toStdString(), a);
-	if (m_services.Get<Config>().Get<ConfigKey::AllowSendingUsageStats>() && m_sysInfo)
+	glz::json_t clientInfo =
 	{
-		clientInfo.AddMember("SysInfo", rapidjson::Value(rapidjson::kObjectType), a);
-		rapidjson::Value& sysInfo = clientInfo["SysInfo"];
-		ToJson(sysInfo, *m_sysInfo, a);
+		{ "ClientVersion", QApplication::applicationVersion().toStdString() },
+	};
+	if (m_services.Get<ConfigManager>().GetConfig().AllowSendingUsageStats && m_sysInfo)
+	{
+		PA_TRYA(clientInfo["SysInfo"], Json::Write(*m_sysInfo));
 	}
+	glz::json_t request =
+	{
+		{ "Guid", "placeholder123" },
+		{ "Player", playerName },
+		{ "Region", region },
+		{ "ArenaInfo", metaString },
+		{ "ClientInfo", clientInfo }
+	};
+	PA_TRYA(request["StatsMode"], Json::Write(m_services.Get<ConfigManager>().GetConfig().StatsMode));
+	PA_TRYA(request["TeamDamageMode"], Json::Write(m_services.Get<ConfigManager>().GetConfig().TeamDamageMode));
+	PA_TRYA(request["TeamWinRateMode"], Json::Write(m_services.Get<ConfigManager>().GetConfig().TeamWinRateMode));
 
-	rapidjson::StringBuffer buffer;
-	rapidjson::Writer writer(buffer);
-	request.Accept(writer);
-	return buffer.GetString();
+	return Json::Write(request);
 }
 
 void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& matchContext)
@@ -317,21 +286,21 @@ void PotatoClient::SendRequest(std::string_view requestString, MatchContext&& ma
 
 			LOG_TRACE("Got submitReply from server with location '{}' and content '{}'", lookupUrl, content.toStdString());
 
-			PA_TRY_OR_ELSE(json, ParseJson(content.toUtf8().toStdString()),
+			PA_TRY_OR_ELSE(json, Json::Read<glz::json_t>(content.toUtf8().toStdString()),
 			{
 				LOG_ERROR("Failed to parse server submit response as JSON.");
 				emit StatusReady(Status::Error, "JSON Parse Error");
 				return;
 			});
 
-			if (!json.HasMember("AuthToken"))
+			if (!json.contains("AuthToken"))
 			{
 				LOG_ERROR("Server response does not include an auth token");
 				emit StatusReady(Status::Error, "Auth Error");
 				return;
 			}
 
-			LookupResult(lookupUrl, Core::FromJson<std::string>(json["AuthToken"]), matchContext);
+			LookupResult(lookupUrl, json["AuthToken"].get_string(), matchContext);
 		};
 		HandleReply(submitReply, handler);
 	});
@@ -363,15 +332,8 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 				const std::string lookupResponseString = content.toUtf8().toStdString();
 				LOG_TRACE("Got lookupReply from server with content '{}'", lookupResponseString);
 
-				PA_TRY_OR_ELSE(json, ParseJson(lookupResponseString),
-				{
-					LOG_ERROR("Failed to parse lookup response as JSON.");
-					emit StatusReady(Status::Error, "JSON Parse Error");
-					return;
-				});
 
-				ServerResponse serverResponse;
-				PA_TRYV_OR_ELSE(FromJson(json, serverResponse),
+				PA_TRY_OR_ELSE(serverResponse, Json::Read<ServerResponse>(lookupResponseString),
 				{
 					LOG_ERROR("Failed to parse server lookup response as JSON.");
 					emit StatusReady(Status::Error, "JSON Parse Error");
@@ -380,13 +342,13 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 				
 				switch (serverResponse.Status)
 				{
-					case InProgress:
+					case RequestStatus::InProgress:
 					{
 						LOG_TRACE("Request still in progress, sending another lookup");
 						LookupResult(url, authToken, matchContext);
 						break;
 					}
-					case Completed:
+					case RequestStatus::Completed:
 					{
 						if (!serverResponse.Result)
 						{
@@ -394,13 +356,8 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 							return;
 						}
 
-						rapidjson::StringBuffer buffer;
-						rapidjson::Writer writer(buffer);
-						serverResponse.Result.value().Accept(writer);
-						std::string jsonString = buffer.GetString();
-
 						LOG_TRACE("Parsing match.");
-						PA_TRY_OR_ELSE(match, StatsParser::ParseMatch(jsonString),
+						PA_TRY_OR_ELSE(match, StatsParser::ParseMatch(*serverResponse.Result),
 						{
 							LOG_ERROR("Failed to parse server match response as JSON: {}", error);
 							emit StatusReady(Status::Error, "JSON Parse Error");
@@ -445,25 +402,25 @@ void PotatoClient::LookupResult(const std::string& url, const std::string& authT
 						emit StatusReady(Status::Ready, "Ready");
 						break;
 					}
-					case Error:
+					case RequestStatus::Error:
 					{
 						if (serverResponse.ErrorCategory)
 						{
 							switch (*serverResponse.ErrorCategory)
 							{
-								case WargamingApiError:
+								case ServerErrorCategory::WargamingApiError:
 								{
 									emit StatusReady(Status::Error, "WG API Error");
 									break;
 								}
-								case WowsNumbersApiError:
+								case ServerErrorCategory::WowsNumbersApiError:
 								{
 									emit StatusReady(Status::Error, "WOWS-NBRS API Error");
 									break;
 								}
-								case MatchBuilderError:
-								case RequestHandlerError:
-								case UnknownError:
+								case ServerErrorCategory::MatchBuilderError:
+								case ServerErrorCategory::RequestHandlerError:
+								case ServerErrorCategory::UnknownError:
 								{
 									emit StatusReady(Status::Error, "Server Error");
 									break;
@@ -600,14 +557,15 @@ void PotatoClient::HandleReply(QNetworkReply* reply, auto& successHandler)
 		{
 			const QString content = QString::fromUtf8(reply->readAll());
 
-			PA_TRY_OR_ELSE(errorJson, ParseJson(content.toUtf8().toStdString()),
+			const JsonResult<std::string> errorText = Json::GetPointer<std::string, "/error">(content.toUtf8().toStdString());
+			if (!errorText)
 			{
 				LOG_ERROR("Failed to parse server error response as JSON.");
 				emit StatusReady(Status::Error, "JSON Parse Error");
 				return;
-			});
+			}
 
-			emit StatusReady(Status::Error, Core::FromJson<std::string>(errorJson["error"]));
+			emit StatusReady(Status::Error, *errorText);
 			break;
 		}
 		default:
@@ -722,7 +680,12 @@ void PotatoClient::OnTempArenaInfoChanged(const std::filesystem::path& file, con
 		return;
 	}
 
-	const std::string request = BuildRequest(game.Region, arenaInfo->Meta.PlayerName, arenaInfo->Json);
+	PA_TRY_OR_ELSE(request, BuildRequest(game.Region, arenaInfo->Meta.PlayerName, arenaInfo->String),
+	{
+		LOG_ERROR("Failed to build server request: {}", error);
+		emit StatusReady(Status::Error, "Building Request");
+		return;
+	});
 
 	emit StatusReady(Status::Loading, "Loading");
 

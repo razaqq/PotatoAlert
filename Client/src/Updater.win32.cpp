@@ -84,8 +84,6 @@ std::optional<DWORD> FindProcessByName(LPCTSTR Name)
 	return {};
 }
 
-}
-
 struct DownloadProgress
 {
 	void Reset()
@@ -136,6 +134,8 @@ private:
 	qint64 m_bytesSinceTick = Q_INT64_C(0);
 } g_downloadProgress;
 
+}  // namespace
+
 // makes a request to the github api and checks if there is a new version available
 bool Updater::UpdateAvailable()
 {
@@ -159,19 +159,14 @@ bool Updater::UpdateAvailable()
 		return false;
 	}
 
-	PA_TRY_OR_ELSE(json, ParseJson(reply->readAll().toStdString()),
+	const auto tagName = Json::GetPointer<std::string, "/tag_name">(reply->readAll().toStdString());
+	if (!tagName)
 	{
-		LOG_ERROR("Failed to parse github api response as JSON.");
-		return false;
-	});
-
-	if (!json.HasMember("tag_name"))
-	{
-		LOG_ERROR("Github response is missing key 'tag_name'");
+		LOG_ERROR("Failed to get 'tag_name' from Github API response JSON.");
 		return false;
 	}
 
-	return Version(FromJson<std::string>(json["tag_name"])) > Version(QApplication::applicationVersion().toStdString());
+	return Version(*tagName) > Version(QApplication::applicationVersion().toStdString());
 }
 
 // starts the update process

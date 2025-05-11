@@ -4,7 +4,6 @@ project(Client)
 find_package(Qt6 COMPONENTS Core Network Widgets REQUIRED)
 find_package(ctre REQUIRED)
 find_package(fmt REQUIRED)
-find_package(glaze REQUIRED)
 find_package(tinyxml2 REQUIRED)
 
 pa_add_library(
@@ -48,7 +47,6 @@ pa_add_library(
         Qt::Widgets
     SOURCE_DEPENDENCIES
         ctre::ctre
-        glaze::glaze
         tinyxml2::tinyxml2
     MANUAL_DEPENDENCIES
         PotatoAlert-StringTable
