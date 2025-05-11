@@ -9,7 +9,7 @@
 
 namespace fs = std::filesystem;
 
-std::vector<fs::path> PotatoAlert::Client::Game::GetDefaultGamePaths()
+Result<std::vector<fs::path>> PotatoAlert::Client::Game::GetDefaultGamePaths()
 {
 	return {};
 }

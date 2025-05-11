@@ -3,6 +3,7 @@
 #include "Client/Game.hpp"
 
 #include "Core/Defer.hpp"
+#include "Core/Directory.hpp"
 #include "Core/String.hpp"
 #include "Core/Result.hpp"
 
@@ -43,7 +44,7 @@ static std::optional<std::wstring> GetRegistryString(HKEY key, std::wstring_view
 
 }
 
-std::vector<fs::path> PotatoAlert::Client::Game::GetDefaultGamePaths()
+Result<std::vector<fs::path>> PotatoAlert::Client::Game::GetDefaultGamePaths()
 {
 	HKEY hKey;
 	PA_DEFER
@@ -102,7 +103,8 @@ std::vector<fs::path> PotatoAlert::Client::Game::GetDefaultGamePaths()
 					if (std::optional installLocation = GetRegistryString(subKey, L"InstallLocation"))
 					{
 						fs::path gamePath(*installLocation);
-						if (fs::exists(gamePath) && !gamePath.empty())
+						PA_TRY(exists, Core::PathExists(gamePath));
+						if (exists && !gamePath.empty())
 						{
 							out.emplace_back(std::move(gamePath));
 						}

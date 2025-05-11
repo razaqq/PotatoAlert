@@ -45,7 +45,7 @@ struct GameInfo
 	std::string Region;
 };
 
-std::vector<std::filesystem::path> GetDefaultGamePaths();
+Core::Result<std::vector<std::filesystem::path>> GetDefaultGamePaths();
 Core::Result<GameInfo> ReadGameInfo(const std::filesystem::path& selectedPath);
 
 }  // namespace PotatoAlert::Client::Game
