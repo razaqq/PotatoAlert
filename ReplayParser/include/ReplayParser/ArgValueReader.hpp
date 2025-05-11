@@ -15,16 +15,13 @@
 
 namespace PotatoAlert::ReplayParser {
 
-using ReplayParser::ArgValue;
-using ReplayParser::VariantGet;
-
 using KeyType = std::variant<std::string_view, size_t, int>;
 
 using ArrayValue = std::vector<ArgValue>;
 using DictValue = std::unordered_map<std::string, ArgValue>;
 
 template<typename Value>
-inline ReplayResult<Value> GetArgValue(const ArgValue& value, std::initializer_list<KeyType> keys = {}, const std::source_location loc = std::source_location::current())
+inline ReplayResult<const Value*> GetArgValue(const ArgValue& value, std::initializer_list<KeyType> keys = {}, const std::source_location loc = std::source_location::current())
 {
 	const ArgValue* current = &value;
 	for (KeyType key : keys)
@@ -61,29 +58,14 @@ inline ReplayResult<Value> GetArgValue(const ArgValue& value, std::initializer_l
 		}, key));
 	}
 
-	ReplayResult<void> result;
-	Value outValue;
-	if constexpr (std::is_enum_v<Value>)
+	if (const Value* v = std::get_if<Value>(current))
 	{
-		result = VariantGet<std::underlying_type_t<Value>>(*current, [&outValue](auto v) -> ReplayResult<void>
-		{
-			outValue = static_cast<Value>(v);
-			return {};
-		});
-		if (!result)
-			return PA_REPLAY_ERROR("{}:{} - {}", std::filesystem::path(loc.file_name()).filename(), loc.line(), result.error());
+		return v;
 	}
 	else
 	{
-		result = VariantGet<Value>(*current, [&outValue](const auto& v) -> ReplayResult<void>
-		{
-			outValue = v;
-			return {};
-		});
-		if (!result)
-			return PA_REPLAY_ERROR("{}:{} - {}", std::filesystem::path(loc.file_name()).filename(), loc.line(), result.error());
+		return PA_REPLAY_ERROR("{}:{} - Failed to get type '{}' from ArgValue", std::filesystem::path(loc.file_name()).filename(), loc.line(), typeid(Value).name());
 	}
-	return outValue;
 }
 
 }  // namespace PotatoAlert::ReplayParser

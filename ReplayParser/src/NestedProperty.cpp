@@ -2,11 +2,11 @@
 
 #include "Core/Bytes.hpp"
 
+#include "ReplayParser/ArgValueReader.hpp"
 #include "ReplayParser/BitReader.hpp"
 #include "ReplayParser/NestedProperty.hpp"
 #include "ReplayParser/Result.hpp"
 #include "ReplayParser/Types.hpp"
-#include "ReplayParser/Variant.hpp"
 
 #include <type_traits>
 #include <span>
@@ -161,20 +161,12 @@ ReplayResult<PropertyNesting> rp::GetNestedPropertyPath(bool isSlice, const ArgT
 			const int propIndex = bitReader.Get(BitReader::BitsRequired(arg.Properties.size()));
 			const FixedDictProperty& prop = arg.Properties[propIndex];
 
-			const ArgValue* newArgValue;
-
-			ReplayResult<void> setRes = VariantGet<std::unordered_map<std::string, ArgValue>>(*argValue, [&prop, &newArgValue](const auto& value) -> ReplayResult<void>
+			PA_TRY(value, GetArgValue<DictValue>(*argValue));
+			if (!value->contains(prop.Name))
 			{
-				if (value.contains(prop.Name))
-				{
-					newArgValue = &value.at(prop.Name);
-					return {};
-				}
-				return PA_REPLAY_ERROR("Nested Property Path does not contain property named ''", prop.Name);
-			});
-			if (!setRes)
-				return ReplayResult<PropertyNesting>{ Core::ResultError, ReplayError(setRes.error()) };
-			argValue = const_cast<ArgValue*>(newArgValue);
+				return PA_REPLAY_ERROR("Nested Property Path does not contain property named '{}'", prop.Name);
+			}
+			argValue = const_cast<ArgValue*>(&value->at(prop.Name));
 
 			const ArgType newType = *arg.Properties[propIndex].Type;
 
