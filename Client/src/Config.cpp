@@ -1,370 +1,262 @@
-// Copyright 2020 <github.com/razaqq>
+// Copyright 2025 <github.com/razaqq>
 
-#include "Client/AppDirectories.hpp"
 #include "Client/Config.hpp"
 #include "Client/Game.hpp"
 
-#include "Core/Encoding.hpp"
+#include "Core/Directory.hpp"
 #include "Core/File.hpp"
+#include "Core/Format.hpp"
 #include "Core/Json.hpp"
-#include "Core/Log.hpp"
-#include "Core/Process.hpp"
-#include "Core/StandardPaths.hpp"
 
-#include <filesystem>
-#include <iostream>
-#include <string>
-#include <utility>
-
-
-namespace fs = std::filesystem;
 
 using PotatoAlert::Client::Config;
-using PotatoAlert::Client::ConfigKey;
-using PotatoAlert::Client::Game::GetDefaultGamePaths;
+using PotatoAlert::Client::ConfigManager;
+using PotatoAlert::Client::ConfigResult;
+using PotatoAlert::Client::StatsMode;
+using PotatoAlert::Client::TableLayout;
+using PotatoAlert::Client::TeamStatsMode;
+using PotatoAlert::Core::File;
+using PotatoAlert::Core::JsonResult;
+using PotatoAlert::Core::Result;
+namespace fs = std::filesystem;
 
 namespace {
 
-static rapidjson::Document g_defaultConfig = rapidjson::Document(rapidjson::kObjectType);
-static std::unordered_map<ConfigKey, std::string_view> g_keyNames =
+enum class ConfigError
 {
-	{ ConfigKey::StatsMode,                "stats_mode" },
-	{ ConfigKey::TeamDamageMode,           "team_damage_mode" },
-	{ ConfigKey::TeamWinRateMode,          "team_win_rate_mode" },
-	{ ConfigKey::TableLayout,              "table_layout" },
-	{ ConfigKey::UpdateNotifications,      "update_notifications" },
-	{ ConfigKey::MinimizeTray,             "minimize_tray" },
-	{ ConfigKey::MatchHistory,             "match_history" },
-	{ ConfigKey::SaveMatchCsv,             "save_match_csv" },
-	{ ConfigKey::WindowHeight,             "window_height" },
-	{ ConfigKey::WindowWidth,              "window_width" },
-	{ ConfigKey::WindowX,                  "window_x" },
-	{ ConfigKey::WindowY,                  "window_y" },
-	{ ConfigKey::WindowState,              "window_state" },
-	{ ConfigKey::GameDirectories,          "game_directories" },
-	{ ConfigKey::Language,                 "language" },
-	{ ConfigKey::MenuBarLeft,              "menubar_left" },
-	{ ConfigKey::ShowKarma,                "show_karma" },
-	{ ConfigKey::FontShadow,               "font_shadow" },
-	{ ConfigKey::AnonymizePlayers,         "anonymize_player_names_screenshots" },
-	{ ConfigKey::Font,                     "font" },
-	{ ConfigKey::FontScaling,              "font_scaling" },
-	{ ConfigKey::AllowSendingUsageStats,   "allow_sending_usage_stats" },
+	FailedToOpenFile,
+
 };
 
+}  // namespace
+
+template<>
+struct glz::meta<Config>
+{
+	using T = Config;
+	static constexpr auto value = object
+	(
+		"version", &T::Version,
+		"stats_mode", &T::StatsMode,
+		"team_damage_mode", &T::TeamDamageMode,
+		"team_win_rate_mode", &T::TeamWinRateMode,
+		"table_layout", &T::TableLayout,
+		"update_notifications", &T::UpdateNotifications,
+		"minimize_tray", &T::MinimizeTray,
+		"match_history", &T::MatchHistory,
+		"save_match_csv", &T::SaveMatchCsv,
+		"window_height", &T::WindowHeight,
+		"window_width", &T::WindowWidth,
+		"window_x", &T::WindowX,
+		"window_y", &T::WindowY,
+		"window_state", &T::WindowState,
+		"game_directories", &T::GameDirectories,
+		"language", &T::Language,
+		"menubar_left", &T::MenuBarLeft,
+		"show_karma", &T::ShowKarma,
+		"font_shadow", &T::FontShadow,
+		"anonymize_player_names_screenshots", &T::AnonymizePlayers,
+		"font", &T::Font,
+		"font_scaling", &T::FontScaling,
+		"allow_sending_usage_stats", &T::AllowSendingUsageStats
+	);
+};
+
+template<>
+struct glz::meta<StatsMode>
+{
+	using enum StatsMode;
+	static constexpr auto value = enumerate
+	(
+		"current", Current,
+		"pvp", Pvp,
+		"ranked", Ranked,
+		"cooperative", Cooperative
+	);
+};
+
+template<>
+struct glz::meta<TeamStatsMode>
+{
+	using enum TeamStatsMode;
+	static constexpr auto value = enumerate
+	(
+		"weighted", Weighted,
+		"average", Average,
+		"median", Median
+	);
+};
+
+template<>
+struct glz::meta<TableLayout>
+{
+	using enum TableLayout;
+	static constexpr auto value = enumerate
+	(
+		"horizontal", Horizontal,
+		"vertical", Vertical
+	);
+};
+
+ConfigManager::ConfigManager(std::filesystem::path path) : m_config(Config{}), m_path(std::move(path))
+{
+
 }
 
-
-Config::Config(const fs::path& filePath) : m_filePath(filePath)
+ConfigResult<void> ConfigManager::Init()
 {
-	g_defaultConfig.SetObject();
-	auto a = g_defaultConfig.GetAllocator();
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::StatsMode]), ToJson(StatsMode::Pvp), a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::TeamDamageMode]), ToJson(TeamStatsMode::Average), a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::TeamWinRateMode]), ToJson(TeamStatsMode::Average), a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::TableLayout]), ToJson(TableLayout::Horizontal), a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::UpdateNotifications]), true, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::MinimizeTray]), false, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::MatchHistory]), true, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::SaveMatchCsv]), false, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::ShowKarma]), false, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::FontShadow]), true, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::AnonymizePlayers]), false, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowHeight]), 450, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowWidth]), 1500, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowX]), 0, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowY]), 0, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::WindowState]), 0x00000008, a);  // TODO: Qt::WindowState::WindowActive
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::Font]), "Roboto", a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::FontScaling]), 100, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::AllowSendingUsageStats]), true, a);
-
-	rapidjson::Value gameInstalls = rapidjson::Value(rapidjson::kArrayType);
-	for (const fs::path& gamePath : GetDefaultGamePaths())
+	const Result<bool> exists = Core::PathExists(m_path);
+	if (!exists)
 	{
-		if (Result<std::string> path = Core::PathToUtf8(gamePath))
+		return PA_ERROR(fmt::format("Failed to check if config file exists: {}", exists.error().message()));
+	}
+	if (exists.value())
+	{
+		PA_TRYV(Load());
+		PA_TRYV(Migrate());
+		PA_TRY(valid, IsValid());
+		if (!valid)
 		{
-			gameInstalls.PushBack(rapidjson::Value(path->c_str(), a).Move(), a);
-		}
-	}
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::GameDirectories]), gameInstalls, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::Language]), 0, a);
-	g_defaultConfig.AddMember(Core::ToRef(g_keyNames[ConfigKey::MenuBarLeft]), true, a);
-
-	if (!Exists())
-	{
-		if (!CreateDefault())
-		{
-			LOG_ERROR("Failed to create default config.");
-			Core::ExitCurrentProcessWithError(1);
-		}
-	}
-	Load();
-	ApplyUpdates();
-}
-
-Config::~Config()
-{
-	Save();
-	m_file.Close();
-}
-
-void Config::Load()
-{
-	LOG_TRACE("Trying to Load config...");
-
-	if (m_file)
-	{
-		m_file.Close();
-	}
-
-	m_file = File::Open(m_filePath, File::Flags::Open | File::Flags::Read | File::Flags::Write);
-	if (!m_file)
-	{
-		LOG_ERROR("Failed to open config file: {}", File::LastError());
-		Core::ExitCurrentProcessWithError(1);
-	}
-
-	std::string str;
-	if (!m_file.ReadAllString(str))
-	{
-		LOG_ERROR("Failed to read config file: {}", File::LastError());
-		Core::ExitCurrentProcessWithError(1);
-	}
-
-	PA_TRY_OR_ELSE(json, Core::ParseJson(str),
-	{
-		LOG_ERROR("Failed to Parse config as JSON.");
-
-		m_file.Close();
-		CreateBackup();
-
-		if (CreateDefault())
-			return Load();
-		else
-			Core::ExitCurrentProcessWithError(1);
-	});
-
-	m_json = std::move(json);
-
-	Validate();
-
-	LOG_TRACE("Config loaded.");
-}
-
-bool Config::Save() const
-{
-	LOG_TRACE("Saving Config");
-	if (!m_file)
-	{
-		LOG_ERROR("Cannot save config, because file is not open.");
-		return false;
-	}
-
-	rapidjson::StringBuffer stringBuffer;
-	rapidjson::PrettyWriter writer(stringBuffer);
-	m_json.Accept(writer);
-	
-	if (!m_file.WriteString(std::string_view(stringBuffer.GetString(), stringBuffer.GetSize())))
-	{
-		LOG_ERROR("Failed to write config file: {}", File::LastError());
-		return false;
-	}
-	m_file.FlushBuffer();
-	return true;
-}
-
-bool Config::Exists() const
-{
-	std::error_code ec;
-	bool exists = fs::exists(m_filePath, ec);
-	if (ec)
-	{
-		LOG_ERROR("Error while checking config existence: {}", ec.message());
-		return false;
-	}
-
-	if (exists)
-	{
-		bool regularFile = fs::is_regular_file(m_filePath, ec);
-		if (ec)
-		{
-			LOG_ERROR("Error while checking if config is regular file: {}", ec.message());
-			return false;
-		}
-		return regularFile;
-	}
-	return false;
-}
-
-bool Config::CreateDefault()
-{
-	LOG_INFO("Creating new default config.");
-
-	if (m_file)
-	{
-		m_file.Close();
-	}
-
-	m_file = File::Open(m_filePath, File::Flags::Create | File::Flags::Read | File::Flags::Write);
-	if (!m_file)
-	{
-		LOG_ERROR("Failed to open config file: {}", File::LastError());
-		return false;
-	}
-
-	m_json.CopyFrom(g_defaultConfig, m_json.GetAllocator());
-
-	bool saved = Save();
-	m_file.Close();
-	return saved;
-}
-
-bool Config::CreateBackup() const
-{
-	LOG_INFO("Creating config backup");
-	std::error_code ec;
-	bool exists = fs::exists(m_filePath, ec);
-	if (ec)
-	{
-		LOG_ERROR("Failed to check for config backup: {}", ec.message());
-		return false;
-	}
-
-	if (exists)
-	{
-		fs::path backupConfig = m_filePath;
-		backupConfig.replace_extension(".bak");
-
-		// check if backup exists
-		exists = fs::exists(backupConfig, ec);
-		if (ec)
-		{
-			LOG_ERROR("Failed to check for config backup: {}", ec.message());
-			return false;
-		}
-
-		// remove backup if it exists
-		if (!exists)
-		{
-			fs::remove(backupConfig, ec);
-			if (ec)
+			const Result<void> backupRes = CreateBackup();
+			if (!backupRes)
 			{
-				LOG_ERROR("Failed to remove config backup: {}", ec.message());
-				return false;
+				return PA_ERROR(fmt::format("Failed to create config backup: {}", backupRes.error().message()));
 			}
-		}
-
-		// create backup
-		fs::rename(m_filePath, backupConfig, ec);
-		if (ec)
-		{
-			LOG_ERROR("Failed to create config backup: {}", ec.message());
-			return false;
+			const Result<Config> def = GetDefault();
+			if (!def)
+			{
+				return PA_ERROR(fmt::format("Failed get default config: {}", def.error().message()));
+			}
+			m_config = *def;
+			PA_TRYV(Save());
 		}
 	}
-	return true;
-}
-
-void Config::Validate()
-{
-	for (const auto [key, name] : g_keyNames)
+	else
 	{
-		if (!g_defaultConfig.HasMember(name.data()))
-			continue;
-
-		// add missing keys
-		if (!m_json.HasMember(name.data()))
+		const Result<Config> def = GetDefault();
+		if (!def)
 		{
-			LOG_INFO("Adding missing key '{}' to config.", name);
-			rapidjson::Value value;
-			value.CopyFrom(g_defaultConfig[name.data()], m_json.GetAllocator());
-			m_json.AddMember(Core::ToRef(name), value, m_json.GetAllocator());
+			return PA_ERROR(fmt::format("Failed get default config: {}", def.error().message()));
 		}
-
-		// check types
-		if ((IsType(key, ConfigType::String) && !m_json[name.data()].IsString())
-			|| (IsType(key, ConfigType::Bool) && !m_json[name.data()].IsBool())
-			|| (IsType(key, ConfigType::Int) && !m_json[name.data()].IsInt())
-			|| (IsType(key, ConfigType::Float) && !m_json[name.data()].IsFloat())
-			|| (IsType(key, ConfigType::SetPath) && !m_json[name.data()].IsArray())
-			|| (IsType(key, ConfigType::StatsMode) && !m_json[name.data()].IsString())
-			|| (IsType(key, ConfigType::TableLayout) && !m_json[name.data()].IsString())
-			|| (IsType(key, ConfigType::TeamStatsMode) && !m_json[name.data()].IsString()))
-		{
-			LOG_WARN("Config key '{}' is not of expected type, setting to default value", name);
-			m_json[name.data()] = g_defaultConfig[name.data()];
-		}
-
-		// check enums
-		if (IsType(key, ConfigType::StatsMode))
-		{
-			StatsMode statsMode;
-			if (!FromJson(m_json[name.data()], statsMode))
-			{
-				LOG_WARN("Invalid enum value in config for key '{}', setting to default", name.data());
-				SetDefault(key);
-			}
-		}
-
-		if (IsType(key, ConfigType::TeamStatsMode))
-		{
-			TeamStatsMode teamStatsMode;
-			if (!FromJson(m_json[name.data()], teamStatsMode))
-			{
-				LOG_WARN("Invalid enum value in config for key '{}', setting to default", name.data());
-				SetDefault(key);
-			}
-		}
-
-		if (IsType(key, ConfigType::TableLayout))
-		{
-			TableLayout tableLayout;
-			if (!FromJson(m_json[name.data()], tableLayout))
-			{
-				LOG_WARN("Invalid enum value in config for key '{}', setting to default", name.data());
-				SetDefault(key);
-			}
-		}
+		m_config = *def;
+		PA_TRYV(Save());
 	}
+
+	return {};
 }
 
-void Config::SetDefault(ConfigKey key)
+Result<Config> ConfigManager::GetDefault()
 {
-	const std::string_view name = GetKeyName(key);
-	m_json[name.data()] = g_defaultConfig[name.data()];
-}
+	PA_TRY(gameDirectories, Game::GetDefaultGamePaths());
 
-void Config::ApplyUpdates()
-{
-	auto renameKey = [&](std::string_view from, std::string_view to)
+	return Config
 	{
-		if (const auto it = m_json.FindMember(from.data()); it != m_json.MemberEnd())
-		{
-			it->name.SetString(to.data(), to.size());
-		}
+		.Version = 0,
+
+		.StatsMode = StatsMode::Pvp,
+		.TeamDamageMode = TeamStatsMode::Average,
+		.TeamWinRateMode = TeamStatsMode::Average,
+		.TableLayout = TableLayout::Horizontal,
+		.UpdateNotifications = true,
+		.AllowSendingUsageStats = true,
+		.MinimizeTray = false,
+		.MatchHistory = true,
+		.SaveMatchCsv = false,
+		.MenuBarLeft = true,
+		.ShowKarma = false,
+		.AnonymizePlayers = false,
+		.WindowHeight = 450,
+		.WindowWidth = 1500,
+		.WindowX = 0,
+		.WindowY = 0,
+		.Language = 0,
+		.WindowState = 0x00000008,  // TODO: Qt::WindowState::WindowActive
+		.Font = "Roboto",
+		.FontShadow = true,
+		.FontScaling = 100,
+		.GameDirectories = { gameDirectories.begin(), gameDirectories.end() },
 	};
-	renameKey("menubar_leftside", g_keyNames[ConfigKey::MenuBarLeft]);
-	m_json.RemoveMember("api_key");
-	m_json.RemoveMember("use_ga");
-	m_json.RemoveMember("save_csv");
-
-	if (m_json.HasMember("game_directory"))
-	{
-		auto arr = m_json[g_keyNames[ConfigKey::GameDirectories].data()].GetArray();
-		const auto it = std::ranges::find_if(arr, [this](const rapidjson::Value& v)
-		{
-			return std::strcmp(v.GetString(), m_json["game_directory"].GetString()) == 0;
-		});
-		if (it == arr.end())
-		{
-			m_json[g_keyNames[ConfigKey::GameDirectories].data()].PushBack(m_json["game_directory"], m_json.GetAllocator());
-		}
-		m_json.RemoveMember("game_directory");
-	}
 }
 
-std::string_view Config::GetKeyName(ConfigKey key)
+ConfigResult<void> ConfigManager::Load()
 {
-	return g_keyNames[key];
+	File file = File::Open(m_path, File::Flags::Open | File::Flags::Read);
+	if (!file)
+	{
+		return PA_ERROR(File::LastError());
+	}
+
+	std::string json;
+	if (!file.ReadAllString(json))
+	{
+		return PA_ERROR(File::LastError());
+	}
+
+	PA_TRYA(m_config, Core::Json::Read<Config>(json));
+
+	return {};
 }
+
+JsonResult<void> ConfigManager::Save() const
+{
+	const File file = File::Open(m_path, File::Flags::Create | File::Flags::Open | File::Flags::Write);
+	if (!file)
+	{
+		return PA_ERROR(File::LastError());
+	}
+
+	PA_TRY(str, Core::Json::Write(m_config));
+	if (!file.WriteString(str))
+	{
+		return PA_ERROR(File::LastError());
+	}
+
+	return {};
+}
+
+ConfigResult<bool> ConfigManager::IsValid() const
+{
+	return true;
+}
+
+ConfigResult<void> ConfigManager::Migrate()
+{
+	if (m_config.Version > 0)
+	{
+		
+	}
+	return {};
+}
+
+Result<void> ConfigManager::CreateBackup() const
+{
+	PA_TRY(exists, Core::PathExists(m_path));
+	if (!exists)
+	{
+		return {};
+	}
+
+	fs::path backup = m_path;
+	backup.replace_extension(".bak");
+
+	PA_TRY(backupExists, Core::PathExists(backup));
+	if (backupExists)
+	{
+		std::error_code ec;
+		fs::remove(backup, ec);
+		if (ec)
+		{
+			return PA_ERROR(ec);
+		}
+	}
+
+	std::error_code ec;
+	fs::rename(m_path, backup, ec);
+	if (ec)
+	{
+		return PA_ERROR(ec);
+	}
+	
+	return {};
+}
+
