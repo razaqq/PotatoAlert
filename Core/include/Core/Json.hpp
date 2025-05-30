@@ -4,7 +4,6 @@
 #include "Core/Concepts.hpp"
 #include "Core/Format.hpp"
 #include "Core/Result.hpp"
-#include "Core/String.hpp"
 
 #include <glaze/glaze.hpp>
 
@@ -23,7 +22,7 @@ using JsonResult = Result<T, JsonError>;
 namespace Json {
 
 template<is_number T>
-static JsonResult<T> Get(const glz::json_t& j)
+JsonResult<T> Get(const glz::json_t& j)
 {
 	if (!j.is_number())
 	{
@@ -34,7 +33,7 @@ static JsonResult<T> Get(const glz::json_t& j)
 }
 
 template<is_bool T>
-static JsonResult<T> Get(const glz::json_t& j)
+JsonResult<T> Get(const glz::json_t& j)
 {
 	if (!j.is_boolean())
 	{
@@ -46,7 +45,7 @@ static JsonResult<T> Get(const glz::json_t& j)
 
 template<typename T>
 	requires(std::is_same_v<T, std::string>)
-static JsonResult<T> Get(const glz::json_t& j)
+JsonResult<T> Get(const glz::json_t& j)
 {
 	if (!j.is_string())
 	{
@@ -57,7 +56,7 @@ static JsonResult<T> Get(const glz::json_t& j)
 }
 
 template<typename T, glz::string_literal Pointer>
-static JsonResult<T> GetPointer(std::string_view str)
+JsonResult<T> GetPointer(std::string_view str)
 {
 	const auto res = glz::get_as_json<T, Pointer>(str);
 	if (!res)
