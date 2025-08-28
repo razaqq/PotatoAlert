@@ -1,8 +1,6 @@
 // Copyright 2021 <github.com/razaqq>
 #pragma once
 
-#include "Core/Format.hpp"
-
 #ifdef WIN32
 	#ifndef SPDLOG_WCHAR_TO_UTF8_SUPPORT
 		#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
@@ -21,7 +19,6 @@
 #include <spdlog/spdlog.h>
 
 #include <filesystem>
-#include <string>
 #include <memory>
 
 
