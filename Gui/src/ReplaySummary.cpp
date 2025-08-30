@@ -92,6 +92,8 @@ static constexpr std::string_view GetRibbonName(int lang, RibbonType ribbon)
 		case RibbonType::SecondaryHit:
 		case RibbonType::Bomb:
 		case RibbonType::Rocket:
+		case RibbonType::SonarHit:
+		case RibbonType::PulsePhaser:
 		case RibbonType::DepthChargeHit:
 			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_HITS);
 		case RibbonType::PlaneShotDown:
@@ -121,6 +123,24 @@ static constexpr std::string_view GetRibbonName(int lang, RibbonType ribbon)
 			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_SHOTDOWNBYAIRCRAFT);
 		case RibbonType::BuffSeized:
 			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_BUFFSEIZED);
+		case RibbonType::Wave:
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_WAVE);
+		case RibbonType::Shield:
+			return "Shield";  // TODO: where is this?
+		case RibbonType::Acid:
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_ACID);
+		case RibbonType::Mine:
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_MINE);
+		case RibbonType::PhaserLaser:
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_PHASER_LASER);
+		case RibbonType::AimPulseTorpedoPhoton:
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_AIM_PULSE_TORPEDO_PHOTON);
+		case RibbonType::DeminingMine:
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_DEMINING_MINE);
+		case RibbonType::DeminingMinefield:
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_DEMINING_MINEFIELD);
+		case RibbonType::UnknownRibbon:
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_UNKNOWN);
 		default:
 			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_UNKNOWN);
 	}
