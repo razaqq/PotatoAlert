@@ -150,37 +150,19 @@ static constexpr std::string_view GetRibbonName(int lang, RibbonType ribbon)
 class Background : public QWidget
 {
 public:
-	explicit Background(const char* map, QWidget* parent = nullptr)
-		: QWidget(parent), m_map(map) {}  // m_nationFlag(nationFlag) {}
-
-	void SetImage(const QString& map)  // , const QString& nationFlag)
-	{
-		m_map = map;
-		// m_nationFlag = nationFlag;
-		update();
-		repaint();
-	}
+	explicit Background(QPixmap pixmap, QWidget* parent = nullptr)
+		: QWidget(parent), m_map(std::move(pixmap)) {}  // m_nationFlag(nationFlag) {}
 
 protected:
 	void paintEvent(QPaintEvent* event) override
 	{
 		QPainter painter(this);
-		const QPixmap map = QPixmap::fromImage(QImage(m_map));
-
-		QPixmapBlurFilter f;
-		f.setRadius(4);
-		f.setBlurHints(QGraphicsBlurEffect::QualityHint);
-		f.draw(&painter, { 0, 0 }, map);
-
-		// QPixmap flag = QPixmap::fromImage(QImage(m_nationFlag));
-		// painter.drawPixmap(0, 0, map.scaledToHeight(height(), Qt::SmoothTransformation));
-		// painter.drawPixmap(0, 0, flag.scaledToHeight(height(), Qt::SmoothTransformation));
+		painter.drawPixmap(0, 0, m_map.scaledToHeight(height(), Qt::SmoothTransformation));
 		QWidget::paintEvent(event);
 	}
 
 private:
-	QString m_map;
-	// QString m_nationFlag;
+	QPixmap m_map;
 	static constexpr float m_aspectRatio = 16.0f / 9.0f;
 };
 
@@ -265,7 +247,7 @@ void ReplaySummaryGui::SetReplaySummary(const Match& match)
 	const int lang = m_services.Get<Config>().Get<ConfigKey::Language>();
 
 	m_background = new Background(
-		fmt::format(":/{}.jpg", match.Map).c_str()
+		QPixmap::fromImage(QImage(fmt::format(":/{}.jpg", match.Map).c_str()))
 		// fmt::format(":/{}.png", match.ShipNation).c_str()
 	);
 	m_arWidget = new AspectRatioWidget(nullptr, m_background, 9.0f / 16.0f);
