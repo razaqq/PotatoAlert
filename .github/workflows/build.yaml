@@ -8,7 +8,7 @@ jobs:
     env:
       qt-major-version: 6
       qt-version: 6.9.2
-      clang-version: 18
+      clang-version: 20
       zipfile: PotatoAlert.zip
 
     runs-on: windows-2022
