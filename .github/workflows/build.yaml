@@ -7,7 +7,7 @@ jobs:
     name: Build Windows Qt6
     env:
       qt-major-version: 6
-      qt-version: 6.8.1
+      qt-version: 6.9.2
       clang-version: 18
       zipfile: PotatoAlert.zip
 
@@ -105,7 +105,7 @@ jobs:
   build-linux:
     name: Build Linux Qt6
     env:
-      qt-version: 6.8.1
+      qt-version: 6.9.2
       gcc-version: 14
 
     runs-on: ubuntu-24.04
