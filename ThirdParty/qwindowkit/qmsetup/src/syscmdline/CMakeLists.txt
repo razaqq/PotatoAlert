@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.17)
 
-project(syscmdline VERSION 0.0.1.4 LANGUAGES C CXX)
+project(syscmdline VERSION 0.0.2.1 LANGUAGES C CXX)
 
 # ----------------------------------
 # Build Options

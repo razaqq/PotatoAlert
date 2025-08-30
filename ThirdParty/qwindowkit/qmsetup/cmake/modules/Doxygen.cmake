@@ -1,7 +1,3 @@
-if(NOT DEFINED QMSETUP_MODULES_DIR)
-    include("${CMAKE_CURRENT_LIST_DIR}/../QMSetupAPI.cmake")
-endif()
-
 include_guard(DIRECTORY)
 
 #[[
@@ -42,15 +38,42 @@ function(qm_setup_doxygen _target)
 
     set(DOXYGEN_FILE_DIR ${QMSETUP_MODULES_DIR}/doxygen)
 
-    qm_set_value(_name FUNC_NAME "${PROJECT_NAME}")
-    qm_set_value(_version FUNC_VERSION "${PROJECT_VERSION}")
-    qm_set_value(_desc FUNC_DESCRIPTION "${PROJECT_DESCRIPTION}")
-    qm_set_value(_logo FUNC_LOGO "")
-    qm_set_value(_mdfile FUNC_MDFILE "")
-    qm_set_value(_tagfile FUNC_GENERATE_TAGFILE "")
+    if(FUNC_NAME)
+        set(_name ${FUNC_NAME})
+    else()
+        set(_name ${PROJECT_NAME})
+    endif()
 
-    if(_desc STREQUAL "")
-        set(${_desc} "${_name}")
+    if(FUNC_VERSION)
+        set(_version ${FUNC_VERSION})
+    else()
+        set(_version ${PROJECT_VERSION})
+    endif()
+
+    if(FUNC_DESCRIPTION)
+        set(_desc ${FUNC_DESCRIPTION})
+    elseif(PROJECT_DESCRIPTION)
+        set(_desc ${PROJECT_DESCRIPTION})
+    else()
+        set(_desc ${_name})
+    endif()
+
+    if(FUNC_LOGO)
+        set(_logo ${FUNC_LOGO})
+    else()
+        set(_logo)
+    endif()
+
+    if(FUNC_MDFILE)
+        set(_mdfile ${FUNC_MDFILE})
+    else()
+        set(_mdfile)
+    endif()
+
+    if(FUNC_GENERATE_TAGFILE)
+        set(_tagfile ${FUNC_GENERATE_TAGFILE})
+    else()
+        set(_tagfile)
     endif()
 
     set(_sep " \\\n    ")
@@ -92,7 +115,7 @@ function(qm_setup_doxygen _target)
     if(FUNC_NO_EXPAND_MACROS)
         set(_temp_list)
 
-        foreach(_item ${FUNC_NO_EXPAND_MACROS})
+        foreach(_item IN LISTS FUNC_NO_EXPAND_MACROS)
             list(APPEND _temp_list "${_item}=")
         endforeach()
 
@@ -104,7 +127,7 @@ function(qm_setup_doxygen _target)
     set(_extra_arguments)
 
     if(FUNC_TARGETS)
-        foreach(item ${FUNC_TARGETS})
+        foreach(item IN LISTS FUNC_TARGETS)
             set(_extra_arguments
                 "${_extra_arguments}INCLUDE_PATH += $<JOIN:$<TARGET_PROPERTY:${item},INCLUDE_DIRECTORIES>,${_sep}>\n\n")
             set(_extra_arguments
@@ -127,7 +150,7 @@ function(qm_setup_doxygen _target)
 
     set(_env)
 
-    foreach(_export ${FUNC_ENVIRONMENT_EXPORTS})
+    foreach(_export IN LISTS FUNC_ENVIRONMENT_EXPORTS)
         if(NOT DEFINED "${_export}")
             message(FATAL_ERROR "qm_setup_doxygen: ${_export} is not known when trying to export it.")
         endif()
@@ -194,12 +217,12 @@ function(qm_setup_doxygen _target)
 
         set(_install_command_quoted)
 
-        foreach(_item ${_install_command})
+        foreach(_item IN LISTS _install_command)
             set(_install_command_quoted "${_install_command_quoted}\"${_item}\" ")
         endforeach()
 
         install(CODE "
-            message(STATUS \"Install HTML documentation\")
+            message(STATUS \"Installing HTML documentation\")
             get_filename_component(_install_dir \"${_install_dir}\" ABSOLUTE BASE_DIR \${CMAKE_INSTALL_PREFIX})
             file(MAKE_DIRECTORY \${_install_dir})
             execute_process(

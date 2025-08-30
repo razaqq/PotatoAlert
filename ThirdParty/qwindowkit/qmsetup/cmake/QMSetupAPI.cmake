@@ -10,8 +10,7 @@ cmake_minimum_required(VERSION 3.19)
 
     Therefore, never wrap `find_package(Qt)` in a function, use macro instead, any macros that wraps it also
     shouldn't be wrapped in any function.
-]]#
-
+]] #
 set(QMSETUP_MODULES_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 if(WIN32)
@@ -47,7 +46,7 @@ include_guard(DIRECTORY)
 ]] #
 macro(qm_import)
     foreach(_module ${ARGN})
-        if(NOT _module MATCHES ".+\\.cmake")
+        if(NOT _module MATCHES "(.+)\\.cmake")
             set(_module "${_module}.cmake")
         endif()
 
@@ -67,7 +66,7 @@ endmacro()
     qm_import_all()
 ]] #
 macro(qm_import_all)
-    file(GLOB _tmp_modules "${QMSETUP_MODULES_DIR}/modules/*")
+    file(GLOB _tmp_modules "${QMSETUP_MODULES_DIR}/modules/*.cmake")
 
     foreach(_module IN LISTS _tmp_modules)
         include("${_module}")
@@ -75,6 +74,111 @@ macro(qm_import_all)
 
     unset(_tmp_modules)
 endmacro()
+
+#[[
+    Find third-party packages by including scripts in `find-modules`.
+
+    qm_find_package(<module...>)
+]] #
+macro(qm_find_package)
+    foreach(_module ${ARGN})
+        if(NOT _module MATCHES "(.+)\\.cmake")
+            set(_module "${_module}.cmake")
+        endif()
+
+        set(_module_path "${QMSETUP_MODULES_DIR}/find-modules/${_module}")
+
+        # Prepend "Find" to the file name
+        if(NOT EXISTS "${_module_path}")
+            set(_module_path "${QMSETUP_MODULES_DIR}/find-modules/Find${_module}")
+        endif()
+
+        if(NOT EXISTS "${_module_path}")
+            message(FATAL_ERROR "qm_find_package: find script \"${_module}\" not found.")
+        endif()
+
+        include("${_module_path}")
+    endforeach()
+endmacro()
+
+#[[
+    Parse version and create seq vars with specified prefix.
+
+    qm_parse_version(<prefix> <version>)
+]] #
+function(qm_parse_version _prefix _version)
+    string(REPLACE "." ";" _version_list ${_version})
+    list(LENGTH _version_list _version_count)
+    list(PREPEND _version_list 0) # Add placeholder
+
+    foreach(_i RANGE 1 4)
+        if(_i LESS_EQUAL _version_count)
+            list(GET _version_list ${_i} _item)
+        else()
+            set(_item 0)
+        endif()
+
+        set(${_prefix}_${_i} ${_item} PARENT_SCOPE)
+    endforeach()
+endfunction()
+
+#[[
+    Get shorter version number.
+
+    qm_crop_version(<VAR> <version> <count>)
+]] #
+function(qm_crop_version _var _version _count)
+    qm_parse_version(FUNC ${_version})
+
+    set(_list)
+
+    foreach(_i RANGE 1 ${_count})
+        list(APPEND _list ${FUNC_${_i}})
+    endforeach()
+
+    string(JOIN "." _short_version ${_list})
+    set(${_var} ${_short_version} PARENT_SCOPE)
+endfunction()
+
+#[[
+    Tell if the given paths are same in canonical form.
+
+    qm_paths_equal(<VAR> <path1> <path2>)
+]] #
+function(qm_paths_equal _out _path1 _path2)
+    # cmake_path(NORMAL_PATH) is introduced in CMake 3.20, we don't use it
+    # We call `get_filename_component` twice to normalize the paths
+    get_filename_component(_path1 ${_path1} ABSOLUTE)
+    get_filename_component(_path1 ${_path1} REALPATH)
+
+    get_filename_component(_path2 ${_path2} ABSOLUTE)
+    get_filename_component(_path2 ${_path2} REALPATH)
+
+    if(_path1 STREQUAL _path2)
+        set(${_out} on PARENT_SCOPE)
+    else()
+        set(${_out} off PARENT_SCOPE)
+    endif()
+endfunction()
+
+#[[
+    Set value if valid, otherwise use default.
+
+    qm_set_value(<key> <maybe_value...> <default>)
+]] #
+function(qm_set_value _key)
+    set(_args "${ARGN}")
+    list(POP_BACK _args _default)
+
+    foreach(_item IN LISTS _args)
+        if(${_item})
+            set(${_key} ${${_item}} PARENT_SCOPE)
+            return()
+        endif()
+    endforeach()
+
+    set(${_key} ${_default} PARENT_SCOPE)
+endfunction()
 
 #[[
     Skip CMAKE_AUTOMOC for sources files or ones in directories.
@@ -86,7 +190,13 @@ function(qm_skip_automoc)
         get_filename_component(_item ${_item} ABSOLUTE)
 
         if(IS_DIRECTORY ${_item})
-            file(GLOB _src ${_item}/*.h ${_item}/*.hh ${_item}/*.hpp ${_item}/*.hxx ${_item}/*.c ${_item}/*.cc ${_item}/*.cpp ${_item}/*.cxx ${_item}/*.m ${_item}/*.mm)
+            file(GLOB _src
+                ${_item}/*.h ${_item}/*.hpp
+                ${_item}/*.hh ${_item}/*.hxx
+                ${_item}/*.cpp ${_item}/*.cxx
+                ${_item}/*.c ${_item}/*.cc
+                ${_item}/*.m ${_item}/*.mm
+            )
             set_source_files_properties(
                 ${_src} PROPERTIES SKIP_AUTOMOC ON
             )
@@ -101,18 +211,39 @@ endfunction()
 #[[
     Find Qt libraries. Don't wrap it in any functions.
 
-    qm_find_qt(<modules...>)
+    qm_find_qt(<modules...> [QUIET | REQUIRED | EXACT])
 #]]
 macro(qm_find_qt)
-    foreach(_module ${ARGN})
+    set(options QUIET REQUIRED EXACT)
+    set(oneValueArgs)
+    set(multiValueArgs)
+    cmake_parse_arguments(FUNC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    set(_qm_find_qt_options)
+
+    if(FUNC_QUIET)
+        list(APPEND _qm_find_qt_options QUIET)
+    elseif(FUNC_REQUIRED)
+        list(APPEND _qm_find_qt_options REQUIRED)
+    elseif(FUNC_EXACT)
+        list(APPEND _qm_find_qt_options EXACT)
+    endif()
+
+    if(NOT _qm_find_qt_options)
+        set(_qm_find_qt_options REQUIRED)
+    endif()
+
+    foreach(_module ${FUNC_UNPARSED_ARGUMENTS})
         if(NOT QT_VERSION_MAJOR)
-            find_package(QT NAMES ${QMSETUP_FIND_QT_ORDER} COMPONENTS ${_module} REQUIRED)
+            find_package(QT NAMES ${QMSETUP_FIND_QT_ORDER} COMPONENTS ${_module} ${_qm_find_qt_options})
         endif()
 
         if(NOT TARGET Qt${QT_VERSION_MAJOR}::${_module})
-            find_package(Qt${QT_VERSION_MAJOR} COMPONENTS ${_module} REQUIRED)
+            find_package(Qt${QT_VERSION_MAJOR} COMPONENTS ${_module} ${_qm_find_qt_options})
         endif()
     endforeach()
+
+    unset(_qm_find_qt_options)
 endmacro()
 
 #[[
@@ -134,58 +265,160 @@ endmacro()
 #]]
 macro(qm_include_qt_private _target _scope)
     foreach(_module ${ARGN})
-        qm_find_qt(${_module})
-        target_include_directories(${_target} ${_scope} ${Qt${QT_VERSION_MAJOR}${_module}_PRIVATE_INCLUDE_DIRS})
+        qm_find_qt(${_module}Private QUIET)
+        if (TARGET Qt${QT_VERSION_MAJOR}::${_module}Private)
+            target_link_libraries(${_target} ${_scope} Qt${QT_VERSION_MAJOR}::${_module}Private)
+        else()
+            qm_find_qt(${_module})
+            target_include_directories(${_target} ${_scope} ${Qt${QT_VERSION_MAJOR}${_module}_PRIVATE_INCLUDE_DIRS})
+        endif()
     endforeach()
 endmacro()
 
 #[[
-    Helper to link libraries and include directories of a target. Don't wrap it in any functions.
+    Helper to set or append all kinds of attributes to a target. Don't wrap it in any functions.
 
     qm_configure_target(<target>
-        [SOURCES          <files>]
-        [LINKS            <libs>]
-        [LINKS_PRIVATE    <libs>]
-        [INCLUDE_PRIVATE  <dirs>]
+        [SOURCES           <files>]
 
-        [DEFINES          <defs>]
-        [DEFINES_PRIVATE  <defs>]
+        [LINKS             <libs>]
+        [LINKS_INTERFACE   <libs>]
+        [LINKS_PRIVATE     <libs>]
 
-        [CCFLAGS          <flags>]
-        [CCFLAGS_PRIVATE  <flags>]
+        [INCLUDE           <dirs>]
+        [INCLUDE_INTERFACE <dirs>]
+        [INCLUDE_PRIVATE   <dirs>]
+
+        [LINKDIR           <dirs>]
+        [LINKDIR_INTERFACE <dirs>]
+        [LINKDIR_PRIVATE   <dirs>]
+
+        [DEFINES           <defs>]
+        [DEFINES_INTERFACE <defs>]
+        [DEFINES_PRIVATE   <defs>]
+
+        [FEATURES           <features>]
+        [FEATURES_INTERFACE <features>]
+        [FEATURES_PRIVATE   <features>]
+
+        [CCFLAGS           <flags>]
+        [CCFLAGS_INTERFACE <flags>]
+        [CCFLAGS_PUBLIC    <flags>]
+
+        [LDFLAGS           <flags>]
+        [LDFLAGS_INTERFACE <flags>]
+        [LDFLAGS_PUBLIC    <flags>]
 
         [QT_LINKS            <modules>]
+        [QT_LINKS_INTERFACE  <modules>]
         [QT_LINKS_PRIVATE    <modules>]
+
         [QT_INCLUDE_PRIVATE  <modules>]
 
         [SKIP_AUTOMOC   <dir/file...>]
     )
+
+    INCLUDE/LINKDIR: `dir/*` will be expanded to all subdirectories
+                     `dir/**` will be expanded to all descendent directories recursively
 ]] #
 macro(qm_configure_target _target)
     set(options)
     set(oneValueArgs)
     set(multiValueArgs
-        SOURCES LINKS LINKS_PRIVATE
-        QT_LINKS QT_LINKS_PRIVATE QT_INCLUDE_PRIVATE
-        INCLUDE_PRIVATE
-        DEFINES DEFINES_PRIVATE
-        CCFLAGS CCFLAGS_PUBLIC
+        SOURCES
+        LINKS LINKS_INTERFACE LINKS_PRIVATE
+        INCLUDE INCLUDE_INTERFACE INCLUDE_PRIVATE
+        LINKDIR LINKDIR_INTERFACE LINKDIR_PRIVATE
+        DEFINES DEFINES_INTERFACE DEFINES_PRIVATE
+        FEATURES FEATURES_INTERFACE FEATURES_PRIVATE
+        CCFLAGS CCFLAGS_INTERFACE CCFLAGS_PUBLIC
+        LDFLAGS LDFLAGS_INTERFACE LDFLAGS_PUBLIC
+        QT_LINKS QT_LINKS_PRIVATE QT_LINKS_INTERFACE
+        QT_INCLUDE_PRIVATE
         SKIP_AUTOMOC
     )
     cmake_parse_arguments(FUNC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     target_sources(${_target} PRIVATE ${FUNC_SOURCES})
+
     target_link_libraries(${_target} PUBLIC ${FUNC_LINKS})
     target_link_libraries(${_target} PRIVATE ${FUNC_LINKS_PRIVATE})
+
+    if(FUNC_INCLUDE)
+        _qm_resolve_dir_helper("${FUNC_INCLUDE}" _temp_dirs)
+        target_include_directories(${_target} PUBLIC ${_temp_dirs})
+        unset(_temp_dirs)
+    endif()
+
+    if(FUNC_INCLUDE_INTERFACE)
+        _qm_resolve_dir_helper("${FUNC_INCLUDE_INTERFACE}" _temp_dirs)
+        target_include_directories(${_target} INTERFACE ${_temp_dirs})
+        unset(_temp_dirs)
+    endif()
+
+    if(FUNC_INCLUDE_PRIVATE)
+        _qm_resolve_dir_helper("${FUNC_INCLUDE_PRIVATE}" _temp_dirs)
+        target_include_directories(${_target} PRIVATE ${_temp_dirs})
+        unset(_temp_dirs)
+    endif()
+
+    if(FUNC_LINKDIR)
+        _qm_resolve_dir_helper("${FUNC_LINKDIR}" _temp_dirs)
+        target_link_directories(${_target} PUBLIC ${_temp_dirs})
+        unset(_temp_dirs)
+    endif()
+
+    if(FUNC_LINKDIR_INTERFACE)
+        _qm_resolve_dir_helper("${FUNC_LINKDIR}" _temp_dirs)
+        target_link_directories(${_target} INTERFACE ${_temp_dirs})
+        unset(_temp_dirs)
+    endif()
+
+    if(FUNC_LINKDIR_PRIVATE)
+        _qm_resolve_dir_helper("${FUNC_LINKDIR_PRIVATE}" _temp_dirs)
+        target_link_directories(${_target} PRIVATE ${_temp_dirs})
+        unset(_temp_dirs)
+    endif()
+
     target_compile_definitions(${_target} PUBLIC ${FUNC_DEFINES})
+    target_compile_definitions(${_target} INTERFACE ${FUNC_DEFINES_INTERFACE})
     target_compile_definitions(${_target} PRIVATE ${FUNC_DEFINES_PRIVATE})
+
+    target_compile_features(${_target} PUBLIC ${FUNC_FEATURES})
+    target_compile_features(${_target} INTERFACE ${FUNC_FEATURES_INTERFACE})
+    target_compile_features(${_target} PRIVATE ${FUNC_FEATURES_PRIVATE})
+
+    # CMake won't add language standard flag if the compiler default mode supports the standard,
+    # however, if the -std argument is not explicitly specified, the clang language server will
+    # not work properly.
+    # https://discourse.cmake.org/t/cmake-does-not-set-the-compiler-option-std-to-gnu17-or-c-17-although-i-set-the-target-compile-features-to-cxx-std-17/3299/8
+    foreach(_item IN LISTS FUNC_FEATURES FUNC_FEATURES_PRIVATE)
+        if(_item MATCHES "cxx_std_(.+)")
+            set_property(TARGET APPEND PROPERTY CXX_STANDARD ${CMAKE_MATCH_1})
+        elseif(_item MATCHES "c_std_(.+)")
+            set_property(TARGET APPEND PROPERTY C_STANDARD ${CMAKE_MATCH_1})
+        endif()
+    endforeach()
+
     target_compile_options(${_target} PUBLIC ${FUNC_CCFLAGS_PUBLIC})
+    target_compile_options(${_target} INTERFACE ${FUNC_CCFLAGS_INTERFACE})
     target_compile_options(${_target} PRIVATE ${FUNC_CCFLAGS})
+
+    target_link_options(${_target} PUBLIC ${FUNC_LDFLAGS_PUBLIC})
+    target_link_options(${_target} INTERFACE ${FUNC_LDFLAGS_INTERFACE})
+    target_link_options(${_target} PRIVATE ${FUNC_LDFLAGS})
+
     qm_link_qt(${_target} PUBLIC ${FUNC_QT_LINKS})
+    qm_link_qt(${_target} INTERFACE ${FUNC_QT_LINKS_INTERFACE})
     qm_link_qt(${_target} PRIVATE ${FUNC_QT_LINKS_PRIVATE})
-    target_include_directories(${_target} PRIVATE ${FUNC_INCLUDE_PRIVATE})
+
     qm_include_qt_private(${_target} PRIVATE ${FUNC_QT_INCLUDE_PRIVATE})
-    qm_skip_automoc(${FUNC_SKIP_AUTOMOC})
+
+    if(FUNC_SKIP_AUTOMOC)
+        _qm_resolve_file_helper("${FUNC_SKIP_AUTOMOC}" _temp_files)
+        qm_skip_automoc(${_temp_files})
+        unset(_temp_files)
+    endif()
 endmacro()
 
 #[[
@@ -214,7 +447,11 @@ function(qm_export_defines _target)
 
     get_target_property(_type ${_target} TYPE)
 
-    if("${_type}" STREQUAL "STATIC_LIBRARY")
+    if(_type STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+
+    if(_type STREQUAL "STATIC_LIBRARY")
         target_compile_definitions(${_target} PUBLIC ${_static_macro})
     endif()
 
@@ -230,7 +467,7 @@ endfunction()
         [DESCRIPTION    desc]
         [COPYRIGHT      copyright]
         [ICON           ico]
-        [OUTPUT         output]
+        [OUTPUT_DIR     dir]
     )
 ]] #
 function(qm_add_win_rc _target)
@@ -241,13 +478,13 @@ function(qm_add_win_rc _target)
     _qm_check_target_type_helper(${_target} _ "EXECUTABLE" "SHARED_LIBRARY")
 
     set(options)
-    set(oneValueArgs NAME VERSION DESCRIPTION COPYRIGHT ICON OUTPUT)
+    set(oneValueArgs NAME VERSION DESCRIPTION COPYRIGHT ICON OUTPUT_DIR)
     set(multiValueArgs)
     cmake_parse_arguments(FUNC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     qm_set_value(_name FUNC_NAME ${_target})
     qm_set_value(_version FUNC_VERSION PROJECT_VERSION "0.0.0.0")
-    qm_set_value(_desc FUNC_DESCRIPTION ${_name})
+    qm_set_value(_desc FUNC_DESCRIPTION PROJECT_DESCRIPTION ${_name})
     qm_set_value(_copyright FUNC_COPYRIGHT ${_name})
 
     qm_parse_version(_ver ${_version})
@@ -265,9 +502,16 @@ function(qm_add_win_rc _target)
         get_filename_component(RC_ICON_PATH ${FUNC_ICON} ABSOLUTE)
     endif()
 
-    qm_set_value(_out_path FUNC_OUTOUT "${CMAKE_CURRENT_BINARY_DIR}/${_name}_res.rc")
+    qm_set_value(_out_dir OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+    set(_out_path "${_out_dir}/${_target}_res.rc")
     configure_file("${QMSETUP_MODULES_DIR}/windows/WinResource.rc.in" ${_out_path} @ONLY)
     target_sources(${_target} PRIVATE ${_out_path})
+
+    if(FUNC_ICON)
+        if(${FUNC_ICON} IS_NEWER_THAN ${_out_path})
+            file(TOUCH_NOCREATE ${_out_path})
+        endif()
+    endif()
 endfunction()
 
 #[[
@@ -284,7 +528,7 @@ endfunction()
         [TRADEMARK         trademark]
         [ORIGINAL_FILENAME original filename]
         [ICONS             icon file paths]
-        [OUTPUT            output]
+        [OUTPUT_DIR        dir]
     )
 ]] #
 function(qm_add_win_rc_enhanced _target)
@@ -297,14 +541,14 @@ function(qm_add_win_rc_enhanced _target)
     set(options)
     set(oneValueArgs
         NAME VERSION DESCRIPTION COPYRIGHT COMMENTS COMPANY
-        INTERNAL_NAME TRADEMARK ORIGINAL_FILENAME OUTPUT
+        INTERNAL_NAME TRADEMARK ORIGINAL_FILENAME OUTPUT_DIR
     )
     set(multiValueArgs ICONS)
     cmake_parse_arguments(FUNC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     qm_set_value(_name FUNC_NAME ${_target})
     qm_set_value(_version FUNC_VERSION PROJECT_VERSION "0.0.0.0")
-    qm_set_value(_desc FUNC_DESCRIPTION ${_name})
+    qm_set_value(_desc FUNC_DESCRIPTION PROJECT_DESCRIPTION ${_name})
     qm_set_value(_copyright FUNC_COPYRIGHT ${_name})
     qm_set_value(_comments FUNC_COMMENTS "")
     qm_set_value(_company FUNC_COMPANY "")
@@ -327,7 +571,7 @@ function(qm_add_win_rc_enhanced _target)
 
     set(_file_type)
 
-    if("${_type}" STREQUAL "EXECUTABLE")
+    if(_type STREQUAL "EXECUTABLE")
         set(_file_type "VFT_APP")
     else()
         set(_file_type "VFT_DLL")
@@ -349,20 +593,29 @@ function(qm_add_win_rc_enhanced _target)
 
     set(RC_ICONS ${_icons})
 
-    qm_set_value(_out_path FUNC_OUTOUT "${CMAKE_CURRENT_BINARY_DIR}/${_name}_res.rc")
+    qm_set_value(_out_dir OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+    set(_out_path "${_out_dir}/${_target}_res.rc")
     configure_file("${QMSETUP_MODULES_DIR}/windows/WinResource2.rc.in" ${_out_path} @ONLY)
     target_sources(${_target} PRIVATE ${_out_path})
+
+    foreach(_icon IN LISTS FUNC_ICONS)
+        if(${_icon} IS_NEWER_THAN ${_out_path})
+            file(TOUCH_NOCREATE ${_out_path})
+            break()
+        endif()
+    endforeach()
 endfunction()
 
 #[[
     Attach windows manifest file to a target.
 
     qm_add_win_manifest(<target>
-        [UTF8]
         [NAME           name]
         [VERSION        version]
         [DESCRIPTION    desc]
-        [OUTPUT         output]
+        [OUTPUT_DIR     dir]
+        [UTF8]
+        [ADMIN]
     )
 ]] #
 function(qm_add_win_manifest _target)
@@ -372,14 +625,14 @@ function(qm_add_win_manifest _target)
 
     _qm_check_target_type_helper(${_target} _ "EXECUTABLE")
 
-    set(options UTF8)
-    set(oneValueArgs NAME VERSION DESCRIPTION OUTPUT)
+    set(options UTF8 ADMIN)
+    set(oneValueArgs NAME VERSION DESCRIPTION OUTPUT_DIR)
     set(multiValueArgs)
     cmake_parse_arguments(FUNC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     qm_set_value(_name FUNC_NAME ${_target})
     qm_set_value(_version FUNC_VERSION PROJECT_VERSION "0.0.0.0")
-    qm_set_value(_desc FUNC_DESCRIPTION ${_name})
+    qm_set_value(_desc FUNC_DESCRIPTION PROJECT_DESCRIPTION ${_name})
 
     qm_crop_version(_version ${_version} 4)
 
@@ -393,9 +646,45 @@ function(qm_add_win_manifest _target)
         set(MANIFEST_UTF8 "<activeCodePage xmlns=\"http://schemas.microsoft.com/SMI/2019/WindowsSettings\">UTF-8</activeCodePage>")
     endif()
 
-    qm_set_value(_out_path FUNC_OUTOUT "${CMAKE_CURRENT_BINARY_DIR}/${_name}_manifest.manifest")
+    if(FUNC_ADMIN)
+        set(MANIFEST_PRIVILEGES "<requestedExecutionLevel level=\"requireAdministrator\" uiAccess=\"false\" />")
+    else()
+        set(MANIFEST_PRIVILEGES "<requestedExecutionLevel level=\"asInvoker\" uiAccess=\"false\" />")
+    endif()
+
+    qm_set_value(_out_dir OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+    set(_out_path "${_out_dir}/${_target}_manifest.exe.manifest")
     configure_file("${QMSETUP_MODULES_DIR}/windows/WinManifest.manifest.in" ${_out_path} @ONLY)
-    target_sources(${_target} PRIVATE ${_out_path})
+
+    if(MSVC)
+        if(CMAKE_GENERATOR MATCHES "Visual Studio")
+            # Visual Studio
+            target_link_options(${_target} PRIVATE "/manifest" "/manifestinput:${_out_path}")
+
+            # The manifest file contains a UAC field, we should prevent Ninja from embedding the
+            # automatically generated UAC field
+            target_link_options(${_target} PRIVATE "/manifest" "/manifestuac:no")
+        else() # Ninja
+            # https://cmake.org/cmake/help/latest/release/3.4.html#other
+            # CMake learned to honor *.manifest source files with MSVC tools. Manifest files named as sources
+            # of .exe and .dll targets will be merged with linker-generated manifests and embedded in the binary.
+
+            # NOTE: CMake will automatically generate a default manifest file and embed it into the binary file
+            # when we are using MSVC toolchain, so it will conflict with the one we embed in the RC file. So in
+            # this case, we just follow the CMake documentation, add the manifest file into the sources and let
+            # CMake handle it. What's more, CMake can automatically merge all manifest files so we can actually
+            # add multiple manifest files, eg. each manifest file contains a separate section.
+            target_sources(${_target} PRIVATE ${_out_path})
+            target_link_options(${_target} PRIVATE "/manifestuac:no")
+        endif()
+    else()
+        # For non-MSVC toolchains we can only embed the manifest file into the RC file, sadly we have
+        # to merge all manifest files into one by ourself if we have multiple of them, but luckily
+        # CMake won't embed a default one so we don't need to worry about resource conflicts.
+        set(_manifest_rc ${_out_path}.rc)
+        file(WRITE ${_manifest_rc} "#include <windows.h>\n\n1 RT_MANIFEST \"${_out_path}\"")
+        target_sources(${_target} PRIVATE ${_manifest_rc})
+    endif()
 endfunction()
 
 #[[
@@ -423,7 +712,7 @@ function(qm_add_mac_bundle _target)
 
     qm_set_value(_app_name FUNC_NAME ${_target})
     qm_set_value(_app_version FUNC_VERSION PROJECT_VERSION "0.0.0.0")
-    qm_set_value(_app_desc FUNC_DESCRIPTION ${_app_name})
+    qm_set_value(_app_desc FUNC_DESCRIPTION PROJECT_DESCRIPTION ${_app_name})
     qm_set_value(_app_copyright FUNC_COPYRIGHT ${_app_name})
 
     qm_parse_version(_app_version ${_app_version})
@@ -507,112 +796,16 @@ function(qm_create_win_shortcut _target _dir)
 endfunction()
 
 #[[
-    Parse version and create seq vars with specified prefix.
-
-    qm_parse_version(<prefix> <version>)
-]] #
-function(qm_parse_version _prefix _version)
-    string(REPLACE "." ";" _version_list ${_version})
-    list(LENGTH _version_list _version_count)
-    list(PREPEND _version_list 0) # Add placeholder
-
-    foreach(_i RANGE 1 4)
-        if(_i LESS_EQUAL _version_count)
-            list(GET _version_list ${_i} _item)
-        else()
-            set(_item 0)
-        endif()
-
-        set(${_prefix}_${_i} ${_item} PARENT_SCOPE)
-    endforeach()
-endfunction()
-
-#[[
-    Get shorter version number.
-
-    qm_crop_version(<VAR> <version> <count>)
-]] #
-function(qm_crop_version _var _version _count)
-    qm_parse_version(FUNC ${_version})
-
-    set(_list)
-
-    foreach(_i RANGE 1 ${_count})
-        list(APPEND _list ${FUNC_${_i}})
-    endforeach()
-
-    string(JOIN "." _short_version ${_list})
-    set(${_var} ${_short_version} PARENT_SCOPE)
-endfunction()
-
-#[[
-    Tell if there are any generator expressions in the string.
-
-    qm_has_genex(<VAR> <string>)
-]] #
-function(qm_has_genex _out _str)
-    string(GENEX_STRIP "${_str}" _no_genex)
-
-    if("${_str}" STREQUAL "${_no_genex}")
-        set(_res off)
-    else()
-        set(_res on)
-    endif()
-
-    set(${_out} ${_res} PARENT_SCOPE)
-endfunction()
-
-#[[
-    Tell if the given paths are same in canonical form.
-
-    qm_paths_equal(<VAR> <path1> <path2>)
-]] #
-function(qm_paths_equal _out _path1 _path2)
-    # cmake_path(NORMAL_PATH) is introduced in CMake 3.20, we don't use it
-    # We call `get_filename_component` twice to normalize the paths
-    get_filename_component(_path1 ${_path1} ABSOLUTE)
-    get_filename_component(_path1 ${_path1} REALPATH)
-
-    get_filename_component(_path2 ${_path2} ABSOLUTE)
-    get_filename_component(_path2 ${_path2} REALPATH)
-
-    if(_path2 STREQUAL _path2)
-        set(${_out} on PARENT_SCOPE)
-    else()
-        set(${_out} off PARENT_SCOPE)
-    endif()
-endfunction()
-
-#[[
-    Set value if valid, otherwise use default.
-
-    qm_set_value(<key> <maybe_value...> <default>)
-]] #
-function(qm_set_value _key)
-    set(_args "${ARGN}")
-    list(POP_BACK _args _default)
-
-    foreach(_item ${_args})
-        if(${_item})
-            set(${_key} ${${_item}} PARENT_SCOPE)
-            return()
-        endif()
-    endforeach()
-
-    set(${_key} ${_default} PARENT_SCOPE)
-endfunction()
-
-#[[
     Collect targets of given types recursively in a directory.
 
     qm_collect_targets(<list> [DIRECTORY directory]
-                              [EXECUTABLE] [SHARED] [STATIC] [UTILITY])
+                              [EXECUTABLE] [SHARED] [STATIC] [INTERFACE] [UTILITY])
 
     If one or more types are specified, return targets matching the types.
     If no type is specified, return all targets.
 ]] #
 function(qm_collect_targets _var)
-    set(options EXECUTABLE SHARED STATIC UTILITY)
+    set(options EXECUTABLE SHARED STATIC INTERFACE UTILITY)
     set(oneValueArgs DIR)
     set(multiValueArgs)
     cmake_parse_arguments(FUNC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -625,11 +818,11 @@ function(qm_collect_targets _var)
 
     set(_tmp_targets)
 
-    macro(get_targets_recursive _targets _dir)
+    macro(_get_targets_recursive _targets _dir)
         get_property(_subdirs DIRECTORY ${_dir} PROPERTY SUBDIRECTORIES)
 
-        foreach(_subdir ${_subdirs})
-            get_targets_recursive(${_targets} ${_subdir})
+        foreach(_subdir IN LISTS _subdirs)
+            _get_targets_recursive(${_targets} ${_subdir})
         endforeach()
 
         get_property(_current_targets DIRECTORY ${_dir} PROPERTY BUILDSYSTEM_TARGETS)
@@ -637,29 +830,33 @@ function(qm_collect_targets _var)
     endmacro()
 
     # Get targets
-    get_targets_recursive(_tmp_targets ${_dir})
+    _get_targets_recursive(_tmp_targets ${_dir})
     set(_targets)
 
-    if(NOT FUNC_EXECUTABLE AND NOT FUNC_SHARED AND NOT FUNC_STATIC AND NOT FUNC_UTILITY)
+    if(NOT FUNC_EXECUTABLE AND NOT FUNC_SHARED AND NOT FUNC_STATIC AND NOT FUNC_INTERFACE AND NOT FUNC_UTILITY)
         set(_targets ${_tmp_targets})
     else()
         # Filter targets
-        foreach(_item ${_tmp_targets})
+        foreach(_item IN LISTS _tmp_targets)
             get_target_property(_type ${_item} TYPE)
 
-            if("${_type}" STREQUAL "EXECUTABLE")
+            if(_type STREQUAL "EXECUTABLE")
                 if(FUNC_EXECUTABLE)
                     list(APPEND _targets ${_item})
                 endif()
-            elseif("${_type}" STREQUAL "SHARED_LIBRARY")
+            elseif(_type STREQUAL "SHARED_LIBRARY")
                 if(FUNC_SHARED)
                     list(APPEND _targets ${_item})
                 endif()
-            elseif("${_type}" STREQUAL "STATIC_LIBRARY")
+            elseif(_type STREQUAL "STATIC_LIBRARY")
                 if(FUNC_STATIC)
                     list(APPEND _targets ${_item})
                 endif()
-            elseif("${_type}" STREQUAL "UTILITY")
+            elseif(_type STREQUAL "INTERFACE_LIBRARY")
+                if(FUNC_INTERFACE)
+                    list(APPEND _targets ${_item})
+                endif()
+            elseif(_type STREQUAL "UTILITY")
                 if(FUNC_UTILITY)
                     list(APPEND _targets ${_item})
                 endif()
@@ -699,23 +896,23 @@ function(qm_get_subdirs _var)
         set(_dir ${CMAKE_CURRENT_SOURCE_DIR})
     endif()
 
-    file(GLOB _subdirs LIST_DIRECTORIES true RELATIVE ${_dir} "${_dir}/*")
+    file(GLOB _entries LIST_DIRECTORIES true RELATIVE ${_dir} "${_dir}/*")
 
     if(FUNC_EXCLUDE)
-        foreach(_exclude_dir ${FUNC_EXCLUDE})
-            list(REMOVE_ITEM _subdirs ${_exclude_dir})
+        foreach(_exclude_dir IN LISTS FUNC_EXCLUDE)
+            list(REMOVE_ITEM _entries ${_exclude_dir})
         endforeach()
     endif()
 
     if(FUNC_REGEX_INCLUDE)
-        foreach(_exp ${FUNC_REGEX_INCLUDE})
-            list(FILTER _subdirs INCLUDE REGEX ${_exp})
+        foreach(_exp IN LISTS FUNC_REGEX_INCLUDE)
+            list(FILTER _entries INCLUDE REGEX ${_exp})
         endforeach()
     endif()
 
     if(FUNC_REGEX_EXCLUDE)
-        foreach(_exp ${FUNC_REGEX_EXCLUDE})
-            list(FILTER _subdirs EXCLUDE REGEX ${_exp})
+        foreach(_exp IN LISTS FUNC_REGEX_EXCLUDE)
+            list(FILTER _entries EXCLUDE REGEX ${_exp})
         endforeach()
     endif()
 
@@ -727,7 +924,7 @@ function(qm_get_subdirs _var)
         set(_relative)
     endif()
 
-    foreach(_sub ${_subdirs})
+    foreach(_sub IN LISTS _entries)
         if(IS_DIRECTORY ${_dir}/${_sub})
             if(FUNC_ABSOLUTE)
                 list(APPEND _res ${_dir}/${_sub})
@@ -741,6 +938,94 @@ function(qm_get_subdirs _var)
     endforeach()
 
     set(${_var} ${_res} PARENT_SCOPE)
+endfunction()
+
+#[[
+    Basic template to install a CMake project.
+
+    qm_basic_install(
+        [NAME <name>]
+        [VERSION <version>]
+        [COMPATIBILITY <compatibility>]
+        [INSTALL_DIR <dir>]
+        [CONFIG_TEMPLATE <file>]
+        [NAMESPACE <namespace>]
+        [EXPORT <sets...>]
+
+        [WRITE_VERSION_OPTIONS <options...>]
+        [WRITE_CONFIG_OPTIONS <options...>]
+    )
+
+    Include `GNUInstallDirs`, `CMakePackageConfigHelpers` before calling this function.
+]] #
+function(qm_basic_install)
+    set(options)
+    set(oneValueArgs NAME VERSION COMPATIBILITY INSTALL_DIR CONFIG_TEMPLATE NAMESPACE)
+    set(multiValueArgs WRITE_VERSION_OPTIONS WRITE_CONFIG_OPTIONS EXPORT)
+    cmake_parse_arguments(FUNC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    qm_set_value(_lib_dir CMAKE_INSTALL_LIBDIR lib)
+
+    qm_set_value(_name FUNC_NAME PROJECT_NAME "unknown")
+    qm_set_value(_version FUNC_VERSION PROJECT_VERSION "0.0.0.0")
+    qm_set_value(_compatibility FUNC_COMPATIBILITY AnyNewerVersion)
+    qm_set_value(_install_dir FUNC_INSTALL_DIR "${_lib_dir}/cmake/${_name}")
+    qm_set_value(_config_template FUNC_CONFIG_TEMPLATE "${CMAKE_CURRENT_LIST_DIR}/${_name}Config.cmake.in")
+
+    set(_namespace)
+
+    if(FUNC_NAMESPACE)
+        set(_namespace NAMESPACE ${FUNC_NAMESPACE})
+    endif()
+
+    set(_export_files)
+
+    # Install cmake targets files
+    foreach(_item IN LISTS FUNC_EXPORT)
+        install(EXPORT ${_item}
+            FILE "${_item}.cmake"
+            DESTINATION ${_install_dir}
+            ${_namespace}
+        )
+        list(APPEND _export_files "${_item}.cmake")
+    endforeach()
+
+    # Prepare config template file
+    get_filename_component(_config_template ${_config_template} ABSOLUTE)
+
+    if(NOT EXISTS ${_config_template})
+        set(_config_content "@PACKAGE_INIT@\n\n")
+
+        foreach(_item IN LISTS _export_files)
+            string(APPEND _config_content "include(\"\${CMAKE_CURRENT_LIST_DIR}/${_item}\")\n")
+        endforeach()
+
+        set(_config_template "${CMAKE_CURRENT_BINARY_DIR}/${_name}Config.cmake.in")
+        file(WRITE ${_config_template} ${_config_content})
+    endif()
+
+    # Add version file
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/${_name}ConfigVersion.cmake"
+        VERSION ${_version}
+        COMPATIBILITY ${_compatibility}
+        ${FUNC_WRITE_VERSION_OPTIONS}
+    )
+
+    # Add configuration file
+    configure_package_config_file(
+        ${_config_template}
+        "${CMAKE_CURRENT_BINARY_DIR}/${_name}Config.cmake"
+        INSTALL_DESTINATION ${_install_dir}
+        ${FUNC_WRITE_CONFIG_OPTIONS}
+    )
+
+    # Install cmake files
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/${_name}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${_name}ConfigVersion.cmake"
+        DESTINATION ${_install_dir}
+    )
 endfunction()
 
 # ----------------------------------
@@ -758,3 +1043,50 @@ macro(_qm_check_target_type_helper _target _type)
     unset(_tmp_target_type)
     unset(_tmp_target_type_list)
 endmacro()
+
+function(_qm_resolve_file_helper _dirs _out)
+    set(_res)
+
+    foreach(_item ${_dirs})
+        if(_item STREQUAL "*")
+            set(_cur_dir ".")
+            file(GLOB _files LIST_DIRECTORIES true "*")
+        elseif(_item STREQUAL "**")
+            set(_cur_dir ".")
+            file(GLOB_RECURSE _files LIST_DIRECTORIES true "*")
+        elseif(_item MATCHES "(.+)[/\\]\\*$")
+            set(_cur_dir ${CMAKE_MATCH_1})
+            file(GLOB _files LIST_DIRECTORIES true "${_cur_dir}/*")
+        elseif(_item MATCHES "(.+)[/\\]\\*\\*$")
+            set(_cur_dir ${CMAKE_MATCH_1})
+            file(GLOB_RECURSE _files LIST_DIRECTORIES true "${_cur_dir}/*")
+        else()
+            get_filename_component(_item ${_item} ABSOLUTE)
+            list(APPEND _res ${_item})
+            continue()
+        endif()
+
+        get_filename_component(_cur_dir ${_cur_dir} ABSOLUTE)
+        list(APPEND _res ${_cur_dir})
+
+        foreach(_item IN LISTS _files)
+            get_filename_component(_item ${_item} ABSOLUTE)
+            list(APPEND _res ${_item})
+        endforeach()
+    endforeach()
+
+    set(${_out} ${_res} PARENT_SCOPE)
+endfunction()
+
+function(_qm_resolve_dir_helper _dirs _out)
+    set(_files)
+    _qm_resolve_file_helper("${_dirs}" _files)
+
+    foreach(_item IN LISTS _files)
+        if(IS_DIRECTORY ${_item})
+            list(APPEND _res ${_item})
+        endif()
+    endforeach()
+
+    set(${_out} ${_res} PARENT_SCOPE)
+endfunction()

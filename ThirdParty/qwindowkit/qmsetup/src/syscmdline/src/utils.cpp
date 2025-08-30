@@ -43,9 +43,9 @@ namespace SysCmdLine::Utils {
         return result;
     }
 
-    int levenshteinDistance(const std::string &s1, const std::string &s2) {
-        size_t len1 = s1.size();
-        size_t len2 = s2.size();
+    static int levenshteinDistance(const std::string &s1, const std::string &s2) {
+        auto len1 = s1.size();
+        auto len2 = s2.size();
 
         // Alloc
         int **dp = new int *[len1 + 1];
@@ -89,14 +89,6 @@ namespace SysCmdLine::Utils {
             }
         }
         return suggestions;
-    }
-
-    std::string removeSideQuotes(const std::string &s) {
-        if (s.size() < 2)
-            return s;
-        if ((s.front() == '\'' && s.back() == '\'') || (s.front() == '\"' && s.back() == '\"'))
-            return s.substr(1, s.size() - 2);
-        return s;
     }
 
     std::string toUpper(std::string s) {

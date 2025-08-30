@@ -6,8 +6,8 @@
 
 namespace SysCmdLine {
 
-    static const char True_Literal[] = "true";
-    static const char False_Literal[] = "false";
+    static constexpr const char True_Literal[] = "true";
+    static constexpr const char False_Literal[] = "false";
 
     Value::Value(Value::Type type) : _type(type) {
         switch (type) {

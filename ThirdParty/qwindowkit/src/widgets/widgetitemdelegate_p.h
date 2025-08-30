@@ -34,7 +34,6 @@ namespace QWK {
         QRect mapGeometryToScene(const QObject *obj) const override;
 
         QWindow *hostWindow(const QObject *host) const override;
-        bool isHostSizeFixed(const QObject *host) const override;
         bool isWindowActive(const QObject *host) const override;
         Qt::WindowStates getWindowState(const QObject *host) const override;
         Qt::WindowFlags getWindowFlags(const QObject *host) const override;
@@ -48,6 +47,9 @@ namespace QWK {
         void setWindowVisible(QObject *host, bool visible) const override;
         void setGeometry(QObject *host, const QRect &rect) override;
         void bringWindowToTop(QObject *host) const override;
+
+        WinIdChangeEventFilter *
+            createWinIdEventFilter(QObject *host, AbstractWindowContext *context) const override;
     };
 
 }

@@ -40,11 +40,11 @@ namespace QWK {
 #endif
 
         bool isHitTestVisible(const QWidget *w) const;
-        void setHitTestVisible(const QWidget *w, bool visible = true);
+        void setHitTestVisible(QWidget *w, bool visible = true);
 
     Q_SIGNALS:
-        void titleBarChanged(const QWidget *w);
-        void systemButtonChanged(SystemButton button, const QWidget *w);
+        void titleBarChanged(QWidget *w);
+        void systemButtonChanged(SystemButton button, QWidget *w);
 
     protected:
         WidgetWindowAgent(WidgetWindowAgentPrivate &d, QObject *parent = nullptr);

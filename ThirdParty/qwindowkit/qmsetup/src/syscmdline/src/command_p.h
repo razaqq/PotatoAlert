@@ -39,6 +39,8 @@ namespace SysCmdLine {
         CommandCatalogue catalogue;
 
         Command::Handler handler;
+        
+        HelpLayout helpLayout;
 
 #ifdef SYSCMDLINE_ENABLE_VALIDITY_CHECK
         void checkAddedCommand(const Command &cmd) const;

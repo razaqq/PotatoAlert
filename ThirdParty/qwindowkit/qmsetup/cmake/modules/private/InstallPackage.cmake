@@ -1,3 +1,7 @@
+#[[
+    Warning: This module is private, may be modified or removed in the future, please use with caution.
+]] #
+
 if(NOT DEFINED QMSETUP_PACKAGE_BUILD_TYPE)
     set(QMSETUP_PACKAGE_BUILD_TYPE "Release")
 endif()
@@ -47,7 +51,8 @@ function(qm_install_package _name)
     if(FUNC_CMAKE_PACKAGE_SUBDIR)
         set(_cmake_subdir ${FUNC_CMAKE_PACKAGE_SUBDIR})
     else()
-        set(_cmake_subdir "lib/cmake/${_name}")
+        include(GNUInstallDirs)
+        set(_cmake_subdir "${CMAKE_INSTALL_LIBDIR}/cmake/${_name}")
     endif()
 
     # Build types
@@ -73,10 +78,14 @@ function(qm_install_package _name)
 
     if(NOT IS_DIRECTORY ${_install_cmake_dir})
         # Determine generator
-        set(_generator)
+        set(_extra_args)
 
         if(CMAKE_GENERATOR)
-            set(_generator -G "${CMAKE_GENERATOR}")
+            set(_extra_args -G "${CMAKE_GENERATOR}")
+        endif()
+
+        if(CMAKE_GENERATOR_PLATFORM)
+            set(_extra_args -A "${CMAKE_GENERATOR_PLATFORM}")
         endif()
 
         # Remove old build directory
@@ -91,7 +100,7 @@ function(qm_install_package _name)
         set(_log_file ${_build_tree_dir}/${_name}_configure.log)
         execute_process(
             COMMAND ${CMAKE_COMMAND} -S ${_src_dir} -B ${_build_dir}
-            ${_generator} ${_build_type}
+            ${_extra_args} ${_build_type}
             "-DCMAKE_INSTALL_PREFIX=${_install_dir}" ${FUNC_CONFIGURE_ARGS}
             OUTPUT_FILE ${_log_file}
             ERROR_FILE ${_log_file}
@@ -104,7 +113,7 @@ function(qm_install_package _name)
         endif()
 
         # Build
-        foreach(_item ${_build_types})
+        foreach(_item IN LISTS _build_types)
             message(STATUS "Building ${_name} (${_item})...")
             set(_log_file ${_build_tree_dir}/${_name}_build-${_item}.log)
             execute_process(
@@ -121,7 +130,7 @@ function(qm_install_package _name)
         endforeach()
 
         # Install
-        foreach(_item ${_build_types})
+        foreach(_item IN LISTS _build_types)
             message(STATUS "Installing ${_name} (${_item})...")
             set(_log_file ${_build_tree_dir}/${_name}_install-${_item}.log)
             execute_process(

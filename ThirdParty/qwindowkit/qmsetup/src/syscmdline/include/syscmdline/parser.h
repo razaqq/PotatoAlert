@@ -28,7 +28,6 @@
 #define PARSER_H
 
 #include <syscmdline/parseresult.h>
-#include <syscmdline/helplayout.h>
 
 namespace SysCmdLine {
 
@@ -88,9 +87,6 @@ namespace SysCmdLine {
         inline int invoke(int argc, char **argv, int errCode = -1, int parseOptions = Standard);
 
     public:
-        HelpLayout helpLayout() const;
-        void setHelpLayout(const HelpLayout &helpLayout);
-
         using TextProvider = std::string (*)(int /* category */, int /* index */);
 
         enum SizeType {

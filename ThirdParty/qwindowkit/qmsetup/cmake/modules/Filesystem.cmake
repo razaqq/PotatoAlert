@@ -1,8 +1,8 @@
-if(NOT DEFINED QMSETUP_MODULES_DIR)
-    include("${CMAKE_CURRENT_LIST_DIR}/../QMSetupAPI.cmake")
-endif()
-
 include_guard(DIRECTORY)
+
+if(NOT QMSETUP_MODULES_DIR)
+    get_filename_component(QMSETUP_MODULES_DIR ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
+endif()
 
 #[[
     Initialize the build output directories of targets and resources.
@@ -14,10 +14,21 @@ macro(qm_init_directories)
         set(QMSETUP_BUILD_DIR "${CMAKE_BINARY_DIR}/out-$<LOWER_CASE:${CMAKE_SYSTEM_PROCESSOR}>-$<CONFIG>")
     endif()
 
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${QMSETUP_BUILD_DIR}/bin)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${QMSETUP_BUILD_DIR}/lib)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${QMSETUP_BUILD_DIR}/lib)
-    set(CMAKE_BUILD_SHARE_DIR ${QMSETUP_BUILD_DIR}/share)
+    if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${QMSETUP_BUILD_DIR}/bin)
+    endif()
+
+    if(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${QMSETUP_BUILD_DIR}/lib)
+    endif()
+
+    if(NOT DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${QMSETUP_BUILD_DIR}/lib)
+    endif()
+
+    if(NOT DEFINED CMAKE_BUILD_SHARE_DIR)
+        set(CMAKE_BUILD_SHARE_DIR ${QMSETUP_BUILD_DIR}/share)
+    endif()
 endmacro()
 
 #[[
@@ -59,15 +70,21 @@ function(qm_add_copy_command _target)
     endif()
 
     # Determine destination
-    set(_dest)
-    qm_set_value(_dest FUNC_DESTINATION .)
+    set(_dest .)
+
+    if(FUNC_DESTINATION)
+        set(_dest ${FUNC_DESTINATION})
+    endif()
 
     # Determine destination base directory
-    set(_dest_base)
     get_target_property(_type ${_target} TYPE)
 
-    if("${_type}" STREQUAL "UTILITY")
-        qm_set_value(_dest_base QMSETUP_BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+    if(_type STREQUAL "UTILITY")
+        if(QMSETUP_BUILD_DIR)
+            set(_dest_base ${QMSETUP_BUILD_DIR})
+        else()
+            set(_dest_base ${CMAKE_CURRENT_SOURCE_DIR})
+        endif()
     else()
         set(_dest_base "$<TARGET_FILE_DIR:${_target}>")
     endif()
@@ -130,25 +147,53 @@ function(qm_add_copy_command _target)
             # Calculate real install directory
             get_filename_component(_dest \"${FUNC_INSTALL_DIR}/\${_rel_path}\" ABSOLUTE BASE_DIR \${CMAKE_INSTALL_PREFIX})
     
-            foreach(_file \${_src})
-                # Avoid using `get_filename_component` to keep the trailing slash
-                set(_path \${_file})
-                if (NOT IS_ABSOLUTE \${_path})
-                    set(_path \"${CMAKE_CURRENT_SOURCE_DIR}/\${_path}\")
-                endif()
-    
-                if(IS_DIRECTORY \${_path})
-                    set(_type DIRECTORY)
-                else()
-                    set(_type FILE)
-                endif()
-    
-                file(INSTALL DESTINATION \"\${_dest}\"
-                    TYPE \${_type}
-                    FILES \${_path}
-                    \${_extra_args}
-                )
-            endforeach()
+            execute_process(
+                COMMAND \${CMAKE_COMMAND}
+                -D \"src=\${_src}\"
+                -D \"dest=\${_dest}\"
+                \${_extra_args}
+                -P \"${QMSETUP_MODULES_DIR}/scripts/copy.cmake\"
+                WORKING_DIRECTORY \"${CMAKE_CURRENT_SOURCE_DIR}\"
+            )
         ")
     endif()
+endfunction()
+
+#[[
+    Add a custom command to run `configure_file`.
+
+    qm_future_configure_file(<_input> <output>
+        [FORCE]
+        [EXTRA_ARGS <args...>]
+        [DEPENDS <deps...>]
+        [VARIABLES <var...>]
+    )
+]] #
+function(qm_future_configure_file _input _output)
+    set(options FORCE)
+    set(oneValueArgs)
+    set(multiValueArgs VARIABLES EXTRA_ARGS DEPENDS)
+    cmake_parse_arguments(FUNC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    set(_options)
+
+    foreach(_item IN LISTS FUNC_VARIABLES)
+        list(APPEND _options -D "${_item}=${${_item}}")
+    endforeach()
+
+    if(FUNC_FORCE)
+        list(APPLE _options -D "force=TRUE")
+    endif()
+
+    add_custom_command(OUTPUT ${_output}
+        COMMAND ${CMAKE_COMMAND}
+        -D "input=${_input}"
+        -D "output=${_output}"
+        -D "args=${FUNC_EXTRA_ARGS}"
+        ${_options}
+        -P "${QMSETUP_MODULES_DIR}/scripts/configure_file.cmake"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        DEPENDS ${FUNC_DEPENDS}
+        VERBATIM
+    )
 endfunction()

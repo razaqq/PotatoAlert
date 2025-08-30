@@ -18,7 +18,7 @@ namespace SCL = SysCmdLine;
 
 namespace fs = std::filesystem;
 
-using SCL::u8printf;
+using SCL::u8info;
 
 // ---------------------------------------- Definitions ----------------------------------------
 
@@ -104,7 +104,7 @@ static bool removeEmptyDirectories(const fs::path &path, bool verbose) {
     // Remove self if empty
     if (isEmpty) {
         if (verbose) {
-            u8printf("Remove: \"%s\"\n", tstr2str(path).data());
+            u8info("Remove: \"%s\"\n", tstr2str(path).data());
         }
         fs::remove(path);
     }
@@ -115,7 +115,7 @@ static bool removeEmptyDirectories(const fs::path &path, bool verbose) {
 
 static bool copyFile(const fs::path &file, const fs::path &dest, const fs::path &symlinkContent,
                      bool force, bool verbose) {
-    auto target = dest / fs::path(file).filename();
+    auto target = dest / file.filename();
     if (fs::exists(target)) {
         if (Utils::cleanPath(target) == Utils::cleanPath(file))
             return false; // Same file
@@ -128,8 +128,8 @@ static bool copyFile(const fs::path &file, const fs::path &dest, const fs::path 
 
     if (!symlinkContent.empty()) {
         if (verbose) {
-            u8printf("Link: from \"%s\" to \"%s\"\n", tstr2str(file).data(),
-                     tstr2str(symlinkContent).data());
+            u8info("Link: from \"%s\" to \"%s\"\n", tstr2str(file).data(),
+                   tstr2str(symlinkContent).data());
         }
 
         if (fs::exists(target))
@@ -137,8 +137,7 @@ static bool copyFile(const fs::path &file, const fs::path &dest, const fs::path 
         fs::create_symlink(symlinkContent, target);
     } else {
         if (verbose) {
-            u8printf("Copy: from \"%s\" to \"%s\"\n", tstr2str(file).data(),
-                     tstr2str(target).data());
+            u8info("Copy: from \"%s\" to \"%s\"\n", tstr2str(file).data(), tstr2str(target).data());
         }
         fs::copy(file, dest, fs::copy_options::overwrite_existing);
         Utils::syncFileTime(target, file); // Sync time for each file
@@ -170,7 +169,7 @@ static void copyDirectory(const fs::path &srcRootDir, const fs::path &srcDir,
 
             // Copy if symlink points inside the source directory
             copyFile(entryPath, destDir,
-                     linkPath.string().starts_with(srcRootDir.string())
+                     Utils::starts_with(linkPath.string(), srcRootDir.string())
                          ? fs::relative(linkPath, fs::canonical(entryPath.parent_path())).string()
                          : std::string(),
                      force, verbose);
@@ -192,6 +191,10 @@ static std::string standardError(int code = errno) {
 }
 
 #ifdef __APPLE__
+static inline bool isFramework(const fs::path &path) {
+    return Utils::toLower(path.extension().string()) == ".framework";
+}
+
 static fs::path lib2framework(fs::path path, const fs::path &fallback = {}) {
     // Ensure the path has at least three ancestors (including root)
     for (int i = 0; i < 3; ++i) {
@@ -200,7 +203,7 @@ static fs::path lib2framework(fs::path path, const fs::path &fallback = {}) {
         path = path.parent_path();
     }
     // Check if the ancestor's extension is ".framework"
-    if (path.extension() == ".framework")
+    if (isFramework(path))
         return path;
     return fallback;
 }
@@ -429,9 +432,9 @@ static int cmd_touch(const SCL::ParseResult &result) {
 
     // Set time
     if (verbose) {
-        u8printf("Set A-Time: %s\n", time2str(t.accessTime).data());
-        u8printf("Set M-Time: %s\n", time2str(t.modifyTime).data());
-        u8printf("Set C-Time: %s\n", time2str(t.statusChangeTime).data());
+        u8info("Set A-Time: %s\n", time2str(t.accessTime).data());
+        u8info("Set M-Time: %s\n", time2str(t.modifyTime).data());
+        u8info("Set C-Time: %s\n", time2str(t.statusChangeTime).data());
     }
     Utils::setFileTime(file, t);
     return 0;
@@ -600,7 +603,7 @@ static int cmd_configure(const SCL::ParseResult &result) {
     }
 
     if (dryrun) {
-        u8printf("%s", content.data());
+        u8info("%s", content.data());
         return 0;
     }
 
@@ -674,7 +677,7 @@ static int cmd_configure(const SCL::ParseResult &result) {
 
         if (verbose) {
             if (!hash.empty()) {
-                u8printf("SHA256: %s\n", hash.data());
+                u8info("SHA256: %s\n", hash.data());
             }
         }
     }
@@ -733,7 +736,8 @@ static int cmd_incsync(const SCL::ParseResult &result) {
         if (entry.is_regular_file()) {
             const auto &path = entry.path();
             const auto &ext = Utils::toLower(TString(path.extension()));
-            if (!(ext == _TSTR(".h") || ext == _TSTR(".hpp"))) {
+            if (!(ext == _TSTR(".h") || ext == _TSTR(".hh") || ext == _TSTR(".hpp") ||
+                  ext == _TSTR(".hxx"))) {
                 continue;
             }
 
@@ -761,8 +765,8 @@ static int cmd_incsync(const SCL::ParseResult &result) {
 
             auto targetPath = targetDir / path.filename();
             if (verbose) {
-                u8printf("Sync: from \"%s\" to \"%s\"\n", tstr2str(path).data(),
-                         tstr2str(targetPath).data());
+                u8info("Sync: from \"%s\" to \"%s\"\n", tstr2str(path).data(),
+                       tstr2str(targetPath).data());
             }
 
             if (dryrun)
@@ -842,7 +846,7 @@ static int cmd_deploy(const SCL::ParseResult &result) {
         }
     }
 
-#ifdef _WIN32
+#if 1
     // Add searching paths
     std::vector<fs::path> searchingPaths;
     {
@@ -886,6 +890,9 @@ static int cmd_deploy(const SCL::ParseResult &result) {
                 tmp.emplace_back(Utils::cleanPath(fs::absolute(str2tstr(Utils::trim(line)))));
             }
         }
+
+        // Add dest
+        tmp.push_back(dest);
 
         // Remove duplications
         std::set<fs::path> visited;
@@ -938,7 +945,7 @@ static int cmd_deploy(const SCL::ParseResult &result) {
             std::set<TString> result;
             for (const auto &path : std::as_const(paths)) {
                 if (verbose) {
-                    u8printf("Resolve: \"%s\"\n", tstr2str(path).data());
+                    u8info("Resolve: \"%s\"\n", tstr2str(path).data());
                 }
 
                 std::vector<std::string> unparsed;
@@ -946,12 +953,13 @@ static int cmd_deploy(const SCL::ParseResult &result) {
 #ifdef _WIN32
                     Utils::resolveWinBinaryDependencies(path, searchingPaths, &unparsed)
 #else
-                    Utils::resolveUnixBinaryDependencies(fromFramework(path), &unparsed)
+                    Utils::resolveUnixBinaryDependencies(fromFramework(path), searchingPaths,
+                                                         &unparsed)
 #endif
                     ;
                 for (const auto &item : deps) {
                     if (verbose) {
-                        u8printf("    %s\n", tstr2str(item).data());
+                        u8info("    %s\n", tstr2str(item).data());
                     }
                     result.insert(item);
                 }
@@ -962,8 +970,8 @@ static int cmd_deploy(const SCL::ParseResult &result) {
                         maxSize = std::max(maxSize, item.size());
                     }
                     for (const auto &item : std::as_const(unparsed)) {
-                        u8printf("    %s%s[Not Found]\n", item.data(),
-                                 std::string(maxSize + 4 - item.size(), ' ').data());
+                        u8info("    %s%s[Not Found]\n", item.data(),
+                               std::string(maxSize + 4 - item.size(), ' ').data());
                     }
                 }
             }
@@ -1075,9 +1083,9 @@ static int cmd_deploy(const SCL::ParseResult &result) {
     const auto &fixRPaths = [verbose](const std::string &file,
                                       const std::vector<std::string> &paths) {
         if (verbose) {
-            u8printf("Fix rpath: \"%s\"\n", file.data());
+            u8info("Fix rpath: \"%s\"\n", file.data());
             for (const auto &path : paths) {
-                u8printf("    %s\n", path.data());
+                u8info("    %s\n", path.data());
             }
         }
         Utils::setFileRPaths(file, paths);
@@ -1150,9 +1158,63 @@ static int cmd_deploy(const SCL::ParseResult &result) {
         targetDependencies.insert(targetPath);
     }
 
+    // Extra step: normalize dependencies
+    {
+        // Build name indexes
+        std::set<std::string> targetFileNames;
+        for (const auto &file : std::as_const(targetOrgFiles)) {
+            if (isFramework(file)) {
+                targetFileNames.insert(file.stem());
+            } else {
+                targetFileNames.insert(file.filename());
+            }
+        }
+
+        for (const auto &file : std::as_const(targetDependencies)) {
+            if (isFramework(file)) {
+                targetFileNames.insert(file.stem());
+            } else {
+                targetFileNames.insert(file.filename());
+            }
+        }
+
+        static const auto &normalize = [verbose, &targetFileNames](const fs::path &file) {
+            std::vector<std::pair<std::string, std::string>> normalized;
+            for (const auto &dep : Utils::getMacAbsoluteDependencies(
+                     isFramework(file) ? framework2lib(file) : file)) {
+                fs::path depPath = dep;
+
+                // Only collected dependencies will be normalized
+                if (fs::exists(depPath) &&
+                    Utils::contains(targetFileNames, fs::canonical(depPath).filename())) {
+                    normalized.emplace_back(dep, "@rpath/" + depPath.filename().string());
+                }
+            }
+
+            if (normalized.empty())
+                return;
+
+            if (verbose) {
+                u8info("Normalize dependencies: \"%s\"\n", file.string().data());
+                for (const auto &item : std::as_const(normalized)) {
+                    u8info("    %s\n", item.first.data());
+                }
+            }
+
+            Utils::replaceMacFileDependencies(file, normalized);
+        };
+
+        for (const auto &file : std::as_const(targetOrgFiles)) {
+            normalize(file);
+        }
+        for (const auto &file : std::as_const(targetDependencies)) {
+            normalize(file);
+        }
+    }
+
     // Fix rpath for original files (maybe executable)
     for (const auto &file : std::as_const(targetOrgFiles)) {
-        if (file.extension() == ".framework") {
+        if (isFramework(file)) {
             fs::path lib = framework2lib(file);
             if (!lib.empty()) {
                 fixFrameworkRPaths(lib);
@@ -1174,7 +1236,7 @@ static int cmd_deploy(const SCL::ParseResult &result) {
 
     // Fix rpath for dependencies
     for (const auto &file : std::as_const(targetDependencies)) {
-        if (file.extension() == ".framework") {
+        if (isFramework(file)) {
             fs::path lib = framework2lib(file);
             if (!lib.empty()) {
                 fixFrameworkRPaths(lib);
@@ -1195,8 +1257,8 @@ static int cmd_deploy(const SCL::ParseResult &result) {
 #  else
     // const auto &setInterpreter = [verbose](const std::string &file, const std::string &interp) {
     //     if (verbose) {
-    //         u8printf("Set interpreter: \"%s\"\n", file.data());
-    //         u8printf("    %s\n", interp.data());
+    //         u8info("Set interpreter: \"%s\"\n", file.data());
+    //         u8info("    %s\n", interp.data());
     //     }
     //     Utils::setFileInterpreter(file, interp);
     // };
@@ -1259,7 +1321,7 @@ static int cmd_deploy(const SCL::ParseResult &result) {
     //     interpreter = dest / interpreterName;
 
     //     if (verbose) {
-    //         u8printf("Interpreter: \"%s\"\n", interpreter.string().data());
+    //         u8info("Interpreter: \"%s\"\n", interpreter.string().data());
     //     }
 
     //     // Set interpreter for original files
@@ -1373,7 +1435,7 @@ int main(int argc, char *argv[]) {
             SCL::Option({"-o", "--out"},
                         "Set output directory of dependencies, defult to current directory")
                 .arg("dir"),
-#ifdef _WIN32
+#if 1
             SCL::Option({"-L", "--linkdir"}, "Add a library searching path")
                 .arg("dir")
                 .multi()
@@ -1415,8 +1477,30 @@ int main(int argc, char *argv[]) {
     cc.addCommands("Buildsystem Commands", {"configure", "incsync", "deploy"});
     rootCommand.setCatalogue(cc);
 
+    SCL::HelpLayout hl = []() {
+        SCL::HelpLayout res;
+        res.addHelpTextItem(SCL::HelpLayout::HT_Prologue);
+        res.addMessageItem(SCL::HelpLayout::MI_Information);
+        res.addMessageItem(SCL::HelpLayout::MI_Warning);
+        res.addMessageItem(SCL::HelpLayout::MI_Critical);
+        res.addHelpTextItem(SCL::HelpLayout::HT_Description);
+        res.addHelpTextItem(SCL::HelpLayout::HT_Usage);
+        res.addHelpListItem(SCL::HelpLayout::HL_Arguments);
+        res.addHelpListItem(SCL::HelpLayout::HL_Options);
+        res.addHelpListItem(SCL::HelpLayout::HL_Commands);
+        res.addHelpTextItem(SCL::HelpLayout::HT_Epilogue, [](const SCL::HelpLayout::Context &ctx) {
+            SCL::u8debug(SCL::MT_Warning, true, "%s\n", ctx.text->lines.c_str());
+            if (ctx.hasNext) {
+                SCL::u8info("\n");
+            }
+        });
+        return res;
+    }();
+    rootCommand.setHelpLayout(hl);
+
     SCL::Parser parser(rootCommand);
     parser.setPrologue(TOOL_DESC);
+    parser.setEpilogue(TOOL_COPYRIGHT);
     parser.setDisplayOptions(SCL::Parser::AlignAllCatalogues);
 
     int ret;
@@ -1435,7 +1519,7 @@ int main(int argc, char *argv[]) {
         if (typeid(e) == typeid(fs::filesystem_error)) {
             auto err = static_cast<const fs::filesystem_error &>(e);
             // msg = "\"" + tstr2str(err.path1()) + "\": " + standardError();
-            msg = Utils::local8bit_to_utf8(err.what());
+            msg = SCL::ansiToUtf8(err.what());
         }
 #endif
 

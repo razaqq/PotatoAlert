@@ -27,9 +27,8 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
-#include <cassert>
-
 #include <syscmdline/option.h>
+#include <syscmdline/helplayout.h>
 
 namespace SysCmdLine {
 
@@ -66,8 +65,6 @@ namespace SysCmdLine {
         std::string name() const;
         void setName(const std::string &name);
 
-        int optionCount() const;
-        Option option(int index) const;
         inline void addOption(const Option &option, const std::string &group = {});
         void addOptions(const std::vector<Option> &options, const std::string &group = {});
 
@@ -93,6 +90,9 @@ namespace SysCmdLine {
         void addHelpOption(bool showHelpIfNoArg = false, bool global = false,
                            const std::vector<std::string> &tokens = {},
                            const std::string &desc = {});
+
+        HelpLayout helpLayout() const;
+        void setHelpLayout(const HelpLayout &helpLayout);
 
     public:
         inline Command &detailed(const std::string &detailedDescription);

@@ -28,7 +28,7 @@
 #define GLOBAL_H
 
 // Export define
-#ifdef _MSC_VER
+#ifdef _WIN32
 #  define SYSCMDLINE_DECL_EXPORT __declspec(dllexport)
 #  define SYSCMDLINE_DECL_IMPORT __declspec(dllimport)
 #else
@@ -46,6 +46,12 @@
 #  endif
 #endif
 
+#ifdef _WIN32
+#  define SYSCMDLINE_DECL_DEPRECATED __declspec(deprecated)
+#else
+#  define SYSCMDLINE_DECL_DEPRECATED __attribute__((__deprecated__))
+#endif
+
 // Utils
 #define SYSCMDLINE_UNUSED(X) (void) X;
 
@@ -54,5 +60,12 @@ public:                                                                         
     const X##Private *d_func() const {                                                             \
         return reinterpret_cast<const X##Private *>(d_ptr);                                        \
     }
+
+#if defined(__GNUC__) || defined(__clang__)
+#  define SYSCMDLINE_PRINTF_FORMAT(fmtpos, attrpos)                                                \
+      __attribute__((__format__(__printf__, fmtpos, attrpos)))
+#else
+#  define SYSCMDLINE_PRINTF_FORMAT(fmtpos, attrpos)
+#endif
 
 #endif // GLOBAL_H
