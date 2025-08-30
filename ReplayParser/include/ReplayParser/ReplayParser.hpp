@@ -37,7 +37,7 @@ namespace PotatoAlert::ReplayParser {
 	X(AviaSkipBombHE,        42) \
 	X(AviaBombAirstrike,     52) \
 	X(DepthChargeAirstrike,  58) \
-	X(AcousticHomingTorpedo, 60) \
+	X(AcousticHomingTorpedo, 60)
 
 enum class DamageType : int64_t
 {
@@ -60,47 +60,67 @@ inline std::string_view GetName(DamageType dmgType)
 	return "Unknown";
 }
 
-// missing RocketRicochet
-#define RIBBON_TYPES                                        \
-	X(AcousticHit, -99, AcousticHit)                        \
-	X(SonarHit, -98, AcousticHit)                           \
-	X(UnknownRibbon, -1, UnknownRibbon)                     \
-	X(Artillery, 0, Artillery)                              \
-	X(TorpedoHit, 1, TorpedoHit)                            \
-	X(Bomb, 2, Bomb)                                        \
-	X(PlaneShotDown, 3, PlaneShotDown)                      \
-	X(Incapacitation, 4, Incapacitation)                    \
-	X(Destroyed, 5, Destroyed)                              \
-	X(SetFire, 6, SetFire)                                  \
-	X(Flooding, 7, Flooding)                                \
-	X(Citadel, 8, Citadel)                                  \
-	X(Defended, 9, Defended)                                \
-	X(Captured, 10, Captured)                               \
-	X(AssistedInCapture, 11, AssistedInCapture)             \
-	X(Suppressed, 12, Suppressed)                           \
-	X(SecondaryHit, 13, SecondaryHit)                       \
-	X(OverPenetration, 14, Artillery)                       \
-	X(Penetration, 15, Artillery)                           \
-	X(NonPenetration, 16, Artillery)                        \
-	X(Ricochet, 17, Artillery)                              \
-	X(BuildingDestroyed, 18, BuildingDestroyed)             \
-	X(Spotted, 19, Spotted)                                 \
-	X(DiveBombOverPenetration, 20, Bomb)                    \
-	X(DiveBombPenetration, 21, Bomb)                        \
-	X(DiveBombNonPenetration, 22, Bomb)                     \
-	X(DiveBombRicochet, 23, Bomb)                           \
-	X(Rocket, 24, Rocket)                                   \
-	X(RocketPenetration, 25, Rocket)                        \
-	X(RocketNonPenetration, 26, Rocket)                     \
-	X(ShotDownByAircraft, 27, ShotDownByAircraft)           \
-	X(TorpedoProtectionHit, 28, Artillery)                  \
-	X(BombBulge, 29, Bomb)                                  \
-	X(RocketTorpedoProtectionHit, 30, Rocket)               \
-	X(DepthChargeHit, 31, DepthChargeHit)                   \
-	X(BuffSeized, 33, BuffSeized)                           \
-	X(SonarOneHit, 39, SonarHit)                            \
-	X(SonarTwoHits, 40, SonarHit)                           \
-	X(SonarNeutralized, 41, SonarHit)
+#define RIBBON_TYPES                                    \
+	X(Wave, -99, Wave)                                  \
+	X(SonarHit, -98, SonarHit)                          \
+	X(PulsePhaser, -97, PulsePhaser)                    \
+	X(Shield, -96, Shield)                              \
+	X(UnknownRibbon, -1, UnknownRibbon)                 \
+	X(Artillery, 0, Artillery)                          \
+	X(TorpedoHit, 1, TorpedoHit)                        \
+	X(Bomb, 2, Bomb)                                    \
+	X(PlaneShotDown, 3, PlaneShotDown)                  \
+	X(Incapacitation, 4, Incapacitation)                \
+	X(Destroyed, 5, Destroyed)                          \
+	X(SetFire, 6, SetFire)                              \
+	X(Flooding, 7, Flooding)                            \
+	X(Citadel, 8, Citadel)                              \
+	X(Defended, 9, Defended)                            \
+	X(Captured, 10, Captured)                           \
+	X(AssistedInCapture, 11, AssistedInCapture)         \
+	X(Suppressed, 12, Suppressed)                       \
+	X(SecondaryHit, 13, SecondaryHit)                   \
+	X(OverPenetration, 14, Artillery)                   \
+	X(Penetration, 15, Artillery)                       \
+	X(NonPenetration, 16, Artillery)                    \
+	X(Ricochet, 17, Artillery)                          \
+	X(BuildingDestroyed, 18, BuildingDestroyed)         \
+	X(Spotted, 19, Spotted)                             \
+	X(DiveBombOverPenetration, 20, Bomb)                \
+	X(DiveBombPenetration, 21, Bomb)                    \
+	X(DiveBombNonPenetration, 22, Bomb)                 \
+	X(DiveBombRicochet, 23, Bomb)                       \
+	X(Rocket, 24, Rocket)                               \
+	X(RocketPenetration, 25, Rocket)                    \
+	X(RocketNonPenetration, 26, Rocket)                 \
+	X(ShotDownByAircraft, 27, ShotDownByAircraft)       \
+	X(TorpedoProtectionHit, 28, Artillery)              \
+	X(BombBulge, 29, Bomb)                              \
+	X(RocketTorpedoProtectionHit, 30, Rocket)           \
+	X(DepthChargeHit, 31, DepthChargeHit)               \
+	X(AcousticHit, 32, AcousticHit)                     \
+	X(BuffSeized, 33, BuffSeized)                       \
+	X(RocketRicochet, 34, Rocket)                       \
+	X(RocketOverPenetration, 35, Rocket)                \
+	X(WaveKillTorpedo, 36, Wave)                        \
+	X(WaveCutWave, 37, Wave)                            \
+	X(WaveHitVehicle, 38, Wave)                         \
+	X(SonarOneHit, 39, SonarHit)                        \
+	X(SonarTwoHits, 40, SonarHit)                       \
+	X(SonarNeutralized, 41, SonarHit)                   \
+	X(Acid, 42, Acid)                                   \
+	X(DepthChargeFullDamage, 43, DepthChargeHit)        \
+	X(DepthChargePartialDamage, 44, DepthChargeHit)     \
+	X(Mine, 45, Mine)                                   \
+	X(DeminingMine, 46, DeminingMine)                   \
+	X(DeminingMinefield, 47, DeminingMinefield)         \
+	X(TorpedoPhotonHit, 48, PulsePhaser)                \
+	X(TorpedoPhotonSplash, 49, PulsePhaser)             \
+	X(AimPulseTorpedoPhoton, 50, AimPulseTorpedoPhoton) \
+	X(PhaserLaser, 51, PhaserLaser)                     \
+	X(ShieldHit, 52, Shield)                            \
+	X(ShieldRemoved, 53, Shield)
+
 
 enum class RibbonType : int8_t
 {
@@ -193,8 +213,7 @@ inline constexpr RibbonType GetParent(RibbonType ribbon)
 	X(Assistant,              4170376112) \
 	X(WillToWin,              4193444784) \
 	X(TacticalExpertise,      4161987504) \
-	X(CombatScout,            3879920560) \
-
+	X(CombatScout,            3879920560)
 	// X(JollyRogerSilver,    4045595568) \  // TODO
 	// X(JollyRogerBronze,    4045595568) \  // TODO
 

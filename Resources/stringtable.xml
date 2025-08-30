@@ -488,7 +488,63 @@
         <简体中文>潜在伤害</简体中文>
         <繁體中文>潛在傷害</繁體中文>
     </Key>
-    <Key ID="REPLAY_RIBBON_HITS">
+    <Key ID="REPLAY_RIBBON_ACID"><!--IDS_RIBBON_RIBBON_ACID-->
+        <English>Hit with acid</English>
+        <Deutsch>Treffer mit Säure</Deutsch>
+        <日本語>酸命中</日本語>
+        <简体中文>使用强酸命中</简体中文>
+        <繁體中文>使用强酸命中</繁體中文>
+    </Key>
+    <Key ID="REPLAY_RIBBON_WAVE"><!--IDS_RIBBON_RIBBON_WAVE-->
+        <English>Hit by wave</English>
+        <Deutsch>Treffer mit einer Welle</Deutsch>
+        <日本語>ウェーブが命中した</日本語>
+        <简体中文>已用震波击中</简体中文>
+        <繁體中文>已用震波击中</繁體中文>
+    </Key>
+    <Key ID="REPLAY_RIBBON_MINE"><!--IDS_RIBBON_RIBBON_MINE-->
+        <English>Damaged</English>
+        <Deutsch>Beschädigt</Deutsch>
+        <日本語>与ダメージ</日本語>
+        <简体中文>水雷伤害</简体中文>
+        <繁體中文>水雷伤害</繁體中文>
+    </Key>
+    <Key ID="REPLAY_RIBBON_DEMINING_MINE"><!--IDS_RIBBON_RIBBON_DEMINING_MINE-->
+        <English>Mine destroyed</English>
+        <Deutsch>Mine zerstört</Deutsch>
+        <日本語>機雷破壊</日本語>
+        <简体中文>水雷已摧毁</简体中文>
+        <繁體中文>水雷已摧毁</繁體中文>
+    </Key>
+        <Key ID="REPLAY_RIBBON_DEMINING_MINEFIELD"><!--IDS_RIBBON_RIBBON_DEMINING_MINEFIELD-->
+        <English>Cleared</English>
+        <Deutsch>Geräumt</Deutsch>
+        <日本語>機雷原破壊</日本語>
+        <简体中文>雷区已清除</简体中文>
+        <繁體中文>雷区已清除</繁體中文>
+    </Key>
+    <Key ID="REPLAY_RIBBON_PHASER_LASER"><!--IDS_RIBBON_RIBBON_PHASER_LASER-->
+        <English>Hit by phaser</English>
+        <Deutsch>Treffer mit Phaser</Deutsch>
+        <日本語>フェイザー命中</日本語>
+        <简体中文>被相位炮命中</简体中文>
+        <繁體中文>被相位炮命中</繁體中文>
+    </Key>
+    <Key ID="REPLAY_RIBBON_TORPEDO_PHOTON"><!--IDS_RIBBON_RIBBON_TORPEDO_PHOTON-->
+        <English>Hit by photon torpedo</English>
+        <Deutsch>Treffer mit Photonentorpedo</Deutsch>
+        <日本語>光子魚雷命中</日本語>
+        <简体中文>被光子鱼雷命中</简体中文>
+        <繁體中文>被光子鱼雷命中</繁體中文>
+    </Key>
+    <Key ID="REPLAY_RIBBON_AIM_PULSE_TORPEDO_PHOTON"><!--IDS_RIBBON_RIBBON_AIM_PULSE_TORPEDO_PHOTON-->
+        <English>Marked by radar</English>
+        <Deutsch>Markiert durch Radar</Deutsch>
+        <日本語>レーダーでマーク</日本語>
+        <简体中文>确定目标</简体中文>
+        <繁體中文>确定目标</繁體中文>
+    </Key>
+    <Key ID="REPLAY_RIBBON_HITS"><!--IDS_RIBBON_RIBBON_ACOUSTIC_HIT-->
         <English>Target hits</English>
         <Deutsch>Zieltreffer</Deutsch>
         <日本語>目標に命中</日本語>
