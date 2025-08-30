@@ -5,11 +5,33 @@ if(NOT QMSETUP_CORECMD_EXECUTABLE)
     message(FATAL_ERROR "QMSETUP_CORECMD_EXECUTABLE not defined. Add find_package(qmsetup) to CMake first.")
 endif()
 
+if(NOT DEFINED QMSETUP_APPLOCAL_DEPS_PATHS)
+    set(QMSETUP_APPLOCAL_DEPS_PATHS)
+endif()
+
+if(NOT DEFINED QMSETUP_APPLOCAL_DEPS_PATHS_DEBUG)
+    set(QMSETUP_APPLOCAL_DEPS_PATHS_DEBUG ${QMSETUP_APPLOCAL_DEPS_PATHS})
+endif()
+
+if(NOT DEFINED QMSETUP_APPLOCAL_DEPS_PATHS_RELEASE)
+    set(QMSETUP_APPLOCAL_DEPS_PATHS_RELEASE ${QMSETUP_APPLOCAL_DEPS_PATHS})
+endif()
+
+if(NOT DEFINED QMSETUP_APPLOCAL_DEPS_PATHS_RELWITHDEBINFO)
+    set(QMSETUP_APPLOCAL_DEPS_PATHS_RELWITHDEBINFO ${QMSETUP_APPLOCAL_DEPS_PATHS_RELEASE})
+endif()
+
+if(NOT DEFINED QMSETUP_APPLOCAL_DEPS_PATHS_MINSIZEREL)
+    set(QMSETUP_APPLOCAL_DEPS_PATHS_MINSIZEREL ${QMSETUP_APPLOCAL_DEPS_PATHS_RELEASE})
+endif()
+
 include_guard(DIRECTORY)
 
 #[[
     Record searching paths for Windows Executables, must be called before calling `qm_win_applocal_deps`
     or `qm_deploy_directory` if your project supports Windows.
+
+    WARNING: This function is deprecated.
 
     qm_win_record_deps(<target>)
 ]] #
@@ -21,7 +43,7 @@ function(qm_win_record_deps _target)
     set(_paths)
     get_target_property(_link_libraries ${_target} LINK_LIBRARIES)
 
-    foreach(_item ${_link_libraries})
+    foreach(_item IN LISTS _link_libraries)
         if(NOT TARGET ${_item})
             continue()
         endif()
@@ -108,7 +130,7 @@ function(qm_win_applocal_deps _target)
     set(_dep_files)
     _qm_win_get_all_dep_files(_dep_files ${_target})
 
-    foreach(_item ${FUNC_EXTRA_TARGETS})
+    foreach(_item IN LISTS FUNC_EXTRA_TARGETS)
         _qm_win_get_all_dep_files(_dep_files ${_item})
     endforeach()
 
@@ -123,15 +145,38 @@ function(qm_win_applocal_deps _target)
         list(APPEND _args -V)
     endif()
 
-    foreach(_item ${FUNC_EXTRA_SEARCHING_PATHS})
+    # Add extra searching paths
+    foreach(_item IN LISTS FUNC_EXTRA_SEARCHING_PATHS)
         list(APPEND _args "-L${_item}")
     endforeach()
 
-    foreach(_item ${_dep_files})
+    # Add global extra searching paths
+    if(CMAKE_BUILD_TYPE)
+        string(TOUPPER ${CMAKE_BUILD_TYPE} _build_type_upper)
+
+        if(QMSETUP_APPLOCAL_DEPS_PATHS_${_build_type_upper})
+            foreach(_item IN LISTS QMSETUP_APPLOCAL_DEPS_PATHS_${_build_type_upper})
+                get_filename_component(_item ${_item} ABSOLUTE BASE_DIR ${CMAKE_SOURCE_DIR})
+                list(APPEND _args "-L${_item}")
+            endforeach()
+        elseif(QMSETUP_APPLOCAL_DEPS_PATHS)
+            foreach(_item IN LISTS QMSETUP_APPLOCAL_DEPS_PATHS)
+                get_filename_component(_item ${_item} ABSOLUTE BASE_DIR ${CMAKE_SOURCE_DIR})
+                list(APPEND _args "-L${_item}")
+            endforeach()
+        endif()
+    else()
+        foreach(_item IN LISTS QMSETUP_APPLOCAL_DEPS_PATHS)
+            get_filename_component(_item ${_item} ABSOLUTE BASE_DIR ${CMAKE_SOURCE_DIR})
+            list(APPEND _args "-L${_item}")
+        endforeach()
+    endif()
+
+    foreach(_item IN LISTS _dep_files)
         list(APPEND _args "-@${_item}")
     endforeach()
 
-    foreach(_item ${FUNC_EXCLUDE})
+    foreach(_item IN LISTS FUNC_EXCLUDE)
         list(APPEND _args -e ${_item})
     endforeach()
 
@@ -145,12 +190,14 @@ function(qm_win_applocal_deps _target)
 endfunction()
 
 #[[
-    Add deploy command when install project.
+    Add deploy command when install project, not available in debug mode.
 
     qm_deploy_directory(<install_dir>
         [FORCE] [STANDARD] [VERBOSE]
         [LIBRARY_DIR <dir>]
+        [EXTRA_LIBRARIES <path>...]
         [EXTRA_PLUGIN_PATHS <path>...]
+        [EXTRA_SEARCHING_PATHS <path>...]
 
         [PLUGINS <plugin>...]
         [PLUGIN_DIR <dir>]
@@ -159,21 +206,29 @@ endfunction()
         [QML_DIR <dir>]
 
         [WIN_TARGETS <target>...]
-        [WIN_SEARCHING_PATHS <path>...]
 
-        [COMMENT <comment]
+        [COMMENT <comment>]
     )
+
+    PLUGINS: Qt plugins, in format of `<category>/<name>`
+    PLUGIN_DIR: Qt plugins destination
+    EXTRA_PLUGIN_PATHS: Extra Qt plugins searching paths
+    QML: Qt qml directories
+    QML_DIR: Qt qml destination
+    LIBRARY_DIR: Library destination
+    EXTRA_LIBRARIES： Extra library names list to deploy
+    EXTRA_SEARCHING_PATHS: Extra library searching paths
 ]] #
 function(qm_deploy_directory _install_dir)
     set(options FORCE STANDARD VERBOSE)
     set(oneValueArgs LIBRARY_DIR PLUGIN_DIR QML_DIR COMMENT)
-    set(multiValueArgs EXTRA_PLUGIN_PATHS PLUGINS QML WIN_TARGETS WIN_SEARCHING_PATHS)
+    set(multiValueArgs EXTRA_PLUGIN_PATHS PLUGINS QML WIN_TARGETS EXTRA_SEARCHING_PATHS EXTRA_LIBRARIES)
     cmake_parse_arguments(FUNC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # Get qmake
     if((FUNC_PLUGINS OR FUNC_QML) AND NOT DEFINED QT_QMAKE_EXECUTABLE)
         if(TARGET Qt${QT_VERSION_MAJOR}::qmake)
-            get_target_property(QT_QMAKE_EXECUTABLE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
+            _get_executable_location(Qt${QT_VERSION_MAJOR}::qmake QT_QMAKE_EXECUTABLE)
         elseif((FUNC_PLUGINS AND NOT FUNC_EXTRA_PLUGIN_PATHS) OR FUNC_QML)
             message(FATAL_ERROR "qm_deploy_directory: qmake not defined. Add find_package(Qt5 COMPONENTS Core) to CMake to enable.")
         endif()
@@ -184,9 +239,6 @@ function(qm_deploy_directory _install_dir)
     qm_set_value(_plugin_dir FUNC_PLUGIN_DIR "${_install_dir}/plugins")
     qm_set_value(_qml_dir FUNC_QML_DIR "${_install_dir}/qml")
 
-    get_filename_component(_lib_dir ${_lib_dir} ABSOLUTE BASE_DIR ${_install_dir})
-    get_filename_component(_plugin_dir ${_plugin_dir} ABSOLUTE BASE_DIR ${_install_dir})
-
     # Prepare commands
     set(_args
         -i "${_install_dir}"
@@ -195,6 +247,7 @@ function(qm_deploy_directory _install_dir)
         --libdir "${_lib_dir}"
         --qmldir "${_qml_dir}"
     )
+    set(_searching_paths)
 
     if(QT_QMAKE_EXECUTABLE)
         list(APPEND _args --qmake "${QT_QMAKE_EXECUTABLE}")
@@ -215,6 +268,38 @@ function(qm_deploy_directory _install_dir)
         list(APPEND _args --extra "${_item}")
     endforeach()
 
+    # Add extra searching paths
+    foreach(_item IN LISTS FUNC_EXTRA_SEARCHING_PATHS)
+        get_filename_component(_item ${_item} ABSOLUTE)
+        list(APPEND _searching_paths ${_item})
+    endforeach()
+
+    # Add global extra searching paths
+    if(CMAKE_BUILD_TYPE)
+        string(TOUPPER ${CMAKE_BUILD_TYPE} _build_type_upper)
+
+        if(QMSETUP_APPLOCAL_DEPS_PATHS_${_build_type_upper})
+            foreach(_item IN LISTS QMSETUP_APPLOCAL_DEPS_PATHS_${_build_type_upper})
+                get_filename_component(_item ${_item} ABSOLUTE BASE_DIR ${CMAKE_SOURCE_DIR})
+                list(APPEND _searching_paths ${_item})
+            endforeach()
+        elseif(QMSETUP_APPLOCAL_DEPS_PATHS)
+            foreach(_item IN LISTS QMSETUP_APPLOCAL_DEPS_PATHS)
+                get_filename_component(_item ${_item} ABSOLUTE BASE_DIR ${CMAKE_SOURCE_DIR})
+                list(APPEND _searching_paths ${_item})
+            endforeach()
+        endif()
+    else()
+        foreach(_item IN LISTS QMSETUP_APPLOCAL_DEPS_PATHS)
+            get_filename_component(_item ${_item} ABSOLUTE BASE_DIR ${CMAKE_SOURCE_DIR})
+            list(APPEND _searching_paths ${_item})
+        endforeach()
+    endif()
+
+    foreach(_item IN LISTS _searching_paths)
+        list(APPEND _args -L "${_item}")
+    endforeach()
+
     if(WIN32)
         set(_dep_files)
 
@@ -222,11 +307,7 @@ function(qm_deploy_directory _install_dir)
             _qm_win_get_all_dep_files(_dep_files ${FUNC_WIN_TARGETS})
         endif()
 
-        foreach(_item ${FUNC_WIN_SEARCHING_PATHS})
-            list(APPEND _args -L "${_item}")
-        endforeach()
-
-        foreach(_item ${_dep_files})
+        foreach(_item IN LISTS _dep_files)
             list(APPEND _args -@ "${_item}")
         endforeach()
 
@@ -234,6 +315,17 @@ function(qm_deploy_directory _install_dir)
     else()
         set(_script_quoted "bash \"${QMSETUP_MODULES_DIR}/scripts/unixdeps.sh\"")
     endif()
+
+    # Add extra libraries
+    foreach(_item IN LISTS _searching_paths)
+        foreach(_lib IN LISTS FUNC_EXTRA_LIBRARIES)
+            set(_path "${_item}/${_lib}")
+
+            if((EXISTS ${_path}) AND(NOT IS_DIRECTORY ${_path}))
+                list(APPEND _args --copy ${_path} ${_lib_dir})
+            endif()
+        endforeach()
+    endforeach()
 
     # Add options
     if(FUNC_FORCE)
@@ -250,7 +342,7 @@ function(qm_deploy_directory _install_dir)
 
     set(_args_quoted)
 
-    foreach(_item ${_args})
+    foreach(_item IN LISTS _args)
         set(_args_quoted "${_args_quoted}\"${_item}\" ")
     endforeach()
 
@@ -280,14 +372,14 @@ function(_qm_win_get_all_dep_files _out)
         get_target_property(_deps ${_current_target} LINK_LIBRARIES)
 
         if(_deps)
-            foreach(_dep ${_deps})
+            foreach(_dep IN LISTS _deps)
                 if(NOT TARGET ${_dep})
                     continue()
                 endif()
 
                 get_target_property(_type ${_dep} TYPE)
 
-                if("${_type}" STREQUAL "SHARED_LIBRARY")
+                if(_type STREQUAL "SHARED_LIBRARY")
                     list(APPEND ${_result} ${_dep})
                 endif()
 
@@ -302,7 +394,7 @@ function(_qm_win_get_all_dep_files _out)
         set(_all_deps)
         get_recursive_dynamic_dependencies(${_target} _all_deps)
 
-        foreach(_cur_dep ${_all_deps})
+        foreach(_cur_dep IN LISTS _all_deps)
             if(${_cur_dep} IN_LIST _visited_targets)
                 continue()
             endif()
@@ -313,7 +405,7 @@ function(_qm_win_get_all_dep_files _out)
 
     set(_dep_files)
 
-    foreach(_target ${_visited_targets})
+    foreach(_target IN LISTS _visited_targets)
         # Add file
         get_target_property(_file ${_target} QMSETUP_DEPENDENCIES_FILE)
 
@@ -325,4 +417,30 @@ function(_qm_win_get_all_dep_files _out)
     endforeach()
 
     set(${_out} ${_dep_files} PARENT_SCOPE)
+endfunction()
+
+function(_get_executable_location _target _var)
+    get_target_property(_path ${_target} IMPORTED_LOCATION)
+
+    if(NOT _path)
+        get_target_property(_path ${_target} IMPORTED_LOCATION_RELEASE)
+    endif()
+
+    if(NOT _path)
+        get_target_property(_path ${_target} IMPORTED_LOCATION_MINSIZEREL)
+    endif()
+
+    if(NOT _path)
+        get_target_property(_path ${_target} IMPORTED_LOCATION_RELWITHDEBINFO)
+    endif()
+
+    if(NOT _path)
+        get_target_property(_path ${_target} IMPORTED_LOCATION_DEBUG)
+    endif()
+
+    if(NOT _path)
+        message(FATAL_ERROR "Could not find imported location of target: ${_target}")
+    endif()
+
+    set(${_var} ${_path} PARENT_SCOPE)
 endfunction()

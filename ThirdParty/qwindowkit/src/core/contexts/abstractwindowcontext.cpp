@@ -7,54 +7,10 @@
 #include <QtGui/QPen>
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
-#include <memory>
 
 #include "qwkglobal_p.h"
 
 namespace QWK {
-
-    namespace {
-
-        class WinIdChangeEventFilter : public QObject {
-        public:
-            explicit WinIdChangeEventFilter(QObject *widget, AbstractWindowContext *ctx,
-                                            QObject *parent = nullptr)
-                : QObject(parent), ctx(ctx) {
-                widget->installEventFilter(this);
-            }
-
-        protected:
-            bool eventFilter(QObject *obj, QEvent *event) override {
-                Q_UNUSED(obj)
-                if (event->type() == QEvent::WinIdChange) {
-                    ctx->notifyWinIdChange();
-                }
-                return false;
-            }
-
-        protected:
-            AbstractWindowContext *ctx;
-        };
-
-        class WindowEventFilter : public QObject {
-        public:
-            explicit WindowEventFilter(QWindow *window, AbstractWindowContext *ctx,
-                                       QObject *parent = nullptr)
-                : QObject(parent), ctx(ctx), window(window) {
-                window->installEventFilter(this);
-            }
-
-        protected:
-            bool eventFilter(QObject *obj, QEvent *event) override {
-                return ctx->sharedDispatch(obj, event);
-            }
-
-        protected:
-            AbstractWindowContext *ctx;
-            QWindow *window;
-        };
-
-    }
 
     AbstractWindowContext::AbstractWindowContext() = default;
 
@@ -66,27 +22,26 @@ namespace QWK {
         }
         m_host = host;
         m_delegate.reset(delegate);
-        m_winIdChangeEventFilter = std::make_unique<WinIdChangeEventFilter>(host, this);
-
-        m_windowHandle = m_delegate->hostWindow(m_host);
-        if (m_windowHandle) {
-            winIdChanged();
-            m_windowEventFilter = std::make_unique<WindowEventFilter>(m_windowHandle, this);
-        }
+        m_winIdChangeEventFilter.reset(delegate->createWinIdEventFilter(host, this));
+        notifyWinIdChange();
     }
 
-
-
-    bool AbstractWindowContext::setHitTestVisible(const QObject *obj, bool visible) {
+    bool AbstractWindowContext::setHitTestVisible(QObject *obj, bool visible) {
         Q_ASSERT(obj);
         if (!obj) {
             return false;
         }
 
         if (visible) {
-            m_hitTestVisibleItems.insert(obj);
+            m_hitTestVisibleItems.removeAll(nullptr);
+            m_hitTestVisibleItems.removeAll(obj);
+            m_hitTestVisibleItems.append(obj);
         } else {
-            m_hitTestVisibleItems.remove(obj);
+            for (auto &item : m_hitTestVisibleItems) {
+                if (item == obj) {
+                    item = nullptr;
+                }
+            }
         }
         return true;
     }
@@ -98,7 +53,8 @@ namespace QWK {
             return false;
         }
 
-        if (m_systemButtons[button] == obj) {
+        auto org = m_systemButtons[button];
+        if (org == obj) {
             return false;
         }
         m_systemButtons[button] = obj;
@@ -107,18 +63,15 @@ namespace QWK {
 
     bool AbstractWindowContext::setTitleBar(QObject *item) {
         Q_ASSERT(item);
-        if (m_titleBar == item) {
+        auto org = m_titleBar;
+        if (org == item) {
             return false;
         }
 
-        if (m_titleBar) {
+        if (org) {
             // Since the title bar is changed, all items inside it should be dereferenced right away
-            for (auto &button : m_systemButtons) {
-                button = nullptr;
-            }
-            m_hitTestVisibleItems.clear();
+            removeSystemButtonsAndHitTestItems();
         }
-
         m_titleBar = item;
         return true;
     }
@@ -135,8 +88,7 @@ namespace QWK {
         *button = WindowAgentBase::Unknown;
         for (int i = WindowAgentBase::WindowIcon; i <= WindowAgentBase::Close; ++i) {
             auto currentButton = m_systemButtons[i];
-            if (!currentButton || !m_delegate->isVisible(currentButton) ||
-                !m_delegate->isEnabled(currentButton)) {
+            if (!currentButton || !m_delegate->isVisible(currentButton)) {
                 continue;
             }
             if (m_delegate->mapGeometryToScene(currentButton).contains(pos)) {
@@ -169,22 +121,17 @@ namespace QWK {
             return false;
         }
 
-        for (int i = WindowAgentBase::WindowIcon; i <= WindowAgentBase::Close; ++i) {
-            auto currentButton = m_systemButtons[i];
-            if (currentButton && m_delegate->isVisible(currentButton) &&
-                m_delegate->isEnabled(currentButton) &&
-                m_delegate->mapGeometryToScene(currentButton).contains(pos)) {
+        WindowAgentBase::SystemButton button;
+        if (isInSystemButtons(pos, &button)) {
+            return false;
+        }
+
+        for (auto item : m_hitTestVisibleItems) {
+            if (item && m_delegate->isVisible(item) &&
+                m_delegate->mapGeometryToScene(item).contains(pos)) {
                 return false;
             }
         }
-
-        for (auto widget : m_hitTestVisibleItems) {
-            if (widget && m_delegate->isVisible(widget) && m_delegate->isEnabled(widget) &&
-                m_delegate->mapGeometryToScene(widget).contains(pos)) {
-                return false;
-            }
-        }
-
         return true;
     }
 
@@ -202,7 +149,7 @@ namespace QWK {
     void AbstractWindowContext::virtual_hook(int id, void *data) {
         switch (id) {
             case CentralizeHook: {
-                if (!m_windowHandle)
+                if (!m_windowId)
                     return;
 
                 QRect windowGeometry = m_delegate->getGeometry(m_host);
@@ -216,7 +163,7 @@ namespace QWK {
             }
 
             case RaiseWindowHook: {
-                if (!m_windowHandle)
+                if (!m_windowId)
                     return;
 
                 m_delegate->setWindowVisible(m_host, true);
@@ -248,29 +195,49 @@ namespace QWK {
     }
 
     void AbstractWindowContext::notifyWinIdChange() {
-        auto oldWindow = m_windowHandle;
-        m_windowHandle = m_delegate->hostWindow(m_host);
-        if (oldWindow == m_windowHandle)
-            return;
-        m_windowEventFilter.reset();
-        winIdChanged();
-        if (m_windowHandle) {
-            m_windowEventFilter = std::make_unique<WindowEventFilter>(m_windowHandle, this);
+        auto oldWinId = m_windowId;
+        m_windowId = m_winIdChangeEventFilter->winId();
 
-            // Refresh window attributes
-            auto attributes = m_windowAttributes;
-            m_windowAttributes.clear();
-            for (auto it = attributes.begin(); it != attributes.end(); ++it) {
-                if (!windowAttributeChanged(it.key(), it.value(), {})) {
-                    continue;
+        // In Qt6, after QWidget::close() is called, the related QWindow's all surfaces and the
+        // platform window will be removed, and the WinId will be set to 0. After that, when the
+        // QWidget is shown again, the whole things will be recreated again.
+        // As a result, we must update our WindowContext each time the WinId changes.
+        if (m_windowHandle) {
+            removeEventFilter(m_windowHandle);
+        }
+        m_windowHandle = m_delegate->hostWindow(m_host);
+        if (m_windowHandle) {
+            m_windowHandle->installEventFilter(this);
+        }
+
+        if (oldWinId != m_windowId) {
+            winIdChanged(m_windowId, oldWinId);
+
+            if (m_windowId) {
+                // Refresh window attributes
+                for (auto it = m_windowAttributesOrder.begin();
+                     it != m_windowAttributesOrder.end();) {
+                    if (!windowAttributeChanged(it->first, it->second, {})) {
+                        m_windowAttributes.remove(it->first);
+                        it = m_windowAttributesOrder.erase(it);
+                        continue;
+                    }
+                    ++it;
                 }
-                m_windowAttributes.insert(it.key(), it.value());
             }
+
+            // Send to shared dispatchers
+            QEvent e(QEvent::WinIdChange);
+            sharedDispatch(m_host, &e);
         }
     }
 
     QVariant AbstractWindowContext::windowAttribute(const QString &key) const {
-        return m_windowAttributes.value(key);
+        auto it = m_windowAttributes.find(key);
+        if (it == m_windowAttributes.end()) {
+            return {};
+        }
+        return it.value()->second;
     }
 
     bool AbstractWindowContext::setWindowAttribute(const QString &key, const QVariant &attribute) {
@@ -279,31 +246,53 @@ namespace QWK {
             if (!attribute.isValid()) {
                 return true;
             }
-            if (!m_windowHandle || !windowAttributeChanged(key, attribute, {})) {
+            if (m_windowId && !windowAttributeChanged(key, attribute, {})) {
                 return false;
             }
-            m_windowAttributes.insert(key, attribute);
+            m_windowAttributes.insert(
+                key, m_windowAttributesOrder.insert(m_windowAttributesOrder.end(),
+                                                    std::make_pair(key, attribute)));
             return true;
         }
 
-        if (it.value() == attribute)
-            return true;
-        if (!m_windowHandle || !windowAttributeChanged(key, attribute, it.value())) {
+        auto &listIter = it.value();
+        auto &oldAttr = listIter->second;
+        if (m_windowId && !windowAttributeChanged(key, attribute, oldAttr)) {
             return false;
         }
 
         if (attribute.isValid()) {
-            it.value() = attribute;
+            oldAttr = attribute;
+            m_windowAttributesOrder.splice(m_windowAttributesOrder.end(), m_windowAttributesOrder,
+                                           listIter);
         } else {
+            m_windowAttributesOrder.erase(listIter);
             m_windowAttributes.erase(it);
         }
         return true;
+    }
+
+    bool AbstractWindowContext::eventFilter(QObject *obj, QEvent *event) {
+        if (obj == m_windowHandle && sharedDispatch(obj, event)) {
+            return true;
+        }
+        return QObject::eventFilter(obj, event);
     }
 
     bool AbstractWindowContext::windowAttributeChanged(const QString &key,
                                                        const QVariant &attribute,
                                                        const QVariant &oldAttribute) {
         return false;
+    }
+
+    void AbstractWindowContext::removeSystemButtonsAndHitTestItems() {
+        for (auto &button : m_systemButtons) {
+            if (!button) {
+                continue;
+            }
+            button = nullptr;
+        }
+        m_hitTestVisibleItems.clear();
     }
 
 }

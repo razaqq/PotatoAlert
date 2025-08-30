@@ -22,6 +22,8 @@ usage() {
     echo "  --qml <qml_module>          Relative path to QML directory (repeatable)"
     echo "  --plugin <plugin>           Specify a Qt plugin to deploy (repeatable)"
     echo "  --copy <src> <dest>         Specify additional binary file to copy and its destination directory (repeatable)"
+    echo "  -@                          Add library searching paths from a list file"
+    echo "  -L                          Add a library searching path"
     echo "  -f                          Force overwrite existing files"
     echo "  -s                          Ignore C/C++ runtime and system libraries"
     echo "  -V                          Show verbose output"
@@ -41,6 +43,8 @@ while (( "$#" )); do
     case "$1" in
         -i)            INPUT_DIR="$2"; shift 2;;
         -m)            CORECMD_PATH="$2"; shift 2;;
+        -@)            ARGS+=("-@ \"$2\""); shift 2;;
+        -L)            ARGS+=("-L \"$2\""); shift 2;;
         --plugindir)   PLUGIN_DIR="$2"; shift 2;;
         --libdir)      LIB_DIR="$2"; shift 2;;
         --qmldir)      QML_DIR="$2"; shift 2;;
@@ -93,20 +97,20 @@ search_input_dir() {
         if [ -d "$item" ]; then
             # Check if the directory is mac .framework
             if [[ "OSTYPE" == "darwin"* ]] && [[ "$item" == *.framework ]]; then
-                FILES="$FILES \"$file\""
+                FILES="$FILES \"$item\""
             else
                 search_input_dir "$item"
             fi
         elif [ -f "$item" ]; then
             if [[ "$OSTYPE" == "msys"* ]] || [[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "cygwin"* ]]; then
                 # On Windows, search for.exe and.dll files
-                FILES="$FILES \"$file\""
+                FILES="$FILES \"$item\""
             else
                 # On Unix, traverse all files, using the file command to
                 # check for executable binary files
-                file_type=$(file -b "$file")
-                if [[ ($file_type == "ELF"* || $file_type == "Mach-O"*) && -x "$file"  ]]; then
-                    FILES="$FILES \"$file\""
+                file_type=$(file -b "$item")
+                if [[ ($file_type == "ELF"* || $file_type == "Mach-O"*) && -x "$item"  ]]; then
+                    FILES="$FILES \"$item\""
                 fi
             fi
         fi

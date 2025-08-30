@@ -74,7 +74,7 @@ namespace SysCmdLine {
         if (index < 0 || index >= v.argSize)
             return {};
         if (n < 0 || n >= v.count)
-            return v.option->argument(index).defaultValue();
+            return v.option->d_func()->arguments[index].defaultValue();
         const auto &args = v.argResult[n][index];
         return args.empty() ? Value() : args.front();
     }
@@ -145,11 +145,11 @@ namespace SysCmdLine {
 
         // Avoid using `std::function` to reduce binary size
         const auto &getLists = [](int displayOptions, const GenericMap &catalog,
-                                  const StringList &catalogNames,         // catalog
+                                  const StringList &catalogNames, // catalog
 
-                                  const GenericMap &symbolIndexes,        // name -> index
+                                  const GenericMap &symbolIndexes, // name -> index
                                   int symbolCount, const Symbol *(*getter)(int, const void *),
-                                  const void *user,                       // get symbol from index
+                                  const void *user, // get symbol from index
 
                                   std::string (*getName)(const Symbol *), // get name of symbol
                                   int *maxWidth, void *extra,
@@ -274,7 +274,32 @@ namespace SysCmdLine {
                                    &maxWidth, reinterpret_cast<void *>(parserData->textProvider),
                                    parserData->textProvider(Strings::Title, Strings::Commands));
 
-        const auto &helpLayoutData = parserData->helpLayout.d_func();
+        // Get valid help layout
+        const HelpLayoutPrivate *helpLayoutData = nullptr;
+        {
+            int cmdCnt = stack.size() + 1;
+            auto cmds = new const Command *[cmdCnt]; // alloc
+            auto cmd = &parserData->rootCommand;
+            cmds[0] = cmd;
+            int cmdIdx = 0;
+            for (const auto &idx : std::as_const(stack)) {
+                cmd = &cmd->d_func()->commands[idx];
+                cmds[++cmdIdx] = cmd;
+            }
+            for (int i = cmdCnt - 1; i >= 0; --i) {
+                auto curHelpLayoutData = cmds[i]->d_func()->helpLayout.d_func();
+                if (!curHelpLayoutData->itemDataList.empty()) {
+                    helpLayoutData = curHelpLayoutData;
+                    break;
+                }
+            }
+            delete[] cmds; // free
+
+            if (!helpLayoutData) {
+                static HelpLayout defaultHelpLayout = HelpLayout::defaultHelpLayout();
+                helpLayoutData = defaultHelpLayout.d_func();
+            }
+        }
         if ((displayOptions & Parser::AlignAllCatalogues)) {
             for (const auto &helpItem : helpLayoutData->itemDataList) {
                 if (helpItem.itemType != HelpLayoutPrivate::UserHelpList) {
@@ -570,7 +595,7 @@ namespace SysCmdLine {
 
         // If version is empty, you should do something in the handler
         if (d->roleSet[Option::Version] && !cmdData->version.empty()) {
-            u8printf("%s\n", cmdData->version.data());
+            u8info("%s\n", cmdData->version.data());
             return 0;
         }
 
@@ -684,7 +709,7 @@ namespace SysCmdLine {
         if (index < 0 || index >= d->core.argSize)
             return {};
         const auto &args = d->core.argResult[index];
-        return args.empty() ? d->command->argument(index).defaultValue() : args.front();
+        return args.empty() ? d->command->d_func()->arguments[index].defaultValue() : args.front();
     }
 
     OptionResult ParseResult::option(int index) const {

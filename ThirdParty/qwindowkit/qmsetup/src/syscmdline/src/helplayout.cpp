@@ -11,7 +11,7 @@ namespace SysCmdLine {
 
     static inline void printLast(bool hasNext) {
         if (hasNext)
-            u8printf("\n");
+            u8info("\n");
     }
 
     static void defaultTextsPrinter(MessageType messageType, bool highlight,
@@ -51,7 +51,7 @@ namespace SysCmdLine {
             return;
 
         // Title
-        u8printf("%s:\n", ctx.text->title.data());
+        u8info("%s:\n", ctx.text->title.data());
 
         const auto &list = ctx.list;
         const auto &parserData = ctx.parser->d_func();
@@ -92,7 +92,7 @@ namespace SysCmdLine {
         }
 
         for (const auto &line : std::as_const(res)) {
-            u8printf("%s\n", line.data());
+            u8info("%s\n", line.data());
         }
 
         printLast(ctx.hasNext);
@@ -141,18 +141,21 @@ namespace SysCmdLine {
     }
 
     HelpLayout HelpLayout::defaultHelpLayout() {
-        HelpLayout res;
-        res.addHelpTextItem(HT_Prologue);
-        res.addMessageItem(MI_Information);
-        res.addMessageItem(MI_Warning);
-        res.addMessageItem(MI_Critical);
-        res.addHelpTextItem(HT_Description);
-        res.addHelpTextItem(HT_Usage);
-        res.addHelpListItem(HL_Arguments);
-        res.addHelpListItem(HL_Options);
-        res.addHelpListItem(HL_Commands);
-        res.addHelpTextItem(HT_Epilogue);
-        return res;
+        static HelpLayout instance = []() {
+            HelpLayout res;
+            res.addHelpTextItem(HT_Prologue);
+            res.addMessageItem(MI_Information);
+            res.addMessageItem(MI_Warning);
+            res.addMessageItem(MI_Critical);
+            res.addHelpTextItem(HT_Description);
+            res.addHelpTextItem(HT_Usage);
+            res.addHelpListItem(HL_Arguments);
+            res.addHelpListItem(HL_Options);
+            res.addHelpListItem(HL_Commands);
+            res.addHelpTextItem(HT_Epilogue);
+            return res;
+        }();
+        return instance;
     }
 
 }

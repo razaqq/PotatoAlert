@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 
-project(qmsetup VERSION 0.0.1.5)
+project(qmsetup VERSION 0.1.1.1)
 
 # ----------------------------------
 # Configure Options

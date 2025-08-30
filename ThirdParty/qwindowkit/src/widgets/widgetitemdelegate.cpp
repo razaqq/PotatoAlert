@@ -5,12 +5,37 @@
 #include "widgetitemdelegate_p.h"
 
 #include <QtGui/QMouseEvent>
-#include <QtWidgets/QWidget>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QWidget>
+
+#include <QWKCore/private/abstractwindowcontext_p.h>
 
 extern Q_DECL_IMPORT QWidget *qt_button_down;
 
 namespace QWK {
+
+    class WidgetWinIdChangeEventFilter : public WinIdChangeEventFilter {
+    public:
+        explicit WidgetWinIdChangeEventFilter(QObject *host, AbstractWindowContext *ctx)
+            : WinIdChangeEventFilter(host, ctx), widget(static_cast<QWidget *>(host)) {
+            widget->installEventFilter(this);
+        }
+
+        WId winId() const override {
+            return widget->effectiveWinId();
+        }
+
+    protected:
+        bool eventFilter(QObject *obj, QEvent *event) override {
+            Q_UNUSED(obj)
+            if (event->type() == QEvent::WinIdChange) {
+                context->notifyWinIdChange();
+            }
+            return false;
+        }
+
+        QWidget *widget;
+    };
 
     WidgetItemDelegate::WidgetItemDelegate() = default;
 
@@ -37,21 +62,6 @@ namespace QWK {
 
     QWindow *WidgetItemDelegate::hostWindow(const QObject *host) const {
         return static_cast<const QWidget *>(host)->windowHandle();
-    }
-
-    bool WidgetItemDelegate::isHostSizeFixed(const QObject *host) const {
-        const auto widget = static_cast<const QWidget *>(host);
-        // "Qt::MSWindowsFixedSizeDialogHint" is used cross-platform actually.
-        if (widget->windowFlags() & Qt::MSWindowsFixedSizeDialogHint) {
-            return true;
-        }
-        // Caused by setFixedWidth/Height/Size().
-        const QSize minSize = widget->minimumSize();
-        const QSize maxSize = widget->maximumSize();
-        if (!minSize.isEmpty() && !maxSize.isEmpty() && (minSize == maxSize)) {
-            return true;
-        }
-        return false;
     }
 
     bool WidgetItemDelegate::isWindowActive(const QObject *host) const {
@@ -110,6 +120,12 @@ namespace QWK {
 
     void WidgetItemDelegate::bringWindowToTop(QObject *host) const {
         static_cast<QWidget *>(host)->raise();
+    }
+
+    WinIdChangeEventFilter *
+        WidgetItemDelegate::createWinIdEventFilter(QObject *host,
+                                                   AbstractWindowContext *context) const {
+        return new WidgetWinIdChangeEventFilter(host, context);
     }
 
 }

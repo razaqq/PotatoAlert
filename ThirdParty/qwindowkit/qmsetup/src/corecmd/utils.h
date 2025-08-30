@@ -127,8 +127,6 @@ namespace Utils {
 #ifdef _WIN32
     std::wstring executeCommand(const std::wstring &command, const std::vector<std::wstring> &args);
 
-    std::string local8bit_to_utf8(const std::string &s);
-
     std::vector<std::wstring>
         resolveWinBinaryDependencies(const std::filesystem::path &path,
                                      const std::vector<std::filesystem::path> &searchingPaths,
@@ -140,10 +138,16 @@ namespace Utils {
 
     std::vector<std::string>
         resolveUnixBinaryDependencies(const std::filesystem::path &path,
+                                      const std::vector<std::filesystem::path> &searchingPaths,
                                       std::vector<std::string> *unparsed = nullptr);
 #endif
 
-#ifdef __linux__
+#ifdef __APPLE__
+    std::vector<std::string> getMacAbsoluteDependencies(const std::string &file);
+
+    void replaceMacFileDependencies(
+        const std::string &file, const std::vector<std::pair<std::string, std::string>> &depPairs);
+#elif defined(__linux__)
     std::string getInterpreter(const std::string &file);
 
     bool setFileInterpreter(const std::string &file, const std::string &interpreter);

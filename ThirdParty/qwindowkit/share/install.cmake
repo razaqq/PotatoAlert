@@ -23,6 +23,12 @@ if(TRUE)
     set(QMAKE_QWK_WIDGETS_NAME_DEBUG QWKWidgets${CMAKE_DEBUG_POSTFIX})
     set(QMAKE_QWK_QUICK_NAME_DEBUG QWKQuick${CMAKE_DEBUG_POSTFIX})
 
+    if(QWINDOWKIT_BUILD_STATIC)
+        set(QMAKE_QWK_CORE_STATIC_MACRO "DEFINES += QWK_CORE_STATIC")
+        set(QMAKE_QWK_WIDGETS_STATIC_MACRO "DEFINES += QWK_WIDGETS_STATIC")
+        set(QMAKE_QWK_QUICK_STATIC_MACRO "DEFINES += QWK_QUICK_STATIC")
+    endif()
+
     file(GLOB _qmake_components "${CMAKE_CURRENT_LIST_DIR}/qmake/*.pri.in")
 
     foreach(_item IN LISTS _qmake_components)
@@ -70,6 +76,12 @@ if(MSVC)
     to_dos_separator(MSBUILD_QWK_INSTALL_BINDIR)
     to_dos_separator(MSBUILD_QWK_INSTALL_LIBDIR)
     to_dos_separator(MSBUILD_QWK_INSTALL_INCDIR)
+
+    if(QWINDOWKIT_BUILD_STATIC)
+        set(MSBUILD_QWK_STATIC_MACRO 
+            "<PreprocessorDefinitions>QWK_CORE_STATIC;QWK_WIDGETS_STATIC;QWK_QUICK_STATIC</PreprocessorDefinitions>"
+        )
+    endif()
 
     configure_file(${CMAKE_CURRENT_LIST_DIR}/msbuild/QWindowKit.props.in
         ${_build_data_dir}/msbuild/QWindowKit.props

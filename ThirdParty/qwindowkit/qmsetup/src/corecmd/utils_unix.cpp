@@ -185,7 +185,6 @@ namespace Utils {
             throw std::runtime_error("Failed to get RPATHs: " + std::string(e.what()));
         }
 
-
         static const std::regex rpathRegex(R"(\s*path\s+(.*)\s+\(offset.*)");
         std::istringstream iss(output);
         std::string line;
@@ -235,9 +234,15 @@ namespace Utils {
         return dependencies;
     }
 
-    std::vector<std::string> resolveUnixBinaryDependencies(const std::filesystem::path &path,
-                                                           std::vector<std::string> *unparsed) {
+    std::vector<std::string>
+        resolveUnixBinaryDependencies(const std::filesystem::path &path,
+                                      const std::vector<std::filesystem::path> &searchingPaths,
+                                      std::vector<std::string> *unparsed) {
         auto rpaths = readMacBinaryRPaths(path);
+        for (const auto &item : searchingPaths) {
+            rpaths.push_back(item);
+        }
+
         auto dependencies = readMacBinaryDependencies(path);
         const std::string &loaderPath = fs::canonical(path).parent_path();
 
@@ -266,7 +271,7 @@ namespace Utils {
 
             target = cleanPath(target);
             if (fs::exists(target)) {
-                if (target == path)
+                if (fs::canonical(target).filename() == fs::canonical(path).filename())
                     continue;
                 res.push_back(target);
             } else if (unparsed) {
@@ -321,12 +326,55 @@ namespace Utils {
         }
     }
 
+    std::vector<std::string> getMacAbsoluteDependencies(const std::string &file) {
+        auto deps = readMacBinaryDependencies(file);
+        std::vector<std::string> res;
+        for (const auto &dep : std::as_const(deps)) {
+            if (fs::path(dep).is_absolute()) {
+                res.push_back(dep);
+            }
+        }
+        return res;
+    }
+
+    void replaceMacFileDependencies(
+        const std::string &file, const std::vector<std::pair<std::string, std::string>> &depPairs) {
+        std::string output;
+        std::vector<std::string> args;
+        args.reserve(depPairs.size() * 3 + 1);
+
+        std::string id;
+        for (const auto &pair : depPairs) {
+            if (fs::exists(pair.first) &&
+                fs::canonical(pair.first).filename() == fs::canonical(file).filename()) {
+                id = pair.second;
+                continue;
+            }
+            args.push_back("-change");
+            args.push_back(pair.first);
+            args.push_back(pair.second);
+        }
+        if (!id.empty()) {
+            args.push_back("-id");
+            args.push_back(id);
+        }
+        args.push_back(file);
+
+        try {
+            output = executeCommand("install_name_tool", args);
+        } catch (const std::exception &e) {
+            throw std::runtime_error("Failed to replace dependency: " + std::string(e.what()));
+        }
+    }
+
 #else
     // Linux
     // Use `ldd` and `patchelf`
 
-    static std::vector<std::string> readLddOutput(const std::string &fileName,
-                                                  std::vector<std::string> *unparsed) {
+    static std::vector<std::string>
+        readLddOutput(const std::string &fileName,
+                      const std::vector<std::filesystem::path> &searchingPaths,
+                      std::vector<std::string> *unparsed) {
         std::string output;
 
         try {
@@ -339,24 +387,40 @@ namespace Utils {
         std::string line;
 
         static const std::regex regexp("^\\s*.+ => (.+) \\(.*");
-        static const std::regex regexp2("^\\s*(.+) \\(.*");
+        static const std::regex regexp2("^\\s*(.+) => not found");
 
         std::vector<std::string> dependencies;
         while (std::getline(iss, line)) {
             std::smatch match;
             if (std::regex_match(line, match, regexp) && match.size() >= 2) {
                 dependencies.push_back(cleanPath(match[1].str()));
-            } else if (std::regex_match(line, match, regexp2) && match.size() >= 2 && unparsed) {
-                unparsed->push_back(cleanPath(match[1].str()));
+            } else if (std::regex_match(line, match, regexp2) && match.size() >= 2) {
+                // Search in search paths
+                fs::path target;
+                for (const auto &item : searchingPaths) {
+                    auto fullPath = item / match[1].str();
+                    if (fs::exists(fullPath)) {
+                        target = fullPath;
+                        break;
+                    }
+                }
+
+                if (!target.empty()) {
+                    dependencies.push_back(target);
+                } else {
+                    unparsed->push_back(cleanPath(match[1].str()));
+                }
             }
         }
 
         return dependencies;
     }
 
-    std::vector<std::string> resolveUnixBinaryDependencies(const std::filesystem::path &path,
-                                                           std::vector<std::string> *unparsed) {
-        return readLddOutput(path, unparsed);
+    std::vector<std::string>
+        resolveUnixBinaryDependencies(const std::filesystem::path &path,
+                                      const std::vector<std::filesystem::path> &searchingPaths,
+                                      std::vector<std::string> *unparsed) {
+        return readLddOutput(path, searchingPaths, unparsed);
     }
 
     void setFileRPaths(const std::string &file, const std::vector<std::string> &paths) {

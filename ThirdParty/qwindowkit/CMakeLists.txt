@@ -1,13 +1,32 @@
 cmake_minimum_required(VERSION 3.19)
 
-project(QWindowKit VERSION 1.0.1.0 LANGUAGES CXX)
+project(QWindowKit
+    VERSION 1.4.1.0
+    LANGUAGES CXX
+    HOMEPAGE_URL "https://github.com/stdware/qwindowkit"
+    DESCRIPTION "Cross-platform window customization framework"
+)
+
+if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
+
+if(LINUX AND NOT CMAKE_CROSSCOMPILING)
+    set(CMAKE_INSTALL_RPATH "$ORIGIN")
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH OFF)
+endif()
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+set(CMAKE_C_VISIBILITY_PRESET "hidden")
+set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
 
 # ----------------------------------
 # Build Options
 # ----------------------------------
 option(QWINDOWKIT_BUILD_STATIC "Build static libraries" OFF)
 option(QWINDOWKIT_BUILD_WIDGETS "Build widgets module" ON)
-option(QWINDOWKIT_BUILD_QUICK "Build quick module" ON)
+option(QWINDOWKIT_BUILD_QUICK "Build quick module" OFF)
 option(QWINDOWKIT_BUILD_EXAMPLES "Build examples" OFF)
 option(QWINDOWKIT_BUILD_DOCUMENTATIONS "Build documentations" OFF)
 option(QWINDOWKIT_INSTALL "Install library" ON)
@@ -15,6 +34,31 @@ option(QWINDOWKIT_INSTALL "Install library" ON)
 option(QWINDOWKIT_ENABLE_QT_WINDOW_CONTEXT "Enable Qt Window Context anyway" OFF)
 option(QWINDOWKIT_ENABLE_WINDOWS_SYSTEM_BORDERS "Enable system borders on Windows" ON)
 option(QWINDOWKIT_ENABLE_STYLE_AGENT "Enable building style agent" ON)
+
+#[[
+
+Detailed Introcuction to Configure Options:
+
+`QWINDOWKIT_BUILD_DOCUMENTATIONS`
+  - If you have installed `Doxygen`, you can ENABLE this option so that the documentations
+    will also be built and installed.
+  - If not, you can read the comments in `qdoc` style in `cpp` files to get detailed usages
+    of the public APIs.
+
+`QWINDOWKIT_ENABLE_WINDOWS_SYSTEM_BORDERS`
+  - If you don't want the system borders on Windows 10/11, you can DISABLE this option.
+  - If so, the Windows 10 top border issue will disappear. However, part of the client edge
+    area will be occupied as the resizing margins.
+
+`QWINDOWKIT_ENABLE_QT_WINDOW_CONTEXT`
+  - If you want to use pure Qt emulated frameless implementation, you can ENABLE this option.
+  - If so, all system native features will be lost.
+
+`QWINDOWKIT_ENABLE_STYLE_AGENT`
+  - Select whether to exclude the style component by DISABLING this option according to your
+    requirements and your Qt version.
+
+#]]
 
 # ----------------------------------
 # CMake Settings
@@ -44,6 +88,10 @@ endif()
 set(QWINDOWKIT_VERSION ${PROJECT_VERSION})
 set(QWINDOWKIT_INSTALL_NAME ${PROJECT_NAME})
 
+string(TIMESTAMP _QACTIONKIT_CURRENT_YEAR "%Y")
+set(QACTIONKIT_COPYRIGHT "Copyright 2023-${_QACTIONKIT_CURRENT_YEAR} Stdware Collections")
+set(QACTIONKIT_DESCRIPTION ${PROJECT_DESCRIPTION})
+
 # ----------------------------------
 # Find basic dependencies
 # ----------------------------------
@@ -54,7 +102,7 @@ if(NOT TARGET qmsetup::library)
     set(_source_dir ${CMAKE_CURRENT_SOURCE_DIR}/qmsetup)
 
     # Import install function
-    include("${_source_dir}/cmake/modules/InstallPackage.cmake")
+    include("${_source_dir}/cmake/modules/private/InstallPackage.cmake")
 
     # Install package in place
     set(_package_path)

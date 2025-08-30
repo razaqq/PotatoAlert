@@ -2,7 +2,7 @@
 # Copyright (c) 2023 SineStriker
 
 # Description:
-# Copy file or directory to destinationn if different.
+# Copy file or directory to destination if different.
 # Mainly use `file(INSTALL)` to implement.
 
 # Usage:
@@ -32,7 +32,7 @@ endif()
 get_filename_component(_dest ${dest} ABSOLUTE BASE_DIR ${_dest_base})
 
 # Copy
-foreach(_file ${src})
+foreach(_file IN LISTS src)
     # Avoid using `get_filename_component` to keep the trailing slash
     set(_path ${_file})
 
@@ -41,14 +41,24 @@ foreach(_file ${src})
     endif()
 
     if(IS_DIRECTORY ${_path})
-        set(_type DIRECTORY)
+        file(INSTALL DESTINATION ${_dest}
+            TYPE DIRECTORY
+            FILES ${_path}
+            ${args}
+        )
     else()
-        set(_type FILE)
-    endif()
+        set(_paths)
 
-    file(INSTALL DESTINATION ${_dest}
-        TYPE ${_type}
-        FILES ${_path}
-        ${args}
-    )
+        if(${_path} MATCHES "\\*\\*")
+            file(GLOB_RECURSE _paths ${_path})
+        else()
+            file(GLOB _paths ${_path})
+        endif()
+
+        file(INSTALL DESTINATION ${_dest}
+            TYPE FILE
+            FILES ${_paths}
+            ${args}
+        )
+    endif()
 endforeach()

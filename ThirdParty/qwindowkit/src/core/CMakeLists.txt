@@ -6,6 +6,7 @@ project(QWKCore
 set(_src
     qwkglobal.h
     qwkglobal_p.h
+    qwkglobal.cpp
     windowagentbase.h
     windowagentbase_p.h
     windowagentbase.cpp
@@ -15,6 +16,8 @@ set(_src
     kernel/nativeeventfilter.cpp
     kernel/sharedeventfilter_p.h
     kernel/sharedeventfilter.cpp
+    kernel/winidchangeeventfilter_p.h
+    kernel/winidchangeeventfilter.cpp
     shared/systemwindow_p.h
     contexts/abstractwindowcontext_p.h
     contexts/abstractwindowcontext.cpp
@@ -27,6 +30,7 @@ if(WIN32)
         qwindowkit_windows.h
         qwindowkit_windows.cpp
         shared/qwkwindowsextra_p.h
+        shared/windows10borderhandler_p.h
     )
 elseif(APPLE)
 else()
@@ -82,23 +86,18 @@ if(QWINDOWKIT_ENABLE_STYLE_AGENT)
         list(APPEND _src style/styleagent_linux.cpp)
     endif()
 else()
-    list(APPEND _sync_include_options EXCLUDE "style/\\.+")
+    list(APPEND _sync_include_options EXCLUDE "src/core/style/\\.+")
 endif()
 
 qwk_add_library(${PROJECT_NAME} AUTOGEN
     SOURCES ${_src}
-    LINKS
+    FEATURES cxx_std_17
     LINKS_PRIVATE ${_links_private}
     QT_LINKS Core Gui
     QT_INCLUDE_PRIVATE Core Gui
-    INCLUDE_PRIVATE kernel contexts shared
+    INCLUDE_PRIVATE *
     PREFIX QWK_CORE
     SYNC_INCLUDE_OPTIONS ${_sync_include_options}
-)
-
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED TRUE
 )
 
 set(QWINDOWKIT_ENABLED_TARGETS ${QWINDOWKIT_ENABLED_TARGETS} ${PROJECT_NAME} PARENT_SCOPE)

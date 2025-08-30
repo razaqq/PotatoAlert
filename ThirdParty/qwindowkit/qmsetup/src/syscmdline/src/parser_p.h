@@ -14,7 +14,6 @@ namespace SysCmdLine {
         Command rootCommand;
         std::string prologue, epilogue;
         int displayOptions;
-        HelpLayout helpLayout;
 
         int sizeConfig[3] = {
             4,

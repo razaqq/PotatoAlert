@@ -66,8 +66,7 @@ namespace SysCmdLine {
     }
 
     ParserPrivate::ParserPrivate()
-        : displayOptions(Parser::Normal), helpLayout(HelpLayout::defaultHelpLayout()),
-          textProvider(Strings::en_US::provider) {
+        : displayOptions(Parser::Normal), textProvider(Strings::en_US::provider) {
     }
 
     ParserPrivate *ParserPrivate::clone() const {
@@ -109,16 +108,6 @@ namespace SysCmdLine {
     void Parser::setDisplayOptions(int displayOptions) {
         Q_D(Parser);
         d->displayOptions = displayOptions;
-    }
-
-    HelpLayout Parser::helpLayout() const {
-        Q_D2(Parser);
-        return d->helpLayout;
-    }
-
-    void Parser::setHelpLayout(const HelpLayout &helpLayout) {
-        Q_D(Parser);
-        d->helpLayout = helpLayout;
     }
 
     Command Parser::rootCommand() const {
@@ -383,8 +372,17 @@ namespace SysCmdLine {
                                 break;
                             }
 
+                            bool hasRemainder =
+                                optData.multiValueArgIndex >= 0 &&
+                                dd->arguments[optData.multiValueArgIndex].number() ==
+                                    Argument::Remainder;
                             auto end = std::min(params.size(), i + maxArgCount + 1);
-                            for (; j < end; ++j) {
+                            for (int argIndex = minArgCount; j < end; ++j, ++argIndex) {
+                                if (hasRemainder && argIndex >= optData.multiValueArgIndex) {
+                                    j = end;
+                                    break;
+                                }
+
                                 const auto &curToken = params[j];
 
                                 // Break at next option
@@ -962,7 +960,15 @@ namespace SysCmdLine {
                 if (s.size() <= 1 || s.front() != '-')
                     return false;
                 return std::all_of(s.begin() + 1, s.end(), ::isalnum);
-            };
+            }
+
+            static bool isSymbol(std::string_view s) {
+                if (!::isalpha(s.front()))
+                    return false;
+                return std::all_of(s.begin() + 1, s.end(), [](char ch) {
+                    return ::isalnum(ch) || ch == '_'; //
+                });
+            }
 
             // args:    arguments
             // tokens:  tokens
@@ -1027,7 +1033,7 @@ namespace SysCmdLine {
                         return -1;
                     }
 
-                    if (args.empty() && std::all_of(token.begin(), token.end(), ::isalpha)) {
+                    if (args.empty() && isSymbol(token)) {
                         buildError(ParseResult::UnknownCommand, {token}, token, nullptr);
                         return -1;
                     }

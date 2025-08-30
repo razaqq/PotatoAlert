@@ -1,7 +1,7 @@
-project(corecmd VERSION ${QMSETUP_VERSION})
+project(qmcorecmd VERSION ${QMSETUP_VERSION})
 
 string(TIMESTAMP _year "%Y")
-set(RC_COPYRIGHT "Copyright ${_year} Stdware")
+set(RC_COPYRIGHT "Copyright 2023-${_year} Stdware Collections")
 set(RC_DESCRIPTION "QMSetup Core Utility Command")
 
 set(_src
@@ -29,6 +29,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD_REQUIRED ON
 )
 
+# Compat with gcc 8
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9")
+    target_link_libraries(${PROJECT_NAME} PRIVATE stdc++fs)
+endif()
+
 if(WIN32)
     target_link_libraries(${PROJECT_NAME} PRIVATE shlwapi)
     target_compile_definitions(${PROJECT_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS)
@@ -39,12 +44,18 @@ if(WIN32)
         COPYRIGHT ${RC_COPYRIGHT}
         DESCRIPTION ${RC_DESCRIPTION}
     )
+
+    # Make sure Windows UAC does not believe it is an installer
+    qm_add_win_manifest(${PROJECT_NAME}
+        DESCRIPTION ${RC_DESCRIPTION}
+    )
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE TOOL_DESC="${RC_DESCRIPTION}, Version ${QMSETUP_VERSION}")
+target_compile_definitions(${PROJECT_NAME} PRIVATE TOOL_COPYRIGHT="${RC_COPYRIGHT}, checkout https://github.com/stdware/qmsetup")
 target_compile_definitions(${PROJECT_NAME} PRIVATE TOOL_VERSION="${QMSETUP_VERSION}")
 
-set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME qmcorecmd)
+set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_NAME corecmd)
 
 # Vcpkg requires the binary to be installed in "tools/${PORT}" directory
 if(QMSETUP_VCPKG_TOOLS_HINT)
@@ -59,3 +70,20 @@ install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" OPTIONAL
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" OPTIONAL
 )
+
+# Check patchelf
+if (NOT WIN32 AND NOT APPLE)
+    execute_process(
+        COMMAND patchelf --version
+        OUTPUT_VARIABLE _patchelf_version_output
+        ERROR_QUIET
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    if(NOT "${_patchelf_version_output}" MATCHES "patchelf")
+        message(WARNING "Patchelf not found, the deploy feature won't work.")
+    else()
+        string(REGEX REPLACE "patchelf (.+)" "\\1" _patchelf_version ${_patchelf_version_output})
+        message(STATUS "Found patchelf, version ${_patchelf_version}")
+    endif()
+endif()
