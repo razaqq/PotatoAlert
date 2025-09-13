@@ -18,9 +18,9 @@
     <Key ID="SETTINGS_REPLAYSFOLDER_REGION">
         <English>Region:</English>
         <Deutsch>Region:</Deutsch>
-        <简体中文>服务器: </简体中文>
-        <繁體中文>伺服器: </繁體中文>
-        <日本語>サーバー: </日本語>
+        <简体中文>服务器:</简体中文>
+        <繁體中文>伺服器:</繁體中文>
+        <日本語>サーバー:</日本語>
     </Key>
     <Key ID="SETTINGS_REPLAYSFOLDER_GAMEVERSION">
         <English>Game Version:</English>
