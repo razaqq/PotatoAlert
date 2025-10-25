@@ -16,6 +16,8 @@ using PotatoAlert::Client::StatsParser::MatchType;
 
 class StatsWidget : public QWidget
 {
+	Q_OBJECT
+
 private:
 	const Client::ServiceProvider& m_services;
 
@@ -37,6 +39,9 @@ private:
 	void AddTables();
 	void RemoveTables() const;
 	void Init();
+
+signals:
+	void ForceRefresh();
 };
 
 }  // namespace PotatoAlert::Gui

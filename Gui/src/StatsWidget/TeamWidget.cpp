@@ -30,7 +30,9 @@ TeamWidget::TeamWidget(Side side, QWidget* parent)
 
 	if (side == Side::Friendly)
 	{
-		m_header = new StatsHeaderFriendly();
+		StatsHeaderFriendly* header = new StatsHeaderFriendly();
+		connect(header, &StatsHeaderFriendly::ForceRefresh, this, &TeamWidget::ForceRefresh);
+		m_header = header;
 	}
 	else
 	{

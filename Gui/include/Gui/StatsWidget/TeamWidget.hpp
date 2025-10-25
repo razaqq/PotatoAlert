@@ -16,6 +16,8 @@ namespace PotatoAlert::Gui {
 
 class TeamWidget : public QWidget
 {
+	Q_OBJECT
+
 public:
 	enum class Side
 	{
@@ -36,6 +38,9 @@ private:
 	StatsTeamFooter* m_footer = new StatsTeamFooter();
 	QWidget* m_header;
 	Client::StatsParser::WowsNumbersType m_wowsNumbers;
+
+signals:
+	void ForceRefresh();
 };
 
 }  // namespace PotatoAlert::Gui

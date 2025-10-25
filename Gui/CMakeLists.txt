@@ -59,6 +59,8 @@ target_sources(
     include/Gui/SettingsWidget/SettingsSwitch.hpp
     include/Gui/SettingsWidget/SettingsWidget.hpp
     include/Gui/StatsWidget/StatsHeader.hpp
+    include/Gui/StatsWidget/StatsWidget.hpp
+    include/Gui/StatsWidget/TeamWidget.hpp
     include/Gui/TitleBar.hpp
     include/Gui/VerticalMenuBar.hpp
 )

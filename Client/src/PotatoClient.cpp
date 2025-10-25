@@ -214,7 +214,7 @@ static inline std::optional<std::string> GetReplayName(const MatchType::InfoType
 
 void PotatoClient::Init()
 {
-	auto sysInfo = GetSysInfo();
+	const Result<SysInfo> sysInfo = GetSysInfo();
 	if (sysInfo)
 	{
 		m_sysInfo = *sysInfo;

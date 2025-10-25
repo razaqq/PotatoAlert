@@ -5,6 +5,7 @@
 #include "Client/ServiceProvider.hpp"
 #include "Client/StatsParser.hpp"
 
+#include "Gui/StatsWidget/StatsHeader.hpp"
 #include "Gui/StatsWidget/StatsWidget.hpp"
 
 #include <QVBoxLayout>
@@ -23,6 +24,8 @@ StatsWidget::StatsWidget(const ServiceProvider& serviceProvider, QWidget* parent
 
 void StatsWidget::Init()
 {
+	connect(m_team1, &TeamWidget::ForceRefresh, this, &StatsWidget::ForceRefresh);
+
 	m_layout->setContentsMargins(0, 0, 0, 10);
 	m_layout->setSpacing(0);
 

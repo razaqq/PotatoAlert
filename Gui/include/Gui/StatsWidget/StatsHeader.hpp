@@ -3,6 +3,7 @@
 
 #include "Client/PotatoClient.hpp"
 
+#include "Gui/IconButton.hpp"
 #include "Gui/ScalingLabel.hpp"
 
 #include <QApplication>
@@ -34,10 +35,14 @@ private:
 	ScalingLabel* m_statusText = (new ScalingLabel(QFont(QApplication::font().family(), 8)))->SetPointSizeF(7.5f);
 
 	ScalingLabel* m_label = new ScalingLabel(QFont(QApplication::font().family(), 15, QFont::Bold));
-	
+
+	IconButton* m_refresh;
 	QWidget* m_loading;
 	QPixmap m_ready;
 	QPixmap m_error;
+
+signals:
+	void ForceRefresh();
 };
 
 

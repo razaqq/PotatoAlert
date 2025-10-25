@@ -6,8 +6,6 @@
 #include "Client/Screenshot.hpp"
 #include "Client/StringTable.hpp"
 
-#include "Core/Directory.hpp"
-
 #include "Gui/Fonts.hpp"
 #include "Gui/MainWindow.hpp"
 #include "Gui/MatchHistory/MatchHistory.hpp"
@@ -139,6 +137,7 @@ void MainWindow::ConnectSignals()
 
 	connect(&potatoClient, &PotatoClient::StatusReady, m_statsWidget, &StatsWidget::SetStatus);
 	connect(&potatoClient, &PotatoClient::MatchReady, m_statsWidget, &StatsWidget::Update);
+	connect(m_statsWidget, &StatsWidget::ForceRefresh, &potatoClient, &PotatoClient::ForceRun);
 
 	connect(&potatoClient, &PotatoClient::MatchHistoryNewMatch, m_matchHistory, &MatchHistory::AddMatch);
 	connect(&potatoClient, &PotatoClient::ReplaySummaryChanged, m_matchHistory, &MatchHistory::SetReplaySummary);

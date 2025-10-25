@@ -29,11 +29,19 @@ StatsHeaderFriendly::StatsHeaderFriendly(QWidget* parent) : QWidget(parent)
 
 void StatsHeaderFriendly::Init()
 {
+	static constexpr QSize iconSize(20, 20);
+
 	qApp->installEventFilter(this);
 
+	m_refresh = new IconButton(":/Refresh.svg", ":/RefreshHover.svg", iconSize, false);
 	m_loading = new QSvgWidget(":/Loading.svg");
-	m_ready = QIcon(":/Ready.svg").pixmap(QSize(20, 20), window()->devicePixelRatio());
-	m_error = QIcon(":/Error.svg").pixmap(QSize(20, 20), window()->devicePixelRatio());
+	m_ready = QIcon(":/Ready.svg").pixmap(iconSize, window()->devicePixelRatio());
+	m_error = QIcon(":/Error.svg").pixmap(iconSize, window()->devicePixelRatio());
+
+	connect(m_refresh, &IconButton::clicked, [this]([[maybe_unused]] bool checked)
+	{
+		emit ForceRefresh();
+	});
 	
 	QHBoxLayout* iconLayout = new QHBoxLayout();
 	iconLayout->setContentsMargins(0, 0, 0, 0);
@@ -45,22 +53,26 @@ void StatsHeaderFriendly::Init()
 	layout->setSpacing(10);
 
 	// status icon and text
+	static constexpr int totalWidth = 155;
+
 	QWidget* status = new QWidget(this);
 	QHBoxLayout* statusLayout = new QHBoxLayout();
 	statusLayout->setContentsMargins(0, 0, 0, 0);
 	statusLayout->setSpacing(0);
-	status->setFixedWidth(130);
-	m_statusIcon->setFixedSize(20, 20);
-	statusLayout->addWidget(m_statusIcon);
-	statusLayout->addSpacing(5);
+	status->setFixedWidth(totalWidth);
+	m_statusIcon->setFixedSize(iconSize);
+	statusLayout->addWidget(m_statusIcon);          // 20
+	statusLayout->addSpacing(5);               // 5
 	m_statusText->setAlignment(Qt::AlignCenter);
 	statusLayout->addWidget(m_statusText);
+	statusLayout->addSpacing(5);               // 5
+	statusLayout->addWidget(m_refresh);             // 20
 	statusLayout->addStretch();
 	status->setLayout(statusLayout);
 
 	// dummy with same width as status
 	QWidget* dummy = new QWidget();
-	dummy->setFixedWidth(130);
+	dummy->setFixedWidth(totalWidth);
 
 	// add to layouts
 	layout->addWidget(status);
@@ -92,16 +104,19 @@ void StatsHeaderFriendly::SetStatus(Client::Status status, std::string_view text
 	{
 		case Client::Status::Ready:
 		{
+			m_refresh->setVisible(false);
 			m_statusIcon->setPixmap(m_ready);
 			break;
 		}
 		case Client::Status::Loading:
 		{
+			m_refresh->setVisible(false);
 			m_loading->setVisible(true);
 			break;
 		}
 		case Client::Status::Error:
 		{
+			m_refresh->setVisible(true);
 			m_statusIcon->setPixmap(m_error);
 			break;
 		}
