@@ -98,18 +98,18 @@ Result<PreferencesResult> ReadPreferences(const fs::path& path)
 				const size_t j = r.find_first_not_of("0123456789", 2);
 				if (j == std::string_view::npos)
 				{
-					PA_ERROR(MakeErrorCode(GameError::PreferencesXmlInvalidRegion));
+					return PA_ERROR(MakeErrorCode(GameError::PreferencesXmlInvalidRegion));
 				}
 
 				if (r[j] != ';')
 				{
-					PA_ERROR(MakeErrorCode(GameError::PreferencesXmlInvalidRegion));
+					return PA_ERROR(MakeErrorCode(GameError::PreferencesXmlInvalidRegion));
 				}
 
 				unsigned char c;
 				if (!String::ParseNumber(r.substr(2, j - 2), c))
 				{
-					PA_ERROR(MakeErrorCode(GameError::PreferencesXmlInvalidRegion));
+					return PA_ERROR(MakeErrorCode(GameError::PreferencesXmlInvalidRegion));
 				}
 				out.push_back(static_cast<char>(c));
 

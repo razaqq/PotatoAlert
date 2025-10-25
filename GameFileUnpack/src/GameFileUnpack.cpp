@@ -12,7 +12,6 @@
 
 #include "GameFileUnpack/GameFileUnpack.hpp"
 
-#include <array>
 #include <cstdint>
 #include <expected>
 #include <filesystem>
@@ -115,7 +114,7 @@ void DirectoryTree::Insert(const FileRecord& fileRecord)
 	}
 	else
 	{
-		m_root.Nodes[fileRecord.Path] = TreeNode{ .File = fileRecord };
+		m_root.Nodes[fileRecord.Path] = TreeNode{ .Nodes = {}, .File = fileRecord };
 	}
 }
 

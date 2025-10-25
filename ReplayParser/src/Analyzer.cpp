@@ -201,19 +201,19 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 					{
 						for (const ArgValue& elem : vec)
 						{
-							VariantGet<std::unordered_map<std::string, ArgValue>>(elem, [&replayData](const std::unordered_map<std::string, ArgValue>& dict) -> ReplayResult<void>
+							PA_TRYV(VariantGet<std::unordered_map<std::string, ArgValue>>(elem, [&replayData](const std::unordered_map<std::string, ArgValue>& dict) -> ReplayResult<void>
 							{
 								// other field is 'vehicleID' int32_t of the aggressor
 								if (dict.contains("damage"))
 								{
-									VariantGet<float>(dict.at("damage"), [&replayData](float damage) -> ReplayResult<void>
+									PA_TRYV(VariantGet<float>(dict.at("damage"), [&replayData](float damage) -> ReplayResult<void>
 									{
 										replayData.DamageTaken += damage;
 										return {};
-									});
+									}));
 								}
 								return {};
-							});
+							}));
 						}
 
 						return {};
@@ -290,11 +290,11 @@ ReplayResult<ReplaySummary> Replay::Analyze() const
 			{
 				if (packet.Values.contains("teamId"))
 				{
-					VariantGet<int8_t>(packet.Values.at("teamId"), [&replayData](int8_t team) -> ReplayResult<void>
+					PA_TRYV(VariantGet<int8_t>(packet.Values.at("teamId"), [&replayData](int8_t team) -> ReplayResult<void>
 					{
 						replayData.playerTeam = team;
 						return {};
-					});
+					}));
 				}
 
 				return {};
