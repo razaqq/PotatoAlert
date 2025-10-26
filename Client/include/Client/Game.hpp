@@ -37,6 +37,7 @@ enum class GameError
 
 struct GameInfo
 {
+	std::filesystem::path GamePath;
 	Core::Version GameVersion;
 	std::filesystem::path BinPath;
 	std::filesystem::path IdxPath;
@@ -57,12 +58,8 @@ extern GameCategoryT const g_gameCategory;
 
 }  // namespace Detail
 
-inline std::error_code MakeErrorCode(const GameError error)
-{
-	return { static_cast<int>(error), Detail::g_gameCategory };
-}
-
 std::vector<std::filesystem::path> GetDefaultGamePaths();
 Core::Result<GameInfo> ReadGameInfo(const std::filesystem::path& selectedPath);
+Core::Result<void> ReadRegion(GameInfo& gameInfo);
 
 }  // namespace PotatoAlert::Client::Game
