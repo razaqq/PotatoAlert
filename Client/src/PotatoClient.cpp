@@ -595,12 +595,24 @@ void PotatoClient::OnFileChanged(const std::filesystem::path& file)
 	m_lastArenaInfoHash = arenaInfo.Hash;
 
 	GameInfo const* game = nullptr;
-	for (const GameDirectory& gameDir : m_gameInfos)
+	for (GameDirectory& gameDir : m_gameInfos)
 	{
 		Result<bool> eq = IsSubdirectory(file, gameDir.Path);
 		if (eq && *eq && gameDir.Info)
 		{
 			game = &*gameDir.Info;
+			const Result<void> regionResult = Game::ReadRegion(*gameDir.Info);
+			if (regionResult)
+			{
+				emit GameInfosChanged(m_gameInfos);
+			}
+			else
+			{
+				LOG_ERROR("Failed to read arena info from file: {}", regionResult.error());
+				emit StatusReady(Status::Error, "Reading Region");
+				return;
+			}
+			break;
 		}
 	}
 
