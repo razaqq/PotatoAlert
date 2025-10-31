@@ -40,7 +40,10 @@ ExpandingWidget::ExpandingWidget(QLayout* titleLayout, QWidget* parent)
 	m_button->setCheckable(false);
 	m_button->setStyleSheet("QToolButton { border: none; }");
 	m_button->setArrowType(m_isExpanded ? Qt::DownArrow : Qt::RightArrow);
-	connect(m_button, &QToolButton::clicked, this, &ExpandingWidget::SetExpanded);
+	connect(m_button, &QToolButton::clicked, [this]()
+	{
+		SetExpanded(!m_isExpanded);
+	});
 }
 
 void ExpandingWidget::SetContentLayout(QLayout* layout) const
@@ -62,7 +65,6 @@ void ExpandingWidget::mousePressEvent(QMouseEvent* event)
 	if (event->button() == Qt::LeftButton)
 	{
 		SetExpanded(!m_isExpanded);
-		m_button->setChecked(m_isExpanded);
 	}
 }
 
@@ -70,6 +72,7 @@ void ExpandingWidget::SetExpanded(bool expanded)
 {
 	m_isExpanded = expanded;
 	m_button->setArrowType(m_isExpanded ? Qt::DownArrow : Qt::RightArrow);
+	m_button->setChecked(m_isExpanded);
 	m_contentAnim->setDirection(m_isExpanded ? QAbstractAnimation::Forward : QAbstractAnimation::Backward);
 	m_contentAnim->start();
 }
