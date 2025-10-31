@@ -642,6 +642,27 @@
         <简体中文>拾得增益</简体中文>
         <繁體中文>拾得增益效果</繁體中文>
     </Key>
+    <Key ID="REPLAY_RIBBON_ASSIST"><!--IDS_RIBBON_RIBBON_ASSIST-->
+        <English>Assisted in destruction</English>
+        <Deutsch>Zerstörung unterstützt</Deutsch>
+        <日本語>撃沈アシスト</日本語>
+        <简体中文>协助摧毁</简体中文>
+        <繁體中文>协助摧毁</繁體中文>
+    </Key>
+    <Key ID="REPLAY_RIBBON_MISSILE"><!--IDS_RIBBON_RIBBON_MISSILE-->
+        <English>Target hit</English>
+        <Deutsch>Zieltreffer</Deutsch>
+        <日本語>目標に命中</日本語>
+        <简体中文>命中目标</简体中文>
+        <繁體中文>命中目标</繁體中文>
+    </Key>
+    <Key ID="REPLAY_RIBBON_SHOTDOWNMISSLE"><!--IDS_RIBBON_SHOT_DOWN_MISSILE-->
+        <English>Missile down</English>
+        <Deutsch>Rakete abgeschossen</Deutsch>
+        <日本語>ミサイル撃墜</日本語>
+        <简体中文>击落导弹</简体中文>
+        <繁體中文>击落导弹</繁體中文>
+    </Key>
     <Key ID="REPLAY_RIBBON_UNKNOWN">
         <English>Unknown</English>
         <Deutsch>Unbekannt</Deutsch>

@@ -138,6 +138,12 @@ static constexpr std::string_view GetRibbonName(int lang, RibbonType ribbon)
 			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_DEMINING_MINE);
 		case RibbonType::DeminingMinefield:
 			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_DEMINING_MINEFIELD);
+		case RibbonType::Assist:
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_ASSIST);
+		case RibbonType::Missile:
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_MISSILE);
+		case RibbonType::ShotDownMissile:
+			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_SHOTDOWNMISSLE);
 		case RibbonType::UnknownRibbon:
 			return GetStringView(lang, StringTableKey::REPLAY_RIBBON_UNKNOWN);
 		default:
