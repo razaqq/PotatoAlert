@@ -198,7 +198,7 @@ struct glz::meta<ServerErrorCategory>
 
 void PotatoClient::Init()
 {
-	Result<SysInfo> sysInfo = GetSysInfo();
+	const Result<SysInfo> sysInfo = GetSysInfo();
 	if (sysInfo)
 	{
 		m_sysInfo = *sysInfo;
@@ -674,7 +674,36 @@ void PotatoClient::OnTempArenaInfoChanged(const std::filesystem::path& file, con
 		return;
 	m_lastArenaInfoHash = arenaInfo->Hash;
 
-	if (game.Region.empty())
+	GameInfo const* game = nullptr;
+	for (GameDirectory& gameDir : m_gameInfos)
+	{
+		Result<bool> eq = IsSubdirectory(file, gameDir.Path);
+		if (eq && *eq && gameDir.Info)
+		{
+			game = &*gameDir.Info;
+			const Result<void> regionResult = Game::ReadRegion(*gameDir.Info);
+			if (regionResult)
+			{
+				emit GameInfosChanged(m_gameInfos);
+			}
+			else
+			{
+				LOG_ERROR("Failed to read arena info from file: {}", regionResult.error());
+				emit StatusReady(Status::Error, "Reading Region");
+				return;
+			}
+			break;
+		}
+	}
+
+	if (game == nullptr)
+	{
+		LOG_ERROR("Arena info path is not inside any game directory.");
+		emit StatusReady(Status::Error, "Arena Info Path");
+		return;
+	}
+
+	if (game->Region.empty())
 	{
 		LOG_ERROR("No region set in DirectoryStatus");
 		emit StatusReady(Status::Error, "No Region Set");

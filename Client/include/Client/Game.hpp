@@ -36,6 +36,7 @@ enum class GameError
 
 struct GameInfo
 {
+	std::filesystem::path GamePath;
 	Core::Version GameVersion;
 	std::filesystem::path BinPath;
 	std::filesystem::path IdxPath;
@@ -47,5 +48,6 @@ struct GameInfo
 
 Core::Result<std::vector<std::filesystem::path>> GetDefaultGamePaths();
 Core::Result<GameInfo> ReadGameInfo(const std::filesystem::path& selectedPath);
+Core::Result<void> ReadRegion(GameInfo& gameInfo);
 
 }  // namespace PotatoAlert::Client::Game

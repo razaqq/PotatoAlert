@@ -145,6 +145,8 @@ void MainWindow::ConnectSignals()
 		m_statsWidget->Update(guiMatch);
 	});
 
+	connect(m_statsWidget, &StatsWidget::ForceRefresh, &potatoClient, &PotatoClient::ForceRun);
+
 	connect(&potatoClient, &PotatoClient::MatchHistoryNewMatch, m_matchHistory, &MatchHistory::AddMatch);
 	connect(&potatoClient, &PotatoClient::ReplaySummaryChanged, m_matchHistory, &MatchHistory::SetReplaySummary);
 

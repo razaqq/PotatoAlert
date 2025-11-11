@@ -128,7 +128,10 @@ inline std::string_view GetName(DamageType dmgType)
 	X(AimPulseTorpedoPhoton, 50, AimPulseTorpedoPhoton) \
 	X(PhaserLaser, 51, PhaserLaser)                     \
 	X(ShieldHit, 52, Shield)                            \
-	X(ShieldRemoved, 53, Shield)
+	X(ShieldRemoved, 53, Shield)                        \
+	X(Assist, 54, Assist)                               \
+	X(Missile, 55, Missile)                             \
+	X(ShotDownMissile, 56, ShotDownMissile)
 
 
 enum class RibbonType : int8_t

@@ -48,7 +48,7 @@ void StatsTable::InitHeaders()
 		item->setData(FontSizeRole, 11.0f);
 		setHorizontalHeaderItem(i, item);
 	}
-	
+
 	QHeaderView* hHeaders = horizontalHeader();
 	hHeaders->setSectionResizeMode(QHeaderView::Stretch);
 	hHeaders->setSectionResizeMode(0, QHeaderView::ResizeToContents);

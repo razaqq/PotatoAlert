@@ -23,9 +23,66 @@
 
 
 using namespace PotatoAlert::Core;
+using PotatoAlert::Client::Game::Detail::GameCategoryT;
+using PotatoAlert::Client::Game::GameError;
+using PotatoAlert::Client::Game::GameInfo;
 namespace fs = std::filesystem;
 
-namespace PotatoAlert::Client::Game {
+const char* GameCategoryT::name() const noexcept
+{
+	return nullptr;
+}
+
+std::string GameCategoryT::message(int const code) const
+{
+	switch (static_cast<GameError>(code))
+	{
+		using enum GameError;
+
+		case DirectoryNotFound:
+			return "Directory Not Found";
+		case PreferencesXmlMissing:
+			return "No preferences.xml";
+		case PreferencesXmlFailedToMap:
+			return "Failed to map preferences.xml";
+		case PreferencesXmlMissingVersion:
+			return "No version in preferences.xml";
+		case PreferencesXmlMissingRegion:
+			return "No region in preferences.xml";
+		case PreferencesXmlInvalidRegion:
+			return "Invalid region in preferences.xml";
+		case BinPathMissing:
+			return "Missing bin path";
+		case BinPathFailedToReadPeVersion:
+			return "Failed to read PE Version";
+		case BinPathFailedToDetermine:
+			return "Failed to determine bin path";
+		case EngineConfigXmlMissing:
+			return "Missing engine_config.xml";
+		case EngineConfigXmlFailedLoading:
+			return "Failed to read engine_config.xml";
+		case EngineConfigXmlEmpty:
+			return "Empty engine_config.xml";
+		case EngineConfigXmlMissingReplays:
+			return "engine_config.xml missing 'replays'";
+		case EngineConfigXmlMissingDirPath:
+			return "engine_config.xml missing 'dirPath'";
+		case EngineConfigXmlMissingPathBase:
+			return "engine_config.xml missing 'pathBase'";
+		case EngineConfigXmlMissingVersioned:
+			return "engine_config.xml missing 'versioned'";
+		case EngineConfigXmlMissingPreferences:
+			return "engine_config.xml missing 'preferences'";
+		case EngineConfigXmlMissingPreferencesPathBase:
+			return "engine_config.xml missing 'preferences/pathBase'";
+		case EngineConfigXmlVersionedInvalid:
+			return "engine_config.xml invalid 'versioned'";
+	}
+
+	return fmt::format("GameError{:08x}", static_cast<uint32_t>(code));
+}
+
+GameCategoryT const PotatoAlert::Client::Game::Detail::g_gameCategory;
 
 namespace {
 
@@ -255,10 +312,7 @@ Result<fs::path> GetBinPath(const fs::path& gamePath, const Version gameVersion)
 
 		if (int32_t v = 0; String::ParseNumber<int32_t>(fileName, v))
 		{
-			if (v > folderVersion)
-			{
-				folderVersion = v;
-			}
+			folderVersion = std::max(folderVersion, v);
 		}
 	}
 
@@ -400,6 +454,7 @@ Result<GameInfo> ReadGameInfo(const fs::path& path)
 
 	return GameInfo
 	{
+		.GamePath = path,
 		.GameVersion = preferences.GameVersion,
 		.BinPath = binPath,
 		.IdxPath = idxPath,
@@ -410,4 +465,17 @@ Result<GameInfo> ReadGameInfo(const fs::path& path)
 	};
 }
 
-}  // namespace PotatoAlert::Client::Game
+Result<void> PotatoAlert::Client::Game::ReadRegion(GameInfo& gameInfo)
+{
+	PA_TRY(exists, Core::PathExists(gameInfo.GamePath));
+	if (!exists)
+	{
+		return PA_ERROR(MakeErrorCode(GameError::DirectoryNotFound));
+	}
+
+	PA_TRY(preferences, ReadPreferences(gameInfo.GamePath));
+	gameInfo.GameVersion = preferences.GameVersion;
+	gameInfo.Region = preferences.Region;
+
+	return {};
+}
