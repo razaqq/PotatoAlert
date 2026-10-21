@@ -357,6 +357,7 @@ bool SettingsWidget::eventFilter(QObject* watched, QEvent* event)
 	if (event->type() == LanguageChangeEvent::RegisteredType())
 	{
 		const int lang = dynamic_cast<LanguageChangeEvent*>(event)->GetLanguage();
+		Client::UpdateHanFallbackFonts(Languages[lang]);
 		emit LanguageChanged(lang);
 	}
 	else if (event->type() == QEvent::ApplicationFontChange)
