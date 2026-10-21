@@ -13,9 +13,9 @@
 
 namespace PotatoAlert::Client {
 
-constexpr std::array<const std::string_view, 7> Fonts =
+constexpr std::array<const std::string_view, 8> Fonts =
 {
-	"Lato", "NotoSans", "NunitoSans", "Open Sans", "Poppins", "Roboto", "Segoe UI"
+	"Lato", "LXGW WenKai Lite", "NotoSans", "NunitoSans", "Open Sans", "Poppins", "Roboto", "Segoe UI"
 };
 
 inline void LoadFonts()
@@ -31,6 +31,10 @@ inline void LoadFonts()
 	LOAD_FONT(":/Lato-Bold.ttf");
 	LOAD_FONT(":/Lato-Light.ttf");
 	LOAD_FONT(":/Lato-Regular.ttf");
+
+	// LXGW WenKai Lite from github.com/lxgw/LxgwWenKai-Lite (see Resources/Fonts/LXGWWenKaiLite-LICENSE.txt)
+	LOAD_FONT(":/LXGWWenKaiLite-Regular.ttf");
+	LOAD_FONT(":/LXGWWenKaiLite-Medium.ttf");
 
 	LOAD_FONT(":/NotoSans-Light.ttf");
 	LOAD_FONT(":/NotoSans-Regular.ttf");
