@@ -5,7 +5,7 @@ from gitignore_parser import parse_gitignore
 
 qrc_prefix = '<RCC>\n    <qresource prefix="/">'
 qrc_suffix = '    </qresource>\n</RCC>'
-qrc_include = ['.gif', '.qss', '.png', '.svg', '.jpg', '.ttf']
+qrc_include = ['.gif', '.qss', '.png', '.svg', '.jpg', '.ttf', '.otf']
 
 
 def include(file: str) -> bool:
@@ -42,5 +42,7 @@ if __name__ == '__main__':
         f.write(qrc_prefix)
         f.write('\n')
         for name, path in all_files:
-            f.write(f'        <file alias="{name}">{path}</file>\n')
+            # fonts only shrink by 15-45%, which rcc's default 70% threshold leaves uncompressed
+            threshold = ' threshold="10"' if name.endswith(('.ttf', '.otf')) else ''
+            f.write(f'        <file alias="{name}"{threshold}>{path}</file>\n')
         f.write(qrc_suffix)
